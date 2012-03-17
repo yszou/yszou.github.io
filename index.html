@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<title>    </title>
+
+<script type="text/javascript" src="static/js/dojo.js"></script>
+<script type="text/javascript" src="static/js/widget.js"></script>
+<script type="text/javascript" src="static/js/main.js"></script>
+<script type="text/javascript" src="static/js/case.js"></script>
+<link href="static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="static/css/widget.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="preload">
+        <img src="static/img/check_off.gif" />
+        <img src="static/img/check_on.gif" />
+        <img src="static/img/fail.png" />
+        <img src="static/img/loading.gif" />
+        <img src="static/img/ok.png" />
+        <img src="static/img/play.png" />
+        <img src="static/img/select_off.gif" />
+        <img src="static/img/select_on.gif" />
+    </div>
+
+    <div class="block">
+        <div class="head">
+            <div class="info">
+                <span class="logo"></span>
+                <span class="copyright"></span>
+            </div>
+            <div class="group">
+                <div class="aw_selectbox_block" style="width: 80px;">
+                    <div class="aw_selectbox aw_sb_off" name="project_control">选择项目</div>
+                    <ul class="aw_selectbox_items aw_sb_items_on" name="for_project_control">
+                        <li>AceTest</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbox">
+            <div class="tb_line">
+                <div class="column"><span>公共头：<span><input style="width: 410px;" /> <button style="padding-left: 10px; padding-right: 10px;">更新</button></div>
+                <div class="column" style="float: right; margin-right: 0px;"><span style="margin-left: 10px;">主　机：<span><input style="width: 260px;" /></div>
+            </div>
+
+            <div class="tb_line">
+                <div class="column">
+                    <div class="aw_selectbox_block" style="margin-top: 8px;">
+                        <div class="aw_selectbox aw_sb_off" name="project_control">操作</div>
+                        <ul class="aw_selectbox_items aw_sb_items_on" name="for_project_control" style="height: 19px;">
+                            <li>顺序</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="column" style="width: 500px; text-align: center;">
+                    <div class="column right_count" style="margin-left: 200px;">0</div>
+                    <div class="column fail_count">00001</div>
+                </div>
+                <div class="column"><span style="display: block; float: left;">方式：</span>
+                    <div class="aw_selectbox_block" style="float: left; margin-top: 8px;">
+                        <div class="aw_selectbox aw_sb_off" name="project_control">并发</div>
+                        <ul class="aw_selectbox_items aw_sb_items_on" name="for_project_control" style="height: 19px;">
+                            <li>顺序</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="column"><span style="display: block; float: left; margin-left: 40px;">重复：</span><input style="width: 30px;" />
+                </div>
+
+                <div class="column" style="float: right; margin-right: 0px;"><a href="#">新建</a></div>
+            </div>
+        </div>
+
+        <div class="case_list">
+            <div class="case case_head">
+                <span class="c_1"><img id="cb_control" class="aw_checkbox aw_cb_off" src="static/img/null.gif" /></span>
+                <span class="c_2">地　　址</span>
+                <span class="c_3">方法</span>
+                <span class="c_4">参　数</span>
+                <span class="c_5">头</span>
+                <span class="c_6">验　　证</span>
+                <span class="c_7">备　　注</span>
+                <span class="c_8"><img class="status play" src="static/img/null.gif" /></span>
+            </div>
+            <div class="case">
+                <span class="c_1"><img class="aw_checkbox aw_cb_off" src="static/img/null.gif" /></span>
+                <span class="c_2">地址</span>
+                <span class="c_3">方法</span>
+                <span class="c_4">参数</span>
+                <span class="c_5">头</span>
+                <span class="c_6">验证</span>
+                <span class="c_7">备注</span>
+                <span class="c_8"><img class="status loading" src="static/img/null.gif" /></span>
+            </div>
+            <div class="case">
+                <span class="c_1"><img class="aw_checkbox aw_cb_off" src="static/img/null.gif" /></span>
+                <span class="c_2">地址</span>
+                <span class="c_3">方法</span>
+                <span class="c_4">参数</span>
+                <span class="c_5">头</span>
+                <span class="c_6">验证</span>
+                <span class="c_7">备注</span>
+                <span class="c_8"><img class="status ok" src="static/img/null.gif" /></span>
+            </div>
+
+
+        </div>
+
+        <div id="d" style="position: absolute; top: 0px; left: 0px; background-color: red; width: 100px; height: 100px;"></div>
+    </div>
+
+
+<script type="text/javascript" charset="utf-8">
+dojo.addOnLoad(function(){
+    var move_it = function(move_node, focus_node){
+        if(!focus_node){
+            var focus_node = move_node;
+        }
+        dojo.style(focus_node, 'cursor', 'move');
+        dojo.style(move_node, 'position', 'absolute');
+
+        dojo.connect(focus_node, 'onmousedown', {mn: move_node, fn: focus_node},
+            function(eventObj){
+                dojo.stopEvent(eventObj);
+                var n = this.mn;
+                dojo.style(n, 'opacity', '0.8');
+                n.ox = dojo.style(n, 'left');
+                n.oy = dojo.style(n, 'top');
+                n.ex = eventObj.pageX;
+                n.ey = eventObj.pageY;
+
+                n.move_bind = dojo.connect(dojo.doc, 'onmousemove', {n: n},
+                    function(eventObj){
+                        dojo.stopEvent(eventObj);
+                        dojo.style(this.n,
+                            {left: (this.n.ox + eventObj.pageX - this.n.ex) + 'px',
+                             top: (this.n.oy + eventObj.pageY - this.n.ey) + 'px'});
+                    }
+                );
+
+                n.up_bind = dojo.connect(dojo.doc, 'onmouseup', {n: n},
+                    function(eventObj){
+                        dojo.stopEvent(eventObj);
+                        dojo.style(this.n, 'opacity', '1');
+                        dojo.disconnect(this.n.move_bind);
+                        dojo.disconnect(this.n.up_bind);
+                    }
+                );
+        });
+    }
+
+    dojo.query('.case').forEach(function(e, i, a){move_it(e)});
+});
+</script>
+</body>
+</html>
