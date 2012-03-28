@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - Python中的那些坑</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <div class="main blog">
+            <h1>Python中的那些坑</h1>
+
+            <ol class="toc">
+                <li><a href="#chinese_comment" name="1">中文注释单写一行</a></li>
+                <li><a href="#expire" name="2">设置过期时间</a></li>
+            </ol>
+
+            <div class="info">
+                <ul>
+                    <li>2012-02-29 14:06:22</li>
+                    <li>邹业盛 / yeshengzou # # gmail.com</li>
+                </ul>
+            </div>
+            <div class="clear_float"></div>
+
+            <h2><a name="chinese_comment">中文注释单写一行</a></h2>
+            <pre class="prettyprint">
+connection.close() #必须手动关闭,要不sqlite3在内存中永远不变
+</pre>
+            <p>这样把中注释写到代码之后可能会出的问题是，日志输出时，会碰到此行有中文而编码失败。</p>
+            <p>所以，在可能出现错误的地方最好把中文注释单写一行：</p>
+            <pre class="prettyprint">
+#必须手动关闭,要不sqlite3在内存中永远不变
+connection.close()
+</pre>
+
+            <h2><a name="expire">设置过期时间</a></h2>
+            <p>假设过期时间为一年之后的这一天：</p>
+    <pre class="prettyprint">
+now = datetime.datetime.now()
+expire = datetime.datetime(now.year + 1, now.month, now.day,
+                           23, 59, 59, 9999)
+</pre>
+    <p>这样就会中 2 月 29 日的招，因为明年就会没有 2 月 29 日，所以注意处理一下：</p>
+    <pre class="prettyprint">
+now = datetime.datetime.now()
+try:
+    expire = datetime.datetime(now.year + 1, now.month, now.day,
+                               23, 59, 59, 9999)
+except ValueError: #2月29日的问题
+    expire = datetime.datetime(now.year + 1, now.month, now.day - 1,
+                               23, 59, 59, 9999)
+</pre>
+    
+        
+        <div class="end_mark"></div>
+
+        </div>
+    </div>
+</body>
+</html>

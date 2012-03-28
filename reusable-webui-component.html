@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - 对构建可复用WebUI组件的思考</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <div class="main blog">
+            <h1>对构建可复用WebUI组件的思考</h1>
+
+            <div class="info">
+                <ul>
+                    <li>2012-03-09 11:15:22</li>
+                    <li>邹业盛 / yeshengzou # # gmail.com</li>
+                </ul>
+            </div>
+            <div class="clear_float"></div>
+
+            <p>去公司内部的交流活动参数了一个讲“构建可复用的 WebUI 组件模型”的交流，前面对 WebUI 差异性的分析引发了我的一些思考。</p>
+
+            <p>与软件（我猜指的是桌面软件）的 UI 实现不同，WebUI 的实现变动大。我会认为，给予了更多我的实现手段。</p>
+
+            <p>造成差异的原因:</p>
+
+            <ol>
+                <li>设计风格</li>
+                <li>代码实现</li>
+            </ol>
+
+
+<p>关于第一点，不同的人，希望看到的界面是不同的，具体来说，界面上的 CSS 不同，图不同， DOM 结构不同。</p>
+
+<p>关于第二点，因为交互的需求不同，同时因为不同的程序员和不同的实现思路，那么写出来的所有代码都可能不同。</p>
+
+<p>我们的目的，是在于包容上面两种差异的情况下，来实现组件的复用。（不过，我没有在 topic 中听到怎么去解决）</p>
+
+<p>提到了几种手段：</p>
+
+<ol>
+    <li>类的继承</li>
+    <li>类的组合</li>
+    <li>模板系统</li>
+</ol>
+
+<p>这些手段我们都知道，不过，任何一种，至少在现在，我看都不太容易完善地解决以上两种差异产生的问题。</p>
+
+<p>要把界面外观，和交互实现相分离，同时实现复用，我个人认为，必须使两方面在某个点，以约定的规则进行无须沟通的统一。而这个规则的实现，才是我们应该思考的。<i>任何单方面的去考虑怎么去封闭 js 代码，然后让前端开发者去复用，都不可能解决上面所说的差异。</i></p>
+
+<p><i>需要同时考虑前端开发者的复用，和前端设计师的复用。</i>而且，这两者复用，还要统一，无须沟通。</p>
+
+<p>一个美丽的远景是：</p>
+
+<ul>
+    <li>前端开发写代码时不关心具体的页面是什么样，写出的代码没问题，则界同上的交互没有问题。前端开发写代码时不关心具体的页面是什么样，写出的代码没问题，则界同上的交互没有问题。</li>
+    <li>设计做页面不关心交互的流程，页面通过规则验证，则可以保证交互实现不会出问题。</li>
+</ul>
+
+<p>无法完美实现的话，我们只是经常考虑在哪些方面妥协。</p>
+
+        
+        <div class="end_mark"></div>
+
+        </div>
+    </div>
+</body>
+</html>

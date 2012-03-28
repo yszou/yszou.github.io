@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - 对管理后台设计的一些想法</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <div class="main blog">
+            <h1>对管理后台设计的一些想法</h1>
+
+            <ol class="toc">
+                <li><a href="#data_with_frontend" name="1">与前端的数据共用</a></li>
+            </ol>
+
+            <div class="info">
+                <ul>
+                    <li>2012-03-01 09:52:24</li>
+                    <li>邹业盛 / yeshengzou # # gmail.com</li>
+                </ul>
+            </div>
+            <div class="clear_float"></div>
+
+            <h2><a name="data_with_frontend">与前端的数据共用</a></h2>
+<p>有一些常量性质的数据，是后端和前端都要用到的，比如，对产品编号和产品类型描述的一个映射：</p>
+
+<pre class="prettyprint">
+TYPE = {
+    '0': u'普通'，
+    '2': u'带地址',
+    '5': u'触发',
+}</pre>
+
+<p>在后端，可以很自由地组织文件，上面的 <tt>TYPE</tt> 不管放到哪里，通过 <tt>import</tt> 什么的，都可以很容易地拿到。但是，前端也要使用 <tt>TYPE</tt> 的话，就有些麻烦了。</p>
+
+<p>别说什么，啊，就一个 <tt>TYPE</tt> ，前端自己写一遍就好了之类的话，想用的地方就写一下，那到以后，你知道你要改多少个地方？所以，我们的目标是这样的数据只存一份就好。</p>
+
+<p>直接能想到的，显然是把 <tt>TYPE</tt> 直接放到模板中去渲染：</p>
+
+<xmp class="prettyprint"><script>
+    TYPE = {{ TYPE|safe }};
+</script>
+</xmp>
+
+<p>当然，这样是可行的，在解决了引号，转义之类的问题之后。</p>
+
+<p>但是，我个人总是觉得动态生成 <i>js</i> 是很别扭的事，一般 <i>js</i> 中要用到的数据，我宁愿把它通过模板渲染成 <tt>hidden</tt> 标签，然后使用 <i>js</i> 自己去取。但是，这里的 <tt>TYPE</tt> 显然不能这么干。</p>
+
+<p>所以，我想的是专门做一个 URL 来处理这种常量请求，比如 <tt>/const</tt> ，然后呢，针对这个 URL ，可以在后端处理需要的数据，甚至可以根据 referer 头来判断应该给哪些数据，同时，也可以在渲染数据时做名字空间的处理。简单来说：</p>
+
+<pre class="prettyprint">
+return HttpResponse('CONST.TYPE = %s;' % json.dumps(TYPE))</pre>
+
+<p>一句话，专门做一个 URL 来处理获取 <i>js</i> 常量的请求。</p>
+
+
+        
+        <div class="end_mark"></div>
+
+        </div>
+    </div>
+</body>
+</html>
