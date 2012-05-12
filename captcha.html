@@ -21,6 +21,7 @@
           <ul>
             <li>2012-04-24 17:35</li>
             <li>邹业盛 / yeshengzou # # gmail.com</li>
+            <li>2012-5-13更新: 代码修改,避免死循环</li>
           </ul>
         </div>
         <div class="clear_float"></div>
@@ -212,7 +213,8 @@ from cStringIO import StringIO
 CHAR = 'acdefghijkmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXY345789'
 LEN = len(CHAR) - 1
 PADDING = 30 
-X_SPACE = 6
+X_SPACE = 6 #两个字符之间最少相隔多少个像素
+TRY_COUNT = 30 #随机字符的位置尝试最多多少次,避免死循环
 WIDTH = 70
 HEIGHT = 40
 FONT = ImageFont.load('font.pil')
@@ -226,7 +228,11 @@ def gen():
     S = []
     x_list = []
     y_list = []
+    n = 0
     while True:
+        n += 1
+        if n > TRY_COUNT:
+            break
         x = randint(0, w - PADDING)
         flag = True
         for i in x_list:
