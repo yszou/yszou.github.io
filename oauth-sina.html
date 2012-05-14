@@ -335,7 +335,8 @@ signature = hmac.new(APP_SECRET + '&', p, hashlib.sha1).digest().encode('base64'
 <p>现在需要这样：</p>
 
 <pre class="prettyprint">
-signature = hmac.new(APP_SECRET + '&' + request_token, p, hashlib.sha1).digest().encode('base64').rstrip()
+signature = hmac.new(APP_SECRET + '&' + request_token, p,
+                     hashlib.sha1).digest().encode('base64').rstrip()
 </pre> 
 
 <p>完整的代码如下：</p>
@@ -369,7 +370,8 @@ def get_access_token(token, secret, verifier):
     headers.sort()
 
     p = 'POST&%s&%s' % (quote(URI, safe=''), quote(urlencode(headers)))
-    signature = hmac.new(APP_SECRET + '&' + secret, p, hashlib.sha1).digest().encode('base64').rstrip()
+    signature = hmac.new(APP_SECRET + '&' + secret, p,
+                         hashlib.sha1).digest().encode('base64').rstrip()
 
     headers.append(('oauth_signature', quote(signature)))
 
@@ -439,7 +441,8 @@ def get_info(token, secret):
     headers.sort()
 
     p = 'POST&%s&%s' % (quote(URI, safe=''), quote(urlencode(headers)))
-    signature = hmac.new(APP_SECRET + '&' + secret, p, hashlib.sha1).digest().encode('base64').rstrip()
+    signature = hmac.new(APP_SECRET + '&' + secret, p,
+                         hashlib.sha1).digest().encode('base64').rstrip()
 
     headers.append(('oauth_signature', quote(signature)))
 
