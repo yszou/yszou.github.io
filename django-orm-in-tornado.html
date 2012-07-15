@@ -21,6 +21,7 @@
           <ul>
             <li>2012-04-10 17:59</li>
             <li>邹业盛 / yeshengzou # # gmail.com</li>
+            <li>2012-7-15 更新</li>
           </ul>
         </div>
         <div class="clear_float"></div>
@@ -66,6 +67,26 @@ class BaseHandler(tornado.web.RequestHandler):
         [c.connection and c.connection.commit() for c in connections.all()]
 </pre>
 <p>另外要注意的一点是，在 Tornado 中最好不要使用 Django 的 <i>@transaction.commit_on_success</i> 这类全局性的东西，除非你真的清楚它对整个处理流程有怎样的影响。 </p>
+
+<p><b>2012-7-15更新</b></p>
+<p>在 <i>finish()</i> 中直接 <i>commit()</i> 有一个问题——虽然 Django 自己在执行数据库操作时会确保数据库的连接已经成功建立，但是，在调用 <i>finish()</i> 之前可能根本就没有任何的数据库操作。这时直接使用 <i>commit()</i> 时可能连接已经失效了（但是连接它还存在，即不为 <i>None</i>），于是就会抛出异常。当然，如果之前没有任何的数据库操作， <i>commit()</i> 本身也是不需要的。我们应该把代码作一些修改：</p>
+
+<pre class="prettyprint">
+# -*- coding: utf-8 -*-
+
+import os
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+from django.db import connections
+
+class BaseHandler(tornado.web.RequestHandler):
+    def finish(self, *args, **kargs):
+        for c in connections.all():
+            try:
+                c._commit()
+            except:
+                pass
+</pre>
 
         <div class="end_mark"></div>
       </div>
