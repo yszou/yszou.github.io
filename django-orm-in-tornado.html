@@ -21,6 +21,8 @@
           <ul>
             <li>2012-04-10 17:59</li>
             <li>邹业盛 / yeshengzou # # gmail.com</li>
+            <li>2012-7-15 更新</li>
+            <li>2012-8-15 更新</li>
           </ul>
         </div>
         <div class="clear_float"></div>
@@ -66,6 +68,39 @@ class BaseHandler(tornado.web.RequestHandler):
         [c.connection and c.connection.commit() for c in connections.all()]
 </pre>
 <p>另外要注意的一点是，在 Tornado 中最好不要使用 Django 的 <i>@transaction.commit_on_success</i> 这类全局性的东西，除非你真的清楚它对整个处理流程有怎样的影响。 </p>
+
+<p><b>2012-7-15更新</b></p>
+<p>在 <i>finish()</i> 中直接 <i>commit()</i> 有一个问题——虽然 Django 自己在执行数据库操作时会确保数据库的连接已经成功建立，但是，在调用 <i>finish()</i> 之前可能根本就没有任何的数据库操作。这时直接使用 <i>commit()</i> 时可能连接已经失效了（但是连接它还存在，即不为 <i>None</i>），于是就会抛出异常。当然，如果之前没有任何的数据库操作， <i>commit()</i> 本身也是不需要的。我们应该把代码作一些修改：</p>
+
+<pre class="prettyprint">
+# -*- coding: utf-8 -*-
+
+import os
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+from django.db import connections
+
+class BaseHandler(tornado.web.RequestHandler):
+    def finish(self, *args, **kargs):
+        for c in connections.all():
+            try:
+                c._commit()
+            except:
+                pass
+</pre>
+
+<p><b>2012-8-15更新</b></p>
+<p>对于 InnoDB 而言， <i>Select</i> 这类读操作也是受事务隔离影响的（参考：<a href="http://www.cnblogs.com/shiyangxt/archive/2009/02/11/1388519.html" target="_blank">http://www.cnblogs.com/shiyangxt/archive/2009/02/11/1388519.html</a>）。简单说，另外的事务已经 <i>commit</i> 的数据，对处于旧事务中的 <i>Select</i> 也是不可见的。</p>
+<p>这里有一个很大的影响，就是前面我们在 <i>finish()</i> 中确保执行了 <i>commit()</i>，通常情况下，一个新的请求过来，是处于一个全新的事务当中。但是，如果在 Tornado 当中有一些 callback ，在新请求过来之前就访问了数据库，即打开了一个新的事务，而这些内部的 callback 又不会去调用 finish() 。于是，新的请求就可能处于一个‘旧’的事务当中，这时做 <i>Select</i> 就可能找不到一些数据。所以，为了确保新的请求处于新的事务当中，以保证 <i>Select</i> 操作的正确，我们在 <i>initialize()</i> 也需要做一遍 <i>commit()</i>：</p>
+<pre class="prettyprint">
+def initialize(self):
+    for c in connections.all():
+        try:
+            c._commit()
+        except:
+            pass
+</pre>
+<p>这样我们也只能保证“请求”的事务是新的。对于其它非请求时的数据库访问，比如写的一些定时器类的功能，在查库之前，也需要做一遍 <i>commit()</i> 以保证从数据库取出来的数据是有效的。</p>
 
         <div class="end_mark"></div>
       </div>
