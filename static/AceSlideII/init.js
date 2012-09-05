@@ -19,7 +19,7 @@ var AceSlideII_Init = function(){
              , 'dojo/domReady!'
             ],
       function(config, sub, canvas, frames){
-        sub(frames(config.fw, config.fh), canvas(config.fw, config.fh));
+        sub(frames(config.fw, config.fw * screen.height / screen.width), canvas());
         console.log('AceSlideII is OK');
       }
     ); 
