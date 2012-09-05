@@ -1,1 +1,20 @@
-javascript:(function(){if((typeof require) == 'undefined'){ var n=document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; n.setAttribute('data-dojo-config', "async: true, packages:[{name: 'AceSlideII', location: 'http://localhost:8000/AceSlideII'}], fw: 600, fh: 450"); document.getElementsByTagName('head')[0].appendChild(n);} if(!window.AceSlideII){ var n2=document.createElement('script'); n2.type='text/javascript'; n2.src='http://localhost:8000/AceSlideII/init.js'; document.getElementsByTagName('head')[0].appendChild(n2); }})();
+(function(){
+  if((typeof dojo) != 'undefined'){return}
+  window.dojoConfig = {
+      async: true
+    , packages: [
+      {name: 'AceSlideII', location: 'http://zouyesheng.com/static/AceSlideII'}
+    ]
+    , deps: ['AceSlideII/init', 'dojo/dom-construct']
+    , callback: function(init, cstr){
+      init({width: 600}, cstr);
+    }
+  };
+  var n = document.createElement('script');
+  n.type='text/javascript';
+  n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js';
+  document.getElementsByTagName('head')[0].appendChild(n);
+})();
+
+
+javascript:(function(){ if((typeof dojo) != 'undefined'){return} window.dojoConfig = { async: true , packages: [ {name: 'AceSlideII', location: 'http://localhost:8000/AceSlideII'} ] , deps: ['AceSlideII/init', 'dojo/dom-construct'] , callback: function(init, cstr){ init({width: 600}, cstr); } }; var n = document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); })();

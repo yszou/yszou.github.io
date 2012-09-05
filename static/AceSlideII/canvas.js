@@ -3,15 +3,14 @@
 //位置相关的值,根据chrome缩放%150进行调节
 define(['dojo/dom-construct', 'dojo/_base/window', 'dojo/_base/connect'],
   function(cstr, win, conn){
-    var canvas = function(width, height){
+    var canvas = function(){
       var node = cstr.create('canvas', 
-                              {  width: width + 75
-                               , height: height + 60
+                              {  width: screen.width
+                               , height: screen.height
                                , style:
                                  {  border: 'none'
                                   , position: 'fixed'
                                   , zIndex: 10
-                                  , left: (screen.width - width) / 100 + 'px'
                                  }}, win.body(), 'first');
 
       //node.onselectstart = function(){return false}

@@ -27,7 +27,7 @@ define(['dojo/_base/connect', 'dojo/dom-style', 'dojo/dom-construct',
       conn.subscribe('CLEAR', curr,
         function(){
           cstr.destroy(this.canvas);
-          this.canvas = create_canvas(frames.width, frames.height);
+          this.canvas = create_canvas();
         }
       );
 
