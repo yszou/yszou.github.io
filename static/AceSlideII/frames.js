@@ -32,8 +32,9 @@ define(['dojo/dom-style', 'dojo/_base/window'],
       style.set(win.body(), 'backgroundImage', 'none');
       frames.width = width;
       frames.height = height;
-      style.set(wrapper, 'width', width + 'px');
-      style.set(wrapper, 'height', height + 'px');
+      style.set(wrapper, {  width: width + 'px'
+                          , height: height + 'px'
+                          , margin: 'auto'});
 
       for(var i = 0, l = wrapper.children.length; i < l; i++){
         var node =  wrapper.children[i];

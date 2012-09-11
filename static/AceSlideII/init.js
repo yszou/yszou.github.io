@@ -1,16 +1,23 @@
-var AceSlideII_Init = function(){
-  if((typeof require) == 'undefined'){
-    setTimeout(AceSlideII_Init, 200);
-    return
-  } else {
-    console.log('AceSlideII is starting ...');
-    if(window.AceSlideII){
-      console.log('AceSlideII has existed.');
-      return;
-    } else {
-      window.AceSlideII = true;
-    }
-    require([  'dojo/_base/config'
+//初始化函数
+
+define([], function(){
+  var init = function(obj, cstr){
+    var n = cstr.create('div', {innerHTML: 'AceSlideII is loading ...',
+                                style: {  color: '#015F68'
+                                        , fontSize: '14px'
+                                        , backgroundColor: '#DBF7F9'
+                                        , border: '1px solid #008793'
+                                        , padding: '5px'
+                                        , width: '250px'
+                                        , height: '16px'
+                                        , lineHeight: '16px'
+                                        , position: 'absolute'
+                                        , top: '5px'
+                                        , left: screen.width / 2 - (150 / 2) + 'px'}},
+                        document.body, 'last');
+    var fw = obj.width || 600;
+    console.log('[ASII]AceSlideII is starting ...');
+    require([  'AceSlideII/rules/_rules'
              , 'AceSlideII/sub'
              , 'AceSlideII/canvas'
              , 'AceSlideII/frames'
@@ -18,11 +25,27 @@ var AceSlideII_Init = function(){
              , 'AceSlideII/mobile'
              , 'dojo/domReady!'
             ],
-      function(config, sub, canvas, frames){
-        sub(frames(config.fw, config.fw * screen.height / screen.width), canvas());
-        console.log('AceSlideII is OK');
+      function(rules, sub, canvas, frames){
+
+        var r = null;
+        for(var i = 0, l = rules.length; i < l; i++){
+          if(rules[i][0].exec(window.location.href)){
+            r = rules[i][1];
+            break;
+          }
+        }
+
+        console.log('[ASII]Select Rule: ' + r);
+        require(['AceSlideII/rules/' + (r || 'default')], function(rule){
+          rule(function(){
+            setTimeout(function(){cstr.destroy(n)}, 1000);
+            sub(frames(fw, fw * screen.height / screen.width), canvas());
+            console.log('[ASII]AceSlideII is OK');
+          });
+        });
+
       }
     ); 
   }
-}
-AceSlideII_Init();
+  return init;
+});
