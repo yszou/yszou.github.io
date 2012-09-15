@@ -110,6 +110,7 @@ define(['dojo/_base/connect', 'dojo/dom-style', 'dojo/dom-construct',
       );
 
       conn.publish('GOTO', [0]);
+      conn.publish('SUB_COMPLETE');
     }
     return sub;
   }

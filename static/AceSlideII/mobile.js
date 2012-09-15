@@ -4,7 +4,7 @@ define(['dojo/_base/connect', 'dojo/dom-construct', 'dojo/_base/window'],
   function(conn, cstr, win){
     var is_touch = 'createTouch' in dojo.doc;
     if(!is_touch){return}
-    conn.publish('NUM', [1]);
+    conn.subscribe('SUB_COMPLETE', function(){conn.publish('NUM', [1])});
 
     var node = cstr.create('button',
                             {innerHTML: '控制',
