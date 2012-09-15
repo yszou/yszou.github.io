@@ -1,7 +1,7 @@
 //初始化函数
 
-define([], function(){
-  var init = function(obj, cstr){
+define(['dojo/dom-construct'], function(cstr){
+  var init = function(obj){
     var n = cstr.create('div', {innerHTML: 'AceSlideII is loading ...',
                                 style: {  color: '#015F68'
                                         , fontSize: '14px'
