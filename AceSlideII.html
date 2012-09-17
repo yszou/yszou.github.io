@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>AceSlideII HTML演示文档工具</title>
+<meta name="generator" content="http://txt2tags.org" />
+</head>
+<body style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">AceSlideII HTML演示文档工具</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">2012-09-17 16:50</li>
+        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">功能</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">普通 HTML 文档</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">一键转换</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">联机功能</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">手机端支持</a>
+  </li>
+  </ol>
+
+<a href="javascript: (function(){ if((typeof dojo) != 'undefined'){return} window.dojoConfig = { async: true , packages: [ {name: 'AceSlideII', location: 'http://zouyesheng.com/static/AceSlideII'} ] , deps: ['AceSlideII/init'] , callback: function(init){ init({width: 600}); } }; var n = document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); })();
+">点我演示此文档</a>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li>Right / Space, 下一页
+</li>
+<li>Left / Back, 上一页
+</li>
+<li>Tab, 左下角显示页数列表
+</li>
+<li>鼠标拖画
+</li>
+<li>R, 清除标记
+<p style="margin: 5px 0;"></p>
+(请使用浏览器的缩放功能放大页面)
+</li>
+</ul>
+
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 功能</h1>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li>使用普通的 HTML 文档.
+</li>
+<li>一键转换文档为演示模式.
+</li>
+<li>一个 Canvas 层用以手写标记.
+</li>
+<li>通过一个 Web 服务器支持联机操作.
+</li>
+<li>支持手机浏览, 控制.
+</li>
+</ul>
+
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 普通 HTML 文档</h1>
+
+<p style="margin: 5px 0;">
+使用 HTML 作演示文档的项目不少, 比如我之前的 AceSlide (<a href="https://github.com/AceFantasy/AceSlide" style="color: #0184b7; text-decoration: none">https://github.com/AceFantasy/AceSlide</a>) 也是这样的一个东西.
+</p>
+<p style="margin: 5px 0;">
+但是在使用过程当中, 我觉得这些东西用起来并不好用:
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li><b style=" color: red; font-weight: normal; ">必须手工书写 HTML 代码</b>
+</li>
+</ul>
+
+<p style="margin: 5px 0;">
+这点很麻烦. 事实上本质就变成需要用 HTML 写一个特定的文件.
+</p>
+<p style="margin: 5px 0;">
+考虑另外的情况, 我们很多人会用 HTML 写文档, 写博客什么的. 但是很少人是直接写 HTML 代码的. 相应地, 我们会使用 markdown , txt2tags , reSt 这些标记语言来写. 然后再转换成 HTML . 这样做的还有一个好处就是, 我们写的文档, 除了可以转换成 HTML 之外, 还可以转换成其它格式的文件, 比如 LaTeX , DocBook 等.
+</p>
+<p style="margin: 5px 0;">
+那么我就想, 我们应该用这些简单的标记语言来写演示文档. 更进一步, 我们转换出来的 HTML 文件, 通过一些格式的小调整, 就可以直接用于演示.
+</p>
+<p style="margin: 5px 0;">
+于是, 最后我就在我自己定制的 txt2tags 转换出来的 HTML 基础上, 通过一些简单的 js , 实现了一套完整的演示文档工具.
+</p>
+
+<hr style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333; border-radius: 5px; border: 1px solid gray;" />
+
+<p style="margin: 5px 0;">
+这套工具 AceSlideII 与其它工具, 比如 AceSlide 最大的不同之处, 在于, 其它工具是要求 HTML 来适应工具. 而 AceSlideII 力求做到的是它去适应各种 HTML . 也就是说, 现在你们看的这份文档, 可以变成演示模式, 只是 AceSlideII 适应了我的 txt2tags 转换出来的 HTML 而已. 通过简单的解析代码, 每个人都可以让它适应其它的 HTML 格式. Discuz 的论坛, 微博页面, 都没有问题.
+</p>
+<p style="margin: 5px 0;">
+代码上来看, 所要做的, 仅仅是重写 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">split_body</code> 这个方法.
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;">
+  //把body下的第一个节点分切,并隐藏全部结点
+  //这是一个初始化方法
+  var split_body = dojo.hitch({frames: frames},
+    function(width, height){
+      var frame = [];
+      var that = this;
+  
+      //最外层的那个div
+      var wrapper = dojo.body().children[0];
+      dojo.style(dojo.body(), 'backgroundImage', 'none');
+      that.frames.width = width;
+      that.frames.height = height;
+      dojo.style(wrapper, 'width', width + 'px');
+      ...
+</pre>
+
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 一键转换</h1>
+
+<p style="margin: 5px 0;">
+前面说了, AceSlideII 力求做到去适应 HTML 文件. 那么, 也就很容易地实现, 将 AceSlideII 添加到已存在的 HTML 文件之外, 达到转换的目的. 
+</p>
+<p style="margin: 5px 0;">
+这个转换过程, 实际就是引入两个 js 文件. 然后 js 在当前的 HTML 上下文执行, 结果就是我们需要的演示文件了. 
+</p>
+<p style="margin: 5px 0;">
+这过程, 不需要手动改原始的 HTML 文件. 只需要添加一个书签就可以搞定. 比如, 把:
+</p>
+<a href="javascript:(function(){ var n=document.createElement('script'); n.type='text/javascript'; n.src='http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); var n2=document.createElement('script'); n2.type='text/javascript'; n2.src='http://zouyesheng.com/static/ace-slide-II.js'; document.getElementsByTagName('head')[0].appendChild(n2); })();">演示此文档</a>
+<p style="margin: 5px 0;">
+收藏到书签栏, 需要时点一下就可以了(你直接点击也行). 
+</p>
+
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 联机功能</h1>
+
+<p style="margin: 5px 0;">
+项目中的一个 Tornado 实现的服务器端. 服务器启动之后, 可以把任意一个文档接入服务器.
+</p>
+<p style="margin: 5px 0;">
+这时, js 会自动上传页面内容, 然后页面会重定向到服务器的路径.
+</p>
+<p style="margin: 5px 0;">
+在服务器支持的情况下, 可以使用同一份文档的联机操作.
+</p>
+<p style="margin: 5px 0;">
+接入的客户端分成"控制端"和"浏览端"两种.
+</p>
+<p style="margin: 5px 0;">
+控制端可以随意控制文档, 它做的所有操作(翻页, 标记), 都会在所有的浏览端同步呈现.
+</p>
+<p style="margin: 5px 0;">
+控制端也可以有多个.
+</p>
+
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 手机端支持</h1>
+
+<p style="margin: 5px 0;">
+项目中添加了对手机浏览器的有限支持. 配合上面的联机功能, 可以实现在手机端控制页面的翻页.
+</p>
+<p style="margin: 5px 0;">
+这样, 演示时人拿着手机就可以随意走动了.
+</p>
+<p style="margin: 5px 0;">
+当然, 需要在 AceSlideII 中使用专业的摇控工具我觉得也很容易扩展吧.
+</p>
+
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags -t xhtml -\-toc-level=2 -\-encoding=utf-8 -\-enum-title -\-mask-email -o /home/zys/temp/AceSlideII.html /home/zys/temp/AceSlideII/AceSlideII.t2t -->
+</div></body></html>
