@@ -1,6 +1,6 @@
 //切分页面
-define(['dojo/dom-style', 'dojo/_base/window'],
-  function(style, win){
+define(['dojo/dom-style', 'dojo/_base/window', 'dojo/query', 'dojo/dom-construct'],
+  function(style, win, query, cstr){
     var frames = [];
     frames.width = null; //宽
     frames.height = null; //高
@@ -26,6 +26,15 @@ define(['dojo/dom-style', 'dojo/_base/window'],
     //这是一个初始化方法
     var get_frames = function(width, height){
       var frame = [];
+
+      //去掉注释
+      query('dl').forEach(function(item){
+        var node = item.children[0];
+        if(node && node.tagName == 'DT' && node.innerHTML == '&gt;&gt;&gt;'){
+          cstr.destroy(item);
+        }
+      });
+
 
       //最外层的那个div
       var wrapper = win.body().children[0];
