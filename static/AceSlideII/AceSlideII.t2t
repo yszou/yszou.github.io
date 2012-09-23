@@ -1,0 +1,292 @@
+AceSlideII 演示文档工具
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%%toc
+
+
+=为什么要做它=
+
+用 HTML + JS 来做演示文档不是什么新鲜事了：
+
+- S5 http://meyerweb.com/eric/tools/s5/s5-intro.html
+- impress.js http://bartaz.github.com/impress.js/
+- deck.js http://imakewebthings.com/deck.js/
+- webSlide http://ksky521.github.com/webSlide/
+- AceSlide http://zouyesheng.sinaapp.com/static/AceSlide/slide.html
+
+
+你看到了很炫的页面，让你满怀欣喜。
+
+于是你准备自己去大干一场……
+
+
+--------------------------------------------------------
+
+impress.js
+
+```
+<div id="bored" class="step slide" data-x="-1000" data-y="-1500">
+    <q>Aren't you just <b>bored</b> with all those slides-based presentations?</q>
+</div>
+
+<div class="step slide" data-x="0" data-y="-1500">
+    <q>Don't you think that presentations given <strong>in modern browsers</strong> shouldn't <strong>copy the limits</strong> of 'classic' slide decks?</q>
+</div>
+
+<div class="step slide" data-x="1000" data-y="-1500">
+    <q>Would you like to <strong>impress your audience</strong> with <strong>stunning visualization</strong> of your talk?</q>
+</div>
+```
+
+--------------------------------------------------------
+
+AceSlide
+
+```
+<div class="frame overlay" name="指定顺序">
+  <ul class="overlay phantom" tabindex="1-">
+    <li tabindex="2-">对于<i>overlay</i>是可以在节点当中，使用 <i>tabindex</i> 指定出现的顺序的。</li>
+    <li class="phantom" tabindex="3-">使用<i>class="phantom"</i>可以提前占位。</li>
+  </ul>
+
+  <xmp class="prettyprint" tabindex="0-">
+    <div class="frame overlay" name="指定顺序">
+      <ul class="overlay phantom" tabindex="1-">
+        <li tabindex="2-">对于<i>overlay</i>是可以在节点当中，使用 <i>tabindex</i> 指定出现的顺序的。</li>
+        <li class="phantom" tabindex="3-">使用<i>class="phantom"</i>可以提前占位。</li>
+      </ul>
+    </div>
+  </xmp>
+</div>
+```
+
+--------------------------------------------------------
+
+全是 HTML 。
+
+你觉得去手写这些 HTML 是一个很愉快有趣的过程？
+
+……
+
+--------------------------------------------------------
+
+至少我不这样认为。
+
+曾经在 LaTeX 中使用 Beamer 时，有人这样说过：
+
+	我已经写完我的文档了，我需要演示它时，我只需要重新去配置它，调整纸张尺寸与字体大小就可以了，我不需要使用 Beamer 再去重新写一遍我的文档。
+
+--------------------------------------------------------
+
+今天的情况与当初仍然相似。我依然使用一种源码格式书写文档，然后根据需求，生成不同格式的其它文件：
+
+```
+txt2Tags
+    => html (for web)
+    => latex (for print)
+    => mgp (for slide)
+```
+
+当我在浏览器中看生成的 HTML 文件时，会觉得，嘿：
+
+//我重新“配置”一下这个 HTML 文件它就可以用于演示了。//
+
+**所有互联网上的页面，我重新“配置”一下，它们都可以用于演示！**
+
+——我干嘛还要为演示去写那么多的 HTML 代码呢。
+
+--------------------------------------------------------
+
+所以，关键的问题是：
+
+**让一个应用去适应不同的页面，而不是为一个应用专门去写一个页面。**
+
+
+=如何使用它=
+
+- Right / Space, 下一页
+- Left / Back, 上一页
+- Tab, 左下角显示页数列表
+- 鼠标拖画
+- R, 清除标记
+
+
+(请使用浏览器的缩放功能放大页面)
+
+--------------------------------------------------------
+
+
+通过 js 把页面结构改成 AceSlideII 需要的即可。
+
+默认处理的结构：
+
+```
+-----------------------------------
+| body                            |
+|  ---------------------------    |
+|  | wrapper                 |    |
+|  |                         |    |
+|  |  ------------ h1/h2/hr  |    |
+|  |                         |    |
+|  |                         |    |
+|  |                         |    |
+|  |  ------------           |    |
+|  |                         |    |
+|  |                         |    |
+|  |                         |    |
+|  |  ------------           |    |
+|  ---------------------------    |
+-----------------------------------
+```
+
+然后 AceSlideII 自己会把页面进行切分。
+
+--------------------------------------------------------
+
+//载入外部 js 的方式？//
+
+```
+<a href="javascript: (function(){ if((typeof dojo) != 'undefined'){return} window.dojoConfig = { async: true , packages: [ {name: 'AceSlideII', location: 'http://localhost:8000'} ] , deps: ['AceSlideII/init'] , callback: function(init){ init({width: 600}); } }; var n = document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); })();">点我演示此文档</a>
+```
+
+```
+javascript: (function(){ if((typeof dojo) != 'undefined'){return} window.dojoConfig = { async: true , packages: [ {name: 'AceSlideII', location: 'http://zouyesheng.com/static/AceSlideII'} ] , deps: ['AceSlideII/init'] , callback: function(init){ init({width: 600}); } }; var n = document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); })();
+```
+
+放入收藏夹，就可以应用于任意的页面。
+
+
+--------------------------------------------------------
+
+通过 URL 匹配不同的页面，然后定义不同的处理规则。
+
+```
+//映射各种规则
+define([], function(){
+  var rules = [
+      [/^http:\/\/zouyesheng\.com.*$/, 'default']
+    , [/^http:\/\/localhost.*$/, 'default']
+    , [/^http:\/\/vp\.ffsky\.cn\/chrs2\.htm$/, 'vp2_chrs2']
+    , [/^http:\/\/cwebmail\.mail\.163\.com.*$/, 'mail_163']
+    , [/^https?:\/\/www\.google\.com\/search.*$/, 'google_search']
+    , [/^https?:\/\/www\.google\.com\.hk\/search.*$/, 'google_search']
+  ];
+  return rules;
+});
+```
+
+--------------------------------------------------------
+
+不同的规则，就是不同的“预处理”，把页面结构改成 AceSlideII 需要的，比如对于 Google 的搜索结果：
+
+```
+//google搜索结果
+define(['dojo/dom', 'dojo/query', 'dojo/dom-construct', 'dojo/_base/window', 'dojo/dom-attr'],
+  function(dom, query, cstr, win, attr){
+    var rule = function(callback){
+      var wrapper = dom.byId('rso');
+      query('li', wrapper).forEach(function(item){
+        cstr.create('hr', {}, item, 'after');
+      });
+      cstr.place(wrapper, win.body(), 'after');
+      cstr.empty(win.body());
+      cstr.place(wrapper, win.body(), 'first');
+      attr.set(win.body(), 'style', 'visibility: visible !important');
+      callback();
+    }
+    return rule;
+  }
+);
+```
+
+=它还能做什么=
+
+我们既然可以载入自己的 js ，那么可以得到页面上所有页面，也可以对页面做任何事。
+
+我曾经使用一种笨拙的方法做过尝试：
+
++ 在 firefox 下通过油猴插件写了修改页面的相关 js 。
++ 这个脚本在 google scholar 页面生效。
++ 脚本会在页面中的指定指定位置添加一个按钮，点击后把相关数据提交到指定服务器。
++ 服务器端调用本机的 COM 接口，把数据导入一款桌面软件。
+
+
+视频：http://v.youku.com/v_show/id_XMTc1OTQ3NDA4.html
+
+现在看来，油猴插件可以不要（它有提供跨域的 xhr ），直接使用收藏夹来手动激活应用，就像“美味书签”，“云输入法”那样。
+
+
+--------------------------------------------------------
+
+一个例子：
+
++ 在网易邮箱中载入自己的 js 。
++ 解析页面，获取所有联系人信息。
++ 把这些信息提交到搜狐邮箱的联系人创建接口。
+
+你可以操纵页面，用于演示，或者不用于演示：
+
+```
+var to_sohu = function(user){
+  var name = user[0];
+  var mbox = user[1];
+  var iframe = cstr.create('iframe', {name: mbox, style: {display: 'none'}}, win.body(), 'last');
+  var form = cstr.create('form', {  method: 'post'
+                                  , target: mbox
+                                  , action: 'http://mail.sohu.net/address/modContact'
+                                  , style: {display: 'none'}}, win.body(), 'last');
+  form.innerHTML += '<input type="hidden" name="type" value="4" />';
+  form.innerHTML += '<input type="hidden" name="birthday" value="--" />';
+  form.innerHTML += '<input type="hidden" name="nickname" value="' + name + '" />';
+  form.innerHTML += '<input type="hidden" name="personalemail" value="' + mbox + '" />';
+  form.submit();
+  cstr.create('p', {innerHTML: name + ' >> ' + mbox + ' ... ok'},
+              win.body().children[0], 'last');
+}
+
+var rule = function(callback){
+  var users = parse_contact();
+  for(var i = 0, l = users.length; i < l; i++){
+    to_sohu(users[i]);
+  }
+  callback();
+};
+
+```
+
+
+=服务器端支持=
+
+现在我们回到演示的主题上。
+
+在做 AceSlide 时，它就可以在服务器端的支持下实现远程控制。现在的 AceSlideII 继承并完善了这个想法。在服务器端的支持下，你可以：
+
++ 上传任意页面到服务器端，这样别人访问服务器端就可以得到页面内容。
++ 从任意一个客户端控制演示文档，包括手机浏览器。
++ 控制者的所有操作，包括标记，会同步到所有的非控制者客户端。
+
+
+```
+   +-------+
+   |       |
+   |   C   |
+   +-------+       
+       |           
+       |             +--------+
+       |             |        |                +---------+
+       |   upload    | S      |     control    |         |
+       +-----------> |        | <--------------+    C    |
+                     +--------+                |         |
+                          |                    +---------+
+            get & sync    |                 
+         +----------------+-------------+
+         |                |             |
+         v                v             v
+     +-------+      +-----+--+     +----+---+
+     |       |      |        |     |        |
+     |   C   |      |   C    |     |   C    |
+     +-------+      +--------+     +--------+
+
+```
+
