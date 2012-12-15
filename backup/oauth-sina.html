@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Yesheng Zou, 邹业盛"/>
+    <meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+    <meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+    <title>AceFantasyVI - 新浪微博OAuth详解以Python为例</title>
+
+    <link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+    <link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+
+  </head>
+  <body>
+    <div class="block">
+      <div class="main blog">
+        <h1>新浪微博OAuth详解以Python为例</h1>
+
+        <div class="info">
+          <ul>
+            <li>2012-5-14 22:37</li>
+            <li>邹业盛 / yeshengzou # # gmail.com</li>
+            <li>原文是 2011-6-15 写的</li>
+          </ul>
+        </div>
+        <div class="clear_float"></div>
+
+<p>让我先吐槽一下新浪微博的那个 OAuth 文档，写得就像个锤子一样！</p>
+
+<h2>什么是OAuth</h2>
+
+<p>OAuth 是一套认证形式，并被逐渐推荐为一套标准，它的老家在 <a href="http://oauth.net" target="_blank">http://oauth.net</a> 。</p>
+
+<p>OAuth 实现的是一套三方委托认证的模式。</p>
+
+<p>举例来说，有人想知道你新浪微博上的所有粉丝都有哪些，而你也愿意让他知道。但是，这里有一个问题，如果你直接把账号和密码告诉这个人的话，你可能会觉得很不安全，你只想把有限的东西给这个人，而不是把账号和密码都交出来。</p>
+
+<p>于是，可以使用这样的一种方式，这个人去找新浪要你的粉丝资料，新浪就问你，你愿意把你的资料给这个人么？你说愿意。好，新浪就把你的资料给这个人了，只是给这个人。于是，这个人在你的授权下得到了你的粉丝资料，但是你并没有把账号和密码泄漏出去。</p>
+
+<p>整个过程大概如下图所示：</p>
+
+<pre class="prettyprint">
+
+                               4.Here you are
+                          ---------------------
+                          |                   |
+                          |                   |
+                 -------------                |
+        2.argee? |           |  1.request     |
+       --------- |   SINA    | <---------     |
+       |         |           |          |     |
+       |         -------------          |     |
+       v              ^                 |     v
+-------------         |             -------------
+|           |         |             |           |
+|    YQ     |----------             |    ZYS    |
+|           |  3.Yes                |           |
+-------------                       -------------
+</pre>
+
+<p>记住这里的 4 个过程：</p>
+
+<pre class="prettyprint">
+request
+argee?
+Yes
+Here you are
+</pre>
+
+<p>从图中可以看出，整个过程中 SINA 都扮演着一个中间者的作用， ZYS 和 YQ 通过与 SINA 的参数传递实现授权访问。</p>
+
+<p>上面的前 3 个过程对应着 3 个新浪的认证 URL （最后一个是具体的应用 API 了）：</p>
+
+<ul>
+  <li>http://api.t.sina.com.cn/oauth/request_token</li>
+  <li>http://api.t.sina.com.cn/oauth/authorize</li>
+  <li>http://api.t.sina.com.cn/oauth/access_token</li>
+</ul>
+
+<p>这 3 个 URL 的作用是这样的：</p>
+
+<ul>
+  <li>ZYS 找到 SINA 说，等下 YQ 会过来，我要拿 YQ 的粉丝数据。通过参数的传递 ZYS 向 SINA 标明了自己的身份。SINA 说，我知道了，然后 SINA 会给 ZYS 一对 <i>request_token</i> 和 <i>request_secret</i> 。</li>
+  <li>YQ 过来了，问 SINA 说是不是 ZYS 要拿我的粉丝数据啊，然后把 ZYS 私下给的 <i>request_token</i> 和 <i>request_secret</i> 给 SINA 看了，并同意 ZYS 拿她的数据，这时 SINA 还给了 YQ 一个 verifier 。YQ 把 <i>verifier</i> 拿给了 ZYS ，表示她已经在 SINA 那里打过招呼了。</li>
+  <li>ZYS 拿着 <i>request_token</i> ， <i>request_secret</i> ， <i>verifier</i> 这三样东西，找到 SINA，说明他已经取得了 YQ 的授权。此时， SINA 给了 ZYS 一对 <i>access_token</i> 和 <i>access_secret</i> 。之后，凭着这对东西， ZYS 就可以从 SINA 那里取得 YQ 的粉丝数据了。（实际上， <i>request_secret</i> 和 <i>access_secret</i> 是相同的）</li>
+  <li>整个过程就是这样的，除了上面提到的几个参数，还有一组 <i>APP_KEY</i> 和 <i>APP_SECRET</i> ，是我们在新浪微博开放平台上申请应用时，被分配的。 我们关注的几个传递来传递去的参数有：
+
+  <pre class="prettyprint">
+APP_KEY, APP_SECRET
+request_token, request_secret
+verifier
+access_secret, access_secret
+  </pre>
+</ul>
+
+<p>下面开始实战。</p>
+
+<h2>准备工作</h2>
+
+<p>首先，需要去新浪微博的开放平台 <a href="http://open.t.sina.com.cn" target="_blank">http://open.t.sina.com.cn</a> 上注册用户，然后创建一个应用。在应用的页面，你可以找到一对 <i>APP_KEY</i> 和 <i>APP_SECRET</i> 。</p>
+
+<h2>request_token</h2>
+
+<p>现在我们开始第一步，也是最难的一步。</p>
+
+<p>OAuth 的认证过程无非就是通过 HTTP 协议把几个参数传递一下，没有什么复杂的东西。但是，因为文档描述问题，这些参数应该怎么包装，签名应该如何做，如果不得要领是很烦人的事。我们在这一步把参数的包装和签名计算方法搞定，之后的两步就水道渠成了。</p>
+
+<p>OAuth 的认证参数通常是放到头部信息中传递的（当然，也可以放到 URL 中），这个头部信息如何包装我们之后会细细介绍。</p>
+
+<p>参看官方文档 <a href="http://open.weibo.com/wiki/index.php/Oauth/request_token" target="_blank">http://open.weibo.com/wiki/index.php/Oauth/request_token</a> ，得知请求 <i>request_token</i> 时需要的参数有：</p>
+
+<ul>
+  <li><i>oauth_consumer_key</i>: 创建应用时生成的 APP_KEY 。</li>
+  <li><i>oauth_signature_method</i>: 签名方法，使用 HMAC-SHA1 。</li>
+  <li><i>oauth_timestamp</i>: 时间戳。 <code>int(time.time())</code> 就可以了。</li>
+  <li><i>oauth_nonce</i>: 单次值，一个随机字符串，防止重复攻击。我使用 <code>uuid.uuid4().hex</code> 。</li>
+  <li><i>oauth_version</i>: OAuth协议版本。填写 1.0 。</li>
+  <li><i>oauth_signature</i>: 签名值，是由根据上面的 5 个参数生成的 Base String 经 HMAC-SHA1 算法计算得出。</li>
+</ul>
+
+<p>上面的参数当中，除了最后一个 <i>oauth_signature</i> ，其它的都应该很清楚。</p>
+
+<h3>oauth_signature的计算方法</h3>
+
+<p><i>oauth_signature</i> 是通过 HMAC-SHA1 算法，处理一个叫 Base String 的字符串，最后取 base64 编码得到的。而 Base String 字符串是由访问方法，访问 URL ，及前面的 5 个参数拼接而成。</p>
+
+<p>假设访问方法是 GET ，要访问的 URL 是 http://api.t.sina.com.cn/oauth/request_token ，同时假设这 5 个参数为：</p>
+
+<ul>
+  <li><i>oauth_consumer_key</i>: 1234567</li>
+  <li><i>oauth_version</i>: 1.0</li>
+  <li><i>oauth_timestamp</i>: 1307980836</li>
+  <li><i>oauth_nonce</i>: xxoo</li>
+  <li><i>oauth_signature_method</i>: HMAC-SHA1</li>
+  <li><i>method</i> = 'GET'</li>
+  <li><i>url</i> = 'http://api.t.sina.com.cn/oauth/request_token'</li>
+  <li><i>p</i> = ''</li>
+  <li><i>base_string</i> = '%s&%s&%s' % (method, quote(url, safe=''), p)</li>
+</ul>
+
+<p>最后的 Base String 即是使用 <code>&</code> 连接这三组数据， url 需要进行 URL 编码（ / 也要编码，所以要加一个 <code>safe=''</code> ）。我们重点说 <i>p</i> 如何得到。</p>
+
+<p>p 由上面的 5 个参数 按序 拼接而成。</p>
+
+<pre class="prettyprint">
+from urllib import urlencode, quote
+
+params = [
+    ('oauth_consumer_key', '1234567'),
+    ('oauth_version', '1.0'),
+    ('oauth_timestamp', '1307980836'),
+    ('oauth_nonce', 'xxoo'),
+    ('oauth_signature_method', 'HMAC-SHA1'),
+]
+params.sort()
+
+p = quote(urlencode(params))
+</pre>
+
+<p>简单说，就是排序后进行 URL 编码再进行第二次 URL 编码。于是：</p>
+
+<pre class="prettyprint">
+from urllib import urlencode, quote
+
+method = 'GET'
+url = 'http://api.t.sina.com.cn/oauth/request_token'
+params = [
+    ('oauth_consumer_key', '1234567'),
+    ('oauth_version', '1.0'),
+    ('oauth_timestamp', '1307980836'),
+    ('oauth_nonce', 'xxoo'),
+    ('oauth_signature_method', 'HMAC-SHA1'),
+]
+params.sort()
+
+p = quote(urlencode(params))
+
+base_string = '%s&%s&%s' % (method, quote(url, safe=''), p)
+
+-------------
+GET&http%3A%2F%2Fapi.t.sina.com.cn%2Foauth%2Frequest_token&oauth_consumer
+_key%3D1234567%26oauth_nonce%3Dxxoo%26oauth_signature_method%3DHMAC
+-SHA1%26oauth_timestamp%3D1307980836%26oauth_version%3D1.0
+</pre>
+
+<p>得到 Base String 后，需要使用 HMAC-SHA1 算法对其进行处理（HMAC 算法需要一个 KEY ，在实际认证中使用 APP_SECRET 或者 *_secret ），在 Python 中有现成的模块可以使用：</p>
+
+<pre class="prettyprint">
+import hmac, hashlib
+
+KEY = 'abc'
+
+h = hmac.new(KEY, base_string, hashlib.sha1)
+s = h.digest()
+signature = quote(s.encode('base64').rstrip())
+#gA6Eo8xQgEgHMbaOdIdXFwbH/1Y%3D
+</pre>
+
+<p>最后的结果，就是我们需要的签名值。</p>
+
+<h3>参数作为头部信息的包装</h3>
+
+<p>前面说过了， OAuth 认证需要的参数，一般通过头部信息传递，其包装的格式是：</p>
+
+<pre class="prettyprint">
+Authorization = OAuth realm="", oauth_consumer_key="1234567",
+oauth_nonce="xxoo", oauth_signature_method="HMAC-SHA1",
+oauth_timestamp="1307980836", oauth_v ersion="1.0",
+oauth_signature="gA6Eo8xQgEgHMbaOdIdXFwbH/1Y%3D"
+</pre>
+
+<p>注意， value 是需要使用引号括起来的，各个参数也是经过排序的。</p>
+
+<pre class="prettyprint">
+h = ', '.join(['%s="%s"' % (k, v) for (k, v) in params])
+</pre>
+
+<h3>完整的例子</h3>
+
+<pre class="prettyprint">
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+from urllib import quote, urlencode
+import urllib2
+import time
+import uuid
+import hmac, hashlib
+
+def get_token():
+    URL = 'http://api.t.sina.com.cn/oauth/request_token'
+    APP_KEY = '' #写自己的
+    APP_SECRET = ''
+
+    params = [
+        ('oauth_consumer_key', APP_KEY),
+        ('oauth_nonce', uuid.uuid4().hex),
+        ('oauth_signature_method', 'HMAC-SHA1'),
+        ('oauth_timestamp', int(time.time())),
+        ('oauth_version', '1.0'),
+    ]
+
+    params.sort()
+
+    p = 'GET&%s&%s' % (quote(URL, safe=''), quote(urlencode(params)))
+    signature = hmac.new(APP_SECRET + '&', p, hashlib.sha1).digest().encode('base64').rstrip()
+
+    params.append(('oauth_signature', quote(signature)))
+
+    h = ', '.join(['%s="%s"' % (k, v) for (k, v) in params])
+
+    r = urllib2.Request(URL, headers={'Authorization': 'OAuth realm="", %s' % h})
+
+    data = urllib2.urlopen(r).read()
+    token, secret = [pair.split('=')[1] for pair in data.split('&')]
+
+    return token, secret
+
+if __name__ == '__main__':
+    print get_token()
+</pre>
+
+<p>这一步过后，我们就获得了 <i>request_token</i> 和 <i>request_secret</i> 。</p>
+
+<h2>authorize</h2>
+
+<p>这一步做得事情就简单多了，只需要把上一步获取到的 <i>request_token</i> 作为 <i>oauth_token</i> 这个参数添加到 URL http://api.t.sina.com.cn/oauth/authorize 后面进行访问就可以了。</p>
+
+<p>新浪微博的系统会自动作用户的登陆处理（或者可以传入 <i>userId</i> 和 <i>passwd</i> 直接获取到 <i>verifier</i> ），然后用户可以选择是否授权给你的应用。确认后，你可以得到 <i>verifier</i> 用于下一步。</p>
+
+<p>参见官方的文档 <a href="http://open.weibo.com/wiki/index.php/Oauth/authorize" target="_blank">http://open.weibo.com/wiki/index.php/Oauth/authorize</a> ，除了 <i>oauth_token</i> 这个必须的参数以个，还有几个可选的参数：</p>
+
+<ul>
+  <li><i>oauth_callback</i>: 用户确认授权后，重定向到的 URL 地址， verifier 和 oauth_token 会作为参数跟在此 URL 后面。</li>
+  <li><i>display</i>: 页面调用方式。</li>
+  <li><i>userId</i>: 账户名。</li>
+  <li><i>passwd</i>: 密码。</li>
+</ul>
+
+<p>其中 <i>userId</i> 和 <i>passwd</i> 是和 <i>oauth_callback=json|xml</i> 配合使用的。它直接返回 <i>verifier</i> ，没有确认授权页面。</p>
+
+<p>假设上一步我们得到的 <i>request_token</i> 是 <i>808cb0645284a4e0995fbcc7ac29e381</i> ，那么最简单的一个 URL 就是</p>
+
+<pre class="prettyprint">
+http://api.t.sina.com.cn/oauth/authorize?oauth_token=808cb0645284a4e0995fbcc7ac29e381
+</pre>
+
+<p>在浏览器当中直接访问这个地址即可。新浪微博会让你登陆并确认授权。之后会在页面中显示 <i>verifier</i> 。</p>
+
+<p>如果是 web 应用的话，一般我们会使用回调地址的方式，使用 <i>oauth_callback</i> 传递地址：</p>
+
+<pre class="prettyprint">
+http://api.t.sina.com.cn/oauth/authorize?oauth_token=808cb0645284a4e0995fbcc7ac29e381
+&oauth_callback=http%3A%2F%2Flocalhost%3A8080%2F
+</pre>
+
+<p>上面的 URL 中，我们把 <code>http://localhost:8080/</code> 进行 URL 编码后放到 <i>oauth_callback</i> 参数当中。</p>
+
+<p>访问并授权后，页面会重定向到：</p>
+
+<pre class="prettyprint">
+http://localhost:8080/?oauth_token=d18fbed6c40ba7b961aa860087b427e7&oauth_verifier=706286
+</pre>
+
+<p>这里有 <i>oauth_token</i> 和 <i>oauth_verifier</i> ，你可以在后端处理它们了。</p>
+
+<p>经过这一步，我们现在手头上有 <i>request_token</i> ， <i>request_secret</i> ， <i>verifier</i> 这三个东西了。下一步会用到它们。</p>
+
+<h2>access_token</h2>
+
+<p>这一步我们使用手中的 <i>request_token</i> ， <i>request_secret</i> ， <i>verifier</i> 去换取一对 <i>access_token</i> 和 <i>access_secret</i> 。整体上和第一步的操作相同。就是计算签名值和包装参数。前面是使用的 GET 方法，这里要使用 POST 方法了。</p>
+
+<p>参见官方的文档 <a href="http://open.weibo.com/wiki/index.php/Oauth/access_token" target="_blank">http://open.weibo.com/wiki/index.php/Oauth/access_token</a> ，需要传递的 OAuth 参数有：</p>
+
+<ul>
+  <li><i>oauth_consumer_key</i>: APP_KEY</li>
+  <li><i>oauth_token</i>: 我们手中的 request_token</li>
+  <li><i>oauth_signature_method</i>: 签名方法，使用 HMAC-SHA1</li>
+  <li><i>oauth_timestamp</i>: 时间戳</li>
+  <li><i>oauth_nonce</i>: 单次值</li>
+  <li><i>oauth_version</i>: OAuth协议版本。写 1.0</li>
+  <li><i>oauth_verifier</i>: 我们手中的 verifier</li>
+  <li><i>oauth_signature</i>: 签名值，是由根据上面的几个参数生成的 Base String 经 HMAC-SHA1 算法计算得出。</li>
+</ul>
+
+<p>这里计算 <i>oauth_signature</i> 时不同的地方就是要使用 <i>request_secret</i> 作为 HMAC 的 KEY 的一部分：</p>
+
+<p>前面的是这样：</p>
+
+<pre class="prettyprint">
+signature = hmac.new(APP_SECRET + '&', p, hashlib.sha1).digest().encode('base64').rstrip()
+</pre>
+
+<p>现在需要这样：</p>
+
+<pre class="prettyprint">
+signature = hmac.new(APP_SECRET + '&' + request_token, p,
+                     hashlib.sha1).digest().encode('base64').rstrip()
+</pre> 
+
+<p>完整的代码如下：</p>
+
+<pre class="prettyprint">
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+from urllib import quote, urlencode
+import urllib2
+import time
+import uuid
+import hmac, hashlib
+
+def get_access_token(token, secret, verifier):
+    URI = 'http://api.t.sina.com.cn/oauth/access_token'
+    APP_KEY = '' #写自己的
+    APP_SECRET = ''
+
+    headers = [
+        ('oauth_consumer_key', APP_KEY),
+        ('oauth_nonce', uuid.uuid4().hex),
+        ('oauth_signature_method', 'HMAC-SHA1'),
+        ('oauth_timestamp', int(time.time())),
+        ('oauth_version', '1.0'),
+        ('oauth_token', token),
+        ('oauth_verifier', verifier),
+        ('oauth_token_secret', secret),
+    ]
+
+    headers.sort()
+
+    p = 'POST&%s&%s' % (quote(URI, safe=''), quote(urlencode(headers)))
+    signature = hmac.new(APP_SECRET + '&' + secret, p,
+                         hashlib.sha1).digest().encode('base64').rstrip()
+
+    headers.append(('oauth_signature', quote(signature)))
+
+    h = ', '.join(['%s="%s"' % (k, v) for (k, v) in headers])
+
+    r = urllib2.Request(URI, headers={'Authorization': 'OAuth realm="", %s' % h})
+
+    data = urllib2.urlopen(r, data='').read()
+    token, secret, user_id = [pair.split('=')[1] for pair in data.split('&')]
+
+    return token, secret, user_id
+
+if __name__ == '__main__':
+    print get_access_token('0a426d1b8695df7888c0b79d77c2071c',
+                           '77764447cbdd856463b3198c935bad41',
+                           '601738')
+</pre>
+
+<p>上面代码中，调用 <code>get_access_token</code> 函数的三个参数都在上一步获取到了的。</p>
+
+<p>访问之后，你可以得到一个新的 <i>access_token</i> （ <i>request_secret</i> 没有变的，当然，之后我们可以把它改叫做 <i>access_secret</i> ），之后我们就使用它去访问各个需要授权的 API 接口了。</p>
+
+<h2>获取授权者的个人信息</h2>
+
+<p>现在我们手头上有 <i>access_token</i> 和 <i>access_secret</i> 了，作为示例，我们去获取一下授权者的个人信息。</p>
+
+<p>查看官方文档 <a href="http://open.weibo.com/wiki/index.php/Account/verify_credentials" target="_blank">http://open.weibo.com/wiki/index.php/Account/verify_credentials</a> ，这个验证用户身份的 API 可以获取用户信息。</p>
+
+<p>像之前的认证过程一样，需要在头部中带上 OAuth 的那 7 个参数：</p>
+
+<ul>
+  <li><i>oauth_consumer_key</i>: APP_KEY</li>
+  <li><i>oauth_token</i>: 我们手中的 access_token</li>
+  <li><i>oauth_signature_method</i>: 签名方法，使用 HMAC-SHA1</li>
+  <li><i>oauth_timestamp</i>: 时间戳</li>
+  <li><i>oauth_nonce</i>: 单次值</li>
+  <li><i>oauth_version</i>: OAuth协议版本。写 1.0</li>
+  <li><i>oauth_signature</i>: 签名值，是由根据上面的几个参数生成的 Base String 经 HMAC-SHA1 算法计算得出。</li>
+</ul>
+
+<p>应该说的前面已经说过了，直接上代码吧：</p>
+
+<pre class="prettyprint">
+#! /usr/bin/python
+# -*- coding: utf-8 -*-
+
+from urllib import quote, urlencode
+import urllib2
+import time
+import uuid
+import hmac, hashlib
+
+def get_info(token, secret):
+    URI = 'http://api.t.sina.com.cn/account/verify_credentials.json'
+    APP_KEY = '' #写自己的
+    APP_SECRET = ''
+
+    headers = [
+        ('oauth_consumer_key', APP_KEY),
+        ('oauth_nonce', uuid.uuid4().hex),
+        ('oauth_signature_method', 'HMAC-SHA1'),
+        ('oauth_timestamp', int(time.time())),
+        ('oauth_version', '1.0'),
+        ('oauth_token', token)
+    ]
+
+    headers.sort()
+
+    p = 'POST&%s&%s' % (quote(URI, safe=''), quote(urlencode(headers)))
+    signature = hmac.new(APP_SECRET + '&' + secret, p,
+                         hashlib.sha1).digest().encode('base64').rstrip()
+
+    headers.append(('oauth_signature', quote(signature)))
+
+    h = ', '.join(['%s="%s"' % (k, v) for (k, v) in headers])
+
+    r = urllib2.Request(URI, data='', headers={'Authorization': 'OAuth realm="", %s' % h})
+
+    data = urllib2.urlopen(r).read()
+    return data
+
+if __name__ == '__main__':
+    print get_info('97de3e2422c2b5fe4328d6cdc1ac5597', '2563a0ac36baecbbb7d93a4987d899df')
+</pre>
+
+<p>代码中调用 <code>get_info</code> 函数需要的两个参数就是前面我们已经取得的 <i>access_token</i> 和 <i>access_secret</i> 。</p>
+
+
+
+        <div class="end_mark"></div>
+
+      </div>
+    </div>
+
+
+    <link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+    <script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+  </body>
+</html>

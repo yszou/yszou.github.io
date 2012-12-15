@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="author" content="Yesheng Zou, 邹业盛"/>
+    <meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+    <meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+    <title>AceFantasyVI - xmodmap使用指南</title>
+
+    <link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+    <link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+
+  </head>
+  <body>
+    <div class="block">
+      <div class="main blog">
+        <h1>xmodmap 使用指南</h1>
+
+        <div class="info">
+          <ul>
+            <li>2012-04-15 15:28</li>
+            <li>邹业盛 / yeshengzou # # gmail.com</li>
+          </ul>
+        </div>
+        <div class="clear_float"></div>
+
+        <h2>什么是 xmodmap </h2>
+       
+        <p>xmodmap 是一个在 X 图形环境下用于修改键盘和鼠标按钮映射的工具。比如你可以使用它来实现鼠标的左右键互换，把 <i>caps lock</i> 键改成 <i>ctrl</i> 键， <i>a</i> 键改成 <i>b</i> 键等。</p>
+        <p>在介绍 xmodmap 的使用方法之前，先介绍一下系统是如何处理键盘的输入的。</p>
+        <ul>
+          <li>键盘中的一个按键被按下时，会产生一个“信号”传给操作系统。</li>
+          <li>操作系统得到这个信号之后，检查此信号对应的处理方法。</li>
+          <li>执行对应的处理方法。</li>
+        </ul>
+        <p>上面的流程当中，键盘某键产生的信号是不可变的，就是我们后面会提到的 <i>keycode</i> 是不会变的。你按不同的键，实际上可以看成是传入了不同的 <i>keycode</i> ，至于这些 keycode 要做什么事那是后话。也就是说，你按下了键盘上的 <i>a</i> 键与是否输入了一个 a ，它们之间是没有必然联系的。同时，那些操作系统当中对不同信号设置的处理方法也是没法直接改变的。而唯一可以改变的，就是它们之间的映射关系。这也是 <i>xmodmap</i> 它要做的事。</p>
+        <p>第二步，操作系统得到键盘输入的信号之后，就去检查对应的处理方法。这个处理方法已经预置了一套，比如键盘的上 <i>a</i> 键产生的 <i>keycode</i> 对应的处理方法就是输入一个 a 。我们也可以根据自己的需求，把 <i>a</i> 产生的 <i>keycode</i> 让它对应到另外一个处理方法上去，比如输入的是一个 b 。</p>
+        <p>我们可以使用 <b>xev</b> 这个工具来获取不同按钮产生的 <i>keycode</i> ，比如 <i>a</i> 这个按钮产生的 <i>keycode</i> 是 28，<i>tab</i> 键产生的 <i>keycode</i> 是 23。</p>
+
+        <h2>改变按键的行为</h2>
+        <p>我们先看普通键的行为如何被更改。之前后再介绍修饰键，比如 ctrl 键的行为如何修改。</p>
+        <p>假如我们希望得到的一个效果是，按下 <i>a</i> 按键，但是却是输入一个 <i>b</i>。</p>
+        <p>根据前面的介绍，我们要做的事，只是把 <i>a</i> 按键对应的处理方法，改成和 <i>b</i> 按键的一样就可以了。</p>
+<pre class="prettyprint">
+xmodmap -e 'keycode 38 = b'
+</pre>
+        <p>xmodmbp 使用 <i>-e</i> 参数后面跟一个表达式来实现相应的修改。</p>
+        <p><b>keycode</b> 的作用是将一个按键与一串处理方法绑定，是一串方法，不是一个，即：</p>
+<pre class="prettyprint">
+xmodmap -e 'keycode 38 = b E'
+</pre>
+        <p>像这样一样，以空格分割，写多个处理方法。根据文档，你最多可以写8个处理方法，但是，一般只有前4个为可用的，第2个指定的是按住 <i>shift</i> 键时如何处理（第3个和第4个说的修饰键没接触过）。上面的代码的效果就是，直接按 <i>a</i> 键会输入一个 <i>b</i> ，按住 <i>shift</i> 键再按 <i>a</i> 键就是输入一个 <i>E</i>，大写的。</p>
+        <p>上面写的 <i>b E</i> 是两个处理方法，实际上，处理方法都是以整数表示的，在 <b>xev</b> 的输出中也可以看到， <i>b</i> 对应的是 <i>0x62</i>  ，而 <i>E</i> 对应的是 <i>0x45</i> ，所以，上面的代码也可以写成：</p>
+<pre class="prettyprint">
+xmodmap -e 'keycode 38 = 0x62 0x45'
+</pre>
+        <p>完整的处理方法数值列表，可以在 <i>X11/keysymdef.h</i> 这个文件中找到。</p>
+        <p>另外一种修改按键行为的方法是使用 <i>keysym</i> 来转换预定义的处理方法。比如把 <i>0x62</i> 这个处理方法转换成 <i>0x63</i> ：</p>
+<pre class="prettyprint">
+xmodmap -e 'keysym 0x62 = 0x63'
+</pre>
+        <p>这段代码与下面等价：</p>
+<pre class="prettyprint">
+xmodmap -e 'keysym b = c'
+</pre>
+        <p>效果与下面的等价：</p>
+<pre class="prettyprint">
+xmodmap -e 'keycode 56 = c'
+</pre>
+
+<h2>修改修饰键的行为</h2>
+        <p>修饰键指的就是像 <i>ctrl</i>，<i>alt</i> 等这些键。一般是按住它们再去按其它键以产生不同的效果。前面也提到，绑定到某个按键的处理方法是一串，而不是一个。针对修饰键的处理，也是一个绑定的过程。具体一点，就是把一些处理方法绑定到特定的装饰方法当中。比如把左边那个 <i>ctrl</i> 键对应的 <i>0xffe3</i> 这个处理方法绑定到 <i>control</i> 这个装饰方法当中。当然，一个装饰方法中，可以有多个普通方法，左 ctrl 和右 ctrl 就是两个，你也可以添加你自己的。</p>
+        <p>我们先使用：</p>
+<pre class="prettyprint">
+xmodmap -pm
+</pre>
+        <p>来查看装饰方法的情况。比如我现在的是这样：</p>
+<pre class="prettyprint">
+shift       Shift_L (0x32),  Shift_R (0x3e)
+lock      
+control     Control_L (0x25),  Control_L (0x42),  Control_R (0x69)
+mod1        Alt_L (0x40),  Alt_R (0x6c),  Meta_L (0xcd)
+mod2        Num_Lock (0x4d)
+mod3      
+mod4        Super_L (0x85),  Super_R (0x86),  Super_L (0xce),  Hyper_L (0xcf)
+mod5        ISO_Level3_Shift (0x5c),  Mode_switch (0xcb)
+</pre>
+        <p>可以看到，系统定义了 shift, lock, control, mod1, mod2, mod3, mod4, mod5 这8种装饰方法。 shift 一般对应 <i>Shift</i> 键，lock 对应 <i>caps lock</i>键，我已经把它干掉了。control 对应左右的 <i>ctrl</i> 键， mod1 就是 <i>alt</i> 键了。通过 <b>xev</b> 程序，我得到我键盘上的那个 <i>win</i> 键对应的处理方法是 mod4 中的 <i>Super_L</i> 。</p>
+        <p>上面右键的处理方法后面括号中的数字，是表示的 <i>keycode</i> ，因为相同的处理方法可能是由不同的按键，即不同的 <i>keycode</i> 产生出来的。</p>
+        <p>要修改装饰键的行为，一般分成两步：</p>
+        <ol>
+          <li>将一个按键的处理方法改成已有几种特殊方法，像 <i>Control_L</i> 这些。（这步不是必须的，但是如果你把一个像 <i>a</i> 这种处理方法绑定到修饰方法上，会出问题，后面会尝试）</li>
+          <li>把一种处理方法绑定到修饰方法上。</li>
+        </ol>
+        <p>我们以 shift 这个修饰为例来说明。把指定处理方法绑定到修饰方法上，使用 <i>add</i> 来添加一个修饰方法绑定，比如：</p>
+<pre class="prettyprint">
+xmodmap -e 'add shift = a'
+</pre>
+        <p>这样， <i>a</i> 这个处理方法就会被当成 <i>shift</i> 修饰方法来用了。而因为默认地， <i>a</i> 这个处理方法，是由产生 <i>keycode</i> 为38的 a 按键触发的，所以，现在，当你按住 a 键，再按其它键时，就会……，挂掉，嗯，不错，就会挂掉。我不知道为什么。不过别简单，我们可以把它从修饰方法中移除：</p>
+<pre class="prettyprint">
+xmodmap -e 'remove shift = a'
+</pre>
+        <p>这样就可以了。那我们拿键盘右侧的 <i>menu</i> 键来试试吧。从 <b>xev</b> 中可以获取到，右侧的这个“菜单键”，它的 <i>keycode</i> 是135，当前对应的处理方法是名为“Menu”的 <i>0xff67</i> 方法。那我们就把这个处理方法添加到 shift 修饰方法当中试试：</p>
+<pre class="prettyprint">
+xmodmap -e 'add shift = Menu'
+</pre>
+        <p>这样，当你按住“菜单键”时，就和按住左边的 Shift 键一样了，可以输入大写字母。当然，同时“菜单键”还有它原来的一些行为，比如会输入 <i>$</i> 符号什么的。这也是为什么，我们如果要修改修饰键，那么最好使用已经定义的那几种专为修饰键预定的处理方法，以避免产生问题。</p>
+        <p>所以，如果我们要完全把“菜单键”改成一个左 Shift 键，那么应该按上面提到的两个步骤做，首先：</p>
+<pre class="prettyprint">
+xmodmap -e 'keycode 135 = Shift_L'
+</pre>
+        <p>把它的处理方法改成 <i>Shift_L</i> ，而不使用原来的 <i>Menu</i> 。</p>
+        <p>这时，可能有人会想，<i>Shift_L</i> 方法不是已经绑定到相应的 <i>shift</i> 这个装饰方法了嘛，那我们已经达到目的了？当然不是，绑定装饰方法的处理方法，是对应到具体的 <i>keycode</i> 的，左 Shift 键产生的 Shift_L 方法显然和我们刚才定义的菜单键产生的 Shift_L 方法是有区别的。我们刚才定义会产生的 Shift_L 方法还没有绑定到 <i>shift</i> 这个装饰方法上。所以，现在的表现为，菜单键已经不具有以前的行为了（比如弹出一个菜单什么的），但是，它还仍未拥有修饰键的作用，我们还需要绑定一下：</p>
+<pre class="prettyprint">
+xmodmap -e 'add shift = Shift_L'
+</pre>
+        <p>再次把所有的 <i>Shift_L</i> 处理方法都绑定到 <i>shift</i> 这个装饰方法上。现在使用：</p>
+<pre class="prettyprint">
+xmodmap -pm
+</pre>
+        <p>可以看到下面这一行：</p>
+<pre class="prettyprint">
+  shift       Shift_L (0x32),  Shift_R (0x3e),  Shift_L (0x87)
+</pre>
+        <p><i>0x87</i> 就是 <i>135</i> ，也就是我们刚才自己添加的那个“菜单键”，现在，这个菜单键就完全被改成一个左 Shift 键了。</p>
+        <p>如果你是修改 <i>caps lock</i> 键的行为，那么记得需要使用 <i>remove</i> 把之前的修饰绑定移除：</p>
+<pre class="prettyprint">
+xmodmap -e 'remove lock = xxx'
+</pre>
+
+        <h2>修改鼠标按键行为</h2>
+        <p>修改鼠标的按键行为就简单很多了，直接使用 <i>pointer</i> 顺序指定各个按键的处理方法。处理方法与默认的按键号是一致的，比如处理方法1，对应1号按键，处理方法2对应2号按键。（最多有12个按键绑定，我们下面只考虑前3个就好了）</p>
+<pre class="prettyprint">
+xmodmap -e 'pointer = 1 2 3'
+</pre>
+        <p>这样什么也不会发生，它就是默认的设置。如果要交换鼠标的左右键，只需要让1号按键（第一位）对应到3号处理方法，就3号按键（第三位）对应1号处理方法：</p>
+<pre class="prettyprint">
+xmodmap -e 'pointer = 3 2 1'
+</pre>
+        <p>这样就实现了左右键互换。</p>
+
+        <h2>Fvwm中的修辞键使用</h2>
+        <p>在 Fvwm 中，通常使用 <i>C</i> 和 <i>M</i> 这些来使用 control 和 mod1 这些修饰方法，那要使用 mod4 怎么办呢？其实在 Fvwm 的文档中已经有说明了：</p>
+<blockquote>
+X11 modifiers mod1 through mod5 are represented as the digits '1' through '5'.  
+</blockquote>
+        <p>要使用一个 mod4 的修辞键可以这样写：</p>
+<pre class="prettyprint">
+Key	1	A	4	GotoDeskAndPage 0 0 0
+</pre>
+
+
+        <div class="end_mark"></div>
+
+      </div>
+    </div>
+
+
+    <link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+    <script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+    <script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+  </body>
+</html>

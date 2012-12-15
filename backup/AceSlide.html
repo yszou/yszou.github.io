@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - AceSlide 使用 HTML 的演示文档工具</title>
+
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <div class="main blog">
+            <h1>AceSlide 使用 HTML 的演示文档工具</h1>
+
+            <div class="info">
+                <ul>
+                    <li>2012-03-25 23:36</li>
+                    <li>邹业盛 / yeshengzou # # gmail.com</li>
+                </ul>
+            </div>
+            <div class="clear_float"></div>
+
+<h2>关于</h2>
+
+<p>AceSlide 是一个使用 HTML 来制作演示文档的工具。它使用 javascript 来控制 dom 元素，以实现类似 <a href="http://bbs.ctex.org" target="_blank">LaTeX</a> 中 <a href="https://bitbucket.org/rivanvx/beamer/wiki/Home" target="_blank">Beamer</a> 的效果。
+</p>
+
+<p>目前， AceSlide 托管在 github 上：</p>
+<p class="center"><a href="https://github.com/AceFantasy/AceSlide" target="_blank">https://github.com/AceFantasy/AceSlide</a></p>
+
+<p>你可以在 <a href="http://zouyesheng.sinaapp.com/static/AceSlide/slide.html" target="_blank">http://zouyesheng.sinaapp.com/static/AceSlide/slide.html</a> 查看一个 Demo</p>
+
+<p>一份演示文档的源码类似于下面这个样子：（当然，实际使用中，还需要加载一些必要的 js 和 css 文件，以及做一些初始化的工作）</p>
+
+<xmp class="prettyprint"><!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>异步机制赋于Web开发的新手段</title>
+</head>
+<body>
+    <p class="title">异步机制赋于 Web 开发的新手段</p>
+    <p class="author">邹业盛</p>
+    <p class="date">2012-03-13</p>
+
+    <div class="frame" name="" id="title_page">
+        <h1>异步机制赋于 Web 开发的新手段</h1>
+        <h2 style="text-align: center;">
+            <span class="author"></span> / <span class="email">
+            </span> / <span class="date"></span>
+        </h2>
+    </div>
+
+    <div class="frame overlay" name="什么是异步机制">
+        <p>同步的情况（没有结果不会离开）</p>
+        <p style="width: 500px; margin: 15px auto;">
+            <i>▶ ▶ 顺序，即时结果，等待，阻塞，浪费时间</i>
+        </p>
+        <p>异步的情况（安排好一切）</p>
+
+        <p style="width: 500px; margin: 15px auto;" class="overlay">
+            <i tabindex="4">▶ ▶ 并行，非即时，不等待，非阻塞，挤时间</i>
+            <i>▶ ▶ 并行，非即时，不等待，非阻塞，<b>挤时间</b></i>
+        </p>
+
+        <p>异步的两种方式：</p>
+
+        <ol class="overlay">
+            <li>事件驱动</li>
+            <li>上下文调度</li>
+        </ol>
+
+        <p><b>异步机制作用于 Web 服务器和 Web 开发框架……</b></p>
+        <p style="width: 600px; margin: 15px auto;">
+            <i>在单个上下文环境（进程）中处理大量并发请求的能力</i>
+        </p>
+        <p style="width: 600px; margin: 15px auto;"><b>▶ ▶ 可能性……</b></p>
+    </div>
+</body>
+</html></xmp>
+
+
+<h2>缘起</h2>
+
+<p>会想到要做这么一个东西，是源于自己想使用一种更简单直接的方式来制作演示文档的需求。</p>
+
+<p>提到演示文档，可能大部分人会想到微软 Office 中的 PowerPoint ，不过，我不会用那玩意儿，我打开它我都不知道如何开始。我对演示文档的映像都是来自于 <a href="https://bitbucket.org/rivanvx/beamer/wiki/Home" target="_blank">Beamer</a> 的，我觉得 Beamer 做出来的文档，很规范，很漂亮。 你可以在 <a href="static/beamer-example.pdf" target="_blank">这里</a> 看看 Beamer 源码中给出的示例。</p>
+
+<p> Beamer 的规范，漂亮是与 LaTeX 的风格一脉相承的。于是同样的，你需要以 LaTeX 的并不简单的语法来书写文档，更大的问题是，规范的代价就是并不容易随意修改它，特别是很多的细节之处。在我看来，做演示文档大部分时候并不像写一本书，不需要定义一套严格的规则来约束自己，应该以尽量自然，直接的方式把自己的想法表现出来，就像是手中拿着一支笔在白板上绘图一样。从这个观点上来说， PowerPoint 的方式是更友好的。（我想我不会用它的原因和我不会用 IDE 的原因一样吧）</p>
+
+<p>我曾经也在 Beamer 上做过演示文档，过程倒是没有什么困难，但是结果并不让我满意。我必须直接地使用很 dirty 的方法去实现我想要的布局。同时在排版高亮代码时，使用 <i>listings</i> 包也不是很方便，而我主要需要“额外”做的事就是排代码（ PowerPoint 怎么说这事？）。与此相对的，我并不需要排数学公式，至少现阶段不需要。</p>
+
+<p>所以，我就在考虑以一种更简单，直观的方式来做演示文档。很自然地，想到了 HTML 。曾经在 Google 的开发者大会上，见演讲者运用 HTML5 实现了一套“多媒体”化的演示，效果很棒。这足以说明 HTML 的表现力是足够并且大有潜力的。所以，我就试着用 HTML 来写一份演示文档。</p>
+
+<p>使用 js 来控制 frame 的切换是很容易做的到的事，但是要渲染整套文档，并且实现 Beamer 中的 item “顺序可指定”这个在我看来必须要实现的功能，却需要多做一点功夫。当然，最后实现出来，回过头去看并不复杂。</p>
+
+<h2>技术细节</h2>
+<h3>基本的 frame 切换</h3>
+<p>前面说过了，实现 frame 的切换控制是很容易的，只需要把页面中的所有带 <i>class=frame</i> 的节点找出来，然后先全部隐藏，再控制指定的节点显示就可以了。 </p>
+
+<xmp class="prettyprint"><div class="frame overlay" name="什么是异步机制">
+    <p>同步的情况（没有结果不会离开）</p>
+    <p style="width: 500px; margin: 15px auto;">
+        <i>▶ ▶ 顺序，即时结果，等待，阻塞，浪费时间</i>
+    </p>
+    <p>异步的情况（安排好一切）</p>
+</div>
+
+<div class="frame overlay" name="什么是异步机制">
+    <p>同步的情况（没有结果不会离开）</p>
+    <p style="width: 500px; margin: 15px auto;">
+        <i>▶ ▶ 顺序，即时结果，等待，阻塞，浪费时间</i>
+    </p>
+    <p>异步的情况（安排好一切）</p>
+</div>
+</xmp>
+
+<p>像这样，一个 <i>div[class="frame"]</i> 就是一页。</p>
+
+<h3>frame 内的顺序显示</h3>
+
+<p>第二个要解决的问题，就是在 frame 内，相关节点也不是一次性全部显示出来的。比如：</p>
+
+<xmp class="prettyprint"><div class="frame">
+    <p>1</p>
+    <p>2</p>
+    <p>3</p>
+</div>
+</xmp>
+
+<p>这里的 1,2,3 显然应该是可以依次显示才对。于是，在 <i>frame</i> 之下，我们还需要定义一串 <i>overlay_node</i> ，每一页 frame ，都包括了一个序列的 overlay_node。 </p>
+
+<p>要得到 overlay_node 序列，实际上就是得到 div 的所有子节点，递归遍历就可以了。</p>
+
+<h3>指定 overlay_node 的显示顺序</h3>
+
+<p>顺序的节点，在演示当然，我们可能并不希望是一个顺序的显示，比如对于：</p>
+
+<xmp class="prettyprint"><div class="frame">
+    <p>1</p>
+    <p>2</p>
+    <p>3</p>
+</div>
+</xmp>
+
+<p>我们可能希望以 1,3,2 的顺序来显示，像在 Beamer 中一样， item 的顺序是可以指定的，于是，我使用 <i>tabindex</i> 来标记节点在哪些“帧”是显示的： </p>
+
+<xmp class="prettyprint"><div class="frame overlay">
+    <p tabindex="1-">1</p>
+    <p tabindex="3-">2</p>
+    <p tabindex"2-">3</p>
+</div>
+</xmp>
+
+<p>要实现这个功能，只需要在上一步之前，做一些“预处理”即可。</p>
+
+<p>上一步提到的遍历子节点的过程，实际上是在 frame 的范围内，确定元素的 <i>tabindex</i> 量的过程，已经明确指定的，不管，如果没有明确指定，则系统要按一个默认的顺序来自动分配。 </p>
+
+<p>当所有的节点的 tabindex 量都就绪之后，就可以直接拿到全部节点，然后按 tabindex 构造一个两个维度的序列。</p>
+
+<h2>远程控制</h2>
+
+<p>依靠浏览器的环境，可以很容易使用一个 Server / Client 式的分布控制系统。这样，就可以实现在演讲时，别人可以在自己的笔记本上看你的演示文档，并且与演讲者的演示文档同步。同时，也可以在服务器端的支持下实现更多的功能，比如即时的互动交流等。使用 long-polling 的方式这很容易做到，而且还可以跨域。</p>
+
+<p>我现在实现的一个初始模型是，本机打开一个演示文档，就可以连接到任意的一个控制端（作为“控制”/“被控制”的角色），然后和控制端同步。</p>
+
+<p class="center"><img src="static/AceSlide-remote-control.jpg" /></p>
+
+<p>稍微扩展一点，可以使用手机的浏览器来作控制。当然，因为现在手机的浏览器不是那么给力，所以，在服务器端专门给手机做控制页面比较好。之后，就是手机直接访问控制页面的 URL 就可以了。这意味着，在有 Wifi 的环境下，你可以拿着手机走下演讲台了。当然，随便把讲义也放入手机不挺好么。大屏幕上显示的演示文档，你通过手机就可以控制翻页，或者其它更多的功能，随意。</p>
+
+<h2>未解决的问题</h2>
+
+<p>用 HTML 来做演示文档，现在最大的一个问题，就是没有办法去自适应显示屏幕的大小。不像 PDF 文档，可以随意的放大缩小。现在的 AceSlide 默认是根据 1024x768 的尺寸来设置的。而这个问题，在我看来也是在纯 HTML 的范畴下无法解决的一个问题。好在，这个问题一般倒不会影响使用。所以，下一步，我会看看，完全使用 <i>canvas</i> 以全矢量化的元素来构建文档是否可以得到更好的效果。</p>
+
+
+        
+        <div class="end_mark"></div>
+
+        </div>
+    </div>
+
+<link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+</body>
+</html>

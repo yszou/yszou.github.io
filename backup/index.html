@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - 首页</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+</head>
+<body>
+    <div class="block">
+        <!--<div class="head">
+            <ul>
+                <li><a href="/index">首页</a></li>
+                <li><a href="/blog">博客</a></li>
+                <li><a href="/project">项目</a></li>
+                <li><a href="/about">关于</a></li>
+            </ul>
+            <div class="logo">
+                <span>Ace...</span>
+                <span class="me">by Yesheng Zou</span>
+            </div>
+        </div>-->
+
+        <div class="main">
+            <div class="main_left">
+                <div class="index_last">
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+            <div class="main_right">
+                <div class="index_browser">
+                    推荐使用
+                    <a target="_blank" href="http://www.mozilla.org/en-US/firefox">Firefox</a>,
+                    <a target="_blank" href="http://chrome.google.com">Chrome</a>.
+                </div>
+                <div class="index_copyright">
+                  <div>除特殊说明外, 本站所有文章均为原创. 对于原创文章, 在保留署名前提下可以自由用于非商业用途.</div>
+                  <div><a href="http://creativecommons.org/licenses/by-nc/3.0/" target="_blank"><img src="http://zouyesheng.sinaapp.com/static/img/cc-by-nc.png" /></a></div>
+                </div>
+                <div class="index_contact">
+                    &#x0079;<span></span>&#x0065;<span></span>&#x0073;<span></span>&#x0068;<span></span>&#x0065;<span></span>&#x006e;<span></span>&#x0067;<span></span>&#x007a;<span></span>&#x006f;<span></span>&#x0075;<span></span>&#x0040;<span></span>&#x0067;<span></span>&#x006d;<span></span>&#x0061;<span></span>&#x0069;<span></span>&#x006c;<span></span>&#x002e;<span></span>&#x0063;<span></span>&#x006f;<span></span>&#x006d;<span></span>
+                </div>
+                <div class="index_subscribe">
+                    <a href="/rss" target="_blank">RSS2.0</a>
+                </div>
+                <div class="index_link">
+                    <ul>
+                        <li><a href="#" target="_blank">#</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!--<div class="end_mark"></div>-->
+
+
+        <!--<div class="copyright"></div>-->
+    </div>
+
+
+<script type="text/javascript" charset="utf-8">
+
+    dojo.addOnLoad(function(){
+        //获取最近的博客
+        var an = my_alert('正在获取最新文章列表...', -1);
+        jsonp({
+            url: URL.blog,
+            content: {_method: 'recent', jsonp: '1', count: 20},
+            callback: dojo.hitch({an: an},function(response){
+                this.an.destroy(0);
+                if(response.result != 0){
+                    return my_alert('获取最新文章列表出错, ' + response.msg);
+                }
+
+                var ul_node = dojo.query('.index_last ul')[0];
+                for(var i=0, l=response.blog_list.length; i < l; i++){
+                    var obj = response.blog_list[i];
+                    var s = '' + 
+                    '<a href=' + '"' + 'http://zouyesheng.com/' + obj.name + '.html"' +
+                    'title=' + '"' + obj.title + '"' + '>' +
+                    obj.title + '</a>' +
+                    '<span>' + human_date(obj.create) + '</span>';
+                    var n = dojo.create('li', {innerHTML: s, style: 'opacity: 0'},
+                                        ul_node, 'last');
+                    dojo.anim(n, {opacity: 1}, 800);
+                }
+            })
+        });
+    });
+</script>
+</body>
+</html>

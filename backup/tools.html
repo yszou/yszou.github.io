@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - 我的工具</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/js/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <div class="main blog">
+            <h1>我的工具</h1>
+
+            <div class="info">
+                <ul>
+                    <li>2012-03-15 11:04:32</li>
+                    <li>邹业盛 / yeshengzou # # gmail.com</li>
+                </ul>
+            </div>
+            <div class="clear_float"></div>
+
+<h2>生成随机字符串</h2>
+<p>长度：<input id="random_str_length" value="64" style="width: 30px;"/><button id="random_str_btn" style="margin-left: 5px; margin-right: 20px;">确定</button></p>
+
+<xmp id="random_str_result" style="color: red;">　</xmp>
+        
+        <div class="end_mark"></div>
+
+        </div>
+    </div>
+
+<script type="text/javascript" charset="utf-8">
+
+var _CHAR_POOL = '!#%&`()*+,-./:;<=>?@[\]^_{}~01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+var get_token = dojo.hitch({char_pool: _CHAR_POOL, len: _CHAR_POOL.length}, function(len){
+    if(!(len && parseInt(len))){len = 64}
+    var s = '';
+    for(var i = 0; i < len; i++){
+        var r = parseInt(Math.random() * 1000) % (this.len);
+        s += this.char_pool[r];
+    }
+    return s;
+});
+
+dojo.addOnLoad(function(){
+    //生成随机字符串
+    (function(){
+        dojo.connect(dojo.byId('random_str_btn'), 'onclick', {f: get_token},
+            function(eventObj){
+                var len = dojo.byId('random_str_length').value;
+                len = parseInt(len);
+                dojo.byId('random_str_result').innerHTML = this.f(len);
+            }
+        );
+    })();        
+});    
+
+</script>
+
+</body>
+</html>

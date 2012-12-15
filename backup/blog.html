@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Yesheng Zou, 邹业盛"/>
+<meta name="keywords" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy"/>
+<meta name="description" content="Yesheng Zou, 邹业盛, 孤高天使, AceFantasy 的个人网站" />
+
+<title>AceFantasyVI - 博客</title>
+
+<script type="text/javascript" src="http://lib.sinaapp.com/js/dojo/1.6.0/dojo.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/constant.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/blog.js"></script>
+<script type="text/javascript" src="http://zouyesheng.sinaapp.com/static/js/main.js"></script>
+<link href="http://zouyesheng.sinaapp.com/static/css/reset.css" type="text/css" rel="stylesheet" media="all"/>
+<link href="http://zouyesheng.sinaapp.com/static/css/main.css" type="text/css" rel="stylesheet" media="all"/>
+
+</head>
+<body>
+    <div class="block">
+        <!--<div class="head">
+            <ul>
+                <li><a href="/index">首页</a></li>
+                <li><a href="/blog">博客</a></li>
+                <li><a href="/project">项目</a></li>
+                <li><a href="/about">关于</a></li>
+            </ul>
+            <div class="logo">
+                <span>Ace...</span>
+                <span class="me">by Yesheng Zou</span>
+            </div>
+        </div>-->
+
+        <div class="main">
+            <div class="main_left">
+                <div class="index_last">
+                    <ul>
+                    </ul>
+                </div>
+                <div class="more_blog">
+                    <input style="display: none;" type="button" id="more_blog" value="更多文章" />
+                </div>
+            </div>
+            <div class="main_right">
+            </div>
+        </div>
+
+        <!--<div class="end_mark"></div>-->
+
+
+        <!--<div class="copyright"></div>-->
+    </div>
+
+
+<script type="text/javascript" charset="utf-8">
+
+    //获取博客
+    var get_blog = function(last){
+        var an = my_alert('正在获取文章列表...', -1);
+        if(last == undefined){last = parseInt(parseInt((new Date()).getTime()) / 1000)}
+        jsonp({
+            url: URL.blog,
+            content: {_method: 'recent', jsonp: '1', count: 20, create: last},
+            callback: dojo.hitch({an: an},function(response){
+                this.an.destroy(0);
+                if(response.result != 0){
+                    return my_alert('获取最新文章列表出错, ' + response.msg);
+                }
+
+                //隐藏获取更多的按钮
+                if(response.blog_list.length < 20){
+                    dojo.style(dojo.byId('more_blog'), 'display', 'none');
+                } else {
+                    dojo.style(dojo.byId('more_blog'), 'display', 'block');
+                }
+
+                var ul_node = dojo.query('.index_last ul')[0];
+                for(var i=0, l=response.blog_list.length; i < l; i++){
+                    var obj = response.blog_list[i];
+                    var s = '' + 
+                    '<a href=' + '"' + 'http://zouyesheng.com/' + obj.name + '.html"' +
+                    'title=' + '"' + obj.title + '"' + '>' +
+                    obj.title + '</a>' +
+                    '<span>' + human_date(obj.create) + '</span>';
+                    var n = dojo.create('li', {innerHTML: s, style: 'opacity: 0'},
+                                        ul_node, 'last');
+                    dojo.anim(n, {opacity: 1}, 800);
+                }
+            })
+        });
+    }
+
+
+    dojo.addOnLoad(function(){
+        //绑定获取更多
+        (function(){
+            dojo.connect(dojo.byId('more_blog'), 'onclick', function(eventObj){
+                eventObj.target.blur();
+                var last = dojo.attr(dojo.query('.index_last ul li:last-child')[0],
+                                     'name');
+                get_blog(last);
+            });
+        })();
+
+        get_blog();
+    });
+</script>
+</body>
+</html>
