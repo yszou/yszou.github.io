@@ -96,7 +96,7 @@ def update_rss(path):
     from feed.feedformatter import Feed
 
     feed = Feed()
-    feed.feed['title'] = '进出自由,我的分享'
+    feed.feed['title'] = u'进出自由,我的分享'
     feed.feed['language'] = 'zh-CN'
     feed.feed['copyright'] = 'Copyright 2010-2012, Yesheng Zou'
     feed.feed['link'] = 'http://zouyesheng.com'
@@ -109,7 +109,7 @@ def update_rss(path):
             title = f.readlines()[0].strip()
 
         item = {}
-        item['title'] = title
+        item['title'] = title.decode('utf8')
         item['link'] = 'http://zouyesheng.com/%s.html' % name
         item['guid'] = name
         item['pubDate'] = date - 14 * 60 * 60
