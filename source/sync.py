@@ -1,4 +1,5 @@
-ARTICLE = {'about.t2t': 'a78d77f4dc06d4e1a87a968f53c612d8',
+ARTICLE = {'AceSlideII.t2t': '3023cf29322e3886b28d3dd9a289adc6',
+ 'about.t2t': 'a78d77f4dc06d4e1a87a968f53c612d8',
  'captcha.t2t': 'f1e535934c436686c1b3c5d86533ae98',
  'django-orm-in-tornado.t2t': '68954d4f5cd2b3d4b2ebde90ae1cd159',
  'generator-for-async.t2t': '42fddb08c748a06a1d8888604f302527',
