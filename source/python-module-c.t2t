@@ -1,0 +1,174 @@
+使用C写Python的模块
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%%toc
+
+
+原文发于2010年11月。
+
+=概述=
+
+Python 可以非常方便地和 C 进行相互的调用。
+
+一般，我们不会使用 C 去直接编写一个 Python 的模块。通常的情景是，我们需要把 C 的相关模块包装一下，然后在 Python 中可以直接调用它。或者是，把 Python 逻辑中的某一效率要求很高的部分使用 C 来实现。整个过程大概是：
+
++ 引入 Python.h 头文件。
++ 编写包装函数。
++ 函数中处理从 Python 传入的参数。
++ 实现功能逻辑。
++ 处理 C 中的返回值，包装成 Python 对象。
++ 在一个 PyMethodDef 结构体中注册需要的函数。
++ 在一个初始化方法中注册模块名。
++ 把这个 C 源文件编译成链接库。
+
+
+```
+int add(int x, int y){
+    return x + y;
+}
+
+//int main(void){
+//    printf("%d", add(1, 2));
+//    return 0;
+//}
+
+#include<Python.h>
+
+static PyObject* W_add(PyObject* self, PyObject* args){
+    int x;
+    int y;
+    if(!PyArg_ParseTuple(args, "i|i", &x, &y)){
+        return NULL;
+    } else {
+        return Py_BuildValue("i", add(x, y));
+    }
+}
+
+static PyMethodDef ExtendMethods[] = {
+    {"add", W_add, METH_VARARGS, "a function from C"},
+    {NULL, NULL, 0, NULL},
+};
+
+PyMODINIT_FUNC initdemo(){
+    Py_InitModule("demo", ExtendMethods);
+}
+```
+
+
+=引入 Python.h 头文件=
+
+这个文件一般位于 Python 的主目录中。比如我的 Ubuntu 10.04 下，它的位置在：
+
+```
+/usr/include/python2.6
+```
+
+在最后编译的时候指定目录就可以了。
+
+
+=编写包装函数=
+
+因为 Python 用到的函数与普通的 C 函数，在输入和输出上，会有一些不同，所以，我们需要把普通的 C 做一些封来给 Python 用。
+
+从另一方面来说，在实现功能的过程中，我们可以先完全不考虑这东西是拿给 Python 用的，只专注于使用 C 把它写好就可以了。最后，功能写好，测试没有问题之后，再做 Python 封装的工作。
+
+包装函数一般声明成 static ，并且第一个参数是一个默认传入的 Python 对象，就是 Python 中某个对象的属性方法一样，第二个参数才是我们调用时传入的参数（实际上它是一个序列化后的字符串）：
+
+```
+static PyObject* W_add(PyObject* self, PyObject* args);
+```
+
+
+=处理从 Python 传入的参数=
+
+因为我们的相关函数，之后是在 Python 环境中被调用的，那么它显然接受的就是从 Python 环境下传入的参数。这和 C 中你看到的函数是不同的，在 Python 的世界中，一切都是对象。所以，包装函数中首先要处理的问题就是解析从 Python 占获取的参数。
+
+常用的函数有： //PyArg_ParseTuple//
+
+```
+int x;
+int y;
+PyArg_ParseTuple(args, "i|i", &x, &y);
+```
+
+//PyArg_ParseTuple// 的作用是解析我们从 Python 中传入的 //args// 这个字符串，然后以我们规定的格式将解析结果放入指定变量的内存位。
+
+" //i|i// " 就表示要把传入的东西解析成两个整数，同样，还有 //s// 表示字符串等。
+
+=实现逻辑功能=
+
+这部分没什么特别的，只需要在 C 中一样调用函数就可以了，相关变量我们已经在上一步处理过了。
+
+```
+add(x, y);
+```
+
+
+=处理 C 中的返回值=
+
+我们使用 C 完成了功能逻辑， C 中会产生一个返回值，要将这个值返回到我们之前调用函数的 Python 环境中，当然还需要经过一些处理才行。
+
+常用的函数是： //Py_BuildValue// 。
+
+```
+return Py_BuildValue("i", add(x, y));
+```
+
+这个函数的用法和上一步中的 //PyArg_ParseTuple// 是一样的，它们过程相反。 //Py_BuildValue// 把 C 中的值按给定的格式格式化成 Python 需要的对象。这里注意一下，对于 //W_add// 这个函数，我们可是声明了它的返回类型为 //PyObject*// 的哦。
+
+
+=注册函数=
+
+在上面的实现完成之后，就需要作导出的准备了。第一步，就是要在一个类型为 //PyMethodDef// 的结构体中注册我们需要导出到 Python 中的函数：
+
+```
+static PyMethodDef ExtendMethods[] = {
+    {"add", W_add, METH_VARARGS, "a function from C"},
+    {NULL, NULL, 0, NULL},
+}
+```
+
+这个结构体成员有四个函数：
+
++ " //add// " 导出后在 Pyhton 中可见的方法名。
++ //W_add// 实际映射到 C 中的方法名。
++ //METH_VARARGS// 表示传入方法的是普通参数，当然还可以处理关键词参数。
++ 此方法的注释。
+
+
+=注册模块=
+
+在注册了方法后，就要注册此模块了。方法是定义一个 //init*// 的函数：
+
+```
+PyMODINIT_FUNC initdemo(){
+    Py_InitModule("demo", ExtendMethods);
+}
+```
+
+方法名必须是 //init// 加上模块名，然后调用 //Py_InitModule// 来注册模块，这个函数的第一个参数就是模块名，第二个参数是此模块中我们导出的方法，就是上一步我们定义的结构体。
+
+
+=编译=
+
+最后一步就是编译了。没什么特别的，指定好 //Python.h// 头文件的位置就可以了：
+
+```
+gcc demo.c -I /usr/include/python2.6 -shared -o demo.so
+```
+
+当然，链接库的名字要和我们期望导出的模块名一致。
+
+这样，你就可以在 Python 中使用 //import// 直接引入 //demo// 模块，然后调用它的 //add// 方法了：
+
+```
+import demo
+demo.add(3, 4)
+```
+
+
+
+
+
+
