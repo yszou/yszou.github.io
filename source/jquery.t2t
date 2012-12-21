@@ -1,0 +1,823 @@
+jQuery学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%%toc
+
+
+原文发于2010年11月，先把旧文重新排过来，计划近期会修订此文。
+
+=jQuery 是如何工作的=
+
+==开始使用jQuery==
+
+jQuery 本身只有一个 js 文件，所以，要使用它，就和使用其它的 js 文件一样，直接将它引入就可以使用了。
+
+```
+<script type="text/javascript" src="jquery-1.4.2.js"></script>
+```
+
+但是，要注意一点，因为 jQuery 大部分功能需要根据文档的 DOM 模型来工作，所以，它首先需要正确地解析到整个文档的 DOM 模型结构。为此，一般，我们使用 jQuery 所做的工作都需要在整个文档被浏览器完全加载完毕后才开始进行：
+
+```
+<script>/* <!CDATA[ */
+    $(document).ready(function(){
+        alert('Hello World!');
+        $("p").click(function(event){
+            alert('Thanks for visiting!');
+        });
+    });
+/* ]]> */</script>
+```
+
+$ 是在 jQuery 中被定义的一个函数，它可以简单方便地取到相关结点。 $(document).ready 是一个事件绑定，这在文档加载完毕后被调用。
+
+事实上 $() 等于 jquery() 即 jQuery 的核心函数的一个简写。
+
+之后的 javascript 代码，都默认是写在 $(document).ready 这个事件绑定当中的。
+
+当然， $(document).ready(); 可以简写成 $() 。
+
+
+==jQuery对象与DOM对象之间的转换==
+
+通常，使用 $() 得到的是一个 jQuery 对象。它封装了很多 DOM 对象的操作，但是，它和 DOM 对象之间是不同的。比如，如果你要使用 obj.innerHTML ，那只有当 obj 是一个 DOM 对象时才能用，相应地，如果是 jQuery 对象你应该使用 obj.html() 。
+
+从 DOM 对象转到 jQuery 对象： $(obj) 。
+
+从 jQuery 对象转到 DOM 对象： obj[0] 。
+
+
+=使用CSS选择器选择元素=
+
+```
+$("p#first").click(function(event){
+    $("p").addClass("red");
+});
+
+$("ol > li").addClass("red");
+$("ol > li#mark").addClass("red");
+```
+
+this 算是比较特殊的一个吧：
+
+
+```
+$("#first").click(function(event){
+    $(this).addClass("red");
+});
+```
+
+$("*") 可以选择所有结点。
+
+
+==一组属性选择符==
+
+匹配有无相应的属性:
+
+```
+$("div[id]").one("click", function(){
+    var idString = $(this).text() + " = " + $(this).attr("id");
+    $(this).text(idString);
+});
+```
+
+= 精确匹配：
+
+```
+$("p[title = mark]").css("color", "red");  //|
+// <p title="mark" />
+```
+
+|= 匹配以 - 分割的前置串：
+
+```
+$("p[title |= mark]").css("color", "red");  //|
+// <p title="mark" />
+// <p title="mark-xx" />
+```
+
+*= 匹配包含串：
+
+```
+$("p[title *= mark]").css("color", "red");  //*
+// <p title="xxmarkxx" />
+// <p title="abcdmark-xx" />
+```
+
+~= 匹配单词串（空格分割）：
+
+```
+$("p[title ~= mark]").css("color", "red");  //*
+// <p title="mark other" />
+// <p title="a mark b" />
+```
+
+$= 匹配尾串：
+
+```
+$("p[title $= mark]").css("color", "red");  //*
+// <p title="other mark" />
+// <p title="abmark" />
+```
+
+^= 匹配始串：
+
+```
+$("p[title ^= mark]").css("color", "red");  //*
+// <p title="mark other" />
+// <p title="markabcd" />
+```
+
+!= 匹配除此而外的串：
+
+```
+$("p[title ^= mark]").css("color", "red");  //*
+// <p title="Mark" />
+// <p title="mark other" />
+// <p title="markabcd" />
+```
+
+多属性组合：
+
+```
+$("input[id][name$='man']").val("only this one");
+```
+
+==一组条件选择符==
+
+:contains 包含文本：
+
+```
+$("p:contents('第二行')").css("color", "red");
+```
+
+:empty 选择空结点（没有子元素和文本）：
+
+```
+$("td:empty").text("Was empty!");
+```
+
+:eq() :lt() :gt() :even()   dd() 按总的索引取的相应结点：
+
+```
+$("td:eq(2)").css("color", "red");
+```
+
+:has() 选择有指定的子结点的结点:
+
+```
+$("div:has(p)").addClass("test");
+```
+
+:nth-child() 第 n 个子结点：
+
+```
+$("ul li:nth-child(2)").append("<span> - 2nd!</span>");
+```
+
+==两个深度位置相关的选择符==
+
+(prev ~ next) 定位兄弟结点：
+
+操作的 HTML 为：
+
+```
+<body>
+    <div id="mark">here</div>
+    <div>1</div>
+    <div>2
+        <div style="color: blue;">3</div>
+    </div>
+</body>
+$(document).ready(function(){
+    $("#mark").click(function(event){
+        $("#mark ~ div").css("color", "red");
+    });
+});
+```
+
+(prev + next) 相邻的兄弟结点：
+
+```
+$(document).ready(function(){
+    $("#mark").click(function(event){
+        $("#mark + div").css("color", "red");
+    });
+});
+```
+
+只有 1 会变红。
+
+==其它的==
+
+其它的还有:
+
+- :first-child 第一个子结点。
+- :first 第一个符合条件的结点。
+- :last-child 最后一个子结点。
+- :last 最后一个符合条件的结点。
+- :hidden 选择被隐藏的结点。
+- :disabled :enabled 选择被 disabled/enabled 的结点：
+
+
+完整的见： http://api.jquery.com/category/selectors/
+
+
+=常用的函数=
+
+node.css() 为对象设置一条 css 属性：
+
+```
+$("div > p").css("color", "red");
+```
+
+node.addClass() 和 node.removeClass() 为对象添加、移除一个 css 类：
+
+```
+$("p").addClass("red");
+$("p").removeClass("red");
+```
+
+node.attr() 获取对象结点的属性值，设置对象结点的属性值：
+
+```
+$("p").attr("title");
+$("p").attr("alt", "memo text");
+```
+
+node.text() 和 node.html() 获取或设置对象的文本（去除所有标签的），及获取对象的所有 HTML 文本。
+
+```
+var r = $(this).text();
+var r = $(this).html();
+$(this).text("plain text");
+$(this).html("rich text");
+```
+
+node.find() 和 each() 前者用于查找所有的子结点，后者用于遍历一个列表：
+
+```
+$(this).find("p").each(function(i){alert(i);});
+$(this).find("span:last").remove();
+```
+
+在 each() 中的那个函数的参数 i 是可选的。它是某成员的在序列中的索引。
+
+node.append() 为结点添加一个子结点。
+
+```
+function(){
+    $(this).append($("<span>***</span>"));
+}
+```
+
+与 append() 相对的是 prepend() 。前者是在最后添加结点，后者是在开头添加结点。
+
+同时 after() 和 before() 可以添加兄弟结点。
+
+node.next() 找到本结点的下一个结点。
+
+```
+$(this).next().remove();
+```
+
+相似的函数还有 nextAll() nextUntil() prev() prevAll() prevUntil() 。
+
+node.is() 判断结点是不是匹配的结点。
+
+```
+var n = $(this).next();
+if (n.is(":visible")){
+    n.slideUp();
+} else {
+    n.slideDown();
+}
+```
+
+=事件处理=
+
+你可以为结点的指定事件配置回调函数来随意实现一些效果。
+
+完整的事件列表： http://visualjquery.com/ Events 下。
+
+你可以使用 node.preventDefault() 来忽略一个默认的事件响应行为，比如一个 a 标签上有一个链接，而你又不想让它生效。
+
+```
+function go(event){
+    event.preventDefault();
+    $(this).hide("slow");
+}
+
+$("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
+```
+
+==ready()==
+
+这是一个特别的，并且非常重要的事件。它表示某结点被加载完毕了。在使用 jQuery 时通过对 $(document) 结点的此事件进行函数绑定以执行我们的代码。
+
+```
+$(document).ready(function(){
+    alert("OK, I have knew all DOM!");
+});
+```
+
+在使用 $(document).ready() 时要确保你没有为 <body> 的 onload 事件添加过任何代码，否则 $(document).ready() 可能不会被执行。
+
+你可以在你的代码中添加多个 $(document).ready() 函数绑定，它们将会被顺序执行。
+
+一个简单点的写法是：
+
+```
+jQuery(function($){
+    // code here
+});
+```
+
+或者更简单：
+
+```
+$(function(){
+    // code here
+});
+```
+
+==事件类型==
+
+一般比较常用的事件类型是鼠标的点击一类的。而标准 DHTML 中的事件如 onclick onmouseover 等，在 jQuery 中都有相应的事件对象。
+
+click() 和 click(fn) 激发一个鼠标单击事件和绑定一个鼠标单击事件：
+
+```
+$(function(){
+    $("#other").click(function(event){alert("here");});
+});
+
+$(function(){
+    $("#mark").click(function(event){
+        $("#other").click();
+    });
+});
+```
+
+对象键盘事件的处理，一般是通过判断事件对象的 which 属性来进行具体的按键判断：
+
+```
+$("input").keypress(function (e) {
+  if (e.which == 32 || (65 <= e.which && e.which <= 65 + 25)
+                    || (97 <= e.which && e.which <= 97 + 25)) {
+    var c = String.fromCharCode(e.which);
+    $("p").append($("<span/>"))
+          .children(":last")
+          .append(document.createTextNode(c));
+  } else if (e.which == 8) {
+    // backspace in IE only be on keydown
+    $("p").children(":last").remove();
+  }
+  $("div").text(e.which);
+});
+```
+
+其它事件对象的使用，也是这样的。
+
+- dblclick() 和 dblclick(fn) 鼠标双击。
+- change() 和 change(fn) 对象改变。
+- blur() 和 blur(fn) 失去焦点。
+- focus() 和 focus(fn) 获得焦点。
+- submit() 和 submit(fn) 表单提交。
+
+
+==事件绑定==
+
+除了直接在结点上进行事件绑定外，你还可以使用相关函数独立地将结点，事件，回调函数绑定在一起。
+
+===bind(type, data, fn)===
+
+为一个对象的一个事件绑定一个函数：
+
+```
+$(function(){
+    $("#mark").bind("click", function(e){alert("here!");});
+});
+```
+
+为一个对象绑定多个事件，多个对象，还可以加上参数：
+
+```
+function aClick(event){
+    alert(event.data.a);
+}
+function bClick(){
+    alert("second");
+}
+$(function(){
+    $("#mark").bind("click", {"a": "argv"}, aClick);
+    $("#mark").bind("click change", bClick);
+    $("#other").bind("click", function(){
+        $("#mark").trigger("change");
+    });
+});
+```
+
+===one(type, data, fn)===
+
+它的用法和 bind() 是一样的，只是通过 one() 进行的绑定，只会被激活一次。
+
+
+===trigger(type, data)===
+
+这个函数主要用于激动另一个对象的指定事件。但是，激动另一对象的其它事件，使用像 click() 函数好像是也能做到？不过， trigger() 可以参数激活（当然在相关回调函数定义时也要考虑参数）：
+
+```
+$(function(){
+    $("#other").one("click", function(e){
+        $("#mark").trigger("click", "argvs!!")});
+});
+
+$(function(){
+    $("#mark").one("click", function(e, other){alert(other);});
+});
+```
+
+===triggerHandler(type, data)===
+
+与 trigger() 函数使用方法一样。效果上，它会调用相关的函数，但是不会激活事件行为。举例来说，对于 focus 事件， triggerHandler() 会调用与 focus 事件绑定的函数，但是不会使相关对象获得焦点：
+
+```
+$("#old").click(function(){
+  $("input").trigger("focus");
+});
+$("#new").click(function(){
+  $("input").triggerHandler("focus");
+});
+$("input").focus(function(){
+  $("<span>Focused!</span>").appendTo("body").fadeOut(1000);
+});
+```
+
+===unbind(type, data)===
+
+取消一个绑定。如果不加任何参数，则一个对象的所有事件绑定都会被取消。
+
+```
+function aClick(event){
+    alert(event.data.a);
+}
+function bClick(){
+    alert("second");
+    $("#mark").unbind("click", bClick);
+}
+$(function(){
+    $("#mark").bind("click", {"a": "argv"}, aClick);
+    $("#mark").bind("click change", bClick);
+    $("#other").bind("click", function(){
+        $("#mark").trigger("change");
+    });
+});
+```
+
+==辅助绑定函数==
+
+===node.hover(fn,fn)===
+
+定义两个函数，第一个在鼠标移入结点时执行，第二个在鼠标移出结点时执行。
+
+```
+$("#mark").hover(
+function(){
+    $(this).append($("<span>***</span>"));
+},
+function(){
+    $(this).find("span:last").remove();
+});
+```
+
+===node.toggle(fn,fn)===
+
+定义两个函数，鼠标第一次点执行第一个函数，再点执行第二个函数，如此反复。
+
+```
+$("#mark").toggle(
+function(){
+    $(this).append($("<span>***</span>"));
+},
+function(){
+    $(this).find("span:last").remove();
+});
+```
+
+=AJAX=
+
+先看一个完整的例子：
+
+```
+$(function(){
+    function go(event){
+        event.preventDefault();
+        $.get("python.py",
+              {'a[]': [$(this).text(),$(this).text()],
+               'b': $(this).text()},
+              function(data,stat,XHR){
+                  $("#rating").text(data);
+              },
+              'text');
+    }
+
+    var ratingMarkup = ["Please rate: "];
+    for (var i = 1; i <= 5; i++){
+        ratingMarkup[ratingMarkup.length] = '<a href="#">' + i + '</a>';
+    };
+    $("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
+});
+```
+
+==发送请求与处理返回结果==
+
+可以使用 $.get() 或 $.post() 两种方法来发送请求。然后定义一个函数，在结果返回时被调用。这两个函数的调用参数是一样的。
+
+```
+jQuery.get( url, [ data ], [ callback(data, textStatus, XMLHttpRequest) ], [ dataType ] )
+```
+
+: url 请求的 URL ，字符串。
+: data 要发送的数据， GET 方法也使用这个。可以是一个字典或一个字符串。
+    字典的话，每个成员的数据类型可以是字符串也可以是列表。如果为列表，则为类似 a=1&a=2 这样的发送串。
+
+```
+{'a[]': ['1', '2', '3'],
+ 'b': 'postdata')},
+```
+
+: callback 定义的回调函数，它会在服务器返回结果后被调用，被调用时会传入三个参数：
+: data 服务器返回的结果。当然，它一定是字符串，但是，对于 JSON 这些格式是可以指定后直接被处理的。
+: textStatus 如果成功返回，则此参数为“success”。
+: XMLHttpRequest 即当前使用的 XMLHttpRequest 对象。
+: dataType指明服务器返回的字符串是什么格式的。比如 text JSON 。
+
+
+与 $.get() 和 $.post() 两个函数差不多还有 $.getJSON() 和 $.getScript() 它们的使用方法都一样（但最后一个 dataType 参数显然就不要了），前者用于直接获取 JSON 的返回结果，后者获取 JavaScript 脚本的返回结果。
+
+$.get() 和 $.post() 只是对 $.ajax() 这个函数的封装。完全的 AJAX 请求函数是 $.ajax() 。但是，这玩意儿中的参数有点多，现在先不管它。
+
+另外，你可以使用 $.ajaxSetup() 来为之后的 $.ajax() 调用设置默认值，这样你反复请求一个服务器的话，就可以少写一些代码。
+
+```
+$.ajaxSetup({
+   url: "/xmlhttp/",
+   global: false,
+   type: "POST"
+
+});
+$.ajax({ data: myData });
+```
+
+==node.load()==
+
+这个函数也是用于从服务器获取数据的。但是它和前一节介绍的函数有一点不同，就是它会把获取到的数据直接填充到结点中去。
+
+```
+.load( url, [ data ], [ complete(responseText, textStatus, XMLHttpRequest) ] )
+```
+
+==各种状态的HOOK==
+
+```
+$(function(){
+    $("#rating").ajaxComplete(function(){
+        alert("good");
+    });
+    $("#rating").click(function(event){
+        $(this).load('rate.txt');
+    });
+});
+```
+
+
+上面的代码，注册了一个函数到 ajaxComplete ，也算是一个事件吧。在 load 完后就会自动执行 ajaxComplete 中注册的那个函数。
+
+- ajaxComplete 传输完成时。
+- ajaxError() 传输出现错误时。
+- ajaxSend() 请求发出前。
+- ajaxStart() 第一个请求发出时。
+- ajaxStop() 请求结束时。
+- ajaxSuccess() 请求成功完成时
+
+
+
+==参数的包装==
+
+jQuery 提供了几个函数用于包装发送到服务器的参数对串。
+
+
+===$.param()===
+
+```
+var s = [{name:"first",value:"Rick"},
+         {name:"last",value:"Astley"},
+         {name:"job",value:"Rock Star"}];
+var r = $.param(s);
+alert(r);
+alert(decodeURIComponent(r));
+
+// Result:
+// first=Rick&last=Astley&job=Rock+Star
+
+var s = {a: {one: 1, two: 2, three: 3},
+         b: [1,2,3]};
+
+var r = $.param(s);
+alert(r);
+alert(decodeURIComponent(r));
+
+// Result:
+// a[one]=1&a[two]=2&a[three]=3&b[]=1&b[]=2&b[]=3
+
+var s = {a: {one: 1, two: 2, three: 3},
+         b: [1,2,3]};
+
+var r = $.param(s, true);
+alert(r);
+alert(decodeURIComponent(r));
+
+// Result:
+// a=[object+Object]&b=1&b=2&b=3
+```
+
+===node.serialize()===
+
+```
+<form>
+    <div><input type="text" name="a" value="1" id="a" /></div>
+    <div><input type="text" name="b" value="2" id="b" /></div>
+    <div><input type="hidden" name="c" value="3" id="c" /></div>
+    <div>
+        <textarea name="d" rows="8" cols="40">4</textarea>
+    </div>
+    <div><select name="e">
+            <option value="5" selected="selected">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+    </select></div>
+    <div>
+        <input type="checkbox" name="f" value="8" id="f" />
+    </div>
+    <div>
+        <input type="submit" name="g" value="Submit" id="g" />
+    </div>
+</form>
+```
+
+如果提交上面这个表单（保持这个状态）：
+
+```
+$('form').submit(function() {
+    alert($(this).serialize());
+    return false;
+});
+
+// Result:
+// a=1&b=2&c=3&d=4&e=5
+```
+
+===node.serializeArray()===
+
+和上面一个函数一样，都是用于包装表单数据的。只是，上面一个函数的结果是一个发送到服务器的编码串，而这个函数的结果，是一个复合列表：
+
+```
+$('form').submit(function() {
+    alert($(this).serializeArray());
+    return false;
+});
+
+// Result:
+// [{ name: a value: 1 },
+//  { name: b value: 2 },
+//  { name: c value: 3 },
+//  { name: d value: 4 },
+//  { name: e value: 5 }]
+```
+
+=动画效果=
+
+==简单的例子==
+
+要实现动画效果，最简单的方法就是直接使用 hide 和 show 这些方法：
+
+```
+$("#control").toggle(
+    function(){
+        $("#show").hide("slow");
+    },
+    function(){
+        $("#show").show("fast");
+    }
+);
+```
+
+如果要想定制效果，就需要使用一些“原始”点的函数了，比如直接使用 animate ：
+
+```
+$("#control").toggle(
+    function(){
+        $("#show").animate({height: "hide", opacity: "hide"}, "slow");
+    },
+    function(){
+        $("#show").animate({height: "show", opacity: "show"}, "slow");
+    }
+);
+```
+
+==常用的预定制效果函数==
+
+===渐隐效果的 fadeIn() 和 fadeOut()===
+
+两个函数的使用方法与参数列是一样的：
+
+```
+fadeIn([duration], [callback])
+```
+
+: duration 动画效果的持续时间，单位是毫秒。
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+: callback
+    当动画效果完成时会被调用的函数。
+
+
+===渐隐效果的 fadeTo()===
+
+```
+$(function(){
+    $("#control").toggle(
+        function(){
+            $("#show").fadeTo(1000, 0.5, function(){alert("你看不到我");});
+        },
+        function(){
+            $("#show").fadeTo(1000, 1, function(){alert("我回来了");});
+        }
+    );
+});
+```
+
+
+这个函数也可以实现渐隐效果，它还可以让你自定义透明度。不过，你最好不要把它和上面两个函数混用。
+
+```
+fadeTo(duration, opactity, [callback])
+```
+
+: duration 同上，动画效果的持续时间。
+: opactity 动画结束时的透明度，（0 到 1 之间的数）。
+: callback 动画结束时会被调用的函数。
+
+
+===展开效果的 slideUp() 和 slideDown()===
+
+两个函数的使用方法与参数列是一样的：
+
+```
+slideUp([duration], [callback])
+```
+
+: duration 动画效果的持续时间，单位是毫秒。
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+: callback
+    当动画效果完成时会被调用的函数。
+
+
+===展开效果的 slideToggle()===
+
+这个函数的行为，就像是自动实现了上面两个函数的转换。
+
+```
+$(function(){
+    $("#control").click(
+        function(){
+            $("#show").slideToggle(1000, function(){alert("我回来了");});
+        }
+    );
+});
+```
+
+使用方法与上面两个是一样的：
+
+```
+slideToggle([duration], [callback])
+```
+
+: duration 动画效果的持续时间，单位是毫秒。
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+: callback
+    当动画效果完成时会被调用的函数。
+
+
+===伸缩效果的 hide() 和 show()===
+
+两个函数的使用方法与参数列是一样的：
+
+```
+hide([duration], [callback])
+```
+
+: duration 动画效果的持续时间，单位是毫秒。
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+: callback 当动画效果完成时会被调用的函数。

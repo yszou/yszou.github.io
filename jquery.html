@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>jQuery学习笔记 - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="jQuery学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
+<meta name="description" content="jQuery学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
+<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">jQuery学习笔记</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">2012-12-22 00:14 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">jQuery 是如何工作的</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+    <li><a href="#toc2" style="color: #0184b7; text-decoration: none">1.1. 开始使用jQuery</a>
+    </li>
+    <li><a href="#toc3" style="color: #0184b7; text-decoration: none">1.2. jQuery对象与DOM对象之间的转换</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">使用CSS选择器选择元素</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+    <li><a href="#toc5" style="color: #0184b7; text-decoration: none">2.1. 一组属性选择符</a>
+    </li>
+    <li><a href="#toc6" style="color: #0184b7; text-decoration: none">2.2. 一组条件选择符</a>
+    </li>
+    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">2.3. 两个深度位置相关的选择符</a>
+    </li>
+    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">2.4. 其它的</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc9" style="color: #0184b7; text-decoration: none">常用的函数</a>
+  </li>
+  <li><a href="#toc10" style="color: #0184b7; text-decoration: none">事件处理</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+    <li><a href="#toc11" style="color: #0184b7; text-decoration: none">4.1. ready()</a>
+    </li>
+    <li><a href="#toc12" style="color: #0184b7; text-decoration: none">4.2. 事件类型</a>
+    </li>
+    <li><a href="#toc13" style="color: #0184b7; text-decoration: none">4.3. 事件绑定</a>
+    </li>
+    <li><a href="#toc14" style="color: #0184b7; text-decoration: none">4.4. 辅助绑定函数</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc15" style="color: #0184b7; text-decoration: none">AJAX</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+    <li><a href="#toc16" style="color: #0184b7; text-decoration: none">5.1. 发送请求与处理返回结果</a>
+    </li>
+    <li><a href="#toc17" style="color: #0184b7; text-decoration: none">5.2. node.load()</a>
+    </li>
+    <li><a href="#toc18" style="color: #0184b7; text-decoration: none">5.3. 各种状态的HOOK</a>
+    </li>
+    <li><a href="#toc19" style="color: #0184b7; text-decoration: none">5.4. 参数的包装</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc20" style="color: #0184b7; text-decoration: none">动画效果</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+    <li><a href="#toc21" style="color: #0184b7; text-decoration: none">6.1. 简单的例子</a>
+    </li>
+    <li><a href="#toc22" style="color: #0184b7; text-decoration: none">6.2. 常用的预定制效果函数</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+<p style="margin: 15px 0;">
+原文发于2010年11月，先把旧文重新排过来，计划近期会修订此文。
+</p>
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. jQuery 是如何工作的</h1>
+
+<a id="toc2" name="toc2"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.1. 开始使用jQuery</h2>
+
+<p style="margin: 15px 0;">
+jQuery 本身只有一个 js 文件，所以，要使用它，就和使用其它的 js 文件一样，直接将它引入就可以使用了。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;script type="text/javascript" src="jquery-1.4.2.js"&gt;&lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+但是，要注意一点，因为 jQuery 大部分功能需要根据文档的 DOM 模型来工作，所以，它首先需要正确地解析到整个文档的 DOM 模型结构。为此，一般，我们使用 jQuery 所做的工作都需要在整个文档被浏览器完全加载完毕后才开始进行：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;script&gt;/* &lt;!CDATA[ */
+      $(document).ready(function(){
+          alert('Hello World!');
+          $("p").click(function(event){
+              alert('Thanks for visiting!');
+          });
+      });
+  /* ]]&gt; */&lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+$ 是在 jQuery 中被定义的一个函数，它可以简单方便地取到相关结点。 $(document).ready 是一个事件绑定，这在文档加载完毕后被调用。
+</p>
+<p style="margin: 15px 0;">
+事实上 $() 等于 jquery() 即 jQuery 的核心函数的一个简写。
+</p>
+<p style="margin: 15px 0;">
+之后的 javascript 代码，都默认是写在 $(document).ready 这个事件绑定当中的。
+</p>
+<p style="margin: 15px 0;">
+当然， $(document).ready(); 可以简写成 $() 。
+</p>
+
+<a id="toc3" name="toc3"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.2. jQuery对象与DOM对象之间的转换</h2>
+
+<p style="margin: 15px 0;">
+通常，使用 $() 得到的是一个 jQuery 对象。它封装了很多 DOM 对象的操作，但是，它和 DOM 对象之间是不同的。比如，如果你要使用 obj.innerHTML ，那只有当 obj 是一个 DOM 对象时才能用，相应地，如果是 jQuery 对象你应该使用 obj.html() 。
+</p>
+<p style="margin: 15px 0;">
+从 DOM 对象转到 jQuery 对象： $(obj) 。
+</p>
+<p style="margin: 15px 0;">
+从 jQuery 对象转到 DOM 对象： obj[0] 。
+</p>
+
+<a id="toc4" name="toc4"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 使用CSS选择器选择元素</h1>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p#first").click(function(event){
+      $("p").addClass("red");
+  });
+  
+  $("ol &gt; li").addClass("red");
+  $("ol &gt; li#mark").addClass("red");
+</pre>
+
+<p style="margin: 15px 0;">
+this 算是比较特殊的一个吧：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#first").click(function(event){
+      $(this).addClass("red");
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+$("*") 可以选择所有结点。
+</p>
+
+<a id="toc5" name="toc5"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.1. 一组属性选择符</h2>
+
+<p style="margin: 15px 0;">
+匹配有无相应的属性:
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("div[id]").one("click", function(){
+      var idString = $(this).text() + " = " + $(this).attr("id");
+      $(this).text(idString);
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+= 精确匹配：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title = mark]").css("color", "red");  //|
+  // &lt;p title="mark" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+|= 匹配以 - 分割的前置串：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title |= mark]").css("color", "red");  //|
+  // &lt;p title="mark" /&gt;
+  // &lt;p title="mark-xx" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+*= 匹配包含串：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title *= mark]").css("color", "red");  //*
+  // &lt;p title="xxmarkxx" /&gt;
+  // &lt;p title="abcdmark-xx" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+~= 匹配单词串（空格分割）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title ~= mark]").css("color", "red");  //*
+  // &lt;p title="mark other" /&gt;
+  // &lt;p title="a mark b" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+$= 匹配尾串：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title $= mark]").css("color", "red");  //*
+  // &lt;p title="other mark" /&gt;
+  // &lt;p title="abmark" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+^= 匹配始串：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title ^= mark]").css("color", "red");  //*
+  // &lt;p title="mark other" /&gt;
+  // &lt;p title="markabcd" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+!= 匹配除此而外的串：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p[title ^= mark]").css("color", "red");  //*
+  // &lt;p title="Mark" /&gt;
+  // &lt;p title="mark other" /&gt;
+  // &lt;p title="markabcd" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+多属性组合：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("input[id][name$='man']").val("only this one");
+</pre>
+
+<a id="toc6" name="toc6"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.2. 一组条件选择符</h2>
+
+<p style="margin: 15px 0;">
+:contains 包含文本：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p:contents('第二行')").css("color", "red");
+</pre>
+
+<p style="margin: 15px 0;">
+:empty 选择空结点（没有子元素和文本）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("td:empty").text("Was empty!");
+</pre>
+
+<p style="margin: 15px 0;">
+:eq() :lt() :gt() :even()   dd() 按总的索引取的相应结点：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("td:eq(2)").css("color", "red");
+</pre>
+
+<p style="margin: 15px 0;">
+:has() 选择有指定的子结点的结点:
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("div:has(p)").addClass("test");
+</pre>
+
+<p style="margin: 15px 0;">
+:nth-child() 第 n 个子结点：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("ul li:nth-child(2)").append("&lt;span&gt; - 2nd!&lt;/span&gt;");
+</pre>
+
+<a id="toc7" name="toc7"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.3. 两个深度位置相关的选择符</h2>
+
+<p style="margin: 15px 0;">
+(prev ~ next) 定位兄弟结点：
+</p>
+<p style="margin: 15px 0;">
+操作的 HTML 为：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;body&gt;
+      &lt;div id="mark"&gt;here&lt;/div&gt;
+      &lt;div&gt;1&lt;/div&gt;
+      &lt;div&gt;2
+          &lt;div style="color: blue;"&gt;3&lt;/div&gt;
+      &lt;/div&gt;
+  &lt;/body&gt;
+  $(document).ready(function(){
+      $("#mark").click(function(event){
+          $("#mark ~ div").css("color", "red");
+      });
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+(prev + next) 相邻的兄弟结点：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(document).ready(function(){
+      $("#mark").click(function(event){
+          $("#mark + div").css("color", "red");
+      });
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+只有 1 会变红。
+</p>
+
+<a id="toc8" name="toc8"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.4. 其它的</h2>
+
+<p style="margin: 15px 0;">
+其它的还有:
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li>:first-child 第一个子结点。
+</li>
+<li>:first 第一个符合条件的结点。
+</li>
+<li>:last-child 最后一个子结点。
+</li>
+<li>:last 最后一个符合条件的结点。
+</li>
+<li>:hidden 选择被隐藏的结点。
+</li>
+<li>:disabled :enabled 选择被 disabled/enabled 的结点：
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+完整的见： <a href="http://api.jquery.com/category/selectors/" style="color: #0184b7; text-decoration: none">http://api.jquery.com/category/selectors/</a>
+</p>
+
+<a id="toc9" name="toc9"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 常用的函数</h1>
+
+<p style="margin: 15px 0;">
+node.css() 为对象设置一条 css 属性：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("div &gt; p").css("color", "red");
+</pre>
+
+<p style="margin: 15px 0;">
+node.addClass() 和 node.removeClass() 为对象添加、移除一个 css 类：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p").addClass("red");
+  $("p").removeClass("red");
+</pre>
+
+<p style="margin: 15px 0;">
+node.attr() 获取对象结点的属性值，设置对象结点的属性值：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("p").attr("title");
+  $("p").attr("alt", "memo text");
+</pre>
+
+<p style="margin: 15px 0;">
+node.text() 和 node.html() 获取或设置对象的文本（去除所有标签的），及获取对象的所有 HTML 文本。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var r = $(this).text();
+  var r = $(this).html();
+  $(this).text("plain text");
+  $(this).html("rich text");
+</pre>
+
+<p style="margin: 15px 0;">
+node.find() 和 each() 前者用于查找所有的子结点，后者用于遍历一个列表：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(this).find("p").each(function(i){alert(i);});
+  $(this).find("span:last").remove();
+</pre>
+
+<p style="margin: 15px 0;">
+在 each() 中的那个函数的参数 i 是可选的。它是某成员的在序列中的索引。
+</p>
+<p style="margin: 15px 0;">
+node.append() 为结点添加一个子结点。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  function(){
+      $(this).append($("&lt;span&gt;***&lt;/span&gt;"));
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+与 append() 相对的是 prepend() 。前者是在最后添加结点，后者是在开头添加结点。
+</p>
+<p style="margin: 15px 0;">
+同时 after() 和 before() 可以添加兄弟结点。
+</p>
+<p style="margin: 15px 0;">
+node.next() 找到本结点的下一个结点。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(this).next().remove();
+</pre>
+
+<p style="margin: 15px 0;">
+相似的函数还有 nextAll() nextUntil() prev() prevAll() prevUntil() 。
+</p>
+<p style="margin: 15px 0;">
+node.is() 判断结点是不是匹配的结点。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var n = $(this).next();
+  if (n.is(":visible")){
+      n.slideUp();
+  } else {
+      n.slideDown();
+  }
+</pre>
+
+<a id="toc10" name="toc10"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 事件处理</h1>
+
+<p style="margin: 15px 0;">
+你可以为结点的指定事件配置回调函数来随意实现一些效果。
+</p>
+<p style="margin: 15px 0;">
+完整的事件列表： <a href="http://visualjquery.com/" style="color: #0184b7; text-decoration: none">http://visualjquery.com/</a> Events 下。
+</p>
+<p style="margin: 15px 0;">
+你可以使用 node.preventDefault() 来忽略一个默认的事件响应行为，比如一个 a 标签上有一个链接，而你又不想让它生效。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  function go(event){
+      event.preventDefault();
+      $(this).hide("slow");
+  }
+  
+  $("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
+</pre>
+
+<a id="toc11" name="toc11"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">4.1. ready()</h2>
+
+<p style="margin: 15px 0;">
+这是一个特别的，并且非常重要的事件。它表示某结点被加载完毕了。在使用 jQuery 时通过对 $(document) 结点的此事件进行函数绑定以执行我们的代码。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(document).ready(function(){
+      alert("OK, I have knew all DOM!");
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+在使用 $(document).ready() 时要确保你没有为 &lt;body&gt; 的 onload 事件添加过任何代码，否则 $(document).ready() 可能不会被执行。
+</p>
+<p style="margin: 15px 0;">
+你可以在你的代码中添加多个 $(document).ready() 函数绑定，它们将会被顺序执行。
+</p>
+<p style="margin: 15px 0;">
+一个简单点的写法是：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  jQuery(function($){
+      // code here
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+或者更简单：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      // code here
+  });
+</pre>
+
+<a id="toc12" name="toc12"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">4.2. 事件类型</h2>
+
+<p style="margin: 15px 0;">
+一般比较常用的事件类型是鼠标的点击一类的。而标准 DHTML 中的事件如 onclick onmouseover 等，在 jQuery 中都有相应的事件对象。
+</p>
+<p style="margin: 15px 0;">
+click() 和 click(fn) 激发一个鼠标单击事件和绑定一个鼠标单击事件：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#other").click(function(event){alert("here");});
+  });
+  
+  $(function(){
+      $("#mark").click(function(event){
+          $("#other").click();
+      });
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+对象键盘事件的处理，一般是通过判断事件对象的 which 属性来进行具体的按键判断：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("input").keypress(function (e) {
+    if (e.which == 32 || (65 &lt;= e.which &amp;&amp; e.which &lt;= 65 + 25)
+                      || (97 &lt;= e.which &amp;&amp; e.which &lt;= 97 + 25)) {
+      var c = String.fromCharCode(e.which);
+      $("p").append($("&lt;span/&gt;"))
+            .children(":last")
+            .append(document.createTextNode(c));
+    } else if (e.which == 8) {
+      // backspace in IE only be on keydown
+      $("p").children(":last").remove();
+    }
+    $("div").text(e.which);
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+其它事件对象的使用，也是这样的。
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li>dblclick() 和 dblclick(fn) 鼠标双击。
+</li>
+<li>change() 和 change(fn) 对象改变。
+</li>
+<li>blur() 和 blur(fn) 失去焦点。
+</li>
+<li>focus() 和 focus(fn) 获得焦点。
+</li>
+<li>submit() 和 submit(fn) 表单提交。
+</li>
+</ul>
+
+<a id="toc13" name="toc13"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">4.3. 事件绑定</h2>
+
+<p style="margin: 15px 0;">
+除了直接在结点上进行事件绑定外，你还可以使用相关函数独立地将结点，事件，回调函数绑定在一起。
+</p>
+
+<a id="toc14" name="toc14"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.3.1. bind(type, data, fn)</h3>
+
+<p style="margin: 15px 0;">
+为一个对象的一个事件绑定一个函数：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#mark").bind("click", function(e){alert("here!");});
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+为一个对象绑定多个事件，多个对象，还可以加上参数：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  function aClick(event){
+      alert(event.data.a);
+  }
+  function bClick(){
+      alert("second");
+  }
+  $(function(){
+      $("#mark").bind("click", {"a": "argv"}, aClick);
+      $("#mark").bind("click change", bClick);
+      $("#other").bind("click", function(){
+          $("#mark").trigger("change");
+      });
+  });
+</pre>
+
+<a id="toc15" name="toc15"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.3.2. one(type, data, fn)</h3>
+
+<p style="margin: 15px 0;">
+它的用法和 bind() 是一样的，只是通过 one() 进行的绑定，只会被激活一次。
+</p>
+
+<a id="toc16" name="toc16"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.3.3. trigger(type, data)</h3>
+
+<p style="margin: 15px 0;">
+这个函数主要用于激动另一个对象的指定事件。但是，激动另一对象的其它事件，使用像 click() 函数好像是也能做到？不过， trigger() 可以参数激活（当然在相关回调函数定义时也要考虑参数）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#other").one("click", function(e){
+          $("#mark").trigger("click", "argvs!!")});
+  });
+  
+  $(function(){
+      $("#mark").one("click", function(e, other){alert(other);});
+  });
+</pre>
+
+<a id="toc17" name="toc17"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.3.4. triggerHandler(type, data)</h3>
+
+<p style="margin: 15px 0;">
+与 trigger() 函数使用方法一样。效果上，它会调用相关的函数，但是不会激活事件行为。举例来说，对于 focus 事件， triggerHandler() 会调用与 focus 事件绑定的函数，但是不会使相关对象获得焦点：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#old").click(function(){
+    $("input").trigger("focus");
+  });
+  $("#new").click(function(){
+    $("input").triggerHandler("focus");
+  });
+  $("input").focus(function(){
+    $("&lt;span&gt;Focused!&lt;/span&gt;").appendTo("body").fadeOut(1000);
+  });
+</pre>
+
+<a id="toc18" name="toc18"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.3.5. unbind(type, data)</h3>
+
+<p style="margin: 15px 0;">
+取消一个绑定。如果不加任何参数，则一个对象的所有事件绑定都会被取消。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  function aClick(event){
+      alert(event.data.a);
+  }
+  function bClick(){
+      alert("second");
+      $("#mark").unbind("click", bClick);
+  }
+  $(function(){
+      $("#mark").bind("click", {"a": "argv"}, aClick);
+      $("#mark").bind("click change", bClick);
+      $("#other").bind("click", function(){
+          $("#mark").trigger("change");
+      });
+  });
+</pre>
+
+<a id="toc19" name="toc19"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">4.4. 辅助绑定函数</h2>
+
+<a id="toc20" name="toc20"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.4.1. node.hover(fn,fn)</h3>
+
+<p style="margin: 15px 0;">
+定义两个函数，第一个在鼠标移入结点时执行，第二个在鼠标移出结点时执行。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#mark").hover(
+  function(){
+      $(this).append($("&lt;span&gt;***&lt;/span&gt;"));
+  },
+  function(){
+      $(this).find("span:last").remove();
+  });
+</pre>
+
+<a id="toc21" name="toc21"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">4.4.2. node.toggle(fn,fn)</h3>
+
+<p style="margin: 15px 0;">
+定义两个函数，鼠标第一次点执行第一个函数，再点执行第二个函数，如此反复。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#mark").toggle(
+  function(){
+      $(this).append($("&lt;span&gt;***&lt;/span&gt;"));
+  },
+  function(){
+      $(this).find("span:last").remove();
+  });
+</pre>
+
+<a id="toc22" name="toc22"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. AJAX</h1>
+
+<p style="margin: 15px 0;">
+先看一个完整的例子：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      function go(event){
+          event.preventDefault();
+          $.get("python.py",
+                {'a[]': [$(this).text(),$(this).text()],
+                 'b': $(this).text()},
+                function(data,stat,XHR){
+                    $("#rating").text(data);
+                },
+                'text');
+      }
+  
+      var ratingMarkup = ["Please rate: "];
+      for (var i = 1; i &lt;= 5; i++){
+          ratingMarkup[ratingMarkup.length] = '&lt;a href="#"&gt;' + i + '&lt;/a&gt;';
+      };
+      $("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
+  });
+</pre>
+
+<a id="toc23" name="toc23"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.1. 发送请求与处理返回结果</h2>
+
+<p style="margin: 15px 0;">
+可以使用 $.get() 或 $.post() 两种方法来发送请求。然后定义一个函数，在结果返回时被调用。这两个函数的调用参数是一样的。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  jQuery.get( url, [ data ], [ callback(data, textStatus, XMLHttpRequest) ], [ dataType ] )
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">url 请求的 URL ，字符串。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">data 要发送的数据， GET 方法也使用这个。可以是一个字典或一个字符串。</dt><dd style="margin-left: 30px;">
+    字典的话，每个成员的数据类型可以是字符串也可以是列表。如果为列表，则为类似 a=1&amp;a=2 这样的发送串。
+<p style="margin: 15px 0;"></p>
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {'a[]': ['1', '2', '3'],
+   'b': 'postdata')},
+</pre>
+
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback 定义的回调函数，它会在服务器返回结果后被调用，被调用时会传入三个参数：</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">data 服务器返回的结果。当然，它一定是字符串，但是，对于 JSON 这些格式是可以指定后直接被处理的。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">textStatus 如果成功返回，则此参数为“success”。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">XMLHttpRequest 即当前使用的 XMLHttpRequest 对象。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">dataType指明服务器返回的字符串是什么格式的。比如 text JSON 。</dt><dd style="margin-left: 30px;">
+</dd>
+</dl>
+
+<p style="margin: 15px 0;">
+与 $.get() 和 $.post() 两个函数差不多还有 $.getJSON() 和 $.getScript() 它们的使用方法都一样（但最后一个 dataType 参数显然就不要了），前者用于直接获取 JSON 的返回结果，后者获取 JavaScript 脚本的返回结果。
+</p>
+<p style="margin: 15px 0;">
+$.get() 和 $.post() 只是对 $.ajax() 这个函数的封装。完全的 AJAX 请求函数是 $.ajax() 。但是，这玩意儿中的参数有点多，现在先不管它。
+</p>
+<p style="margin: 15px 0;">
+另外，你可以使用 $.ajaxSetup() 来为之后的 $.ajax() 调用设置默认值，这样你反复请求一个服务器的话，就可以少写一些代码。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $.ajaxSetup({
+     url: "/xmlhttp/",
+     global: false,
+     type: "POST"
+  
+  });
+  $.ajax({ data: myData });
+</pre>
+
+<a id="toc24" name="toc24"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.2. node.load()</h2>
+
+<p style="margin: 15px 0;">
+这个函数也是用于从服务器获取数据的。但是它和前一节介绍的函数有一点不同，就是它会把获取到的数据直接填充到结点中去。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  .load( url, [ data ], [ complete(responseText, textStatus, XMLHttpRequest) ] )
+</pre>
+
+<a id="toc25" name="toc25"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.3. 各种状态的HOOK</h2>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#rating").ajaxComplete(function(){
+          alert("good");
+      });
+      $("#rating").click(function(event){
+          $(this).load('rate.txt');
+      });
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+上面的代码，注册了一个函数到 ajaxComplete ，也算是一个事件吧。在 load 完后就会自动执行 ajaxComplete 中注册的那个函数。
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<li>ajaxComplete 传输完成时。
+</li>
+<li>ajaxError() 传输出现错误时。
+</li>
+<li>ajaxSend() 请求发出前。
+</li>
+<li>ajaxStart() 第一个请求发出时。
+</li>
+<li>ajaxStop() 请求结束时。
+</li>
+<li>ajaxSuccess() 请求成功完成时
+</li>
+</ul>
+
+<a id="toc26" name="toc26"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.4. 参数的包装</h2>
+
+<p style="margin: 15px 0;">
+jQuery 提供了几个函数用于包装发送到服务器的参数对串。
+</p>
+
+<a id="toc27" name="toc27"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">5.4.1. $.param()</h3>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var s = [{name:"first",value:"Rick"},
+           {name:"last",value:"Astley"},
+           {name:"job",value:"Rock Star"}];
+  var r = $.param(s);
+  alert(r);
+  alert(decodeURIComponent(r));
+  
+  // Result:
+  // first=Rick&amp;last=Astley&amp;job=Rock+Star
+  
+  var s = {a: {one: 1, two: 2, three: 3},
+           b: [1,2,3]};
+  
+  var r = $.param(s);
+  alert(r);
+  alert(decodeURIComponent(r));
+  
+  // Result:
+  // a[one]=1&amp;a[two]=2&amp;a[three]=3&amp;b[]=1&amp;b[]=2&amp;b[]=3
+  
+  var s = {a: {one: 1, two: 2, three: 3},
+           b: [1,2,3]};
+  
+  var r = $.param(s, true);
+  alert(r);
+  alert(decodeURIComponent(r));
+  
+  // Result:
+  // a=[object+Object]&amp;b=1&amp;b=2&amp;b=3
+</pre>
+
+<a id="toc28" name="toc28"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">5.4.2. node.serialize()</h3>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form&gt;
+      &lt;div&gt;&lt;input type="text" name="a" value="1" id="a" /&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;input type="text" name="b" value="2" id="b" /&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;input type="hidden" name="c" value="3" id="c" /&gt;&lt;/div&gt;
+      &lt;div&gt;
+          &lt;textarea name="d" rows="8" cols="40"&gt;4&lt;/textarea&gt;
+      &lt;/div&gt;
+      &lt;div&gt;&lt;select name="e"&gt;
+              &lt;option value="5" selected="selected"&gt;5&lt;/option&gt;
+              &lt;option value="6"&gt;6&lt;/option&gt;
+              &lt;option value="7"&gt;7&lt;/option&gt;
+      &lt;/select&gt;&lt;/div&gt;
+      &lt;div&gt;
+          &lt;input type="checkbox" name="f" value="8" id="f" /&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+          &lt;input type="submit" name="g" value="Submit" id="g" /&gt;
+      &lt;/div&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+如果提交上面这个表单（保持这个状态）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $('form').submit(function() {
+      alert($(this).serialize());
+      return false;
+  });
+  
+  // Result:
+  // a=1&amp;b=2&amp;c=3&amp;d=4&amp;e=5
+</pre>
+
+<a id="toc29" name="toc29"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">5.4.3. node.serializeArray()</h3>
+
+<p style="margin: 15px 0;">
+和上面一个函数一样，都是用于包装表单数据的。只是，上面一个函数的结果是一个发送到服务器的编码串，而这个函数的结果，是一个复合列表：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $('form').submit(function() {
+      alert($(this).serializeArray());
+      return false;
+  });
+  
+  // Result:
+  // [{ name: a value: 1 },
+  //  { name: b value: 2 },
+  //  { name: c value: 3 },
+  //  { name: d value: 4 },
+  //  { name: e value: 5 }]
+</pre>
+
+<a id="toc30" name="toc30"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">6. 动画效果</h1>
+
+<a id="toc31" name="toc31"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.1. 简单的例子</h2>
+
+<p style="margin: 15px 0;">
+要实现动画效果，最简单的方法就是直接使用 hide 和 show 这些方法：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#control").toggle(
+      function(){
+          $("#show").hide("slow");
+      },
+      function(){
+          $("#show").show("fast");
+      }
+  );
+</pre>
+
+<p style="margin: 15px 0;">
+如果要想定制效果，就需要使用一些“原始”点的函数了，比如直接使用 animate ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $("#control").toggle(
+      function(){
+          $("#show").animate({height: "hide", opacity: "hide"}, "slow");
+      },
+      function(){
+          $("#show").animate({height: "show", opacity: "show"}, "slow");
+      }
+  );
+</pre>
+
+<a id="toc32" name="toc32"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.2. 常用的预定制效果函数</h2>
+
+<a id="toc33" name="toc33"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.1. 渐隐效果的 fadeIn() 和 fadeOut()</h3>
+
+<p style="margin: 15px 0;">
+两个函数的使用方法与参数列是一样的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  fadeIn([duration], [callback])
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">duration 动画效果的持续时间，单位是毫秒。</dt><dd style="margin-left: 30px;">
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback</dt><dd style="margin-left: 30px;">
+    当动画效果完成时会被调用的函数。
+</dd>
+</dl>
+
+<a id="toc34" name="toc34"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.2. 渐隐效果的 fadeTo()</h3>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#control").toggle(
+          function(){
+              $("#show").fadeTo(1000, 0.5, function(){alert("你看不到我");});
+          },
+          function(){
+              $("#show").fadeTo(1000, 1, function(){alert("我回来了");});
+          }
+      );
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+这个函数也可以实现渐隐效果，它还可以让你自定义透明度。不过，你最好不要把它和上面两个函数混用。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  fadeTo(duration, opactity, [callback])
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">duration 同上，动画效果的持续时间。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">opactity 动画结束时的透明度，（0 到 1 之间的数）。</dt><dd style="margin-left: 30px;">
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback 动画结束时会被调用的函数。</dt><dd style="margin-left: 30px;">
+</dd>
+</dl>
+
+<a id="toc35" name="toc35"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.3. 展开效果的 slideUp() 和 slideDown()</h3>
+
+<p style="margin: 15px 0;">
+两个函数的使用方法与参数列是一样的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  slideUp([duration], [callback])
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">duration 动画效果的持续时间，单位是毫秒。</dt><dd style="margin-left: 30px;">
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback</dt><dd style="margin-left: 30px;">
+    当动画效果完成时会被调用的函数。
+</dd>
+</dl>
+
+<a id="toc36" name="toc36"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.4. 展开效果的 slideToggle()</h3>
+
+<p style="margin: 15px 0;">
+这个函数的行为，就像是自动实现了上面两个函数的转换。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $(function(){
+      $("#control").click(
+          function(){
+              $("#show").slideToggle(1000, function(){alert("我回来了");});
+          }
+      );
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+使用方法与上面两个是一样的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  slideToggle([duration], [callback])
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">duration 动画效果的持续时间，单位是毫秒。</dt><dd style="margin-left: 30px;">
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback</dt><dd style="margin-left: 30px;">
+    当动画效果完成时会被调用的函数。
+</dd>
+</dl>
+
+<a id="toc37" name="toc37"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.5. 伸缩效果的 hide() 和 show()</h3>
+
+<p style="margin: 15px 0;">
+两个函数的使用方法与参数列是一样的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  hide([duration], [callback])
+</pre>
+
+<dl style="font-size: small; margin: 20px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">duration 动画效果的持续时间，单位是毫秒。</dt><dd style="margin-left: 30px;">
+    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
+</dd>
+<dt style="border-left: 5px solid orange; padding-left: 5px; margin: 5px auto;">callback 当动画效果完成时会被调用的函数。</dt><dd style="margin-left: 30px;">
+</dd>
+</dl>
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'jquery';
+  var disqus_url = 'http://zouyesheng.com/jquery.html';
+  var disqus_title = 'jQuery学习笔记';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
