@@ -2,6 +2,7 @@ jQuery学习笔记
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus
 %%toc
 
 
@@ -20,208 +21,126 @@ jQuery 本身只有一个 js 文件，所以，要使用它，就和使用其它
 但是，要注意一点，因为 jQuery 大部分功能需要根据文档的 DOM 模型来工作，所以，它首先需要正确地解析到整个文档的 DOM 模型结构。为此，一般，我们使用 jQuery 所做的工作都需要在整个文档被浏览器完全加载完毕后才开始进行：
 
 ```
-<script>/* <!CDATA[ */
-    $(document).ready(function(){
-        alert('Hello World!');
-        $("p").click(function(event){
-            alert('Thanks for visiting!');
-        });
-    });
-/* ]]> */</script>
+<script>
+$(document).ready(function(){
+  alert('Hello World!');
+  $("p").click(function(event){
+    alert('Thanks for visiting!');
+  });
+});
+</script>
 ```
 
-$ 是在 jQuery 中被定义的一个函数，它可以简单方便地取到相关结点。 $(document).ready 是一个事件绑定，这在文档加载完毕后被调用。
+//$// 是在 jQuery 中被定义的一个函数，它可以简单方便地取到相关结点。 //$(document).ready// 是一个事件绑定，这在文档加载完毕后被调用。
 
-事实上 $() 等于 jquery() 即 jQuery 的核心函数的一个简写。
+事实上 //$()// 等于 //jQuery()// 即 jQuery 的核心函数的一个简写。
 
-之后的 javascript 代码，都默认是写在 $(document).ready 这个事件绑定当中的。
+之后的 javascript 代码，都默认是写在 //$(document).ready// 这个事件绑定当中的。
 
-当然， $(document).ready(); 可以简写成 $() 。
+当然， //$(document).ready()// 可以简写成 //$()// 。
+
+前面说了， //$// 是一个在 jQuery 中被使用了的一个变量名，如果因为某些原因，你不能让 jQuery 使用它，那么你可以使用 //jQuery.noConflict()// 做到这一点，它的返回值就是 jQuery 这个对象。
+
+```
+jQuery.noConflict();
+$j = jQuery.noConflict();
+```
+
 
 
 ==jQuery对象与DOM对象之间的转换==
 
-通常，使用 $() 得到的是一个 jQuery 对象。它封装了很多 DOM 对象的操作，但是，它和 DOM 对象之间是不同的。比如，如果你要使用 obj.innerHTML ，那只有当 obj 是一个 DOM 对象时才能用，相应地，如果是 jQuery 对象你应该使用 obj.html() 。
+通常，使用 //$()// 得到的是一个 jQuery 对象。它封装了很多 DOM 对象的操作，但是，它和 DOM 对象之间是不同的。比如，如果你要使用 //obj.innerHTML// ，那只有当 //obj// 是一个 DOM 对象时才能用，相应地，如果是 jQuery 对象你应该使用 //obj.html()// 。
 
-从 DOM 对象转到 jQuery 对象： $(obj) 。
+从 DOM 对象转到 jQuery 对象： //$(obj)// 。
 
-从 jQuery 对象转到 DOM 对象： obj[0] 。
-
-
-=使用CSS选择器选择元素=
-
-```
-$("p#first").click(function(event){
-    $("p").addClass("red");
-});
-
-$("ol > li").addClass("red");
-$("ol > li#mark").addClass("red");
-```
-
-this 算是比较特殊的一个吧：
+从 jQuery 对象转到 DOM 对象： //obj[0]// 。
 
 
-```
-$("#first").click(function(event){
-    $(this).addClass("red");
-});
-```
+=丰富的选择器=
 
-$("*") 可以选择所有结点。
+完整的列表在 http://api.jquery.com/category/selectors/ ，这里只列出一些最常用的。
 
 
-==一组属性选择符==
+==常规选择器==
 
-匹配有无相应的属性:
-
-```
-$("div[id]").one("click", function(){
-    var idString = $(this).text() + " = " + $(this).attr("id");
-    $(this).text(idString);
-});
-```
-
-= 精确匹配：
-
-```
-$("p[title = mark]").css("color", "red");  //|
-// <p title="mark" />
-```
-
-|= 匹配以 - 分割的前置串：
-
-```
-$("p[title |= mark]").css("color", "red");  //|
-// <p title="mark" />
-// <p title="mark-xx" />
-```
-
-*= 匹配包含串：
-
-```
-$("p[title *= mark]").css("color", "red");  //*
-// <p title="xxmarkxx" />
-// <p title="abcdmark-xx" />
-```
-
-~= 匹配单词串（空格分割）：
-
-```
-$("p[title ~= mark]").css("color", "red");  //*
-// <p title="mark other" />
-// <p title="a mark b" />
-```
-
-$= 匹配尾串：
-
-```
-$("p[title $= mark]").css("color", "red");  //*
-// <p title="other mark" />
-// <p title="abmark" />
-```
-
-^= 匹配始串：
-
-```
-$("p[title ^= mark]").css("color", "red");  //*
-// <p title="mark other" />
-// <p title="markabcd" />
-```
-
-!= 匹配除此而外的串：
-
-```
-$("p[title ^= mark]").css("color", "red");  //*
-// <p title="Mark" />
-// <p title="mark other" />
-// <p title="markabcd" />
-```
-
-多属性组合：
-
-```
-$("input[id][name$='man']").val("only this one");
-```
-
-==一组条件选择符==
-
-:contains 包含文本：
-
-```
-$("p:contents('第二行')").css("color", "red");
-```
-
-:empty 选择空结点（没有子元素和文本）：
-
-```
-$("td:empty").text("Was empty!");
-```
-
-:eq() :lt() :gt() :even()   dd() 按总的索引取的相应结点：
-
-```
-$("td:eq(2)").css("color", "red");
-```
-
-:has() 选择有指定的子结点的结点:
-
-```
-$("div:has(p)").addClass("test");
-```
-
-:nth-child() 第 n 个子结点：
-
-```
-$("ul li:nth-child(2)").append("<span> - 2nd!</span>");
-```
-
-==两个深度位置相关的选择符==
-
-(prev ~ next) 定位兄弟结点：
-
-操作的 HTML 为：
-
-```
-<body>
-    <div id="mark">here</div>
-    <div>1</div>
-    <div>2
-        <div style="color: blue;">3</div>
-    </div>
-</body>
-$(document).ready(function(){
-    $("#mark").click(function(event){
-        $("#mark ~ div").css("color", "red");
-    });
-});
-```
-
-(prev + next) 相邻的兄弟结点：
-
-```
-$(document).ready(function(){
-    $("#mark").click(function(event){
-        $("#mark + div").css("color", "red");
-    });
-});
-```
-
-只有 1 会变红。
-
-==其它的==
-
-其它的还有:
-
-- :first-child 第一个子结点。
-- :first 第一个符合条件的结点。
-- :last-child 最后一个子结点。
-- :last 最后一个符合条件的结点。
-- :hidden 选择被隐藏的结点。
-- :disabled :enabled 选择被 disabled/enabled 的结点：
+: //$("*")//
+    选择所有结点
+: //(“#id”)//
+    ID选择器，注意其中的一些特殊字符，比如 **.**
+: //(“.class”)//
+    类选择器
+: //(“tag”)//
+    按标签选择
+: //(“ancestor descendant”)//
+    选择子元素
+: //(“parent > child”)//
+    选择直接子元素
+: //:focus//
+    获取焦点元素
+: //:first-child// //:last-child//
+    选择第一个/最后一个子元素
+: //:first// //:last//
+    截取第一个/最后一个符合条件的元素
+: //(“prev + next”)//
+    直接兄弟元素
+: //(“prev ~ siblings”)//
+    兄弟元素
+: //:nth-child()//
+    索引选择，索引从 1 开始 //:nth-child(odd)// //:nth-child(even)// //:nth-child(4n)//
 
 
-完整的见： http://api.jquery.com/category/selectors/
+==属性选择器==
+
+: //[name~="value"]//
+    属性中包括某单词
+: //[name="value"]//
+    属性完全等于指定值
+: //[name!="value"]//
+    属性不等于指定值
+: //[name]//
+    包括有指定属性的元素
+
+
+==控件选择器==
+
+: //:checked//
+    选择所有被中的元素
+: //:selected//
+    被选择了的元素
+: //:disabled// //:enabled//
+    选择被禁用/未禁用的元素
+: //:hidden//
+    选择隐藏元素，不仅是 //[type="hidden"]// ，还有 //display: none//
+: //:visible//
+    可见控件， //visibility: hidden// 和 //opacity: 0// 同样被认为是可见。
+
+: //:input// //:button// //:checkbox// //:file// //:image// //:password// //:radio// //:reset// //:submit// //:text//
+    具体控件，图像控件是 //[type="image"]//
+
+
+==其它选择器==
+
+: //[name="value"][name2="value2"]//
+    多个 AND 条件
+: //(“selector1, selector2, selectorN”)//
+    多个 OR 条件
+: //:not()//
+    否定选择
+: //(':contains("text")')//
+    包含有指定内容的元素
+: //:eq()// //:lt()// //:gt()// //:even// //:odd//
+    列表索引选择（不支持负数）
+: //(':has(selector)')//
+    符合条件的再次过滤
+: //:header//
+    选择像 h1,h2,h3 这些标题元素
+: //:only-child//
+    仅有一个子元素的元素
+: //:empty//
+    空元素，即无内容也无子元素
+: //:parent//
+    非空元素
 
 
 =常用的函数=
