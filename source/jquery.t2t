@@ -56,6 +56,25 @@ $j = jQuery.noConflict();
 
 从 jQuery 对象转到 DOM 对象： //obj[0]// 。
 
+比较正规地从 jQuery 对象到 DOM 的转换，是使用 jQuery 对象的 //get()// 方法：
+
+```
+<ul>
+  <li id="foo">foo</li>
+  <li id="bar">bar</li>
+</ul>
+
+$('li').get();
+//[<li id="foo">, <li id="bar">]
+
+$('li').get(0);
+//<li id="foo">
+
+$('li').get(-1);
+//<li id="bar">
+```
+
+
 
 =丰富的选择器=
 
@@ -141,6 +160,135 @@ $j = jQuery.noConflict();
     空元素，即无内容也无子元素
 : //:parent//
     非空元素
+
+
+=元素控制相关=
+
+==attributes和properties的区别==
+
+//attributes// 是 XML 结构中的属性节点概念范畴：
+
+```
+<body onload="prettyPrint()""></body>
+```
+
+上面的代码表示了 //body// 这个节点，有一个名为 //onload// 的 //attributes// 。
+
+//properties// 则是对于 DOM 对象的，对象属性概念范畴。这一般就没有直观的表现，但是它总是可以被访问到的，比如：
+
+```
+$('body').get(0).tagName;
+//BODY
+```
+
+虽然 //attributes// 与 //properties// 是不同的概念范畴，但是它们对于某些特殊的属性是有共同的访问属性名的，比如 //id// 。
+
+
+==类与属性控制==
+
+: //.addClass()// //.hasClass()// //.removeClass()//
+    添加一个类，判断是否有指定类，删除类
+```
+$('body').addClass('test');
+$('body').addClass(function(index, current){return current + 'new'});
+
+$('body').removeClass('test');
+$('body').removeClass(function(index, current){return current + ' ' + 'other'});
+```
+
+: //.toggleClass()//
+    类的开关式转换，它的使用方法有多种：
+```
+<img class="test other" />
+
+$('img').toggleClass(); //对所有类的开关
+$('img').toggleClass('test'); //对指定类的开关
+$('img').toggleClass(isTrue); //根据isTrue判断所有类的开关
+$('img').toggleClass('test', isTrue); //根据isTrue判断指定类的开关
+
+//同 $('img').toggleClass('test') 只是类名由函数返回
+$('img').toggleClass(function(index, class, isTrue){return 'name'});
+
+//isTrue会作为函数的第三个参数传入
+$('img').toggleClass(function(index, class, isTrue){return 'name'}, isTrue);
+```
+
+: //.attr()//
+    获取或者设置一个属性值，它的使用方法有多种：
+```
+<img id="greatphoto" src="brush-seller.jpg" alt="brush seller" />
+
+$('#greatphoto').attr('alt'); //获取属性
+$('#greatphoto').attr('alt', 'Beijing Brush Seller'); //设置属性
+
+//同时设置多个属性
+$('#greatphoto').attr({
+  alt: 'Beijing Brush Seller',
+  title: 'photo by Kelly Clark'
+});
+
+//设置属性为函数返回值, 函数的上下文为当前元素
+$('#greatphoto').attr('title', function(i, val) {
+  return val + ' - photo by Kelly Clark';
+});
+```
+: //.prop()//
+    用法同 //.attr()// ，只是对象变成了 //properties//
+: //.removeAttr()// //.removeProp()//
+    删除属性
+: //.val()//
+    设置或获取元素的表单值，通常用于表单元素。
+```
+<input type="hidden" value="test" />
+
+$('input').val();
+$('input').val('other');
+```
+
+: //.html()//
+    设置或获取元素的节点文件本值。
+```
+<div><span>测试</span></div>
+
+$('div').html();
+$('div').html('<div>测试</div>');
+$('div').html(function(index, old){return old + '<span>另外的内容</span>'});
+```
+
+==样式控制==
+
+: //.css()//
+    获取或设置指定的 css 样式：
+
+```
+$('body').css('background-color');
+$('body').css('background-color', 'red');
+$('body').css('background-color', function(index, value){return value + '1'});
+$('body').css({color: 'green', 'background-color': 'red'});
+```
+
+: //.width()// //.height()//
+    获取或设置元素的宽和高
+
+```
+$('body').width();
+$('body').width(50);
+$('body').width(function(index, value){return value += 10});
+```
+
+: //.innerWidth()// //.innerHeight()// //.outerHeight()// //.outerWidth()//
+    元素的其它尺寸值
+
+: //.scrollLeft()// //.scrollTop()//
+    获取或设置滚动条的位置
+
+: //.offset()// //.position()//
+    获取元素的坐标。 //offset// 是相对于 //document// ， //position// 是相对于父级元素
+
+
+==结构控制==
+
+continue ...
 
 
 =常用的函数=
