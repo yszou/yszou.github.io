@@ -78,7 +78,7 @@ $('li').get(-1);
 
 =丰富的选择器=
 
-完整的列表在 http://api.jquery.com/category/selectors/ ，这里只列出一些最常用的。
+完整的列表在 http://api.jquery.com/category/selectors/ 。
 
 
 ==常规选择器==
@@ -160,6 +160,61 @@ $('li').get(-1);
     空元素，即无内容也无子元素
 : //:parent//
     非空元素
+
+
+=节点漫游=
+
+完整列表在 http://api.jquery.com/category/traversing/
+
+通过上面的选择器，我们可以得到希望处理的节点。但是通常，我们还希望得到当前节点的一些相对节点，以便下一步处理，比如“所有子节点”，“下一个兄弟节点”之类的东西。
+
+==调用链处理==
+
+: //.add()//
+    向已有的节点序列中添加新的对象
+: //.andSelf()//
+    在调用链中，随时加入原始序列
+: //.eq()//
+    指定索引选取节点， **支持负数** 
+: //.filter()// //.is()// //.not()//
+    序列选择
+: //.end()//
+    链点回溯
+```
+<ul class="first">
+   <li class="foo">list item 1</li>
+   <li>list item 2</li>
+   <li class="bar">list item 3</li>
+</ul>
+<ul class="second">
+   <li class="foo">list item 1</li>
+   <li>list item 2</li>
+   <li class="bar">list item 3</li>
+</ul>
+
+$('ul.first').find('.foo').css('background-color', 'red')
+  .end().find('.bar').css('background-color', 'green');
+```
+
+
+==子节点==
+
+: //.children()//
+    所有的子节点，可加入过滤条件， //.children(selector)//
+: //.find()// //.first()// //.last()// //.has()//
+    子节点选择
+
+
+==兄弟节点==
+
+: //.siblings()// //.next()// //.nextAll()// //.nextUntil()// //.prev()// //.prevAll()// //.prevUntil()// //.closest()//
+    兄弟节点选择
+
+
+==父节点==
+
+: //.parent()// //.parents()// //.parentUntil()//
+    父节点选择
 
 
 =元素控制相关=
@@ -288,79 +343,262 @@ $('body').width(function(index, value){return value += 10});
 
 ==结构控制==
 
-continue ...
+===文本节点===
+
+: //.html()// //.text()//
+    设置和获取节点的文值。设置时 //.text()// 会转义标签，获取时 //.text()// 会移除所有标签。
 
 
-=常用的函数=
+===子节点===
 
-node.css() 为对象设置一条 css 属性：
-
+: //.append()// //.prepend()//
 ```
-$("div > p").css("color", "red");
-```
+<h2>Greetings</h2>
+<div class="container">
+  <div class="inner">Hello</div>
+  <div class="inner">Goodbye</div>
+</div>
 
-node.addClass() 和 node.removeClass() 为对象添加、移除一个 css 类：
+$('.inner').append('<p>Test</p>');
 
-```
-$("p").addClass("red");
-$("p").removeClass("red");
-```
-
-node.attr() 获取对象结点的属性值，设置对象结点的属性值：
-
-```
-$("p").attr("title");
-$("p").attr("alt", "memo text");
-```
-
-node.text() 和 node.html() 获取或设置对象的文本（去除所有标签的），及获取对象的所有 HTML 文本。
-
-```
-var r = $(this).text();
-var r = $(this).html();
-$(this).text("plain text");
-$(this).html("rich text");
+<h2>Greetings</h2>
+<div class="container">
+  <div class="inner">
+    Hello
+    <p>Test</p>
+  </div>
+  <div class="inner">
+    Goodbye
+    <p>Test</p>
+  </div>
+</div>
 ```
 
-node.find() 和 each() 前者用于查找所有的子结点，后者用于遍历一个列表：
+参数可以有多种形式：
 
 ```
-$(this).find("p").each(function(i){alert(i);});
-$(this).find("span:last").remove();
+var $newdiv1 = $('<div id="object1"/>'),
+    newdiv2 = document.createElement('div'),
+    existingdiv1 = document.getElementById('foo');
+
+$('body').append($newdiv1, [newdiv2, existingdiv1]);
 ```
 
-在 each() 中的那个函数的参数 i 是可选的。它是某成员的在序列中的索引。
 
-node.append() 为结点添加一个子结点。
+
+===兄弟节点===
+
+: //.after()// //.before()//
+```
+<div class="container">
+  <h2>Greetings</h2>
+  <div class="inner">Hello</div>
+  <div class="inner">Goodbye</div>
+</div>
+
+$('.inner').after('<p>Test</p>');
+
+<div class="container">
+  <h2>Greetings</h2>
+  <div class="inner">Hello</div>
+  <p>Test</p>
+  <div class="inner">Goodbye</div>
+  <p>Test</p>
+</div>
+```
+
+
+===父节点===
+
+: //.wrap()// //.wrapAll()// //.wrapInner()//
 
 ```
-function(){
-    $(this).append($("<span>***</span>"));
-}
+<div class="container">
+  <div class="inner">Hello</div>
+  <div class="inner">Goodbye</div>
+</div>
+
+$('.inner').wrap('<div class="new" />');
+
+<div class="container">
+  <div class="new">
+    <div class="inner">Hello</div>
+  </div>
+  <div class="new">
+    <div class="inner">Goodbye</div>
+  </div>
+</div>
+
+
+$('.inner').wrapAll('<div class="new" />');
+
+<div class="container">
+  <div class="new">
+    <div class="inner">Hello</div>
+    <div class="inner">Goodbye</div>
+  </div>
+</div>
+
+
+$('.inner').wrapInner('<div class="new" />');
+
+<div class="container">
+  <div class="inner">
+    <div class="new">Hello</div>
+  </div>
+  <div class="inner">
+    <div class="new">Goodbye</div>
+  </div>
+</div>
 ```
 
-与 append() 相对的是 prepend() 。前者是在最后添加结点，后者是在开头添加结点。
 
-同时 after() 和 before() 可以添加兄弟结点。
+===复制/删除/替换节点===
 
-node.next() 找到本结点的下一个结点。
+: //.clone()//
+    复制节点，可选参数表示是否处理已绑定的事件与数据
+    : //.clone(true)//
+        处理当前节点的事件与数据
+    : //.clone(true, true)//
+        处理当前节点及所有子节点的事件与数据
+: //.detach()//
+    暂时移除节点，之后可以再次恢复了指定位置。
+: //.remove()//
+    永久移除节点。
+: //.empty()//
+    清除一个节点的所有内部内容。
+: //.unwrap()//
+    移除节点的父节点。
 
+
+=工具函数=
+
+==jQuery对象序列==
+
+: //.map()//
+    遍历所有成员
 ```
-$(this).next().remove();
+$(':checkbox').map(function() {
+  return this.id;
+}).get().join(',');
+
+
+$(':checkbox').map(function(index, node) {
+  return node.id;
+}).get().join(',');
+```
+: //.slice()//
+    序列切片, 支持一个或两个参数，支持负数
+```
+$('li').slice(2).css('background-color', 'red');
+$('li').slice(2, 4).css('background-color', 'red');
+$('li').slice(-2, -1).css('background-color', 'red');
 ```
 
-相似的函数还有 nextAll() nextUntil() prev() prevAll() prevUntil() 。
 
-node.is() 判断结点是不是匹配的结点。
+==通用工具==
 
+: //$.each()// //$.map()//
+    遍历列表, //$.map()// 可以作用于对象。
 ```
-var n = $(this).next();
-if (n.is(":visible")){
-    n.slideUp();
-} else {
-    n.slideDown();
-}
+$.each([52, 97], function(index, value) { 
+  alert(index + ': ' + value); 
+});
+
+$.map( [0,1,2], function(n, index){
+  return n + 4;
+});
+//[4, 5, 6]
+
+$.map( [0,1,2], function(n){
+  return n > 0 ? n + 1 : null;
+});
+//[2, 3]
+
+$.map( [0,1,2], function(n){
+  return [ n, n + 1 ];
+});
+//[0, 1, 1, 2, 2, 3]
+
+var dimensions = { width: 10, height: 15, length: 20 };
+$.map( dimensions, function( value, key ) {
+  return value * 2;
+});
+//[20, 30, 40] 
+
+var dimensions = { width: 10, height: 15, length: 20 },
+$.map( dimensions, function( value, key ) {
+  return key;
+});
+//["width", "height", "length"]
 ```
+: //$.extend()//
+    合并对象，第一个参数表示是否进行递归深入
+```
+var object = $.extend({}, object1, object2);
+var object = $.extend(true, {}, object1, object2);
+```
+: //$.merge()//
+    合并列表
+```
+$.merge( [0,1,2], [2,3,4] )
+//[0,1,2,2,3,4] 
+```
+: //$.grep()//
+    过滤列表，第三个参数表示是否为取反
+```
+$.grep( [0,1,2], function(array,index){ return n > 0; }); //[1,2]
+$.grep( [0,1,2], function(array,index){ return n > 0; }, true); //[0]
+```
+: //$.inArray()//
+    存在判断
+```
+$.inArray( value, array [, fromIndex] )
+```
+: //$.isArray()// //$.isEmptyObject()// //$.isFunction()// //$.isNumeric()// //$.isPlainObject()// //$.isWindow()// //$.isXMLDoc()//
+    类型判断
+: //$.noop()//
+    空函数
+: //$.now()//
+    当前时间戳，值为 //(new Date).getTime()//
+: //$.parseJson()// //$.parseXML()//
+    把字符串解析为对象
+```
+var xml = "<rss version='2.0'><channel><title>RSS Title</title></channel></rss>",
+xmlDoc = $.parseXML( xml ),
+$xml = $( xmlDoc ),
+$title = $xml.find( "title" );
+```
+: //$.trim()//
+    去头去尾， //$.trim(str)//
+: //$.type()//
+    判定参数的类型
+```
+# If the object is undefined or null, then "undefined" or "null" is returned accordingly.
+
+* jQuery.type(undefined) === "undefined"
+* jQuery.type() === "undefined"
+* jQuery.type(window.notDefined) === "undefined"
+* jQuery.type(null) === "null"
+
+# If the object has an internal [[Class]] equivalent to one of the browser's built-in objects, the associated name is returned. (More details about this technique.)
+
+* jQuery.type(true) === "boolean"
+* jQuery.type(3) === "number"
+* jQuery.type("test") === "string"
+* jQuery.type(function(){}) === "function"
+* jQuery.type([]) === "array"
+* jQuery.type(new Date()) === "date"
+* jQuery.type(/test/) === "regexp"
+```
+: //$.unique()//
+    遍历后去重， //$.unique(array)//
+
+
+=上下文绑定=
+
+continue...
+
 
 =事件处理=
 
