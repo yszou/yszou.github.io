@@ -658,7 +658,7 @@ console.log($('#data').data('test'));
 
 =事件处理=
 
-==事件绑定与触发==
+==事件绑定==
 
 在 jQuery1.7 之后，推荐统一使用 //on()// 来进行事件绑定。
 
@@ -668,8 +668,287 @@ console.log($('#data').data('test'));
 
 当然，原理是这样，具体操作时， //on()// 这个方法已经把一切都封装好了。
 
+: //.on()//
+    绑定事件
+: //.off()//
+    移除绑定
+: //.one()//
+    绑定单次事件
+
+
+//on()// 的基本使用方式是： //.on(event, handler)//
+
+最基本的使用：
+
+```
+$('#btn').on('click',
+  function(eventObj){
+    console.log('haha')；
+  }
+);
+```
+
+对于 //handler// ，它默认的上下文是触发事件的节点（与行为节点无关）：
+
+```
+<div id="btn">
+  <div>哈哈</div>
+  <div id="btn2">哈哈</div>
+  <div>哈哈</div>
+</div>
+
+$('#btn').on('click',
+  function(eventObj){
+    console.log(this);
+  }
+);
+```
+
+你看到是 //div#btn// 。
+
+当然，使用 //$.proxy()// 你可以随意控制上下文：
+
+```
+$('#btn').on('click',
+  $.proxy(function(eventObj){
+    console.log(this.a);
+  }, {a: 123})
+);
+```
+
+//event// 参数还支持通过：
+
+- 以 **.** 分割的子名字，这些名字父子的名字空间效果。
+- 以空格分割的多个事件。
+
+
+名字空间效果：
+
+```
+$('#btn').on('click.my',
+  function(eventObj){
+    console.log('123');
+  }
+);
+
+var f = function(){
+  $('#btn').off('click.my');
+}
+```
+
+```
+$('#btn').on('click.my.other',
+  function(eventObj){
+    console.log('123');
+  }
+);
+
+var f = function(){
+  $('#btn').off('click.my');
+}
+```
+
+多个事件：
+
+```
+$('#btn').on('click.my click.other',
+  function(eventObj){
+    console.log('123');
+  }
+);
+
+var f = function(){
+  $('#btn').off('click.my');
+}
+```
+
+//on()// 的扩展使用方式为： //.on( events [, selector] [, data], handler(eventObject) )// 。
+
+其中的 //data// 是一个数据存储空间，在 //eventObj.data// 中访问到。
+
+```
+$('#btn').on('click', {a: 123},
+  function(eventObj){
+    console.log(eventObj.data.a);
+  }
+);
+```
+
+而 //selector// 则是一个过滤规则，这对于在前面讲过的，在父级节点预定义不存在节点的行为很有用。
+
+```
+<div id="btn">
+  <span>哈哈</span>
+</div>
+
+$('#btn').on('click', 'p',
+  function(eventObj){
+    console.log('here');
+  }
+);
+var f = function(){
+  $('#btn').append('<p>新的</p>');
+}
+```
+
+//on()// 的另外一种调用形式： //.on( events-map [, selector] [, data] )// ：
+
+```
+$('#btn').on(
+  {
+    'click': function(eventObj){console.log('click')},
+    'mousemove': function(eventObj){console.log('move')}
+  }
+);
+```
+
+//off()// 的使用方式与 //on()// 完全类似：
+
+```
+var f = function(eventObj){
+  console.log('here');
+}
+$('#btn').on('click', f);
+$('#btn').off('click');
+$('#btn').off('click', '.cls');
+$('#btn').off('click', f);
+
+```
+
+
+==事件触发==
+
+事件的触发有两种方式，一是使用预定的“事件函数”，二是使用 //trigger()// 或 //triggerHandler()// 。
+
+预定的“事件函数”就是类似于 //.click()// //.focus()// 这些。
+
+
+```
+<input id="btn" />
+
+$('#btn').on('click',
+  function(eventObj){
+    console.log('here');
+  }
+);
+
+$('#btn').click();
+$('#btn').trigger('click');
+```
+
+//trigger()// 还可以直接接受一个 //Event// 对象，比如一个死循环：
+
+```
+$('#btn').on('click',
+  function(eventObj){
+    console.log('here');
+    $(this).trigger(eventObj);
+  }
+);
+```
+
+//trigger()// 与 //triggerHandler()// 的不同之处在于前面是触发事件，而后者是执行绑定函数。这在一些有原生行为的事件上就有明显区别了：
+
+```
+$('#btn').on('focus',
+  function(eventObj){
+    console.log('here');
+  }
+);
+
+//$('#btn').trigger('focus');
+$('#btn').triggerHandler('focus');
+```
+
+//trigger()// 和 //triggerHandler()// 也用于触发自定义事件：
+
+```
+$('#btn').on('my',
+  function(eventObj){
+    console.log('here');
+  }
+);
+
+$('#btn').trigger('my');
+```
+
+//trigger()// 和 //triggerHandler()// 触发事件时，可以带上参数：
+
+```
+$('#btn').on('my',
+  function(eventObj, obj){
+    console.log(obj);
+  }
+);
+
+$('#btn').trigger('my', {a: 123});
+```
+
 
 ==事件类型==
+
+行为事件：
+
+: //.click()//
+    单击
+: //dblclick()//
+    双击
+: //.blur()//
+    失去焦点时
+: //.change()//
+    值变化时
+: //.focus()//
+    获取焦点时
+: //.focusin()//
+    jQuery 扩展的获取焦点
+: //.focusout()//
+    jQuery 扩展的失去焦点
+: //.resize()//
+    调整大小
+: //.scroll()//
+    滚动
+: //.select()//
+    被选择
+: //.submit()//
+    表单被提交
+
+
+键盘事件：
+
+: //.keydown()//
+    按下键
+: //.keyup()//
+    放开键
+
+
+鼠标事件：
+
+: //.mousedown()//
+    点下鼠标
+: //.mouseup()//
+    松开鼠标
+: //.mouseover()//
+    光标移入
+: //.mouseout()//
+    光标移出
+: //.mousemove()//
+    光标在之上移动
+: //.mouselevel()// //.mouseenter()//
+    光标移出移入
+
+
+页面事件：
+
+: //.ready()//
+    就绪
+: //.unload()//
+    离开当前页时，针对 //window// 对象。
+: //.error()//
+    发生错误时
+: //.load()//
+    正在载入
+
+
 
 ==事件对象==
 
