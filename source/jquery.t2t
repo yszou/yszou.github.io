@@ -6,7 +6,13 @@ jQuery学习笔记
 %%toc
 
 
-原文发于2010年11月，先把旧文重新排过来，计划近期会修订此文。
+
+历史：
+
+- 原文发于2010年11月，先把旧文重新排过来，计划近期会修订此文。
+- 此文于2013年1月，参照 jQuery 1.8.3 进行了修订。
+
+
 
 =jQuery 是如何工作的=
 
@@ -15,7 +21,7 @@ jQuery学习笔记
 jQuery 本身只有一个 js 文件，所以，要使用它，就和使用其它的 js 文件一样，直接将它引入就可以使用了。
 
 ```
-<script type="text/javascript" src="jquery-1.4.2.js"></script>
+<script type="text/javascript" src="jquery-1.8.3.js"></script>
 ```
 
 但是，要注意一点，因为 jQuery 大部分功能需要根据文档的 DOM 模型来工作，所以，它首先需要正确地解析到整个文档的 DOM 模型结构。为此，一般，我们使用 jQuery 所做的工作都需要在整个文档被浏览器完全加载完毕后才开始进行：
@@ -762,7 +768,7 @@ var f = function(){
 }
 ```
 
-//on()// 的扩展使用方式为： //.on( events [, selector] [, data], handler(eventObject) )// 。
+//on()// 的扩展使用方式为： ``.on( events [, selector] [, data], handler(eventObject) )`` 。
 
 其中的 //data// 是一个数据存储空间，在 //eventObj.data// 中访问到。
 
@@ -952,531 +958,271 @@ $('#btn').trigger('my', {a: 123});
 
 ==事件对象==
 
+每一个事件的绑定函数，都接受一个事件对象为参数。这个事件对象当中，包括了很多事件的信息。
+
+: //event.currentTarget// , //event.target//
+    事件绑定节点 / 事件的触发节点(冒泡行为)
+: //event.delegateTarget//
+    绑定事件的对象，通常就是 //event.currentTarget//
+: //event.relatedTarget//
+    相关的节点，主要用于一些转换式的事件。比如鼠标移入，表示它从哪个节点来的
+: //event.which//
+    标明哪个按键触发了事件，鼠标和键盘的键标识统一在这个属性中了
+: //event.preventDefault()// , //event.isDefaultPrevented()//
+    禁止默认行为
+: //event.stopImmediatePropagation()// , //event.isImmediatePropagationStopped()//
+    不光禁止冒泡，还终止绑定函数链的继续进行。
+: //event.stopPropagation()// , //event.isPropagationStopped()//
+    禁止冒泡
+: //event.pageX// , //event.pageY//
+    事件触发时相对于 //document// 的鼠标位置
+: //event.namespace//
+    事件触发时的名字空间，比如 //trigger('click.namespace')//
+: //event.data//
+    额外传入的数据
+: //event.result//
+    上一个绑定函数的返回值
+: //event.timeStamp//
+    事件触发时的时间，其值为 //(new Date).getTime()//
+: //event.type//
+    事件类型
 
 
-=事件处理=
+如果一个绑定函数最后返回了 //false// ，则默认是 //event.preventDefault()// 和 //event.stopPropagation()// 行为。
 
-你可以为结点的指定事件配置回调函数来随意实现一些效果。
-
-完整的事件列表： http://visualjquery.com/ Events 下。
-
-你可以使用 node.preventDefault() 来忽略一个默认的事件响应行为，比如一个 a 标签上有一个链接，而你又不想让它生效。
-
-```
-function go(event){
-    event.preventDefault();
-    $(this).hide("slow");
-}
-
-$("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
-```
-
-==ready()==
-
-这是一个特别的，并且非常重要的事件。它表示某结点被加载完毕了。在使用 jQuery 时通过对 $(document) 结点的此事件进行函数绑定以执行我们的代码。
-
-```
-$(document).ready(function(){
-    alert("OK, I have knew all DOM!");
-});
-```
-
-在使用 $(document).ready() 时要确保你没有为 <body> 的 onload 事件添加过任何代码，否则 $(document).ready() 可能不会被执行。
-
-你可以在你的代码中添加多个 $(document).ready() 函数绑定，它们将会被顺序执行。
-
-一个简单点的写法是：
-
-```
-jQuery(function($){
-    // code here
-});
-```
-
-或者更简单：
-
-```
-$(function(){
-    // code here
-});
-```
-
-==事件类型==
-
-一般比较常用的事件类型是鼠标的点击一类的。而标准 DHTML 中的事件如 onclick onmouseover 等，在 jQuery 中都有相应的事件对象。
-
-click() 和 click(fn) 激发一个鼠标单击事件和绑定一个鼠标单击事件：
-
-```
-$(function(){
-    $("#other").click(function(event){alert("here");});
-});
-
-$(function(){
-    $("#mark").click(function(event){
-        $("#other").click();
-    });
-});
-```
-
-对象键盘事件的处理，一般是通过判断事件对象的 which 属性来进行具体的按键判断：
-
-```
-$("input").keypress(function (e) {
-  if (e.which == 32 || (65 <= e.which && e.which <= 65 + 25)
-                    || (97 <= e.which && e.which <= 97 + 25)) {
-    var c = String.fromCharCode(e.which);
-    $("p").append($("<span/>"))
-          .children(":last")
-          .append(document.createTextNode(c));
-  } else if (e.which == 8) {
-    // backspace in IE only be on keydown
-    $("p").children(":last").remove();
-  }
-  $("div").text(e.which);
-});
-```
-
-其它事件对象的使用，也是这样的。
-
-- dblclick() 和 dblclick(fn) 鼠标双击。
-- change() 和 change(fn) 对象改变。
-- blur() 和 blur(fn) 失去焦点。
-- focus() 和 focus(fn) 获得焦点。
-- submit() 和 submit(fn) 表单提交。
-
-
-==事件绑定==
-
-除了直接在结点上进行事件绑定外，你还可以使用相关函数独立地将结点，事件，回调函数绑定在一起。
-
-===bind(type, data, fn)===
-
-为一个对象的一个事件绑定一个函数：
-
-```
-$(function(){
-    $("#mark").bind("click", function(e){alert("here!");});
-});
-```
-
-为一个对象绑定多个事件，多个对象，还可以加上参数：
-
-```
-function aClick(event){
-    alert(event.data.a);
-}
-function bClick(){
-    alert("second");
-}
-$(function(){
-    $("#mark").bind("click", {"a": "argv"}, aClick);
-    $("#mark").bind("click change", bClick);
-    $("#other").bind("click", function(){
-        $("#mark").trigger("change");
-    });
-});
-```
-
-===one(type, data, fn)===
-
-它的用法和 bind() 是一样的，只是通过 one() 进行的绑定，只会被激活一次。
-
-
-===trigger(type, data)===
-
-这个函数主要用于激动另一个对象的指定事件。但是，激动另一对象的其它事件，使用像 click() 函数好像是也能做到？不过， trigger() 可以参数激活（当然在相关回调函数定义时也要考虑参数）：
-
-```
-$(function(){
-    $("#other").one("click", function(e){
-        $("#mark").trigger("click", "argvs!!")});
-});
-
-$(function(){
-    $("#mark").one("click", function(e, other){alert(other);});
-});
-```
-
-===triggerHandler(type, data)===
-
-与 trigger() 函数使用方法一样。效果上，它会调用相关的函数，但是不会激活事件行为。举例来说，对于 focus 事件， triggerHandler() 会调用与 focus 事件绑定的函数，但是不会使相关对象获得焦点：
-
-```
-$("#old").click(function(){
-  $("input").trigger("focus");
-});
-$("#new").click(function(){
-  $("input").triggerHandler("focus");
-});
-$("input").focus(function(){
-  $("<span>Focused!</span>").appendTo("body").fadeOut(1000);
-});
-```
-
-===unbind(type, data)===
-
-取消一个绑定。如果不加任何参数，则一个对象的所有事件绑定都会被取消。
-
-```
-function aClick(event){
-    alert(event.data.a);
-}
-function bClick(){
-    alert("second");
-    $("#mark").unbind("click", bClick);
-}
-$(function(){
-    $("#mark").bind("click", {"a": "argv"}, aClick);
-    $("#mark").bind("click change", bClick);
-    $("#other").bind("click", function(){
-        $("#mark").trigger("change");
-    });
-});
-```
-
-==辅助绑定函数==
-
-===node.hover(fn,fn)===
-
-定义两个函数，第一个在鼠标移入结点时执行，第二个在鼠标移出结点时执行。
-
-```
-$("#mark").hover(
-function(){
-    $(this).append($("<span>***</span>"));
-},
-function(){
-    $(this).find("span:last").remove();
-});
-```
-
-===node.toggle(fn,fn)===
-
-定义两个函数，鼠标第一次点执行第一个函数，再点执行第二个函数，如此反复。
-
-```
-$("#mark").toggle(
-function(){
-    $(this).append($("<span>***</span>"));
-},
-function(){
-    $(this).find("span:last").remove();
-});
-```
 
 =AJAX=
 
-先看一个完整的例子：
+jQuery 对 AJAX 的封装参数比较多，而且，大部分在普通 Web 应用中用得很少，如果真是需要控制到那么精细的地步，我觉得首先应该反思一下设计。jQuery 的 AJAX 封装中，已经包括了两种异步请求类型， //XHR// ， //script// , 还差一种 //iframe// 就齐全了。同时， jQuery 的 AJAX 封装中，包括了对 //jsonp// 形式的支持。
+
+==请求与回调==
+
+jQuery 的 AJAX ，核心的请求处理函数只有一个，就是 //$.ajax()// ，然后就是一个简单的上层函数。
+
+//$.ajax()// 的基本使用形式是：
+
+: ``jQuery.ajax( settings )``
+    //settings// 是一个对象，里面包含了所有的配置项。
+
+
+这里，只介绍常用的 //settings// 项：
+
+: //url//
+    请求的地址。
+: //type//
+    请求的方法类型， //GET// , //POST// 。 默认是 //GET// 。
+: //data//
+    要发送出去的数据。
+: //dataType//
+    服务器返回的数据类型，支持： 'xml', 'html', 'script', 'json', 'jsonp', 'text' 。
+: //success//
+    请求成功时调用的处理函数。 ``success(data, textStatus, jqXHR)`` 。
+: //context//
+    回调函数执行时的上下文
+: //cache//
+    默认为 //true// ，是否为请求单独添加一个随机参数以防止浏览器缓存
+: //error//
+    请求错误时的调用函数。 ``error(jqXHR, textStatus, errorThrown)`` ，第二个参数是表示请求状态的字符串： "timeout", "error", "abort", "parsererror" 。第三个参数是当 HTTP 错误发生时，具体的错误描述： "Not Found", "Internal Server Error." 等。
+: //complete//
+    请求结束（无论成功或失败）时的一个回调函数。 ``complete(jqXHR, textStatus)`` ，第二个参数是表示请求状态的字符串： "success", "notmodified", "error", "timeout", "abort", "parsererror" 。
+: //jsonp//
+    //callback// 参数值。默认是自动生成的一个随机值。设置成 //false// 可以让请求没有 //callback// 参数。
+
+
+对于整套应用来说，其资源请求通常有一套约定的规则，使用 //$.ajaxSetup()// 可以配置参数的默认值，参数就是上面介绍的那些（不完整）。
+
+: ``$.ajax(options)``
+    AJAX 请求的默认配置。
+
+
+前面提到过， //$.ajax()// 是一个核心函数，在其之上，有一些现成的封装，常用的是：
+
+: ``$.get( url [, data] [, success(data, textStatus, jqXHR)] [, dataType] )``
+    GET 请求
+: ``$.post( url [, data] [, success(data, textStatus, jqXHR)] [, dataType] )``
+    POST 请求
+
+
+==请求的状态==
+
+一个 AJAX 请求可以看成是一个触发了一连串事件的总事件。这样，对于全局的所有 AJAX 请求而言，我们可以在任意节点上，绑定到全局任意 AJAX 请求的每一个事件：
 
 ```
-$(function(){
-    function go(event){
-        event.preventDefault();
-        $.get("python.py",
-              {'a[]': [$(this).text(),$(this).text()],
-               'b': $(this).text()},
-              function(data,stat,XHR){
-                  $("#rating").text(data);
-              },
-              'text');
-    }
-
-    var ratingMarkup = ["Please rate: "];
-    for (var i = 1; i <= 5; i++){
-        ratingMarkup[ratingMarkup.length] = '<a href="#">' + i + '</a>';
-    };
-    $("#rating").append(ratingMarkup.join(' ')).find("a").click(go);
-});
-```
-
-==发送请求与处理返回结果==
-
-可以使用 $.get() 或 $.post() 两种方法来发送请求。然后定义一个函数，在结果返回时被调用。这两个函数的调用参数是一样的。
-
-```
-jQuery.get( url, [ data ], [ callback(data, textStatus, XMLHttpRequest) ], [ dataType ] )
-```
-
-: url 请求的 URL ，字符串。
-: data 要发送的数据， GET 方法也使用这个。可以是一个字典或一个字符串。
-    字典的话，每个成员的数据类型可以是字符串也可以是列表。如果为列表，则为类似 a=1&a=2 这样的发送串。
-
-```
-{'a[]': ['1', '2', '3'],
- 'b': 'postdata')},
-```
-
-: callback 定义的回调函数，它会在服务器返回结果后被调用，被调用时会传入三个参数：
-: data 服务器返回的结果。当然，它一定是字符串，但是，对于 JSON 这些格式是可以指定后直接被处理的。
-: textStatus 如果成功返回，则此参数为“success”。
-: XMLHttpRequest 即当前使用的 XMLHttpRequest 对象。
-: dataType指明服务器返回的字符串是什么格式的。比如 text JSON 。
-
-
-与 $.get() 和 $.post() 两个函数差不多还有 $.getJSON() 和 $.getScript() 它们的使用方法都一样（但最后一个 dataType 参数显然就不要了），前者用于直接获取 JSON 的返回结果，后者获取 JavaScript 脚本的返回结果。
-
-$.get() 和 $.post() 只是对 $.ajax() 这个函数的封装。完全的 AJAX 请求函数是 $.ajax() 。但是，这玩意儿中的参数有点多，现在先不管它。
-
-另外，你可以使用 $.ajaxSetup() 来为之后的 $.ajax() 调用设置默认值，这样你反复请求一个服务器的话，就可以少写一些代码。
-
-```
-$.ajaxSetup({
-   url: "/xmlhttp/",
-   global: false,
-   type: "POST"
-
-});
-$.ajax({ data: myData });
-```
-
-==node.load()==
-
-这个函数也是用于从服务器获取数据的。但是它和前一节介绍的函数有一点不同，就是它会把获取到的数据直接填充到结点中去。
-
-```
-.load( url, [ data ], [ complete(responseText, textStatus, XMLHttpRequest) ] )
-```
-
-==各种状态的HOOK==
-
-```
-$(function(){
-    $("#rating").ajaxComplete(function(){
-        alert("good");
-    });
-    $("#rating").click(function(event){
-        $(this).load('rate.txt');
-    });
-});
+$("#loading").ajaxStart(function(){
+   $(this).show();
+ });
 ```
 
 
-上面的代码，注册了一个函数到 ajaxComplete ，也算是一个事件吧。在 load 完后就会自动执行 ajaxComplete 中注册的那个函数。
-
-- ajaxComplete 传输完成时。
-- ajaxError() 传输出现错误时。
-- ajaxSend() 请求发出前。
-- ajaxStart() 第一个请求发出时。
-- ajaxStop() 请求结束时。
-- ajaxSuccess() 请求成功完成时
-
-
-
-==参数的包装==
-
-jQuery 提供了几个函数用于包装发送到服务器的参数对串。
+: //.ajaxStart()//
+    请求将要发出时
+: //.ajaxSend()//
+    请求将要发出时(在 //.ajaxStart()// 后)
+: //.ajaxSuccess()//
+    请求成功
+: //.ajaxError()//
+    请求错误
+: //.ajaxComplete()//
+    请求完成
+: //.ajaxStop()//
+    请求结束(在 //.ajaxComplete()// 后)
 
 
-===$.param()===
+==工具函数==
 
-```
-var s = [{name:"first",value:"Rick"},
-         {name:"last",value:"Astley"},
-         {name:"job",value:"Rock Star"}];
-var r = $.param(s);
-alert(r);
-alert(decodeURIComponent(r));
-
-// Result:
-// first=Rick&last=Astley&job=Rock+Star
-
-var s = {a: {one: 1, two: 2, three: 3},
-         b: [1,2,3]};
-
-var r = $.param(s);
-alert(r);
-alert(decodeURIComponent(r));
-
-// Result:
-// a[one]=1&a[two]=2&a[three]=3&b[]=1&b[]=2&b[]=3
-
-var s = {a: {one: 1, two: 2, three: 3},
-         b: [1,2,3]};
-
-var r = $.param(s, true);
-alert(r);
-alert(decodeURIComponent(r));
-
-// Result:
-// a=[object+Object]&b=1&b=2&b=3
-```
-
-===node.serialize()===
-
-```
-<form>
-    <div><input type="text" name="a" value="1" id="a" /></div>
-    <div><input type="text" name="b" value="2" id="b" /></div>
-    <div><input type="hidden" name="c" value="3" id="c" /></div>
-    <div>
-        <textarea name="d" rows="8" cols="40">4</textarea>
-    </div>
-    <div><select name="e">
-            <option value="5" selected="selected">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-    </select></div>
-    <div>
-        <input type="checkbox" name="f" value="8" id="f" />
-    </div>
-    <div>
-        <input type="submit" name="g" value="Submit" id="g" />
-    </div>
-</form>
-```
-
-如果提交上面这个表单（保持这个状态）：
-
+: //.serialize()//
+    解析表单参数项，返回字符串。
 ```
 $('form').submit(function() {
-    alert($(this).serialize());
-    return false;
+  alert($(this).serialize());
+  return false;
 });
-
-// Result:
-// a=1&b=2&c=3&d=4&e=5
+//a=1&b=2
 ```
-
-===node.serializeArray()===
-
-和上面一个函数一样，都是用于包装表单数据的。只是，上面一个函数的结果是一个发送到服务器的编码串，而这个函数的结果，是一个复合列表：
-
+: //.serializeArray()//
+    解析表单参数项，返回一个列表对象。
 ```
 $('form').submit(function() {
-    alert($(this).serializeArray());
-    return false;
+  console.log($(this).serializeArray());
+  return false;
 });
 
-// Result:
-// [{ name: a value: 1 },
-//  { name: b value: 2 },
-//  { name: c value: 3 },
-//  { name: d value: 4 },
-//  { name: e value: 5 }]
+//
+[
+  {name: 'a', value: '1'},
+  {name: 'b', value: '2'}
+]
 ```
 
-=动画效果=
 
-==简单的例子==
+=泛化回调=
 
-要实现动画效果，最简单的方法就是直接使用 hide 和 show 这些方法：
 
-```
-$("#control").toggle(
-    function(){
-        $("#show").hide("slow");
-    },
-    function(){
-        $("#show").show("fast");
-    }
-);
-```
+前面已经介绍过的 AJAX 是一种典型的异步回调的过程，我们发出请求，然后定义了当请求返回时要做什么事。显然，同样的机制可以应用于任何的地方，特别是在于 javascript 这种本来大部分时候都处于异步的运行环境中时，回调的方式更是大有用武之地。
 
-如果要想定制效果，就需要使用一些“原始”点的函数了，比如直接使用 animate ：
+好了，其实我要说的就是在除 AJAX 之外的地方，也应该有机制来支持我们使用异步回调。
+
+
+==Deferred==
+
+//Deferred// 对象是在 jQuery1.5 中引入的回调管理对象。其作用，大概就是把一堆函数按顺序放入一个调用链，然后根据状态，来依次调用这些函数。 AJAX 的所有操作都是使用它来进行封装的。比如我们定义的，当请求正常返回时，会调用 //success// 定义的函数，失败时，会调用 //error// 定义的函数。这里的“失败”，“正常”就是状态，而对应的函数，只是调用链中的一个而且。
+
+先来看一个直观的例子：
 
 ```
-$("#control").toggle(
-    function(){
-        $("#show").animate({height: "hide", opacity: "hide"}, "slow");
-    },
-    function(){
-        $("#show").animate({height: "show", opacity: "show"}, "slow");
-    }
-);
+var obj = $.Deferred(function(a){});
+obj.done(function(){console.log('1')});
+obj.done(function(){console.log('2')});
+obj.resolve();
 ```
 
-==常用的预定制效果函数==
+这样，我们就可以按顺序看到 1 , 2 这两个输出了。
 
-===渐隐效果的 fadeIn() 和 fadeOut()===
+总的来说， jQuery 的 //Deferred// 对象有三个状态： //done// , //fail// , //process// 。
 
-两个函数的使用方法与参数列是一样的：
+- //process// 只能先于其它两个状态先被激发。
+- //done// 和 //fail// 互斥，只能激发一个。
+- //process// 可以被重复激发，而 //done// 和 //fail// 只能激发一次。
+
+
+然后， jQuery 提供了一些函数用于添加回调，激发状态等：
+
+: //deferred.done()//
+    添加一个或多个成功回调。
+: //deferred.fail()//
+    添加一个或多个失败回调。
+: //deferred.always()//
+    添加一个函数，同时应用于成功和失败。
+: //deferred.progress()//
+    添加一个函数用于准备回调。
+: //deferred.then()//
+    依次接受三个函数，分别用于成功，失败，准备状态。
+: //deferred.reject()//
+    激发失败状态。
+: //deferred.resolve()//
+    激发成功状态。
+: //deferred.notify()//
+    激发准备状态。
+
+
+如果一个 //Deferred// 已经被激发，则新添加的对应的函数会被立即执行。
+
+除了上面的这些操作函数之外， jQuery 还提供了一个 //jQuery.when()// 的回调管理函数，可以用于方便地管理多个事件并发的情况，先看一个 AJAX 的“原始状态”例子：
 
 ```
-fadeIn([duration], [callback])
-```
-
-: duration 动画效果的持续时间，单位是毫秒。
-    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
-: callback
-    当动画效果完成时会被调用的函数。
-
-
-===渐隐效果的 fadeTo()===
-
-```
-$(function(){
-    $("#control").toggle(
-        function(){
-            $("#show").fadeTo(1000, 0.5, function(){alert("你看不到我");});
-        },
-        function(){
-            $("#show").fadeTo(1000, 1, function(){alert("我回来了");});
-        }
-    );
+var defer = $.ajax({
+  url: '/json.html',
+  dataType: 'json'
 });
+
+defer.done(function(data){console.log(data)});
 ```
 
 
-这个函数也可以实现渐隐效果，它还可以让你自定义透明度。不过，你最好不要把它和上面两个函数混用。
+//.done()// 做的事和使用 //success// 定义是一样的。
+
+当我们需要完成，像“请求A和请求B都完成时，执行函数”之类的需求时，使用 //$.when()// 就可以了：
 
 ```
-fadeTo(duration, opactity, [callback])
-```
-
-: duration 同上，动画效果的持续时间。
-: opactity 动画结束时的透明度，（0 到 1 之间的数）。
-: callback 动画结束时会被调用的函数。
-
-
-===展开效果的 slideUp() 和 slideDown()===
-
-两个函数的使用方法与参数列是一样的：
-
-```
-slideUp([duration], [callback])
-```
-
-: duration 动画效果的持续时间，单位是毫秒。
-    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
-: callback
-    当动画效果完成时会被调用的函数。
-
-
-===展开效果的 slideToggle()===
-
-这个函数的行为，就像是自动实现了上面两个函数的转换。
-
-```
-$(function(){
-    $("#control").click(
-        function(){
-            $("#show").slideToggle(1000, function(){alert("我回来了");});
-        }
-    );
+var defer_1 = $.ajax({
+  url: '/json.html',
+  dataType: 'json'
 });
+
+var defer_2 = $.ajax({
+  url: '/jsonp.html',
+  dataType: 'jsonp'
+});
+
+var new_defer = $.when(defer_1, defer_2);
+new_defer.done(function(){console.log('haha')});
 ```
 
-使用方法与上面两个是一样的：
+在 //$.when()// 中的 //Deferred// ，只要有一个是 //fail// ，则整体结果为 //fail// 。
+
+
+==Callbacks==
+
+讲了 //Deferred// ，现在再来看 //Callbacks// ，这才是本源。事实上， //Deferred// 机制，只是在 //Callbacks// 机制的上层进行了一层简单封装而且。 //Callbacks// 对象，才是真正的 jQuery 中定义的原始的回调管理机制。
 
 ```
-slideToggle([duration], [callback])
+var obj = $.Callbacks();
+obj.add(function(){console.log('1')});
+obj.add(function(){console.log('2')});
+obj.fire();
 ```
 
-: duration 动画效果的持续时间，单位是毫秒。
-    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
-: callback
-    当动画效果完成时会被调用的函数。
+
+//Callbacks// 对象的初始化支持一组控制参数：
+
+: //$.Callbacks( flags )//
+    初始化一个回调管理对象。 //flags// 是空格分割的多个字符串，以定义此回调对象的行为：
+    - //once// 回调链只能被激发一次
+    - //memory// 回调链被激发后，新添加的函数被立即执行
+    - //unique// 相同的回调函数只能被添加一次
+    - //stopOnFalse// 当有回调函数返回 //false// 时终止调用链的执行
 
 
-===伸缩效果的 hide() 和 show()===
+//Callbacks// 的控制方法：
 
-两个函数的使用方法与参数列是一样的：
+: //callbacks.add()//
+    添加一个或一串回调函数
+: //callbacks.fire()//
+    激发回调
+: //callbacks.remove()//
+    从调用链中移除指定的函数
+: //callbacks.empty()//
+    清空调用链
+: //callbacks.disable()//
+    关闭调用链的继续执行，新添加的函数也不会被执行
+: //callbacks.lock()//
+    锁定调用链，但是如果打开了 //memory// 的 flag ，新添加的函数仍然会执行
+: //callbacks.has()//
+    检查一个函数是否处于回调链之中
+: //callbacks.fired()//
+    检查调用链是否已经被激发
+: //callbacks.locked()//
+    检查调用链是否被锁定
 
-```
-hide([duration], [callback])
-```
 
-: duration 动画效果的持续时间，单位是毫秒。
-    这个参数的默认值是 400 你也可以写上 null 。一般对于这种表示时间长短的参数，有两个“常量”可以使用， slow 和 fast 。前者是 600 ，后者是 200 。
-: callback 当动画效果完成时会被调用的函数。
+
