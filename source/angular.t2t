@@ -1,0 +1,683 @@
+AngularJS学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus
+%%toc
+
+
+
+=关于AngularJS=
+
+[AngularJS http://angularjs.org/] 是 Google 开源出来的一套 js 工具。下面简称其为 [ng http://docs.angularjs.org/misc/faq] 。这里只说它是“工具”，没说它是完整的“框架”，是因为它并不是定位于去完成一套框架要做的事。更重要的，是它给我们揭示了一种新的应用组织与开发方式。
+
+ng 最让我称奇的，是它的数据双向绑定。其实想想，我们一直在提数据与表现的分离，但是这里的“双向绑定”从某方面来说，是把数据与表现完全绑定在一起——数据变化，表现也变化。反之，表现变化了，内在的数据也变化。有过开发经验的人能体会到这种机制对于前端应用来说，是很有必要的，能带来维护上的巨大优势。当然，这里的绑定与提倡的分离并不是矛盾的。
+
+ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己也做了一个轻量级的 jQuery ，主要实现了元素操作部分的 API 。
+
+关于 ng 的几点：
+
+- 对 IE 方面，它兼容 IE8 及以上的版本。
+- 与 jQuery 集成工作，它的一些对象与 jQuery 相关对象表现是一致的。
+- 使用 ng 时不要冒然去改变相关 DOM 的结构。
+
+
+=开始的例子=
+
+我们从一个完整的例子开始认识 ng ：
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<title>试验</title>
+
+<script type="text/javascript" src="jquery-1.8.3.js"></script>
+<script type="text/javascript" src="angular.js"></script>
+
+</head>
+<body>
+  <div ng-controller="BoxCtrl">
+    <div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"></div>
+    <p>{{ w }} x {{ h }}</p>
+    <p>W: <input type="text" ng-model="w" /></p>
+    <p>H: <input type="text" ng-model="h" /></p>
+  </div>
+
+
+<script type="text/javascript" charset="utf-8">
+
+
+var BoxCtrl = function($scope, $element){
+
+  //$element 就是一个 jQuery 对象
+  var e = $element.children().eq(0);
+  $scope.w = e.width();
+  $scope.h = e.height();
+
+  $scope.click = function(){
+    $scope.w = parseInt($scope.w) + 10;
+    $scope.h = parseInt($scope.h) + 10;
+  }
+
+  $scope.$watch('w',
+    function(to, from){
+      e.width(to);
+    }
+  );
+
+  $scope.$watch('h',
+    function(to, from){
+      e.height(to);
+    }
+  );
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+</body>
+</html>
+```
+
+从上面的代码中，我们看到在通常的 HTML 代码当中，引入了一些标记，这些就是 ng 的模板机制，它不光完成数据渲染的工作，还实现了数据绑定的功能。
+
+同时，在 HTML 中的本身的 DOM 层级结构，被 ng 利用起来，直接作为它的内部机制中，上下文结构的判断依据。比如例子中 //p// 是 //div// 的子节点，那么 //p// 中的那些模板标记就是在 //div// 的 //Ctrl// 的作用范围之内。
+
+其它的，也同样写一些 js 代码，里面重要的是作一些数据的操作，事件的绑定定义等。这样，数据的变化就会和页面中的 DOM 表现联系起来。一旦这种联系建立起来，也即完成了我们所说的“双向绑定”。然后，这里说的“事件”，除了那些“点击”等通常的 DOM 事件之外，我们还更关注“数据变化”这个事件。
+
+最后，可以使用：
+
+```
+angular.bootstrap(document.documentElement);
+```
+
+来把整个页面驱动起来了。（你可以看到一个可被控制大小的红色方块）
+
+
+
+=依赖注入=
+
+**injector** ， 我从 ng 的文档中得知这个概念，之后去翻看源码时了解了一下这个机制的工作原理。感觉就是虽然与自己的所想仅差那么一点点，但就是这么一点点，让我感慨想象力之神奇。
+
+先看我们之前代码中的一处函数定义：
+
+```
+var BoxCtrl = function($scope, $element){}
+```
+
+在这个函数定义中，注意那两个参数： //$scope// ， //$element// ，这是两个很有意思的东西。总的来说，它们是参数，这没什么可说的。但又不仅仅是参数——你换个名字代码就不能正常运行了。
+
+事实上，这两个参数，除了完成“参数”的本身任务之外，还作为一种语法糖完成了“依赖声明”的任务。本来这个函数定义，完整的写法应该像 AMD 声明一样，写成：
+
+```
+var BoxCtrl = ['$scope', '$element', function(s, e){}];
+```
+
+这样就很明显，表示有一个函数，它依赖于两个东西，然后这两个东西会依次作为参数传入。
+
+简单起见，就写成了一个函数定义原本的样子，然后在定义参数的名字上作文章，来起到依赖声明的作用。
+
+在处理时，通过函数对象的 //toString()// 方法可以知道这个函数定义代码的字符串表现形式，然后就知道它的参数是 //$scope// 和 //$element// 。通过名字判断出这是两个外部依赖，然后就去获取资源，最后把资源作为参数，调用定义的函数。
+
+所以，参数的名字是不能随便写的，这里也充分利用了 js 的特点来尽量做到“反省”了。
+
+在 Python 中受限于函数名的命名规则，写出来不太好看。不过也得利于反省机制，做到这点也很容易：
+
+```
+# -*- coding: utf-8 -*-
+
+def f(Ia, Ib):
+    print Ia, Ib
+
+args = f.func_code.co_varnames
+SRV_MAP = {
+    'Ia': '123',
+    'Ib': '456',
+}
+
+srv = {}
+for a in args:
+    if a in SRV_MAP:
+        srv[a] = SRV_MAP[a]
+f(**srv)
+```
+
+
+=作用域=
+
+这里提到的“作用域”的概念，是一个在范围上与 DOM 结构一致，数据上相对于某个 //$scope// 对象的属性的概念。我们还是从 HTML 代码上来入手：
+
+```
+<div ng-controller="BoxCtrl">
+  <div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"></div>
+  <p>{{ w }} x {{ h }}</p>
+  <p>W: <input type="text" ng-model="w" /></p>
+  <p>H: <input type="text" ng-model="h" /></p>
+</div>
+```
+
+上面的代码中，我们给一个 //div// 元素指定了一个 //BoxCtrl// ，那么， //div// 元素之内，就是 //BoxCtrl// 这个函数运行时， //$scope// 这个注入资源的控制范围。在代码中我们看到的 //click()// ， //w// ， //h// 这些东西，它们本来的位置对应于 //$scope.click// ， //$scope.w// ， //$scope.h// 。
+
+我们在后面的 js 代码中，也可以看到我们就是在操作这些变量。依赖于 ng 的数据绑定机制，操作变量的结果直接在页面上表现出来了。
+
+
+=数据绑定与模板=
+
+我纠结了半天，“数据绑定”与“模板”这两个东西还真没办法分开来说。因为数据绑定需要以模板为载体，离开了模板，数据还绑个毛啊。
+
+ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了描述方便，下面分别介绍。
+
+==数据->模板==
+
+数据到表现的绑定，主要是使用模板标记直接完成的：
+
+```
+<p>{{ w }} x {{ h }}</p>
+```
+
+使用 //{{ }}// 这个标记，就可以直接引用，并绑定一个作用域内的变量。在实现上， ng 自动创建了一个 //watcher// 。效果就是，不管因为什么，如果作用域的变量发生了改变，我们随时可以让相应的页面表现也随之改变。我们可以看一个更纯粹的例子：
+
+```
+<p id="test" ng-controller="TestCtrl">{{ a }}</p>
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.a = '123';
+}
+angular.bootstrap(document.documentElement);
+```
+
+上面的例子在页面载入之后，我们可以在页面上看到 ``123`` 。这时，我们可以打开一个终端控制器，输入：
+
+```
+$('#test').scope().a = '12345';
+$('#test').scope().$digest();
+```
+
+上面的代码执行之后，就可以看到页面变化了。
+
+对于使用 ng 进行的事件绑定，在处理函数中就不需要去关心 //$digest()// 的调用了。因为 ng 会自己处理。源码中，对于 ng 的事件绑定，真正的处理函数不是指定名字的函数，而是经过 //$apply()// 包装过的一个函数。这个 //$apply()// 做的一件事，就是调用根作用域 //$rootScope// 的 //$digest()// ，这样整个世界就清净了：
+
+```
+<p id="test" ng-controller="TestCtrl" ng-click="click()">{{ a }}</p>
+
+<script type="text/javascript" charset="utf-8">
+var TestCtrl = function($scope){
+  $scope.a = '123';
+
+  $scope.click = function(){
+    $scope.a = '456';
+  }
+}
+angular.bootstrap(document.documentElement);
+```
+
+那个 //click// 函数的定义，绑定时变成了类似于：
+
+```
+function(){
+  $scope.$apply(
+    function(){
+      $scope.click();
+    }
+  )
+}
+```
+
+这里的 //$scope.$apply()// 中做的一件事：
+
+```
+$rootScope.$digest();
+```
+
+
+==模板->数据==
+
+模板到数据的绑定，主要是通过 //ng-model// 来完成的：
+
+```
+<input type="text" id="test" ng-controller="TestCtrl" ng-model="a" />
+
+<script type="text/javascript" charset="utf-8">
+var TestCtrl = function($scope){
+  $scope.a = '123';
+}
+```
+
+这时修改 //input// 中的值，然后再在控制终端中使用：
+
+```
+$('#test').scope().a
+```
+
+查看，发现变量 //a// 的值已经更改了。
+
+实际上， //ng-model// 是把两个方向的绑定都做了。它不光显示出变量的值，也把显示上的数值变化反映给了变量。这个在实现上就简单多了，只是绑定 //change// 事件，然后做一些赋值操作即可。不过 ng 里，还要区分对待不同的控件。
+
+
+==数据->模板->数据->模板==
+
+现在要考虑的是一种在现实中很普遍的一个需求。比如就是我们可以输入数值，来控制一个矩形的长度。在这里，数据与表现的关系是：
+
+- 长度数值保存在变量中
+- 变量显示于某个 input 中
+- 变量的值即是矩形的长度
+- input 中的值变化时，变量也要变化
+- input 中的值变化时，矩形的长度也要变化
+
+
+当然，要实现目的在这里可能就不止一种方案了。按照以前的做法，很自然地会想法，绑定 //input// 的 //change// 事件，然后去做一些事就好了。但是，我们前面提到过 //ng-model// 这个东西，利用它就可以在不手工处理 //change// 的条件下完成数据的展现需求，在此基础之上，我们还需要做的一点，就是把变化后的数据应用到矩形的长度之上。
+
+最开始，我们面对的应该是这样一个东西：
+
+```
+<div ng-controller="TestCtrl">
+  <div style="width: 100px; height: 10px; background-color: red"></div>
+  <input type="text" name="width" ng-model="width" />
+</div>
+
+<script type="text/javascript" charset="utf-8">
+var TestCtrl = function($scope){
+  $scope.width = 100;
+}
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+
+我们从响应数据变化，但又不使用 //change// 事件的角度来看，可以这样处理宽度变化：
+
+```
+var TestCtrl = function($scope, $element){
+  $scope.width = 100;
+  $scope.$watch('width',
+    function(to, from){
+      $element.children(':first').width(to);
+    }
+  );
+}
+```
+
+使用 //$watch()// 来绑定数据变化。
+
+当然，这种样式的问题，有更直接有效的手段， ng 的数据绑定总是让人惊异：
+
+```
+<div ng-controller="TestCtrl">
+  <div style="width: 10px; height: 10px; background-color: red" ng-style="style"></div>
+  <input type="text" name="width" ng-model="style.width" />
+</div>
+
+
+<script type="text/javascript" charset="utf-8">
+var TestCtrl = function($scope){
+  $scope.style = {width: 100};
+}
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+
+=模板=
+
+前面讲了数据绑定之后，现在可以单独讲讲模板了。
+
+作为一套能称之谓“模板”的系统，除了能干一些模板的常规的事之外（好吧，即使是常规的逻辑判断现在它也做不了的），配合作用域 //$scope// 和 ng 的数据双向绑定机制， ng 的模板系统就变得比较神奇了。
+
+
+==内容呈现==
+
+===重复 ng-repeat===
+
+这算是唯一的一个控制标签么……，它的使用方法类型于：
+
+```
+<div ng-controller="TestCtrl">
+  <ul ng-repeat="member in obj_list">
+    <li>{{ member }}</li>
+  </ul>
+</div>
+
+
+var TestCtrl = function($scope){
+  $scope.obj_list = [1,2,3,4];
+}
+```
+
+除此之外，它还提供了几个变量可供使用：
+
+- //$index// 当前索引
+- //$first// 是否为头元素
+- //$middle// 是否为非头非尾元素
+- //$last// 是否为尾元素
+
+
+```
+<div ng-controller="TestCtrl">
+  <ul ng-repeat="member in obj_list">
+    <li>{{ $index }}, {{ member.name }}</li>
+  </ul>
+</div>
+
+var TestCtrl = function($scope){
+  $scope.obj_list = [{name: 'A'}, {name: 'B'}, {name: 'C'}];
+}
+```
+
+===赋值 ng-init===
+
+这个指令可以在模板中直接赋值，它作用于 //angular.bootstrap// 之前，并且，定义的变量与 //$scope// 作用域无关。
+
+```
+<div ng-controller="TestCtrl" ng-init="a=[1,2,3,4];">
+  <ul ng-repeat="member in a">
+    <li>{{ member }}</li>
+  </ul>
+</div>
+```
+
+
+===引入 ng-include===
+
+直接引入同域的外部文件作为模板的一部分：
+
+```
+<div ng-include src="'tpl.html'">
+</div>
+
+<div ng-include="'tpl.html'">
+</div>
+```
+
+注意， //src// 中的字符串会作为表达式处理（可以是 //$scope// 中的变量），所以，直接写名字的话需要使用引号。
+
+
+==节点控制==
+
+===样式 ng-style===
+
+可以使用一个结构直接表示当前节点的样式：
+
+```
+<div ng-style="{width: 100, height: 100, backgroundColor: 'red'}">
+</div>
+```
+
+同样地，绑定一个变量的话，威力大了。
+
+
+===类 ng-class===
+
+就是直接地设置当前节点的类，同样，配合数据绑定作用就大了：
+
+```
+<div ng-controller="TestCtrl" ng-class="cls">
+</div>
+```
+
+//ng-class-even// 和 //ng-class-odd// 是和 //ng-repeat// 配合使用的：
+
+```
+<ul ng-init="l=[1,2,3,4]">
+  <li ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="m in l">{{ m }}</li>
+</ul>
+```
+
+注意里面给的还是表示式，别少了引号。
+
+
+===显示和隐藏 ng-show ng-hide ng-switch===
+
+前两个是控制 //display// 的指令：
+
+```
+<div ng-show="true">1</div>
+<div ng-show="false">2</div>
+<div ng-hide="true">3</div>
+<div ng-hide="false">4</div>
+```
+
+后一个 //ng-switch// 是根据一个值来决定哪个节点显示，其它节点移除：
+
+```
+<div ng-init="a=2">
+  <ul ng-switch on="a">
+    <li ng-switch-when="1">1</li>
+    <li ng-switch-when="2">2</li>
+    <li ng-switch-default>other</li>
+  </ul>
+</div>
+```
+
+===其它属性控制===
+
+//ng-src// 控制 //src// 属性：
+
+```
+<img ng-src="{{ 'h' + 'ead.png' }}" />
+```
+
+//ng-href// 控制 //href// 属性：
+
+```
+<a ng-href="{{ '#' + '123' }}">here</a>
+```
+
+总的来说：
+
+- //ng-src// src属性
+- //ng-href// href属性
+- //ng-checked// 选中状态
+- //ng-selected// 被选择状态
+- //ng-disabled// 禁用状态
+- //ng-multiple// 多选状态
+- //ng-readonly// 只读状态
+
+
+
+==事件绑定==
+
+事件绑定是模板指令中很好用的一部分。我们可以把相关事件的处理函数直接写在 DOM 中，这样做的最大好处就是可以从 DOM 结构上看出业务处理的形式，你知道当你点击这个节点时哪个函数被执行了。
+
+- //ng-change//
+- //ng-click//
+- //ng-dblclick//
+- //ng-mousedown//
+- //ng-mouseenter//
+- //ng-mouseleave//
+- //ng-mousemove//
+- //ng-mouseover//
+- //ng-mouseup//
+
+
+
+
+
+=锚点路由=
+
+准确地说，这应该叫对 //hashchange// 事件的处理吧。
+
+就是指 URL 中的锚点部分发生变化时，触发预先定义的业务逻辑。比如现在是 ``/test#/x`` ，锚点部分的值为 ``#`` 后的 ``/x`` ，它就对应了一组处理逻辑。当这部分变化时，比如变成了 ``/test#/t`` ，这时页面是不会刷新的，但是它可以触发另外一组处理逻辑，来做一些事，也可以让页面发生变化。
+
+这种机制对于复杂的单页面来说，无疑是一种强大的业务切分手段。就算不是复杂的单页面应用，在普通页面上善用这种机制，也可以让业务逻辑更容易控制。
+
+ng 提供了完善的锚点路由功能，虽然目前我觉得相当重要的一个功能还有待完善（后面会说），但目前这功能的几部分内容，已经让我思考了很多种可能性了。
+
+ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。这其中包括了路由定义，参数定义，业务处理等。
+
+
+==路由定义==
+
+要使用锚点路由功能，需要在先定义它。目前，对于定义的方法，我个人只发现在“初始化”阶段可以通过 //$routeProvider// 这个服务来定义。
+
+在定义一个 app 时可以定义锚点路由：
+
+```
+<html ng-app="ngView">
+  ... ...
+
+<div ng-view></div>
+
+<script type="text/javascript">
+
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/test',
+      {
+        template: 'test',
+      }
+    );
+  }
+);
+
+</script>
+```
+
+首先看 ``ng-view`` 这个 directive ，它是一个标记“锚点作用区”的指令。目前页面上只能有一个“锚点作用区”。有人已经提了，“多个可命名”的锚点作用区的代码到官方，但是目前官方还没有接受合并，我觉得多个作用区这个功能是很重要的，希望下个发布版中能有。
+
+锚点作用区的功能，就是让锚点路由定义时的那些模板， controller 等，它们产生的 HTML 代码放在作用区内。
+
+比如上面的代码，当你刚打开页面时，页面是空白的。你手动访问 ``/#/test`` 就可以看到页面上出现了 //'test'// 的字样。
+
+在 //angular.bootstrap()// 时也可以定义：
+
+```
+angular.bootstrap(document.documentElement, [
+  function($routeProvider){
+    $routeProvider.when('/test',
+      {
+        template: 'test'
+      }
+    );
+  }
+]);
+```
+
+
+==参数定义==
+
+在作路由定义时，可以匹配一个规则，规则中可以定义路径中的某些部分作为参数之用，然后使用 //$routeParams// 服务获取到指定参数。比如 ``/#/book/test`` 中， //test// 作为参数传入到 controller 中：
+
+```
+<div ng-view></div>
+
+
+<script type="text/javascript">
+
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/book/:title',
+      {
+        template: '{{ title }}',
+        controller: function($scope, $routeParams){
+          $scope.title = $routeParams.title;
+        }
+      }
+    );
+  }
+);
+
+</script>
+```
+
+访问： ``/#/book/test``
+
+不需要预定义模式，也可以像普通 GET 请求那样获取到相关参数：
+
+```
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/book',
+      {
+        template: '{{ title }}',
+        controller: function($scope, $routeParams){
+          $scope.title = $routeParams.title;
+        }
+      }
+    );
+  }
+);
+```
+
+访问： ``/#/book?title=test``
+
+
+==业务处理==
+
+简单来说，当一个锚点路由定义被匹配时，会根据模板生成一个 //$scope// ，同时相应的一个 controller 就会被触发。最后模板的结果会被填充到 //ng-view// 中去。
+
+从上面的例子中可以看到，最直接的方式，我们可以在模板中双向绑定数据，而数据的来源，在 controller 中控制。在 controller 中，又可以使用到像 //$scope// ， //$routeParams// 这些服务。
+
+这里先提一下另外一种与锚点路由相关的服务， //$route// 。这个服务里锚点路由在定义时，及匹配过程中的信息。比如我们搞怪一下：
+
+```
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/a',
+      {
+        template: '{{ title }}',
+        controller: function($scope){
+          $scope.title = 'a';
+        }
+      }
+    );
+
+    $routeProvider.when('/b',
+      {
+        template: '{{ title }}',
+        controller: function($scope, $route){
+          console.log($route);
+          $route.routes['/a'].controller($scope);
+        }
+      }
+    );
+  }
+);
+```
+
+回到锚点定义的业务处理中来。我们可以以字符串形式写模板，也可以直接引用外部文件作为模板：
+
+```
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/test',
+      {
+        templateUrl: 'tpl.html',
+        controller: function($scope){
+          $scope.title = 'a';
+        }
+      }
+    );
+  }
+);
+```
+
+//tpl.html// 中的内容是：
+
+```
+{{ title }}
+```
+
+这样的话，模板可以预定义，也可以很复杂了。
+
+现在暂时忘了模板吧，因为前面提到的，当前 //ng-view// 不能有多个的限制，模板的渲染机制局限性还是很大的。不过，反正会触发一个 controller ，那么在函数当中我们可以尽量地干自己喜欢的事：
+
+
+```
+angular.module('ngView', [],
+  function($routeProvider){
+    $routeProvider.when('/test',
+      {
+        template: '{{}}',
+        controller: function(){
+          $('div').first().html('<b>OK</b>');
+        }
+      }
+    );
+  }
+);
+```
+
+那个空的 //template// 不能省，否则 controller 不会被触发。
