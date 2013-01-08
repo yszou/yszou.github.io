@@ -327,7 +327,54 @@ angular.bootstrap(document.documentElement);
 作为一套能称之谓“模板”的系统，除了能干一些模板的常规的事之外（好吧，即使是常规的逻辑判断现在它也做不了的），配合作用域 //$scope// 和 ng 的数据双向绑定机制， ng 的模板系统就变得比较神奇了。
 
 
-==内容呈现==
+==定义模板内容==
+
+定义模板的内容现在有三种方式：
+
++ 在需要的地方直接写字符串
++ 外部文件
++ 使用 //script// 标签定义的“内部文件”
+
+
+第一种不需要多说。第二种和第三种都可以和 //ng-include// 一起工作，来引入一段模板。
+
+直接引入同域的外部文件作为模板的一部分：
+
+```
+<div ng-include src="'tpl.html'">
+</div>
+
+<div ng-include="'tpl.html'">
+</div>
+```
+
+注意， //src// 中的字符串会作为表达式处理（可以是 //$scope// 中的变量），所以，直接写名字的话需要使用引号。
+
+引入 //script// 定义的“内部文件”：
+
+```
+<script type="text/ng-template" id="tpl">
+here, {{ 1 + 1 }}
+</script>
+
+<div ng-include src="'tpl'"></div>
+
+```
+
+配合变量使用：
+
+```
+<script type="text/ng-template" id="tpl">
+here, {{ 1 + 1 }}
+</script>
+
+<a ng-click="v='tpl'">Load</a>
+<div ng-include src="v"></div>
+```
+
+
+
+==内容渲染控制==
 
 ===重复 ng-repeat===
 
@@ -377,21 +424,6 @@ var TestCtrl = function($scope){
   </ul>
 </div>
 ```
-
-
-===引入 ng-include===
-
-直接引入同域的外部文件作为模板的一部分：
-
-```
-<div ng-include src="'tpl.html'">
-</div>
-
-<div ng-include="'tpl.html'">
-</div>
-```
-
-注意， //src// 中的字符串会作为表达式处理（可以是 //$scope// 中的变量），所以，直接写名字的话需要使用引号。
 
 
 ==节点控制==
@@ -490,7 +522,227 @@ var TestCtrl = function($scope){
 - //ng-mousemove//
 - //ng-mouseover//
 - //ng-mouseup//
+- //ng-submit//
 
+
+==表单控件==
+
+表单控件类的模板指令，最大的作用是它预定义了需要绑定的数据的格式。这样，就可以对于既定的数据进行既定的处理。
+
+===form===
+
+//form// 是核心的一个控件。 ng 对 //form// 这个标签作了包装。事实上， ng 自己的指令是叫 //ng-form// 的，区别在于， //form// 标签不能嵌套，而使用 //ng-form// 指令就可以做嵌套的表单了。
+
+//form// 的行为中依赖它里面的各个输入控制的状态的，在这里，我们主要关心的是 //form// 自己的一些方法和属性。从 ng 的角度来说， //form// 标签，是一个模板指令，也创建了一个 //FormController// 的实例。这个实例就提供了相应的属性和方法。同时，它里面的控件也是一个 //NgModelController// 实例。
+
+很重要的一点， //form// 的相关方法要生效，必须为 //form// 标签指定 //name// 和 //ng-controller// ，并且每个控件都要绑定一个变量。 //form// 和控件的名字，即是 //$scope// 中的相关实例的引用变量名。
+
+```
+<form name="test_form" ng-controller="TestCtrl">
+  <input type="text" name="a" required ng-model="a"  />
+  <span ng-click="see()">{{ test_form.$valid }}</span>
+</form>
+
+var TestCtrl = function($scope){
+
+  $scope.see = function(){
+    console.log($scope.test_form);
+    console.log($scope.test_form.a);
+  }
+
+}
+```
+
+除去对象的方法与属性， //form// 这个标签本身有一些动态类可以使用：
+
+- //ng-valid// 当表单验证通过时的设置
+- //ng-invalid// 当表单验证失败时的设置
+- //ng-pristine// 表单的未被动之前拥有
+- //ng-dirty// 表单被动过之后拥有
+
+
+//form// 对象的属性有：
+
+- //$pristine// 表单是否未被动过
+- //$dirty// 表单是否被动过
+- //$valid// 表单是否验证通过
+- //$invalid// 表单是否验证失败
+- //$error// 表单的验证错误
+
+
+其中的 //$error// 对象包含有所有字段的验证信息，及对相关字段的 //NgModelController// 实例的引用。它的结构是一个对象， ``key`` 是失败信息， //required// ， //minlength// 之类的， ``value`` 是对应的字段实例列表。
+
+注意，这里的失败信息是按序列取的一个。比如，如果一个字段既要求 //required// ，也要求 //minlength// ，那么当它为空时， //$error// 中只有 //required// 的失败信息。只输入一个字符之后， //required// 条件满足了，才可能有 //minlength// 这个失败信息。
+
+```
+<form name="test_form" ng-controller="TestCtrl">
+  <input type="text" name="a" required ng-model="a"  />
+  <input type="text" name="b" required ng-model="b" ng-minlength="2" />
+  <span ng-click="see()">{{ test_form.$error }}</span>
+</form>
+
+var TestCtrl = function($scope){
+  $scope.see = function(){
+    console.log($scope.test_form.$error);
+  }
+}
+```
+
+
+===input===
+
+//input// 是数据的最主要入口。 ng 支持 HTML5 中的相关属性，同时对旧浏览器也做了兼容性处理。最重要的， //input// 的规则定义，是所属表单的相关行为的参照（比如表单是否验证成功）。
+
+//input// 控件的相关可用属性为：
+
+- //name// 名字
+- //ng-model// 绑定的数据
+- //required// 是否必填
+- //ng-required// 是否必填
+- //ng-minlength// 最小长度
+- //ng-maxlength// 最大长度
+- //ng-pattern// 匹配模式
+- //ng-change// 值变化时的回调
+
+
+```
+<form name="test_form" ng-controller="TestCtrl">
+  <input type="text" name="a" ng-model="a" required ng-pattern="/abc/" />
+  <span ng-click="see()">{{ test_form.$error }}</span>
+</form>
+```
+
+
+//input// 控件，它还有一些扩展，这些扩展有些有自己的属性：
+
+- //input type="number"// 多了 ``number`` 错误类型，多了 //max// ， //min// 属性。
+- //input type="url"// 多了 ``url`` 错误类型。
+- //input type="email"// 多了 ``email`` 错误类型。
+
+
+===checkbox===
+
+它也算是 //input// 的扩展，不过，它没有验证相关的东西，只有选中与不选中两个值：
+
+```
+<form name="test_form" ng-controller="TestCtrl">
+  <input type="checkbox" name="a" ng-model="a" ng-true-value="AA" ng-false-value="BB" />
+  <span>{{ a }}</span>
+</form>
+
+var TestCtrl = function($scope){
+  $scope.a = 'AA';
+}
+```
+
+两点：
+
++ controller 要初始化变量值。
++ controller 中的初始化值会关系到控件状态（双向绑定）。
+
+
+===radio===
+
+也是 //input// 的扩展。和 //checkbox// 一样，但它只有一个值了：
+
+```
+<form name="test_form" ng-controller="TestCtrl">
+  <input type="radio" name="a" ng-model="a" value="AA" />
+  <input type="radio" name="a" ng-model="a" value="BB" />
+  <span>{{ a }}</span>
+</form>
+```
+
+===textarea===
+
+同 //input// 。
+
+
+===select===
+
+这是一个比较牛B的控件。它里面的一个叫做 //ng-options// 的属性用于数据呈现。
+
+对于给定列表时的使用。
+
+最简单的使用方法， ``x for x in list`` ：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o=[0,1,2,3]; a=o[1];">
+  <select ng-model="a" ng-options="x for x in o" ng-change="show()">
+    <option value="">可以加这个空值</option>
+  </select>
+</form>
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.show = function(){
+    console.log($scope.a);
+  }
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+在 //$scope// 中， //select// 绑定的变量，其值和普通的 //value// 无关，可以是一个对象：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA'}, {name: 'BB'}]; a=o[1];">
+  <select ng-model="a" ng-options="x.name for x in o" ng-change="show()">
+  </select>
+</form>
+```
+
+显示与值分别指定， ``x.v as x.name for x in o`` ：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', v: '00'}, {name: 'BB', v: '11'}]; a=o[1].v;">
+  <select ng-model="a" ng-options="x.v as x.name for x in o" ng-change="show()">
+  </select>
+</form>
+```
+
+加入分组的， ``x.name group by x.g for x in o`` ：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00'}, {name: 'BB', g: '11'}, {name: 'CC', g: '00'}]; a=o[1];">
+  <select ng-model="a" ng-options="x.name group by x.g for x in o" ng-change="show()">
+  </select>
+</form>
+```
+
+分组了还分别指定显示与值的， ``x.v as x.name group by x.g for x in o`` ：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00', v: '='}, {name: 'BB', g: '11', v: '+'}, {name: 'CC', g: '00', v: '!'}]; a=o[1].v;">
+  <select ng-model="a" ng-options="x.v as x.name group by x.g for x in o" ng-change="show()">
+  </select>
+</form>
+```
+
+如果参数是对象的话，基本也是一样的，只是把遍历的对象改成 ``(key, value)`` ：
+
+```
+<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: 0, b: 1}; a=o.a;">
+  <select ng-model="a" ng-options="k for (k, v) in o" ng-change="show()">
+  </select>
+</form>
+
+<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00'}, b: {name: 'BB', v: '11'}}; a=o.a.v;">
+  <select ng-model="a" ng-options="v.v as v.name for (k, v) in o" ng-change="show()">
+  </select>
+</form>
+
+<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a;">
+  <select ng-model="a" ng-options="v.name group by v.g for (k, v) in o" ng-change="show()">
+  </select>
+</form>
+
+<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;">
+  <select ng-model="a" ng-options="v.v as v.name group by v.g for (k, v) in o" ng-change="show()">
+  </select>
+</form>
+```
 
 
 
