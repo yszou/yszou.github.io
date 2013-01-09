@@ -745,6 +745,188 @@ angular.bootstrap(document.documentElement);
 ```
 
 
+=模板中的过滤器=
+
+这里说的过滤器，是用于对数据的格式化，或者筛选的函数。它们可以直接在模板中通过一种语法使用。对于常用功能来说，是很方便的一种机制。
+
+多个过滤器之间可以直接连续使用。
+
+
+==排序 orderBy==
+
+//orderBy// 是一个排序用的过滤器标签。它可以像 //sort// 函数那样支持一个排序函数，也可以简单地指定一个属性名进行操作：
+
+```
+<div ng-controller="TestCtrl">
+  {{ data | orderBy: 'age' }} <br />
+  {{ data | orderBy: '-age' }} <br />
+  {{ data | orderBy: '-age' | limitTo: 2 }} <br />
+  {{ data | orderBy: ['-age', 'name'] }} <br />
+</div>
+
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.data = [
+    {name: 'B', age: 4},  
+    {name: 'A', age: 1},  
+    {name: 'D', age: 3},  
+    {name: 'C', age: 3},  
+  ];
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+==过滤列表 filter==
+
+//filter// 是一个过滤内容的标签。
+
+如果参数是一个字符串，则列表成员中的任意属性值中有这个字符串，即为满足条件（忽略大小写）：
+
+```
+<div ng-controller="TestCtrl">
+  {{ data | filter: 'b' }} <br />
+  {{ data | filter: '!B' }} <br />
+</div>
+
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.data = [
+    {name: 'B', age: 4},  
+    {name: 'A', age: 1},  
+    {name: 'D', age: 3},  
+    {name: 'C', age: 3},  
+  ];
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+可以使用对象，来指定属性名， //$// 表示任意属性：
+
+```
+{{ data | filter: {name: 'A'} }} <br />
+{{ data | filter: {$: '3'} }} <br />
+{{ data | filter: {$: '!3'} }} <br />
+```
+
+自定义的过滤函数也支持：
+
+```
+<div ng-controller="TestCtrl">
+  {{ data | filter: f }} <br />
+</div>
+
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.data = [
+    {name: 'B', age: 4},  
+    {name: 'A', age: 1},  
+    {name: 'D', age: 3},  
+    {name: 'C', age: 3},  
+  ];
+
+  $scope.f = function(e){
+    return e.age > 2;
+  }
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+==其它==
+
+
+时间戳格式化 //date// ：
+
+```
+<div ng-controller="TestCtrl">
+{{ a | date: 'yyyy-MM-dd HH:mm:ss' }}
+</div>
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.a = ((new Date().valueOf()));
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+列表截取 //limitTo// ，支持正负数：
+
+```
+{{ [1,2,3,4,5] | limitTo: 2 }}
+{{ [1,2,3,4,5] | limitTo: -3 }}
+```
+
+大小写 //lowercase// ， //uppercase// ：
+
+```
+{{ 'abc' | uppercase }}
+{{ 'Abc' | lowercase }}
+```
+
+==例子：表头排序==
+
+```
+<div ng-controller="TestCtrl">
+  <table>
+    <tr>
+      <th ng-click="f='name'; rev=!rev">名字</th>
+      <th ng-click="f='age'; rev=!rev">年龄</th>
+    </tr>
+
+    <tr ng-repeat="o in data | orderBy: f : rev">
+      <td>{{ o.name }}</td>
+      <td>{{ o.age }}</td>
+    </tr>
+  </table>
+</div>
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.data = [
+    {name: 'B', age: 4},  
+    {name: 'A', age: 1},  
+    {name: 'D', age: 3},  
+    {name: 'C', age: 3},  
+  ];
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
+
+==例子：搜索==
+
+```
+<div ng-controller="TestCtrl" ng-init="s=data[0].name; q=''">
+  <div>
+    <span>查找：</span> <input type="text" ng-model="q" />
+  </div>
+  <select ng-multiple="true" ng-model="s" ng-options="o.name as o.name + '(' + o.age + ')' for o in data | filter: {name: q} | orderBy: ['age', 'name'] "></select>
+</div>
+
+<script type="text/javascript">
+var TestCtrl = function($scope){
+  $scope.data = [
+    {name: 'B', age: 4},  
+    {name: 'A', age: 1},  
+    {name: 'D', age: 3},  
+    {name: 'C', age: 3},  
+  ];
+}
+
+angular.bootstrap(document.documentElement);
+</script>
+```
 
 
 =锚点路由=
