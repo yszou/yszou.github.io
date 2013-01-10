@@ -1115,3 +1115,254 @@ angular.module('ngView', [],
 ```
 
 那个空的 //template// 不能省，否则 controller 不会被触发。
+
+
+=定义模板标签=
+
+由于下面涉及动态内容，所以我打算起一个后端服务来做。但是我发现我使用的 Tornado 框架的模板系统，与 ng 的模板系统，都是使用 ``{{ }}`` 这对符号来定义模板表达式的，这太悲剧了，不过幸好 ng 已经提供了修改方法：
+
+```
+angular.bootstrap(document.documentElement,
+  [function($interpolateProvider){
+    $interpolateProvider.startSymbol('[[');
+    $interpolateProvider.endSymbol(']]');
+  }]);
+```
+
+使用 //$interpolateProvider// 服务即可。
+
+
+=AJAX=
+
+ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起来还是很方便的。
+
+
+==HTTP请求==
+
+基本的操作由 //$http// 服务提供。它的使用很简单，提供一些描述请求的参数，请求就出去了，然后返回一个扩充了 //success// 方法和 //error// 方法的 //promise// 对象（下节介绍），你可以在这个对象中添加需要的回调函数。
+
+```
+var TestCtrl = function($scope, $http){
+  var p = $http({
+    method: 'GET',
+    url: '/json'
+  });
+  p.success(function(response, status, headers, config){
+      $scope.name = response.name;
+  });
+}
+```
+
+//$http// 接受的配置项有：
+
+- method 方法
+- url 路径
+- params GET请求的参数
+- data post请求的参数
+- headers 头
+- transformRequest 请求预处理函数
+- transformResponse 响应预处理函数
+- cache 缓存
+- timeout 超时毫秒，超时的请求会被取消
+- withCredentials 跨域安全策略的一个东西 
+
+
+其中的 //transformRequest// 和 //transformResponse// 及 //headers// 已经有定义的，如果自定义则会覆盖默认定义：
+
+```
+var $config = this.defaults = {
+  // transform incoming response data
+  transformResponse: [function(data) {
+    if (isString(data)) {
+      // strip json vulnerability protection prefix
+      data = data.replace(PROTECTION_PREFIX, '');
+      if (JSON_START.test(data) && JSON_END.test(data))
+        data = fromJson(data, true);
+    }
+    return data;
+  }],
+
+  // transform outgoing request data
+  transformRequest: [function(d) {
+    return isObject(d) && !isFile(d) ? toJson(d) : d;
+  }],
+
+  // default headers
+  headers: {
+    common: {
+      'Accept': 'application/json, text/plain, */*',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    post: {'Content-Type': 'application/json;charset=utf-8'},
+    put:  {'Content-Type': 'application/json;charset=utf-8'}
+  }
+};
+```
+
+**注意它默认的 POST 方法出去的 Content-Type**
+
+对于几个标准的 HTTP 方法，有对应的 shortcut ：
+
+- $http.delete(url, config)
+- $http.get(url, config)
+- $http.head(url, config)
+- $http.jsonp(url, config)
+- $http.post(url, data, config)
+- $http.put(url, data, config)
+
+
+注意其中的 JSONP 方法，在实现上会在页面中添加一个 ``script`` 标签，然后放出一个 GET 请求。你自己定义的，匿名回调函数，会被 ng 自已给一个全局变量。在定义请求，作为 GET 参数，你可以使用 ``JSON_CALLBACK`` 这个字符串来暂时代替回调函数名，之后 ng 会为你替换成真正的函数名：
+
+```
+var p = $http({
+  method: 'JSONP',
+  url: '/json',
+  params: {callback: 'JSON_CALLBACK'}
+});
+p.success(function(response, status, headers, config){
+    console.log(response);
+    $scope.name = response.name;
+});
+```
+
+//$http// 有两个属性：
+
+- defaults 请求的全局配置
+- pendingRequests 当前的请求队列状态
+
+
+```
+$http.defaults.transformRequest = function(data){console.log('here'); return data;}
+console.log($http.pendingRequests);
+```
+
+
+==广义回调管理==
+
+和其它框架一样， ng 提供了广义的异步回调管理的机制。 //$http// 服务是在其之上封装出来的。这个机制就是 ng 的 //$q// 服务。
+
+不过 ng 的这套机制总的来说实现得比较简单，按官方的说法，够用了。
+
+使用的方法，基本上是：
+
+- 通过 //$q// 服务得到一个 //deferred// 实例
+- 通过 //deferred// 实例的 //promise// 属性得到一个 //promise// 对象
+- //promise// 对象负责定义回调函数
+- //deferred// 实例负责触发回调
+
+
+```
+var TestCtrl = function($q){
+  var defer = $q.defer();
+  var promise = defer.promise;
+  promise.then(function(data){console.log('ok, ' + data)},
+               function(data){console.log('error, ' + data)});
+  //defer.reject('xx');
+  defer.resolve('xx');
+}
+```
+
+了解了上面的东西，再分别看 //$q// ， //deferred// ， //promise// 这三个东西。
+
+
+===$q===
+
+//$q// 有四个方法：
+
+- //$q.all()// 合并多个 //promise// ，得到一个新的 //promise//
+- //$q.defer()// 返回一个 //deferred// 对象
+- //$q.reject()// 包装一个错误，以使回调链能正确处理下去
+- //$q.when()// 返回一个 //promise// 对象
+
+
+//$q.all()// 方法适用于并发场景很合适：
+
+```
+var TestCtrl = function($q, $http){
+  var p = $http.get('/json', {params: {a: 1}});
+  var p2 = $http.get('/json', {params: {a: 2}});
+  var all = $q.all([p, p2]);
+  p.success(function(res){console.log('here')});
+  all.then(function(res){console.log(res[0])});
+}
+```
+
+//$q.reject()// 方法是在你捕捉异常之后，又要把这个异常在回调链中传下去时使用：
+
+要理解这东西，先看看 //promise// 的链式回调是如何运作的，看下面两段代码的区别：
+
+```
+var defer = $q.defer();
+var p = defer.promise;
+p.then(
+  function(data){return 'xxx'}
+);
+p.then(
+  function(data){console.log(data)}
+);
+defer.resolve('123');
+```
+
+```
+var defer = $q.defer();
+var p = defer.promise;
+var p2 = p.then(
+  function(data){return 'xxx'}
+);
+p2.then(
+  function(data){console.log(data)}
+);
+defer.resolve('123');
+```
+
+从模型上看，前者是“并发”，后者才是“链式”。
+
+而 //$q.reject()// 的作用就是触发后链的 //error// 回调：
+
+```
+var defer = $q.defer();
+var p = defer.promise;
+p.then(
+  function(data){return data},
+  function(data){return $q.reject(data)}
+).
+then(
+  function(data){console.log('ok, ' + data)},
+  function(data){console.log('error, ' + data)}
+)
+defer.reject('123');
+```
+
+最后的 //$q.when()// 是把数据封装成 //promise// 对象：
+
+```
+var p = $q.when(0, function(data){return data},
+                   function(data){return data});
+p.then(
+  function(data){console.log('ok, ' + data)},
+  function(data){console.log('error, ' + data)}
+);
+```
+
+
+===deferred===
+
+//deferred// 对象有两个方法一个属性。
+
+- //promise// 属性就是返回一个 //promise// 对象的。
+- //resolve()// 成功回调
+- //reject()// 失败回调
+
+
+```
+var defer = $q.defer();
+var promise = defer.promise;
+promise.then(function(data){console.log('ok, ' + data)},
+             function(data){console.log('error, ' + data)});
+//defer.reject('xx');
+defer.resolve('xx');
+```
+
+===promise===
+
+//promise// 对象只有 //then()// 一个方法，注册成功回调函数和失败回调函数，再返回一个 //promise// 对象，以用于链式调用。
