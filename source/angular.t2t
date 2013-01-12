@@ -95,6 +95,41 @@ angular.bootstrap(document.documentElement);
 
 来把整个页面驱动起来了。（你可以看到一个可被控制大小的红色方块）
 
+更完整的方法是定义一个 APP ：
+
+```
+<!DOCTYPE html>
+<html ng-app="MyApp">
+<head>
+<meta charset="utf-8" />
+
+<title>数据正向绑定</title>
+
+<script type="text/javascript" src="jquery-1.8.3.js"></script>
+<script type="text/javascript" src="angular.js"></script>
+
+</head>
+<body>
+
+<div ng-controller="TestCtrl">
+  <input type="text" value="" id="a" />
+</div>
+
+
+<script type="text/javascript">
+var TestCtrl = function(){
+  console.log('ok');
+}
+
+//angular.bootstrap(document.documentElement);
+angular.module('MyApp', [], function(){console.log('here')});
+</script>
+
+</body>
+</html>
+```
+
+
 
 
 =依赖注入=
@@ -1117,7 +1152,7 @@ angular.module('ngView', [],
 那个空的 //template// 不能省，否则 controller 不会被触发。
 
 
-=定义模板标签=
+=定义模板变量标识标签=
 
 由于下面涉及动态内容，所以我打算起一个后端服务来做。但是我发现我使用的 Tornado 框架的模板系统，与 ng 的模板系统，都是使用 ``{{ }}`` 这对符号来定义模板表达式的，这太悲剧了，不过幸好 ng 已经提供了修改方法：
 
@@ -1366,3 +1401,208 @@ defer.resolve('xx');
 ===promise===
 
 //promise// 对象只有 //then()// 一个方法，注册成功回调函数和失败回调函数，再返回一个 //promise// 对象，以用于链式调用。
+
+
+=工具函数=
+
+==上下文绑定==
+
+//angular.bind// 是用来进行上下文绑定，参数动态绑定的工具函数。
+
+```
+var f = angular.bind({a: 'xx'},
+  function(){
+    console.log(this.a);
+  }
+);
+f();
+```
+
+参数动态绑定：
+
+```
+var f = function(x){console.log(x)}
+angular.bind({}, f, 'x')();
+```
+
+
+==对象处理==
+
+对象复制： //angular.copy()//
+
+```
+var a = {'x': '123'};
+var b = angular.copy(a);
+a.x = '456';
+console.log(b);
+```
+
+对象聚合： //angular.extend()//
+
+```
+var a = {'x': '123'};
+var b = {'xx': '456'};
+angular.extend(b, a);
+console.log(b);
+```
+
+空函数： //angular.noop()//
+
+大小写转换： //angular.lowercase()// 和 //angular.uppercase()// 
+
+JSON转换： //angular.fromJson()// 和 //angular.toJson()// 
+
+遍历： //angular.forEach()// ，支持列表和对象：
+
+```
+var l = {a: '1', b: '2'};
+angular.forEach(l, function(k, v){console.log(k + ': ' + v)});
+
+var l = ['a', 'b', 'c'];
+angular.forEach(l, function(v, i, o){console.log(v)});
+
+var context = {'t': 'xx'};
+angular.forEach(l, function(v, i, o){console.log(this.t)}, context);
+```
+
+
+==类型判定==
+
+- angular.isArray
+- angular.isDate
+- angular.isDefined
+- angular.isElement
+- angular.isFunction
+- angular.isNumber
+- angular.isObject
+- angular.isString
+- angular.isUndefined
+
+
+=其它服务=
+
+==日志==
+
+ng 提供 //$log// 这个服务用于向终端输出相关信息：
+
+- error()
+- info()
+- log()
+- warn()
+
+
+```
+var TestCtrl = function($log){
+  $log.error('error');
+  $log.info('info');
+  $log.log('log');
+  $log.warn('warn');
+}
+```
+
+==缓存==
+
+ng 提供了一个简单封装了缓存机制 //$cacheFactory// ，可以用来作为数据容器：
+
+```
+var TestCtrl = function($scope, $cacheFactory){
+  $scope.cache = $cacheFactory('s_' + $scope.$id, {capacity: 3});
+
+  $scope.show = function(){
+    console.log($scope.cache.get('a'));
+    console.log($scope.cache.info());
+  }
+
+  $scope.set = function(){
+    $scope.cache.put((new Date()).valueOf(), 'ok');
+  }
+}
+```
+
+调用时，第一个参数是 id ，第二个参数是配置项，目前支持 //capacity// 参数，用以设置缓存能容留的最大条目数。超过这个个数，则自动清除较旧的条目。
+
+缓存实例的方法：
+
+- //info()// 获取 id , size 信息
+- //put(k, v)// 设置新条目
+- //get(k)// 获取条目
+- //remove(k)// 删除条目
+- //removeAll()// 删除所有条目
+- //destroy()// 删除对本实例的引用
+
+
+//$http// 的调用当中，有一个 //cache// 参数，值为 //true// 时为自动维护的缓存。值也可以设置为一个 cache 实例。
+
+
+==计时器==
+
+//$timeout// 服务是 ng 对 //window.setTimeout()// 的封装，它使用 //promise// 统一了计时器的回调行为：
+
+
+```
+var TestCtrl = function($timeout){
+  var p = $timeout(function(){console.log('haha')}, 5000);
+  p.then(function(){console.log('x')});
+  //$timeout.cancel(p);
+}
+```
+
+使用 //$timeout.cancel()// 可以取消计时器。
+
+
+
+==表达式函数化==
+
+//$parse// 这个服务，为 js 提供了类似于 Python 中 //@property// 的能力：
+
+```
+var TestCtrl = function($scope, $parse){
+  $scope.get_name = $parse('name');
+  $scope.show = function(){console.log($scope.get_name($scope))}
+  $scope.set = function(){$scope.name = '123'}
+}
+```
+
+//$parse// 返回一个函数，调用这个函数时，可以传两个参数，第一个作用域，第二个是变量集，后者常用于覆盖前者的变量：
+
+```
+var get_name = $parse('name');
+var r = get_name({name: 'xx'}, {name: 'abc'});
+console.log(r);
+```
+
+//$parse// 返回的函数，也提供了相应的 assign 功能，可以为表达式赋值（如果可以的话）：
+
+```
+var get_name = $parse('name');
+var set_name = get_name.assign;
+var r = get_name({name: 'xx'}, {name: 'abc'});
+console.log(r);
+
+var s = {}
+set_name(s, '123');
+var r = get_name(s);
+console.log(r);
+```
+
+==模板单独使用==
+
+ng 中的模板是很重要，也很强大的一个机制，自然少不了单独运用它的方法。不过，即使是单独使用，也是和 DOM 紧密相关的程度：
+
+- 定义时必须是有 HTML 标签包裹的，这样才能创建 DOM 节点
+- 渲染时必须传入 //$scope// 
+
+
+之后使用 //$compile// 就可以得到一个渲染好的节点对象了。当然， //$compile// 还要做其它一些工作，指令处理什么的。
+
+```
+var TestCtrl = function($scope, $element,$compile){
+  $scope.a = '123';
+  $scope.set = function(){
+    var tpl = $compile('<p>hello {{ a }}</p>');
+    var e = tpl($scope);
+    $element.append(e);
+  }
+}
+```
+

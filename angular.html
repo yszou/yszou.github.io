@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>AngularJS学习笔记 - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="AngularJS学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
+<meta name="description" content="AngularJS学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">AngularJS学习笔记</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-01-12 17:16 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">关于AngularJS</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">开始的例子</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">依赖注入</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">作用域</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">数据绑定与模板</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc6" style="color: #0184b7; text-decoration: none">5.1. 数据-&gt;模板</a>
+    </li>
+    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">5.2. 模板-&gt;数据</a>
+    </li>
+    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">5.3. 数据-&gt;模板-&gt;数据-&gt;模板</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc9" style="color: #0184b7; text-decoration: none">模板</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc10" style="color: #0184b7; text-decoration: none">6.1. 定义模板内容</a>
+    </li>
+    <li><a href="#toc11" style="color: #0184b7; text-decoration: none">6.2. 内容渲染控制</a>
+    </li>
+    <li><a href="#toc14" style="color: #0184b7; text-decoration: none">6.3. 节点控制</a>
+    </li>
+    <li><a href="#toc19" style="color: #0184b7; text-decoration: none">6.4. 事件绑定</a>
+    </li>
+    <li><a href="#toc20" style="color: #0184b7; text-decoration: none">6.5. 表单控件</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc27" style="color: #0184b7; text-decoration: none">模板中的过滤器</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc28" style="color: #0184b7; text-decoration: none">7.1. 排序 orderBy</a>
+    </li>
+    <li><a href="#toc29" style="color: #0184b7; text-decoration: none">7.2. 过滤列表 filter</a>
+    </li>
+    <li><a href="#toc30" style="color: #0184b7; text-decoration: none">7.3. 其它</a>
+    </li>
+    <li><a href="#toc31" style="color: #0184b7; text-decoration: none">7.4. 例子：表头排序</a>
+    </li>
+    <li><a href="#toc32" style="color: #0184b7; text-decoration: none">7.5. 例子：搜索</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc33" style="color: #0184b7; text-decoration: none">锚点路由</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc34" style="color: #0184b7; text-decoration: none">8.1. 路由定义</a>
+    </li>
+    <li><a href="#toc35" style="color: #0184b7; text-decoration: none">8.2. 参数定义</a>
+    </li>
+    <li><a href="#toc36" style="color: #0184b7; text-decoration: none">8.3. 业务处理</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc37" style="color: #0184b7; text-decoration: none">定义模板变量标识标签</a>
+  </li>
+  <li><a href="#toc38" style="color: #0184b7; text-decoration: none">AJAX</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc39" style="color: #0184b7; text-decoration: none">10.1. HTTP请求</a>
+    </li>
+    <li><a href="#toc40" style="color: #0184b7; text-decoration: none">10.2. 广义回调管理</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc44" style="color: #0184b7; text-decoration: none">工具函数</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc45" style="color: #0184b7; text-decoration: none">11.1. 上下文绑定</a>
+    </li>
+    <li><a href="#toc46" style="color: #0184b7; text-decoration: none">11.2. 对象处理</a>
+    </li>
+    <li><a href="#toc47" style="color: #0184b7; text-decoration: none">11.3. 类型判定</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc48" style="color: #0184b7; text-decoration: none">其它服务</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc49" style="color: #0184b7; text-decoration: none">12.1. 日志</a>
+    </li>
+    <li><a href="#toc50" style="color: #0184b7; text-decoration: none">12.2. 缓存</a>
+    </li>
+    <li><a href="#toc51" style="color: #0184b7; text-decoration: none">12.3. 计时器</a>
+    </li>
+    <li><a href="#toc52" style="color: #0184b7; text-decoration: none">12.4. 表达式函数化</a>
+    </li>
+    <li><a href="#toc53" style="color: #0184b7; text-decoration: none">12.5. 模板单独使用</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 关于AngularJS</h1>
+
+<p style="margin: 15px 0;">
+<a href="http://angularjs.org/" style="color: #0184b7; text-decoration: none">AngularJS</a> 是 Google 开源出来的一套 js 工具。下面简称其为 <a href="http://docs.angularjs.org/misc/faq" style="color: #0184b7; text-decoration: none">ng</a> 。这里只说它是“工具”，没说它是完整的“框架”，是因为它并不是定位于去完成一套框架要做的事。更重要的，是它给我们揭示了一种新的应用组织与开发方式。
+</p>
+<p style="margin: 15px 0;">
+ng 最让我称奇的，是它的数据双向绑定。其实想想，我们一直在提数据与表现的分离，但是这里的“双向绑定”从某方面来说，是把数据与表现完全绑定在一起——数据变化，表现也变化。反之，表现变化了，内在的数据也变化。有过开发经验的人能体会到这种机制对于前端应用来说，是很有必要的，能带来维护上的巨大优势。当然，这里的绑定与提倡的分离并不是矛盾的。
+</p>
+<p style="margin: 15px 0;">
+ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己也做了一个轻量级的 jQuery ，主要实现了元素操作部分的 API 。
+</p>
+<p style="margin: 15px 0;">
+关于 ng 的几点：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>对 IE 方面，它兼容 IE8 及以上的版本。
+</li>
+<li>与 jQuery 集成工作，它的一些对象与 jQuery 相关对象表现是一致的。
+</li>
+<li>使用 ng 时不要冒然去改变相关 DOM 的结构。
+</li>
+</ul>
+
+<a id="toc2" name="toc2"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 开始的例子</h1>
+
+<p style="margin: 15px 0;">
+我们从一个完整的例子开始认识 ng ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;!DOCTYPE html&gt;
+  &lt;html&gt;
+  &lt;head&gt;
+  &lt;meta charset="utf-8" /&gt;
+  
+  &lt;title&gt;试验&lt;/title&gt;
+  
+  &lt;script type="text/javascript" src="jquery-1.8.3.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="angular.js"&gt;&lt;/script&gt;
+  
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div ng-controller="BoxCtrl"&gt;
+      &lt;div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"&gt;&lt;/div&gt;
+      &lt;p&gt;{{ w }} x {{ h }}&lt;/p&gt;
+      &lt;p&gt;W: &lt;input type="text" ng-model="w" /&gt;&lt;/p&gt;
+      &lt;p&gt;H: &lt;input type="text" ng-model="h" /&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript" charset="utf-8"&gt;
+  
+  
+  var BoxCtrl = function($scope, $element){
+  
+    //$element 就是一个 jQuery 对象
+    var e = $element.children().eq(0);
+    $scope.w = e.width();
+    $scope.h = e.height();
+  
+    $scope.click = function(){
+      $scope.w = parseInt($scope.w) + 10;
+      $scope.h = parseInt($scope.h) + 10;
+    }
+  
+    $scope.$watch('w',
+      function(to, from){
+        e.width(to);
+      }
+    );
+  
+    $scope.$watch('h',
+      function(to, from){
+        e.height(to);
+      }
+    );
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+  &lt;/body&gt;
+  &lt;/html&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+从上面的代码中，我们看到在通常的 HTML 代码当中，引入了一些标记，这些就是 ng 的模板机制，它不光完成数据渲染的工作，还实现了数据绑定的功能。
+</p>
+<p style="margin: 15px 0;">
+同时，在 HTML 中的本身的 DOM 层级结构，被 ng 利用起来，直接作为它的内部机制中，上下文结构的判断依据。比如例子中 <i style=" color: #d75100; font-style: normal; ">p</i> 是 <i style=" color: #d75100; font-style: normal; ">div</i> 的子节点，那么 <i style=" color: #d75100; font-style: normal; ">p</i> 中的那些模板标记就是在 <i style=" color: #d75100; font-style: normal; ">div</i> 的 <i style=" color: #d75100; font-style: normal; ">Ctrl</i> 的作用范围之内。
+</p>
+<p style="margin: 15px 0;">
+其它的，也同样写一些 js 代码，里面重要的是作一些数据的操作，事件的绑定定义等。这样，数据的变化就会和页面中的 DOM 表现联系起来。一旦这种联系建立起来，也即完成了我们所说的“双向绑定”。然后，这里说的“事件”，除了那些“点击”等通常的 DOM 事件之外，我们还更关注“数据变化”这个事件。
+</p>
+<p style="margin: 15px 0;">
+最后，可以使用：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.bootstrap(document.documentElement);
+</pre>
+
+<p style="margin: 15px 0;">
+来把整个页面驱动起来了。（你可以看到一个可被控制大小的红色方块）
+</p>
+<p style="margin: 15px 0;">
+更完整的方法是定义一个 APP ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;!DOCTYPE html&gt;
+  &lt;html ng-app="MyApp"&gt;
+  &lt;head&gt;
+  &lt;meta charset="utf-8" /&gt;
+  
+  &lt;title&gt;数据正向绑定&lt;/title&gt;
+  
+  &lt;script type="text/javascript" src="jquery-1.8.3.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="angular.js"&gt;&lt;/script&gt;
+  
+  &lt;/head&gt;
+  &lt;body&gt;
+  
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;input type="text" value="" id="a" /&gt;
+  &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function(){
+    console.log('ok');
+  }
+  
+  //angular.bootstrap(document.documentElement);
+  angular.module('MyApp', [], function(){console.log('here')});
+  &lt;/script&gt;
+  
+  &lt;/body&gt;
+  &lt;/html&gt;
+</pre>
+
+<a id="toc3" name="toc3"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 依赖注入</h1>
+
+<p style="margin: 15px 0;">
+<b style=" color: red; font-weight: normal; ">injector</b> ， 我从 ng 的文档中得知这个概念，之后去翻看源码时了解了一下这个机制的工作原理。感觉就是虽然与自己的所想仅差那么一点点，但就是这么一点点，让我感慨想象力之神奇。
+</p>
+<p style="margin: 15px 0;">
+先看我们之前代码中的一处函数定义：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var BoxCtrl = function($scope, $element){}
+</pre>
+
+<p style="margin: 15px 0;">
+在这个函数定义中，注意那两个参数： <i style=" color: #d75100; font-style: normal; ">$scope</i> ， <i style=" color: #d75100; font-style: normal; ">$element</i> ，这是两个很有意思的东西。总的来说，它们是参数，这没什么可说的。但又不仅仅是参数——你换个名字代码就不能正常运行了。
+</p>
+<p style="margin: 15px 0;">
+事实上，这两个参数，除了完成“参数”的本身任务之外，还作为一种语法糖完成了“依赖声明”的任务。本来这个函数定义，完整的写法应该像 AMD 声明一样，写成：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var BoxCtrl = ['$scope', '$element', function(s, e){}];
+</pre>
+
+<p style="margin: 15px 0;">
+这样就很明显，表示有一个函数，它依赖于两个东西，然后这两个东西会依次作为参数传入。
+</p>
+<p style="margin: 15px 0;">
+简单起见，就写成了一个函数定义原本的样子，然后在定义参数的名字上作文章，来起到依赖声明的作用。
+</p>
+<p style="margin: 15px 0;">
+在处理时，通过函数对象的 <i style=" color: #d75100; font-style: normal; ">toString()</i> 方法可以知道这个函数定义代码的字符串表现形式，然后就知道它的参数是 <i style=" color: #d75100; font-style: normal; ">$scope</i> 和 <i style=" color: #d75100; font-style: normal; ">$element</i> 。通过名字判断出这是两个外部依赖，然后就去获取资源，最后把资源作为参数，调用定义的函数。
+</p>
+<p style="margin: 15px 0;">
+所以，参数的名字是不能随便写的，这里也充分利用了 js 的特点来尽量做到“反省”了。
+</p>
+<p style="margin: 15px 0;">
+在 Python 中受限于函数名的命名规则，写出来不太好看。不过也得利于反省机制，做到这点也很容易：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  # -*- coding: utf-8 -*-
+  
+  def f(Ia, Ib):
+      print Ia, Ib
+  
+  args = f.func_code.co_varnames
+  SRV_MAP = {
+      'Ia': '123',
+      'Ib': '456',
+  }
+  
+  srv = {}
+  for a in args:
+      if a in SRV_MAP:
+          srv[a] = SRV_MAP[a]
+  f(**srv)
+</pre>
+
+<a id="toc4" name="toc4"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 作用域</h1>
+
+<p style="margin: 15px 0;">
+这里提到的“作用域”的概念，是一个在范围上与 DOM 结构一致，数据上相对于某个 <i style=" color: #d75100; font-style: normal; ">$scope</i> 对象的属性的概念。我们还是从 HTML 代码上来入手：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="BoxCtrl"&gt;
+    &lt;div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"&gt;&lt;/div&gt;
+    &lt;p&gt;{{ w }} x {{ h }}&lt;/p&gt;
+    &lt;p&gt;W: &lt;input type="text" ng-model="w" /&gt;&lt;/p&gt;
+    &lt;p&gt;H: &lt;input type="text" ng-model="h" /&gt;&lt;/p&gt;
+  &lt;/div&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+上面的代码中，我们给一个 <i style=" color: #d75100; font-style: normal; ">div</i> 元素指定了一个 <i style=" color: #d75100; font-style: normal; ">BoxCtrl</i> ，那么， <i style=" color: #d75100; font-style: normal; ">div</i> 元素之内，就是 <i style=" color: #d75100; font-style: normal; ">BoxCtrl</i> 这个函数运行时， <i style=" color: #d75100; font-style: normal; ">$scope</i> 这个注入资源的控制范围。在代码中我们看到的 <i style=" color: #d75100; font-style: normal; ">click()</i> ， <i style=" color: #d75100; font-style: normal; ">w</i> ， <i style=" color: #d75100; font-style: normal; ">h</i> 这些东西，它们本来的位置对应于 <i style=" color: #d75100; font-style: normal; ">$scope.click</i> ， <i style=" color: #d75100; font-style: normal; ">$scope.w</i> ， <i style=" color: #d75100; font-style: normal; ">$scope.h</i> 。
+</p>
+<p style="margin: 15px 0;">
+我们在后面的 js 代码中，也可以看到我们就是在操作这些变量。依赖于 ng 的数据绑定机制，操作变量的结果直接在页面上表现出来了。
+</p>
+
+<a id="toc5" name="toc5"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 数据绑定与模板</h1>
+
+<p style="margin: 15px 0;">
+我纠结了半天，“数据绑定”与“模板”这两个东西还真没办法分开来说。因为数据绑定需要以模板为载体，离开了模板，数据还绑个毛啊。
+</p>
+<p style="margin: 15px 0;">
+ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了描述方便，下面分别介绍。
+</p>
+
+<a id="toc6" name="toc6"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.1. 数据-&gt;模板</h2>
+
+<p style="margin: 15px 0;">
+数据到表现的绑定，主要是使用模板标记直接完成的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;p&gt;{{ w }} x {{ h }}&lt;/p&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+使用 <i style=" color: #d75100; font-style: normal; ">{{ }}</i> 这个标记，就可以直接引用，并绑定一个作用域内的变量。在实现上， ng 自动创建了一个 <i style=" color: #d75100; font-style: normal; ">watcher</i> 。效果就是，不管因为什么，如果作用域的变量发生了改变，我们随时可以让相应的页面表现也随之改变。我们可以看一个更纯粹的例子：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;p id="test" ng-controller="TestCtrl"&gt;{{ a }}&lt;/p&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.a = '123';
+  }
+  angular.bootstrap(document.documentElement);
+</pre>
+
+<p style="margin: 15px 0;">
+上面的例子在页面载入之后，我们可以在页面上看到 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">123</code> 。这时，我们可以打开一个终端控制器，输入：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $('#test').scope().a = '12345';
+  $('#test').scope().$digest();
+</pre>
+
+<p style="margin: 15px 0;">
+上面的代码执行之后，就可以看到页面变化了。
+</p>
+<p style="margin: 15px 0;">
+对于使用 ng 进行的事件绑定，在处理函数中就不需要去关心 <i style=" color: #d75100; font-style: normal; ">$digest()</i> 的调用了。因为 ng 会自己处理。源码中，对于 ng 的事件绑定，真正的处理函数不是指定名字的函数，而是经过 <i style=" color: #d75100; font-style: normal; ">$apply()</i> 包装过的一个函数。这个 <i style=" color: #d75100; font-style: normal; ">$apply()</i> 做的一件事，就是调用根作用域 <i style=" color: #d75100; font-style: normal; ">$rootScope</i> 的 <i style=" color: #d75100; font-style: normal; ">$digest()</i> ，这样整个世界就清净了：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;p id="test" ng-controller="TestCtrl" ng-click="click()"&gt;{{ a }}&lt;/p&gt;
+  
+  &lt;script type="text/javascript" charset="utf-8"&gt;
+  var TestCtrl = function($scope){
+    $scope.a = '123';
+  
+    $scope.click = function(){
+      $scope.a = '456';
+    }
+  }
+  angular.bootstrap(document.documentElement);
+</pre>
+
+<p style="margin: 15px 0;">
+那个 <i style=" color: #d75100; font-style: normal; ">click</i> 函数的定义，绑定时变成了类似于：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  function(){
+    $scope.$apply(
+      function(){
+        $scope.click();
+      }
+    )
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+这里的 <i style=" color: #d75100; font-style: normal; ">$scope.$apply()</i> 中做的一件事：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $rootScope.$digest();
+</pre>
+
+<a id="toc7" name="toc7"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.2. 模板-&gt;数据</h2>
+
+<p style="margin: 15px 0;">
+模板到数据的绑定，主要是通过 <i style=" color: #d75100; font-style: normal; ">ng-model</i> 来完成的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;input type="text" id="test" ng-controller="TestCtrl" ng-model="a" /&gt;
+  
+  &lt;script type="text/javascript" charset="utf-8"&gt;
+  var TestCtrl = function($scope){
+    $scope.a = '123';
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+这时修改 <i style=" color: #d75100; font-style: normal; ">input</i> 中的值，然后再在控制终端中使用：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $('#test').scope().a
+</pre>
+
+<p style="margin: 15px 0;">
+查看，发现变量 <i style=" color: #d75100; font-style: normal; ">a</i> 的值已经更改了。
+</p>
+<p style="margin: 15px 0;">
+实际上， <i style=" color: #d75100; font-style: normal; ">ng-model</i> 是把两个方向的绑定都做了。它不光显示出变量的值，也把显示上的数值变化反映给了变量。这个在实现上就简单多了，只是绑定 <i style=" color: #d75100; font-style: normal; ">change</i> 事件，然后做一些赋值操作即可。不过 ng 里，还要区分对待不同的控件。
+</p>
+
+<a id="toc8" name="toc8"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">5.3. 数据-&gt;模板-&gt;数据-&gt;模板</h2>
+
+<p style="margin: 15px 0;">
+现在要考虑的是一种在现实中很普遍的一个需求。比如就是我们可以输入数值，来控制一个矩形的长度。在这里，数据与表现的关系是：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>长度数值保存在变量中
+</li>
+<li>变量显示于某个 input 中
+</li>
+<li>变量的值即是矩形的长度
+</li>
+<li>input 中的值变化时，变量也要变化
+</li>
+<li>input 中的值变化时，矩形的长度也要变化
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+当然，要实现目的在这里可能就不止一种方案了。按照以前的做法，很自然地会想法，绑定 <i style=" color: #d75100; font-style: normal; ">input</i> 的 <i style=" color: #d75100; font-style: normal; ">change</i> 事件，然后去做一些事就好了。但是，我们前面提到过 <i style=" color: #d75100; font-style: normal; ">ng-model</i> 这个东西，利用它就可以在不手工处理 <i style=" color: #d75100; font-style: normal; ">change</i> 的条件下完成数据的展现需求，在此基础之上，我们还需要做的一点，就是把变化后的数据应用到矩形的长度之上。
+</p>
+<p style="margin: 15px 0;">
+最开始，我们面对的应该是这样一个东西：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;div style="width: 100px; height: 10px; background-color: red"&gt;&lt;/div&gt;
+    &lt;input type="text" name="width" ng-model="width" /&gt;
+  &lt;/div&gt;
+  
+  &lt;script type="text/javascript" charset="utf-8"&gt;
+  var TestCtrl = function($scope){
+    $scope.width = 100;
+  }
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+我们从响应数据变化，但又不使用 <i style=" color: #d75100; font-style: normal; ">change</i> 事件的角度来看，可以这样处理宽度变化：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($scope, $element){
+    $scope.width = 100;
+    $scope.$watch('width',
+      function(to, from){
+        $element.children(':first').width(to);
+      }
+    );
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+使用 <i style=" color: #d75100; font-style: normal; ">$watch()</i> 来绑定数据变化。
+</p>
+<p style="margin: 15px 0;">
+当然，这种样式的问题，有更直接有效的手段， ng 的数据绑定总是让人惊异：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;div style="width: 10px; height: 10px; background-color: red" ng-style="style"&gt;&lt;/div&gt;
+    &lt;input type="text" name="width" ng-model="style.width" /&gt;
+  &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript" charset="utf-8"&gt;
+  var TestCtrl = function($scope){
+    $scope.style = {width: 100};
+  }
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<a id="toc9" name="toc9"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">6. 模板</h1>
+
+<p style="margin: 15px 0;">
+前面讲了数据绑定之后，现在可以单独讲讲模板了。
+</p>
+<p style="margin: 15px 0;">
+作为一套能称之谓“模板”的系统，除了能干一些模板的常规的事之外（好吧，即使是常规的逻辑判断现在它也做不了的），配合作用域 <i style=" color: #d75100; font-style: normal; ">$scope</i> 和 ng 的数据双向绑定机制， ng 的模板系统就变得比较神奇了。
+</p>
+
+<a id="toc10" name="toc10"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.1. 定义模板内容</h2>
+
+<p style="margin: 15px 0;">
+定义模板的内容现在有三种方式：
+</p>
+
+<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>在需要的地方直接写字符串
+</li>
+<li>外部文件
+</li>
+<li>使用 <i style=" color: #d75100; font-style: normal; ">script</i> 标签定义的“内部文件”
+</li>
+</ol>
+
+<p style="margin: 15px 0;">
+第一种不需要多说。第二种和第三种都可以和 <i style=" color: #d75100; font-style: normal; ">ng-include</i> 一起工作，来引入一段模板。
+</p>
+<p style="margin: 15px 0;">
+直接引入同域的外部文件作为模板的一部分：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-include src="'tpl.html'"&gt;
+  &lt;/div&gt;
+  
+  &lt;div ng-include="'tpl.html'"&gt;
+  &lt;/div&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+注意， <i style=" color: #d75100; font-style: normal; ">src</i> 中的字符串会作为表达式处理（可以是 <i style=" color: #d75100; font-style: normal; ">$scope</i> 中的变量），所以，直接写名字的话需要使用引号。
+</p>
+<p style="margin: 15px 0;">
+引入 <i style=" color: #d75100; font-style: normal; ">script</i> 定义的“内部文件”：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;script type="text/ng-template" id="tpl"&gt;
+  here, {{ 1 + 1 }}
+  &lt;/script&gt;
+  
+  &lt;div ng-include src="'tpl'"&gt;&lt;/div&gt;
+  
+</pre>
+
+<p style="margin: 15px 0;">
+配合变量使用：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;script type="text/ng-template" id="tpl"&gt;
+  here, {{ 1 + 1 }}
+  &lt;/script&gt;
+  
+  &lt;a ng-click="v='tpl'"&gt;Load&lt;/a&gt;
+  &lt;div ng-include src="v"&gt;&lt;/div&gt;
+</pre>
+
+<a id="toc11" name="toc11"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.2. 内容渲染控制</h2>
+
+<a id="toc12" name="toc12"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.1. 重复 ng-repeat</h3>
+
+<p style="margin: 15px 0;">
+这算是唯一的一个控制标签么……，它的使用方法类型于：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;ul ng-repeat="member in obj_list"&gt;
+      &lt;li&gt;{{ member }}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  
+  
+  var TestCtrl = function($scope){
+    $scope.obj_list = [1,2,3,4];
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+除此之外，它还提供了几个变量可供使用：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">$index</i> 当前索引
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$first</i> 是否为头元素
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$middle</i> 是否为非头非尾元素
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$last</i> 是否为尾元素
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;ul ng-repeat="member in obj_list"&gt;
+      &lt;li&gt;{{ $index }}, {{ member.name }}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  
+  var TestCtrl = function($scope){
+    $scope.obj_list = [{name: 'A'}, {name: 'B'}, {name: 'C'}];
+  }
+</pre>
+
+<a id="toc13" name="toc13"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.2.2. 赋值 ng-init</h3>
+
+<p style="margin: 15px 0;">
+这个指令可以在模板中直接赋值，它作用于 <i style=" color: #d75100; font-style: normal; ">angular.bootstrap</i> 之前，并且，定义的变量与 <i style=" color: #d75100; font-style: normal; ">$scope</i> 作用域无关。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl" ng-init="a=[1,2,3,4];"&gt;
+    &lt;ul ng-repeat="member in a"&gt;
+      &lt;li&gt;{{ member }}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+</pre>
+
+<a id="toc14" name="toc14"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.3. 节点控制</h2>
+
+<a id="toc15" name="toc15"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.3.1. 样式 ng-style</h3>
+
+<p style="margin: 15px 0;">
+可以使用一个结构直接表示当前节点的样式：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-style="{width: 100, height: 100, backgroundColor: 'red'}"&gt;
+  &lt;/div&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+同样地，绑定一个变量的话，威力大了。
+</p>
+
+<a id="toc16" name="toc16"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.3.2. 类 ng-class</h3>
+
+<p style="margin: 15px 0;">
+就是直接地设置当前节点的类，同样，配合数据绑定作用就大了：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl" ng-class="cls"&gt;
+  &lt;/div&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">ng-class-even</i> 和 <i style=" color: #d75100; font-style: normal; ">ng-class-odd</i> 是和 <i style=" color: #d75100; font-style: normal; ">ng-repeat</i> 配合使用的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;ul ng-init="l=[1,2,3,4]"&gt;
+    &lt;li ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="m in l"&gt;{{ m }}&lt;/li&gt;
+  &lt;/ul&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+注意里面给的还是表示式，别少了引号。
+</p>
+
+<a id="toc17" name="toc17"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.3.3. 显示和隐藏 ng-show ng-hide ng-switch</h3>
+
+<p style="margin: 15px 0;">
+前两个是控制 <i style=" color: #d75100; font-style: normal; ">display</i> 的指令：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-show="true"&gt;1&lt;/div&gt;
+  &lt;div ng-show="false"&gt;2&lt;/div&gt;
+  &lt;div ng-hide="true"&gt;3&lt;/div&gt;
+  &lt;div ng-hide="false"&gt;4&lt;/div&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+后一个 <i style=" color: #d75100; font-style: normal; ">ng-switch</i> 是根据一个值来决定哪个节点显示，其它节点移除：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-init="a=2"&gt;
+    &lt;ul ng-switch on="a"&gt;
+      &lt;li ng-switch-when="1"&gt;1&lt;/li&gt;
+      &lt;li ng-switch-when="2"&gt;2&lt;/li&gt;
+      &lt;li ng-switch-default&gt;other&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+</pre>
+
+<a id="toc18" name="toc18"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.3.4. 其它属性控制</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">ng-src</i> 控制 <i style=" color: #d75100; font-style: normal; ">src</i> 属性：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;img ng-src="{{ 'h' + 'ead.png' }}" /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">ng-href</i> 控制 <i style=" color: #d75100; font-style: normal; ">href</i> 属性：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;a ng-href="{{ '#' + '123' }}"&gt;here&lt;/a&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+总的来说：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">ng-src</i> src属性
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-href</i> href属性
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-checked</i> 选中状态
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-selected</i> 被选择状态
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-disabled</i> 禁用状态
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-multiple</i> 多选状态
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-readonly</i> 只读状态
+</li>
+</ul>
+
+<a id="toc19" name="toc19"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.4. 事件绑定</h2>
+
+<p style="margin: 15px 0;">
+事件绑定是模板指令中很好用的一部分。我们可以把相关事件的处理函数直接写在 DOM 中，这样做的最大好处就是可以从 DOM 结构上看出业务处理的形式，你知道当你点击这个节点时哪个函数被执行了。
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">ng-change</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-click</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-dblclick</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mousedown</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mouseenter</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mouseleave</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mousemove</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mouseover</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-mouseup</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-submit</i>
+</li>
+</ul>
+
+<a id="toc20" name="toc20"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">6.5. 表单控件</h2>
+
+<p style="margin: 15px 0;">
+表单控件类的模板指令，最大的作用是它预定义了需要绑定的数据的格式。这样，就可以对于既定的数据进行既定的处理。
+</p>
+
+<a id="toc21" name="toc21"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.1. form</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">form</i> 是核心的一个控件。 ng 对 <i style=" color: #d75100; font-style: normal; ">form</i> 这个标签作了包装。事实上， ng 自己的指令是叫 <i style=" color: #d75100; font-style: normal; ">ng-form</i> 的，区别在于， <i style=" color: #d75100; font-style: normal; ">form</i> 标签不能嵌套，而使用 <i style=" color: #d75100; font-style: normal; ">ng-form</i> 指令就可以做嵌套的表单了。
+</p>
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">form</i> 的行为中依赖它里面的各个输入控制的状态的，在这里，我们主要关心的是 <i style=" color: #d75100; font-style: normal; ">form</i> 自己的一些方法和属性。从 ng 的角度来说， <i style=" color: #d75100; font-style: normal; ">form</i> 标签，是一个模板指令，也创建了一个 <i style=" color: #d75100; font-style: normal; ">FormController</i> 的实例。这个实例就提供了相应的属性和方法。同时，它里面的控件也是一个 <i style=" color: #d75100; font-style: normal; ">NgModelController</i> 实例。
+</p>
+<p style="margin: 15px 0;">
+很重要的一点， <i style=" color: #d75100; font-style: normal; ">form</i> 的相关方法要生效，必须为 <i style=" color: #d75100; font-style: normal; ">form</i> 标签指定 <i style=" color: #d75100; font-style: normal; ">name</i> 和 <i style=" color: #d75100; font-style: normal; ">ng-controller</i> ，并且每个控件都要绑定一个变量。 <i style=" color: #d75100; font-style: normal; ">form</i> 和控件的名字，即是 <i style=" color: #d75100; font-style: normal; ">$scope</i> 中的相关实例的引用变量名。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl"&gt;
+    &lt;input type="text" name="a" required ng-model="a"  /&gt;
+    &lt;span ng-click="see()"&gt;{{ test_form.$valid }}&lt;/span&gt;
+  &lt;/form&gt;
+  
+  var TestCtrl = function($scope){
+  
+    $scope.see = function(){
+      console.log($scope.test_form);
+      console.log($scope.test_form.a);
+    }
+  
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+除去对象的方法与属性， <i style=" color: #d75100; font-style: normal; ">form</i> 这个标签本身有一些动态类可以使用：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">ng-valid</i> 当表单验证通过时的设置
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-invalid</i> 当表单验证失败时的设置
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-pristine</i> 表单的未被动之前拥有
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-dirty</i> 表单被动过之后拥有
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">form</i> 对象的属性有：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">$pristine</i> 表单是否未被动过
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$dirty</i> 表单是否被动过
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$valid</i> 表单是否验证通过
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$invalid</i> 表单是否验证失败
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$error</i> 表单的验证错误
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+其中的 <i style=" color: #d75100; font-style: normal; ">$error</i> 对象包含有所有字段的验证信息，及对相关字段的 <i style=" color: #d75100; font-style: normal; ">NgModelController</i> 实例的引用。它的结构是一个对象， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">key</code> 是失败信息， <i style=" color: #d75100; font-style: normal; ">required</i> ， <i style=" color: #d75100; font-style: normal; ">minlength</i> 之类的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">value</code> 是对应的字段实例列表。
+</p>
+<p style="margin: 15px 0;">
+注意，这里的失败信息是按序列取的一个。比如，如果一个字段既要求 <i style=" color: #d75100; font-style: normal; ">required</i> ，也要求 <i style=" color: #d75100; font-style: normal; ">minlength</i> ，那么当它为空时， <i style=" color: #d75100; font-style: normal; ">$error</i> 中只有 <i style=" color: #d75100; font-style: normal; ">required</i> 的失败信息。只输入一个字符之后， <i style=" color: #d75100; font-style: normal; ">required</i> 条件满足了，才可能有 <i style=" color: #d75100; font-style: normal; ">minlength</i> 这个失败信息。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl"&gt;
+    &lt;input type="text" name="a" required ng-model="a"  /&gt;
+    &lt;input type="text" name="b" required ng-model="b" ng-minlength="2" /&gt;
+    &lt;span ng-click="see()"&gt;{{ test_form.$error }}&lt;/span&gt;
+  &lt;/form&gt;
+  
+  var TestCtrl = function($scope){
+    $scope.see = function(){
+      console.log($scope.test_form.$error);
+    }
+  }
+</pre>
+
+<a id="toc22" name="toc22"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.2. input</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">input</i> 是数据的最主要入口。 ng 支持 HTML5 中的相关属性，同时对旧浏览器也做了兼容性处理。最重要的， <i style=" color: #d75100; font-style: normal; ">input</i> 的规则定义，是所属表单的相关行为的参照（比如表单是否验证成功）。
+</p>
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">input</i> 控件的相关可用属性为：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">name</i> 名字
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-model</i> 绑定的数据
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">required</i> 是否必填
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-required</i> 是否必填
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-minlength</i> 最小长度
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-maxlength</i> 最大长度
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-pattern</i> 匹配模式
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">ng-change</i> 值变化时的回调
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl"&gt;
+    &lt;input type="text" name="a" ng-model="a" required ng-pattern="/abc/" /&gt;
+    &lt;span ng-click="see()"&gt;{{ test_form.$error }}&lt;/span&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">input</i> 控件，它还有一些扩展，这些扩展有些有自己的属性：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">input type="number"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">number</code> 错误类型，多了 <i style=" color: #d75100; font-style: normal; ">max</i> ， <i style=" color: #d75100; font-style: normal; ">min</i> 属性。
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">input type="url"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">url</code> 错误类型。
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">input type="email"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">email</code> 错误类型。
+</li>
+</ul>
+
+<a id="toc23" name="toc23"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.3. checkbox</h3>
+
+<p style="margin: 15px 0;">
+它也算是 <i style=" color: #d75100; font-style: normal; ">input</i> 的扩展，不过，它没有验证相关的东西，只有选中与不选中两个值：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl"&gt;
+    &lt;input type="checkbox" name="a" ng-model="a" ng-true-value="AA" ng-false-value="BB" /&gt;
+    &lt;span&gt;{{ a }}&lt;/span&gt;
+  &lt;/form&gt;
+  
+  var TestCtrl = function($scope){
+    $scope.a = 'AA';
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+两点：
+</p>
+
+<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>controller 要初始化变量值。
+</li>
+<li>controller 中的初始化值会关系到控件状态（双向绑定）。
+</li>
+</ol>
+
+<a id="toc24" name="toc24"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.4. radio</h3>
+
+<p style="margin: 15px 0;">
+也是 <i style=" color: #d75100; font-style: normal; ">input</i> 的扩展。和 <i style=" color: #d75100; font-style: normal; ">checkbox</i> 一样，但它只有一个值了：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl"&gt;
+    &lt;input type="radio" name="a" ng-model="a" value="AA" /&gt;
+    &lt;input type="radio" name="a" ng-model="a" value="BB" /&gt;
+    &lt;span&gt;{{ a }}&lt;/span&gt;
+  &lt;/form&gt;
+</pre>
+
+<a id="toc25" name="toc25"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.5. textarea</h3>
+
+<p style="margin: 15px 0;">
+同 <i style=" color: #d75100; font-style: normal; ">input</i> 。
+</p>
+
+<a id="toc26" name="toc26"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">6.5.6. select</h3>
+
+<p style="margin: 15px 0;">
+这是一个比较牛B的控件。它里面的一个叫做 <i style=" color: #d75100; font-style: normal; ">ng-options</i> 的属性用于数据呈现。
+</p>
+<p style="margin: 15px 0;">
+对于给定列表时的使用。
+</p>
+<p style="margin: 15px 0;">
+最简单的使用方法， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x for x in list</code> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o=[0,1,2,3]; a=o[1];"&gt;
+    &lt;select ng-model="a" ng-options="x for x in o" ng-change="show()"&gt;
+      &lt;option value=""&gt;可以加这个空值&lt;/option&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.show = function(){
+      console.log($scope.a);
+    }
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+在 <i style=" color: #d75100; font-style: normal; ">$scope</i> 中， <i style=" color: #d75100; font-style: normal; ">select</i> 绑定的变量，其值和普通的 <i style=" color: #d75100; font-style: normal; ">value</i> 无关，可以是一个对象：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA'}, {name: 'BB'}]; a=o[1];"&gt;
+    &lt;select ng-model="a" ng-options="x.name for x in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+显示与值分别指定， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.v as x.name for x in o</code> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', v: '00'}, {name: 'BB', v: '11'}]; a=o[1].v;"&gt;
+    &lt;select ng-model="a" ng-options="x.v as x.name for x in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+加入分组的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.name group by x.g for x in o</code> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00'}, {name: 'BB', g: '11'}, {name: 'CC', g: '00'}]; a=o[1];"&gt;
+    &lt;select ng-model="a" ng-options="x.name group by x.g for x in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+分组了还分别指定显示与值的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.v as x.name group by x.g for x in o</code> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00', v: '='}, {name: 'BB', g: '11', v: '+'}, {name: 'CC', g: '00', v: '!'}]; a=o[1].v;"&gt;
+    &lt;select ng-model="a" ng-options="x.v as x.name group by x.g for x in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+如果参数是对象的话，基本也是一样的，只是把遍历的对象改成 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">(key, value)</code> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o={a: 0, b: 1}; a=o.a;"&gt;
+    &lt;select ng-model="a" ng-options="k for (k, v) in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+  
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00'}, b: {name: 'BB', v: '11'}}; a=o.a.v;"&gt;
+    &lt;select ng-model="a" ng-options="v.v as v.name for (k, v) in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+  
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a;"&gt;
+    &lt;select ng-model="a" ng-options="v.name group by v.g for (k, v) in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+  
+  &lt;form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;"&gt;
+    &lt;select ng-model="a" ng-options="v.v as v.name group by v.g for (k, v) in o" ng-change="show()"&gt;
+    &lt;/select&gt;
+  &lt;/form&gt;
+</pre>
+
+<a id="toc27" name="toc27"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">7. 模板中的过滤器</h1>
+
+<p style="margin: 15px 0;">
+这里说的过滤器，是用于对数据的格式化，或者筛选的函数。它们可以直接在模板中通过一种语法使用。对于常用功能来说，是很方便的一种机制。
+</p>
+<p style="margin: 15px 0;">
+多个过滤器之间可以直接连续使用。
+</p>
+
+<a id="toc28" name="toc28"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">7.1. 排序 orderBy</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">orderBy</i> 是一个排序用的过滤器标签。它可以像 <i style=" color: #d75100; font-style: normal; ">sort</i> 函数那样支持一个排序函数，也可以简单地指定一个属性名进行操作：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    {{ data | orderBy: 'age' }} &lt;br /&gt;
+    {{ data | orderBy: '-age' }} &lt;br /&gt;
+    {{ data | orderBy: '-age' | limitTo: 2 }} &lt;br /&gt;
+    {{ data | orderBy: ['-age', 'name'] }} &lt;br /&gt;
+  &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.data = [
+      {name: 'B', age: 4},  
+      {name: 'A', age: 1},  
+      {name: 'D', age: 3},  
+      {name: 'C', age: 3},  
+    ];
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<a id="toc29" name="toc29"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">7.2. 过滤列表 filter</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">filter</i> 是一个过滤内容的标签。
+</p>
+<p style="margin: 15px 0;">
+如果参数是一个字符串，则列表成员中的任意属性值中有这个字符串，即为满足条件（忽略大小写）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    {{ data | filter: 'b' }} &lt;br /&gt;
+    {{ data | filter: '!B' }} &lt;br /&gt;
+  &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.data = [
+      {name: 'B', age: 4},  
+      {name: 'A', age: 1},  
+      {name: 'D', age: 3},  
+      {name: 'C', age: 3},  
+    ];
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+可以使用对象，来指定属性名， <i style=" color: #d75100; font-style: normal; ">$</i> 表示任意属性：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {{ data | filter: {name: 'A'} }} &lt;br /&gt;
+  {{ data | filter: {$: '3'} }} &lt;br /&gt;
+  {{ data | filter: {$: '!3'} }} &lt;br /&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+自定义的过滤函数也支持：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    {{ data | filter: f }} &lt;br /&gt;
+  &lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.data = [
+      {name: 'B', age: 4},  
+      {name: 'A', age: 1},  
+      {name: 'D', age: 3},  
+      {name: 'C', age: 3},  
+    ];
+  
+    $scope.f = function(e){
+      return e.age &gt; 2;
+    }
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<a id="toc30" name="toc30"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">7.3. 其它</h2>
+
+<p style="margin: 15px 0;">
+时间戳格式化 <i style=" color: #d75100; font-style: normal; ">date</i> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+  {{ a | date: 'yyyy-MM-dd HH:mm:ss' }}
+  &lt;/div&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.a = ((new Date().valueOf()));
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+列表截取 <i style=" color: #d75100; font-style: normal; ">limitTo</i> ，支持正负数：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {{ [1,2,3,4,5] | limitTo: 2 }}
+  {{ [1,2,3,4,5] | limitTo: -3 }}
+</pre>
+
+<p style="margin: 15px 0;">
+大小写 <i style=" color: #d75100; font-style: normal; ">lowercase</i> ， <i style=" color: #d75100; font-style: normal; ">uppercase</i> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {{ 'abc' | uppercase }}
+  {{ 'Abc' | lowercase }}
+</pre>
+
+<a id="toc31" name="toc31"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">7.4. 例子：表头排序</h2>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl"&gt;
+    &lt;table&gt;
+      &lt;tr&gt;
+        &lt;th ng-click="f='name'; rev=!rev"&gt;名字&lt;/th&gt;
+        &lt;th ng-click="f='age'; rev=!rev"&gt;年龄&lt;/th&gt;
+      &lt;/tr&gt;
+  
+      &lt;tr ng-repeat="o in data | orderBy: f : rev"&gt;
+        &lt;td&gt;{{ o.name }}&lt;/td&gt;
+        &lt;td&gt;{{ o.age }}&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.data = [
+      {name: 'B', age: 4},  
+      {name: 'A', age: 1},  
+      {name: 'D', age: 3},  
+      {name: 'C', age: 3},  
+    ];
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<a id="toc32" name="toc32"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">7.5. 例子：搜索</h2>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-controller="TestCtrl" ng-init="s=data[0].name; q=''"&gt;
+    &lt;div&gt;
+      &lt;span&gt;查找：&lt;/span&gt; &lt;input type="text" ng-model="q" /&gt;
+    &lt;/div&gt;
+    &lt;select ng-multiple="true" ng-model="s" ng-options="o.name as o.name + '(' + o.age + ')' for o in data | filter: {name: q} | orderBy: ['age', 'name'] "&gt;&lt;/select&gt;
+  &lt;/div&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  var TestCtrl = function($scope){
+    $scope.data = [
+      {name: 'B', age: 4},  
+      {name: 'A', age: 1},  
+      {name: 'D', age: 3},  
+      {name: 'C', age: 3},  
+    ];
+  }
+  
+  angular.bootstrap(document.documentElement);
+  &lt;/script&gt;
+</pre>
+
+<a id="toc33" name="toc33"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">8. 锚点路由</h1>
+
+<p style="margin: 15px 0;">
+准确地说，这应该叫对 <i style=" color: #d75100; font-style: normal; ">hashchange</i> 事件的处理吧。
+</p>
+<p style="margin: 15px 0;">
+就是指 URL 中的锚点部分发生变化时，触发预先定义的业务逻辑。比如现在是 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/test#/x</code> ，锚点部分的值为 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">#</code> 后的 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/x</code> ，它就对应了一组处理逻辑。当这部分变化时，比如变成了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/test#/t</code> ，这时页面是不会刷新的，但是它可以触发另外一组处理逻辑，来做一些事，也可以让页面发生变化。
+</p>
+<p style="margin: 15px 0;">
+这种机制对于复杂的单页面来说，无疑是一种强大的业务切分手段。就算不是复杂的单页面应用，在普通页面上善用这种机制，也可以让业务逻辑更容易控制。
+</p>
+<p style="margin: 15px 0;">
+ng 提供了完善的锚点路由功能，虽然目前我觉得相当重要的一个功能还有待完善（后面会说），但目前这功能的几部分内容，已经让我思考了很多种可能性了。
+</p>
+<p style="margin: 15px 0;">
+ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。这其中包括了路由定义，参数定义，业务处理等。
+</p>
+
+<a id="toc34" name="toc34"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">8.1. 路由定义</h2>
+
+<p style="margin: 15px 0;">
+要使用锚点路由功能，需要在先定义它。目前，对于定义的方法，我个人只发现在“初始化”阶段可以通过 <i style=" color: #d75100; font-style: normal; ">$routeProvider</i> 这个服务来定义。
+</p>
+<p style="margin: 15px 0;">
+在定义一个 app 时可以定义锚点路由：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;html ng-app="ngView"&gt;
+    ... ...
+  
+  &lt;div ng-view&gt;&lt;/div&gt;
+  
+  &lt;script type="text/javascript"&gt;
+  
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/test',
+        {
+          template: 'test',
+        }
+      );
+    }
+  );
+  
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+首先看 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">ng-view</code> 这个 directive ，它是一个标记“锚点作用区”的指令。目前页面上只能有一个“锚点作用区”。有人已经提了，“多个可命名”的锚点作用区的代码到官方，但是目前官方还没有接受合并，我觉得多个作用区这个功能是很重要的，希望下个发布版中能有。
+</p>
+<p style="margin: 15px 0;">
+锚点作用区的功能，就是让锚点路由定义时的那些模板， controller 等，它们产生的 HTML 代码放在作用区内。
+</p>
+<p style="margin: 15px 0;">
+比如上面的代码，当你刚打开页面时，页面是空白的。你手动访问 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/test</code> 就可以看到页面上出现了 <i style=" color: #d75100; font-style: normal; ">'test'</i> 的字样。
+</p>
+<p style="margin: 15px 0;">
+在 <i style=" color: #d75100; font-style: normal; ">angular.bootstrap()</i> 时也可以定义：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.bootstrap(document.documentElement, [
+    function($routeProvider){
+      $routeProvider.when('/test',
+        {
+          template: 'test'
+        }
+      );
+    }
+  ]);
+</pre>
+
+<a id="toc35" name="toc35"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">8.2. 参数定义</h2>
+
+<p style="margin: 15px 0;">
+在作路由定义时，可以匹配一个规则，规则中可以定义路径中的某些部分作为参数之用，然后使用 <i style=" color: #d75100; font-style: normal; ">$routeParams</i> 服务获取到指定参数。比如 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book/test</code> 中， <i style=" color: #d75100; font-style: normal; ">test</i> 作为参数传入到 controller 中：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &lt;div ng-view&gt;&lt;/div&gt;
+  
+  
+  &lt;script type="text/javascript"&gt;
+  
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/book/:title',
+        {
+          template: '{{ title }}',
+          controller: function($scope, $routeParams){
+            $scope.title = $routeParams.title;
+          }
+        }
+      );
+    }
+  );
+  
+  &lt;/script&gt;
+</pre>
+
+<p style="margin: 15px 0;">
+访问： <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book/test</code>
+</p>
+<p style="margin: 15px 0;">
+不需要预定义模式，也可以像普通 GET 请求那样获取到相关参数：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/book',
+        {
+          template: '{{ title }}',
+          controller: function($scope, $routeParams){
+            $scope.title = $routeParams.title;
+          }
+        }
+      );
+    }
+  );
+</pre>
+
+<p style="margin: 15px 0;">
+访问： <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book?title=test</code>
+</p>
+
+<a id="toc36" name="toc36"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">8.3. 业务处理</h2>
+
+<p style="margin: 15px 0;">
+简单来说，当一个锚点路由定义被匹配时，会根据模板生成一个 <i style=" color: #d75100; font-style: normal; ">$scope</i> ，同时相应的一个 controller 就会被触发。最后模板的结果会被填充到 <i style=" color: #d75100; font-style: normal; ">ng-view</i> 中去。
+</p>
+<p style="margin: 15px 0;">
+从上面的例子中可以看到，最直接的方式，我们可以在模板中双向绑定数据，而数据的来源，在 controller 中控制。在 controller 中，又可以使用到像 <i style=" color: #d75100; font-style: normal; ">$scope</i> ， <i style=" color: #d75100; font-style: normal; ">$routeParams</i> 这些服务。
+</p>
+<p style="margin: 15px 0;">
+这里先提一下另外一种与锚点路由相关的服务， <i style=" color: #d75100; font-style: normal; ">$route</i> 。这个服务里锚点路由在定义时，及匹配过程中的信息。比如我们搞怪一下：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/a',
+        {
+          template: '{{ title }}',
+          controller: function($scope){
+            $scope.title = 'a';
+          }
+        }
+      );
+  
+      $routeProvider.when('/b',
+        {
+          template: '{{ title }}',
+          controller: function($scope, $route){
+            console.log($route);
+            $route.routes['/a'].controller($scope);
+          }
+        }
+      );
+    }
+  );
+</pre>
+
+<p style="margin: 15px 0;">
+回到锚点定义的业务处理中来。我们可以以字符串形式写模板，也可以直接引用外部文件作为模板：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/test',
+        {
+          templateUrl: 'tpl.html',
+          controller: function($scope){
+            $scope.title = 'a';
+          }
+        }
+      );
+    }
+  );
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">tpl.html</i> 中的内容是：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {{ title }}
+</pre>
+
+<p style="margin: 15px 0;">
+这样的话，模板可以预定义，也可以很复杂了。
+</p>
+<p style="margin: 15px 0;">
+现在暂时忘了模板吧，因为前面提到的，当前 <i style=" color: #d75100; font-style: normal; ">ng-view</i> 不能有多个的限制，模板的渲染机制局限性还是很大的。不过，反正会触发一个 controller ，那么在函数当中我们可以尽量地干自己喜欢的事：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.module('ngView', [],
+    function($routeProvider){
+      $routeProvider.when('/test',
+        {
+          template: '{{}}',
+          controller: function(){
+            $('div').first().html('&lt;b&gt;OK&lt;/b&gt;');
+          }
+        }
+      );
+    }
+  );
+</pre>
+
+<p style="margin: 15px 0;">
+那个空的 <i style=" color: #d75100; font-style: normal; ">template</i> 不能省，否则 controller 不会被触发。
+</p>
+
+<a id="toc37" name="toc37"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">9. 定义模板变量标识标签</h1>
+
+<p style="margin: 15px 0;">
+由于下面涉及动态内容，所以我打算起一个后端服务来做。但是我发现我使用的 Tornado 框架的模板系统，与 ng 的模板系统，都是使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">{{ }}</code> 这对符号来定义模板表达式的，这太悲剧了，不过幸好 ng 已经提供了修改方法：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  angular.bootstrap(document.documentElement,
+    [function($interpolateProvider){
+      $interpolateProvider.startSymbol('[[');
+      $interpolateProvider.endSymbol(']]');
+    }]);
+</pre>
+
+<p style="margin: 15px 0;">
+使用 <i style=" color: #d75100; font-style: normal; ">$interpolateProvider</i> 服务即可。
+</p>
+
+<a id="toc38" name="toc38"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">10. AJAX</h1>
+
+<p style="margin: 15px 0;">
+ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起来还是很方便的。
+</p>
+
+<a id="toc39" name="toc39"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">10.1. HTTP请求</h2>
+
+<p style="margin: 15px 0;">
+基本的操作由 <i style=" color: #d75100; font-style: normal; ">$http</i> 服务提供。它的使用很简单，提供一些描述请求的参数，请求就出去了，然后返回一个扩充了 <i style=" color: #d75100; font-style: normal; ">success</i> 方法和 <i style=" color: #d75100; font-style: normal; ">error</i> 方法的 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象（下节介绍），你可以在这个对象中添加需要的回调函数。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($scope, $http){
+    var p = $http({
+      method: 'GET',
+      url: '/json'
+    });
+    p.success(function(response, status, headers, config){
+        $scope.name = response.name;
+    });
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$http</i> 接受的配置项有：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>method 方法
+</li>
+<li>url 路径
+</li>
+<li>params GET请求的参数
+</li>
+<li>data post请求的参数
+</li>
+<li>headers 头
+</li>
+<li>transformRequest 请求预处理函数
+</li>
+<li>transformResponse 响应预处理函数
+</li>
+<li>cache 缓存
+</li>
+<li>timeout 超时毫秒，超时的请求会被取消
+</li>
+<li>withCredentials 跨域安全策略的一个东西 
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+其中的 <i style=" color: #d75100; font-style: normal; ">transformRequest</i> 和 <i style=" color: #d75100; font-style: normal; ">transformResponse</i> 及 <i style=" color: #d75100; font-style: normal; ">headers</i> 已经有定义的，如果自定义则会覆盖默认定义：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var $config = this.defaults = {
+    // transform incoming response data
+    transformResponse: [function(data) {
+      if (isString(data)) {
+        // strip json vulnerability protection prefix
+        data = data.replace(PROTECTION_PREFIX, '');
+        if (JSON_START.test(data) &amp;&amp; JSON_END.test(data))
+          data = fromJson(data, true);
+      }
+      return data;
+    }],
+  
+    // transform outgoing request data
+    transformRequest: [function(d) {
+      return isObject(d) &amp;&amp; !isFile(d) ? toJson(d) : d;
+    }],
+  
+    // default headers
+    headers: {
+      common: {
+        'Accept': 'application/json, text/plain, */*',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      post: {'Content-Type': 'application/json;charset=utf-8'},
+      put:  {'Content-Type': 'application/json;charset=utf-8'}
+    }
+  };
+</pre>
+
+<p style="margin: 15px 0;">
+<b style=" color: red; font-weight: normal; ">注意它默认的 POST 方法出去的 Content-Type</b>
+</p>
+<p style="margin: 15px 0;">
+对于几个标准的 HTTP 方法，有对应的 shortcut ：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>$http.delete(url, config)
+</li>
+<li>$http.get(url, config)
+</li>
+<li>$http.head(url, config)
+</li>
+<li>$http.jsonp(url, config)
+</li>
+<li>$http.post(url, data, config)
+</li>
+<li>$http.put(url, data, config)
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+注意其中的 JSONP 方法，在实现上会在页面中添加一个 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">script</code> 标签，然后放出一个 GET 请求。你自己定义的，匿名回调函数，会被 ng 自已给一个全局变量。在定义请求，作为 GET 参数，你可以使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">JSON_CALLBACK</code> 这个字符串来暂时代替回调函数名，之后 ng 会为你替换成真正的函数名：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var p = $http({
+    method: 'JSONP',
+    url: '/json',
+    params: {callback: 'JSON_CALLBACK'}
+  });
+  p.success(function(response, status, headers, config){
+      console.log(response);
+      $scope.name = response.name;
+  });
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$http</i> 有两个属性：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>defaults 请求的全局配置
+</li>
+<li>pendingRequests 当前的请求队列状态
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $http.defaults.transformRequest = function(data){console.log('here'); return data;}
+  console.log($http.pendingRequests);
+</pre>
+
+<a id="toc40" name="toc40"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">10.2. 广义回调管理</h2>
+
+<p style="margin: 15px 0;">
+和其它框架一样， ng 提供了广义的异步回调管理的机制。 <i style=" color: #d75100; font-style: normal; ">$http</i> 服务是在其之上封装出来的。这个机制就是 ng 的 <i style=" color: #d75100; font-style: normal; ">$q</i> 服务。
+</p>
+<p style="margin: 15px 0;">
+不过 ng 的这套机制总的来说实现得比较简单，按官方的说法，够用了。
+</p>
+<p style="margin: 15px 0;">
+使用的方法，基本上是：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>通过 <i style=" color: #d75100; font-style: normal; ">$q</i> 服务得到一个 <i style=" color: #d75100; font-style: normal; ">deferred</i> 实例
+</li>
+<li>通过 <i style=" color: #d75100; font-style: normal; ">deferred</i> 实例的 <i style=" color: #d75100; font-style: normal; ">promise</i> 属性得到一个 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">promise</i> 对象负责定义回调函数
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">deferred</i> 实例负责触发回调
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($q){
+    var defer = $q.defer();
+    var promise = defer.promise;
+    promise.then(function(data){console.log('ok, ' + data)},
+                 function(data){console.log('error, ' + data)});
+    //defer.reject('xx');
+    defer.resolve('xx');
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+了解了上面的东西，再分别看 <i style=" color: #d75100; font-style: normal; ">$q</i> ， <i style=" color: #d75100; font-style: normal; ">deferred</i> ， <i style=" color: #d75100; font-style: normal; ">promise</i> 这三个东西。
+</p>
+
+<a id="toc41" name="toc41"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">10.2.1. $q</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$q</i> 有四个方法：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">$q.all()</i> 合并多个 <i style=" color: #d75100; font-style: normal; ">promise</i> ，得到一个新的 <i style=" color: #d75100; font-style: normal; ">promise</i>
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$q.defer()</i> 返回一个 <i style=" color: #d75100; font-style: normal; ">deferred</i> 对象
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$q.reject()</i> 包装一个错误，以使回调链能正确处理下去
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">$q.when()</i> 返回一个 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$q.all()</i> 方法适用于并发场景很合适：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($q, $http){
+    var p = $http.get('/json', {params: {a: 1}});
+    var p2 = $http.get('/json', {params: {a: 2}});
+    var all = $q.all([p, p2]);
+    p.success(function(res){console.log('here')});
+    all.then(function(res){console.log(res[0])});
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$q.reject()</i> 方法是在你捕捉异常之后，又要把这个异常在回调链中传下去时使用：
+</p>
+<p style="margin: 15px 0;">
+要理解这东西，先看看 <i style=" color: #d75100; font-style: normal; ">promise</i> 的链式回调是如何运作的，看下面两段代码的区别：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var defer = $q.defer();
+  var p = defer.promise;
+  p.then(
+    function(data){return 'xxx'}
+  );
+  p.then(
+    function(data){console.log(data)}
+  );
+  defer.resolve('123');
+</pre>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var defer = $q.defer();
+  var p = defer.promise;
+  var p2 = p.then(
+    function(data){return 'xxx'}
+  );
+  p2.then(
+    function(data){console.log(data)}
+  );
+  defer.resolve('123');
+</pre>
+
+<p style="margin: 15px 0;">
+从模型上看，前者是“并发”，后者才是“链式”。
+</p>
+<p style="margin: 15px 0;">
+而 <i style=" color: #d75100; font-style: normal; ">$q.reject()</i> 的作用就是触发后链的 <i style=" color: #d75100; font-style: normal; ">error</i> 回调：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var defer = $q.defer();
+  var p = defer.promise;
+  p.then(
+    function(data){return data},
+    function(data){return $q.reject(data)}
+  ).
+  then(
+    function(data){console.log('ok, ' + data)},
+    function(data){console.log('error, ' + data)}
+  )
+  defer.reject('123');
+</pre>
+
+<p style="margin: 15px 0;">
+最后的 <i style=" color: #d75100; font-style: normal; ">$q.when()</i> 是把数据封装成 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var p = $q.when(0, function(data){return data},
+                     function(data){return data});
+  p.then(
+    function(data){console.log('ok, ' + data)},
+    function(data){console.log('error, ' + data)}
+  );
+</pre>
+
+<a id="toc42" name="toc42"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">10.2.2. deferred</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">deferred</i> 对象有两个方法一个属性。
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">promise</i> 属性就是返回一个 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象的。
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">resolve()</i> 成功回调
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">reject()</i> 失败回调
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var defer = $q.defer();
+  var promise = defer.promise;
+  promise.then(function(data){console.log('ok, ' + data)},
+               function(data){console.log('error, ' + data)});
+  //defer.reject('xx');
+  defer.resolve('xx');
+</pre>
+
+<a id="toc43" name="toc43"></a>
+<h3 style=" font-size: small; margin: 0 auto; text-shadow: 1px 1px 1px gray; padding: 2px; color: #555;">10.2.3. promise</h3>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">promise</i> 对象只有 <i style=" color: #d75100; font-style: normal; ">then()</i> 一个方法，注册成功回调函数和失败回调函数，再返回一个 <i style=" color: #d75100; font-style: normal; ">promise</i> 对象，以用于链式调用。
+</p>
+
+<a id="toc44" name="toc44"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">11. 工具函数</h1>
+
+<a id="toc45" name="toc45"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">11.1. 上下文绑定</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">angular.bind</i> 是用来进行上下文绑定，参数动态绑定的工具函数。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var f = angular.bind({a: 'xx'},
+    function(){
+      console.log(this.a);
+    }
+  );
+  f();
+</pre>
+
+<p style="margin: 15px 0;">
+参数动态绑定：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var f = function(x){console.log(x)}
+  angular.bind({}, f, 'x')();
+</pre>
+
+<a id="toc46" name="toc46"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">11.2. 对象处理</h2>
+
+<p style="margin: 15px 0;">
+对象复制： <i style=" color: #d75100; font-style: normal; ">angular.copy()</i>
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var a = {'x': '123'};
+  var b = angular.copy(a);
+  a.x = '456';
+  console.log(b);
+</pre>
+
+<p style="margin: 15px 0;">
+对象聚合： <i style=" color: #d75100; font-style: normal; ">angular.extend()</i>
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var a = {'x': '123'};
+  var b = {'xx': '456'};
+  angular.extend(b, a);
+  console.log(b);
+</pre>
+
+<p style="margin: 15px 0;">
+空函数： <i style=" color: #d75100; font-style: normal; ">angular.noop()</i>
+</p>
+<p style="margin: 15px 0;">
+大小写转换： <i style=" color: #d75100; font-style: normal; ">angular.lowercase()</i> 和 <i style=" color: #d75100; font-style: normal; ">angular.uppercase()</i> 
+</p>
+<p style="margin: 15px 0;">
+JSON转换： <i style=" color: #d75100; font-style: normal; ">angular.fromJson()</i> 和 <i style=" color: #d75100; font-style: normal; ">angular.toJson()</i> 
+</p>
+<p style="margin: 15px 0;">
+遍历： <i style=" color: #d75100; font-style: normal; ">angular.forEach()</i> ，支持列表和对象：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var l = {a: '1', b: '2'};
+  angular.forEach(l, function(k, v){console.log(k + ': ' + v)});
+  
+  var l = ['a', 'b', 'c'];
+  angular.forEach(l, function(v, i, o){console.log(v)});
+  
+  var context = {'t': 'xx'};
+  angular.forEach(l, function(v, i, o){console.log(this.t)}, context);
+</pre>
+
+<a id="toc47" name="toc47"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">11.3. 类型判定</h2>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>angular.isArray
+</li>
+<li>angular.isDate
+</li>
+<li>angular.isDefined
+</li>
+<li>angular.isElement
+</li>
+<li>angular.isFunction
+</li>
+<li>angular.isNumber
+</li>
+<li>angular.isObject
+</li>
+<li>angular.isString
+</li>
+<li>angular.isUndefined
+</li>
+</ul>
+
+<a id="toc48" name="toc48"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">12. 其它服务</h1>
+
+<a id="toc49" name="toc49"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">12.1. 日志</h2>
+
+<p style="margin: 15px 0;">
+ng 提供 <i style=" color: #d75100; font-style: normal; ">$log</i> 这个服务用于向终端输出相关信息：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>error()
+</li>
+<li>info()
+</li>
+<li>log()
+</li>
+<li>warn()
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($log){
+    $log.error('error');
+    $log.info('info');
+    $log.log('log');
+    $log.warn('warn');
+  }
+</pre>
+
+<a id="toc50" name="toc50"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">12.2. 缓存</h2>
+
+<p style="margin: 15px 0;">
+ng 提供了一个简单封装了缓存机制 <i style=" color: #d75100; font-style: normal; ">$cacheFactory</i> ，可以用来作为数据容器：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($scope, $cacheFactory){
+    $scope.cache = $cacheFactory('s_' + $scope.$id, {capacity: 3});
+  
+    $scope.show = function(){
+      console.log($scope.cache.get('a'));
+      console.log($scope.cache.info());
+    }
+  
+    $scope.set = function(){
+      $scope.cache.put((new Date()).valueOf(), 'ok');
+    }
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+调用时，第一个参数是 id ，第二个参数是配置项，目前支持 <i style=" color: #d75100; font-style: normal; ">capacity</i> 参数，用以设置缓存能容留的最大条目数。超过这个个数，则自动清除较旧的条目。
+</p>
+<p style="margin: 15px 0;">
+缓存实例的方法：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><i style=" color: #d75100; font-style: normal; ">info()</i> 获取 id , size 信息
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">put(k, v)</i> 设置新条目
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">get(k)</i> 获取条目
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">remove(k)</i> 删除条目
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">removeAll()</i> 删除所有条目
+</li>
+<li><i style=" color: #d75100; font-style: normal; ">destroy()</i> 删除对本实例的引用
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$http</i> 的调用当中，有一个 <i style=" color: #d75100; font-style: normal; ">cache</i> 参数，值为 <i style=" color: #d75100; font-style: normal; ">true</i> 时为自动维护的缓存。值也可以设置为一个 cache 实例。
+</p>
+
+<a id="toc51" name="toc51"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">12.3. 计时器</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$timeout</i> 服务是 ng 对 <i style=" color: #d75100; font-style: normal; ">window.setTimeout()</i> 的封装，它使用 <i style=" color: #d75100; font-style: normal; ">promise</i> 统一了计时器的回调行为：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($timeout){
+    var p = $timeout(function(){console.log('haha')}, 5000);
+    p.then(function(){console.log('x')});
+    //$timeout.cancel(p);
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+使用 <i style=" color: #d75100; font-style: normal; ">$timeout.cancel()</i> 可以取消计时器。
+</p>
+
+<a id="toc52" name="toc52"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">12.4. 表达式函数化</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$parse</i> 这个服务，为 js 提供了类似于 Python 中 <i style=" color: #d75100; font-style: normal; ">@property</i> 的能力：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($scope, $parse){
+    $scope.get_name = $parse('name');
+    $scope.show = function(){console.log($scope.get_name($scope))}
+    $scope.set = function(){$scope.name = '123'}
+  }
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$parse</i> 返回一个函数，调用这个函数时，可以传两个参数，第一个作用域，第二个是变量集，后者常用于覆盖前者的变量：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var get_name = $parse('name');
+  var r = get_name({name: 'xx'}, {name: 'abc'});
+  console.log(r);
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">$parse</i> 返回的函数，也提供了相应的 assign 功能，可以为表达式赋值（如果可以的话）：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var get_name = $parse('name');
+  var set_name = get_name.assign;
+  var r = get_name({name: 'xx'}, {name: 'abc'});
+  console.log(r);
+  
+  var s = {}
+  set_name(s, '123');
+  var r = get_name(s);
+  console.log(r);
+</pre>
+
+<a id="toc53" name="toc53"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">12.5. 模板单独使用</h2>
+
+<p style="margin: 15px 0;">
+ng 中的模板是很重要，也很强大的一个机制，自然少不了单独运用它的方法。不过，即使是单独使用，也是和 DOM 紧密相关的程度：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>定义时必须是有 HTML 标签包裹的，这样才能创建 DOM 节点
+</li>
+<li>渲染时必须传入 <i style=" color: #d75100; font-style: normal; ">$scope</i> 
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+之后使用 <i style=" color: #d75100; font-style: normal; ">$compile</i> 就可以得到一个渲染好的节点对象了。当然， <i style=" color: #d75100; font-style: normal; ">$compile</i> 还要做其它一些工作，指令处理什么的。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  var TestCtrl = function($scope, $element,$compile){
+    $scope.a = '123';
+    $scope.set = function(){
+      var tpl = $compile('&lt;p&gt;hello {{ a }}&lt;/p&gt;');
+      var e = tpl($scope);
+      $element.append(e);
+    }
+  }
+</pre>
+
+
+<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'angular';
+  var disqus_url = 'http://zouyesheng.com/angular.html';
+  var disqus_title = 'AngularJS学习笔记';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
