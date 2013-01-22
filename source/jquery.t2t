@@ -1024,7 +1024,9 @@ jQuery 的 AJAX ，核心的请求处理函数只有一个，就是 //$.ajax()//
 : //complete//
     请求结束（无论成功或失败）时的一个回调函数。 ``complete(jqXHR, textStatus)`` ，第二个参数是表示请求状态的字符串： "success", "notmodified", "error", "timeout", "abort", "parsererror" 。
 : //jsonp//
-    //callback// 参数值。默认是自动生成的一个随机值。设置成 //false// 可以让请求没有 //callback// 参数。
+    一个参数名，默认是 //callback// ，一般用于指明回调函数名。设置成 //false// 可以让请求没有 //callback// 参数。
+: //jsonpCallback//
+    //callback// 参数值。默认是自动生成的一个随机值。
 
 
 对于整套应用来说，其资源请求通常有一套约定的规则，使用 //$.ajaxSetup()// 可以配置参数的默认值，参数就是上面介绍的那些（不完整）。
