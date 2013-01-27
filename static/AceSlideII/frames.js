@@ -37,7 +37,7 @@ define(['dojo/dom-style', 'dojo/_base/window', 'dojo/query', 'dojo/dom-construct
 
 
       //最外层的那个div
-      var wrapper = win.body().children[0];
+      var wrapper = query('#zys-wrapper')[0] || win.body().children[0];
       style.set(win.body(), 'backgroundImage', 'none');
       frames.width = width;
       frames.height = height;
