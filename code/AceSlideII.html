@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>AceSlideII页面工具 - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="AceSlideII页面工具,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
+<meta name="description" content="AceSlideII页面工具,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">AceSlideII页面工具</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2012-12-17 23:58 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">项目</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">缘起</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">原理</a>
+  </li>
+  </ol>
+
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 项目</h1>
+
+<p style="margin: 15px 0;">
+之前有一个 AceSlide 的项目，是完全使用 HTML+CSS+JS 实现的演示文档工具。现在这个 AceSlideII 是它的进化，对我来说是这样的。同时，其功能也不仅限于演示文档了。
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>项目：<a href="https://github.com/AceFantasy/AceSlideII" style="color: #0184b7; text-decoration: none">https://github.com/AceFantasy/AceSlideII</a>
+</li>
+<li>协议：LGPL
+</li>
+<li>近况：自己日常使用，少有改动
+<p style="margin: 15px 0;"></p>
+最直接地搞明白这个项目是干什么就，就是马上使用它一下：
+<p style="margin: 15px 0;"></p>
+<a href="javascript: (function(){ if((typeof dojo) != 'undefined'){return} window.dojoConfig = { async: true , packages: [ {name: 'AceSlideII', location: 'http://zouyesheng.com/static/AceSlideII'} ] , deps: ['AceSlideII/init'] , callback: function(init){ init({width: 600}); } }; var n = document.createElement('script'); n.type='text/javascript'; n.src='http://ajax.googleapis.com/ajax/libs/dojo/1.8.0/dojo/dojo.js'; document.getElementsByTagName('head')[0].appendChild(n); })();">点击我就可以看到效果了，想下次用就请添加到收藏夹</a>
+<p style="margin: 15px 0;"></p>
+</li>
+</ul>
+
+<a id="toc2" name="toc2"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 缘起</h1>
+
+<p style="margin: 15px 0;">
+从项目的名字就可以看出，这已经是一个第二代的东西了。其实，最开始的时候，我是想用 HTML+CSS+JS 来实现一套演示文档工具。因为，大部分时候，我在演示文档上仅会碰到一些代码类的内容。对于这些内容，动用 LaTeX 来做 PDF 类型的演示文档，可是一件吃力不讨好的事，比较累，而且因为内容的关系，也表现不出其排版精致的优点。相反，在代码高亮上表现还不是很好。同时，这些内容如何使用 HTML 为载体来做，其直接表现形式就好很多。（当然，对于数学公式，也是有考虑支持的，不过效果就不能直接和 PDF 中的比了）
+</p>
+<p style="margin: 15px 0;">
+在 AceSlide 中，我实现了我最开始想法，而且，是从 Beamer 中得到的实现启发，对列表编号的处理，与演示效果是自动化的。
+</p>
+<p style="margin: 15px 0;">
+但是随后我发现一个问题，完全使用 HTML 去做一份演示文档，也是一件吃力不讨好的事。成本太大了，虽然实现出来的效果不错，而且自己完全拥有控制力，手写 js 都可以。
+</p>
+<p style="margin: 15px 0;">
+然后我想起以前在 <a href="http://bbs.ctex.org/forum.php" style="color: #0184b7; text-decoration: none">CTEX</a> 论坛，有人讨论到演示文档时，提到说，我有一份写好的文章，我其实只需要把它的形式（纸张的大小，标题样式等）改变一下，就可以是一份很好的演示文档。我发现我目前经常碰到的情况就是这样。我不需要刻意去做一份演示文档，我只需要把一些文章的形式改变一下，就可以做演示之用。
+</p>
+<p style="margin: 15px 0;">
+于是，根据这个想法，很自然地想到直接使用 js 去改变页面结构，然后添加一些演示用的功能即可。
+</p>
+<p style="margin: 15px 0;">
+后来，又想到了“搜狗云输入法”的使用方式，可以通过收藏，链接等方式，执行 js 页面注入，以此来调用我的 js ，完成页面格式化，与演示功能载入。
+</p>
+<p style="margin: 15px 0;">
+当到这一步的时候，我突然发现，演示功能只是一点，这种 js 注入的方式还可以做好多其它有意思的事，比如，我同时打开 163 和 sohu 的邮箱，然后点一下收藏的链接，就可以把 163 中的联系人全部导入到 sohu 中去。
+</p>
+<p style="margin: 15px 0;">
+想到这里，又想起之前在第一份工作时，想到的直接把页面中的题录信息保存到 NoteExpress 软件中的想法（当时还录了一个视频 <a href="http://v.youku.com/v_show/id_XMTc1OTQ3NDA4.html" style="color: #0184b7; text-decoration: none">http://v.youku.com/v_show/id_XMTc1OTQ3NDA4.html</a>）。之前是使用“油猴”脚本来实现的，其实这种 js 注入式的方式完全可以替代油猴脚本，并且因为是远程载入，还可以统一部署与维护（比如根据 url 载入特定功能的代码）。
+</p>
+<p style="margin: 15px 0;">
+好了，上面的最开始给出的链接，除了可以作用于本站的所有页面外，作为演示，还可以作用于天幻网的 VP 人物页：<a href="http://vp.ffsky.cn/chrs2.htm" style="color: #0184b7; text-decoration: none">http://vp.ffsky.cn/chrs2.htm</a> （收藏链接，然后进入页面后点一下即可使用看到效果）
+</p>
+
+<a id="toc3" name="toc3"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 原理</h1>
+
+<p style="margin: 15px 0;">
+基本的原理，上面已经说得差不多了。就是使用 js 改动页面结构，然后加上演示需要的控制功能就可以了。
+</p>
+<p style="margin: 15px 0;">
+另外要说的一点就是，在项目代码中，还包括了一个服务器端的实现，用处嘛，就是可以实现终端控制。比如，你自己的演示电脑运行服务器，其它机器作为客户端从你的电脑上获取到演示文档内容。这里你可以控制客户端的表现（你翻页时客户机也翻页，你做的标记也全部会在客户机上显示出来）。
+</p>
+<p style="margin: 15px 0;">
+哦，还有就是， AceSlideII 的代码中，加了一点对手持设置（比如手机）的滑动行为支持。手持设置+服务器端=演示遥控器 :)
+</p>
+
+<script type="text/javascript">var prettyPrint = function(){}</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
