@@ -36,13 +36,14 @@ define(['dojo/dom-construct'], function(cstr){
           }
         }
 
-        console.log('[ASII]Select Rule: ' + r);
+        console.log('[ASII]Selected Rule: ' + r);
         require(['AceSlideII/rules/' + (r || 'default')], function(rule){
-          setTimeout(function(){cstr.destroy(n)}, 1000);
-          console.log('[ASII]AceSlideII is OK');
+          console.log('[ASII]Loaded Rule: ' + r);
           rule(function(){
             sub(frames(fw, fw * screen.height / screen.width), canvas());
           });
+          setTimeout(function(){cstr.destroy(n)}, 1000);
+          console.log('[ASII]AceSlideII is OK');
         });
 
       }
