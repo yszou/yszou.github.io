@@ -66,7 +66,7 @@ define(['dojo/_base/window', 'dojo/on', 'dojo/query', 'dojo/dom-construct', 'doj
       );
 
       //记录窗口
-      on(win.doc, on.selector('.chatLogMain > dl.me,.chatLogMain > dl.buddy', 'click'),
+      on(win.doc, on.selector('.chatLogMain > dl.me,.chatLogMain > dl.buddy,.chatLogMain > dl.my', 'click'),
         function(eventObj){
           var that = this;
 
