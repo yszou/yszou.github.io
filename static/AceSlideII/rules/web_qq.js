@@ -9,8 +9,8 @@ define(['dojo/_base/window', 'dojo/on', 'dojo/query', 'dojo/dom-construct', 'doj
         function(eventObj){
           var duin = attr.get(this, 'duin');
           if(duin){
-            if(opened.duin){return}
-            else{opened.duin=true}
+            if(opened[duin]){return}
+            else{opened[duin]=true}
           }
 
           var area = this.parentNode.parentNode.parentNode;
@@ -41,7 +41,9 @@ define(['dojo/_base/window', 'dojo/on', 'dojo/query', 'dojo/dom-construct', 'doj
             cstr.destroy(textarea);
             cstr.destroy(send);
             cstr.destroy(cancel);
-            duin && opened.duin = false;
+            if(duin){
+              opened[duin] = false;
+            }
           });
           on(send, 'click', function(eventObj){
             var s_body = body.replace(/<br>*$/, '').split('<br>');
