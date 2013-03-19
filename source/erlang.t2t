@@ -239,7 +239,7 @@ Erlang 中的模式匹配机制可以做的事有：
 其中的 //_// 表示无关量，它可以当变量用，但永远不会被赋值，也就可以重复用了。
 
 
-//模块与函数//
+=模块与函数=
 
 之所有把函数和模块放到一起说，是因为在 Erlang shell 中是无法直接定义一个函数的，你必须地单独的文件中定义函数，然后在 shell 中编译它，之后才能使用。
 
@@ -294,4 +294,172 @@ demo:module_info().
 
 模块的 //vsn// 属性是它的版本标识，如果不指定，则自动以当前文件内容的 MD5 值来填充。
 
+
+
+=独立单元与消息传递=
+
+
+并行编程是 Erlang 最大的一个特点， 项目中存在很多的单元（ Process ），单元与单元之间只能通过消息来传递信息。单元之间互不依赖，可以很方便进行分布式扩展。
+
+要产生一个单元，直接使用 //spawn// 来执行一个函数即可：
+
+```
+-module(demo).
+-export([echo/1]).
+
+echo(Msg) ->
+    io:format("~p\n", [Msg]).
+```
+
+编译模块之后执行：
+
+```
+1> Pid = spawn(demo, echo, ["new"]).
+```
+
+能看到 //echo// 函数执行的结果。同时还有类似于 //<0.61.0>// 这样的单元号。
+
+上面的过程，就是在一个新的单元中，执行了一个函数。
+
+单元通过单元号来标识， Erlang shell 本身是运行一个单元当中的，当前环境也很多的单元在运行着。可以使用 //self()// 来获取当前单元号。通过 //processes()// 查看当前单元列表。
+
+```
+1> self().
+<0.35.0>
+
+2> processes().
+[<0.0.0>,<0.3.0>,<0.5.0>,<0.6.0>,<0.8.0>,<0.9.0>,<0.10.0>,
+ <0.11.0>,<0.12.0>,<0.13.0>,<0.14.0>,<0.15.0>,<0.16.0>,
+ <0.18.0>,<0.19.0>,<0.20.0>,<0.21.0>,<0.22.0>,<0.23.0>,
+ <0.24.0>,<0.25.0>,<0.26.0>,<0.27.0>,<0.28.0>,<0.29.0>,
+ <0.35.0>]
+```
+
+单元之间通过消息来传递信息，消息的传递有专门的一个语法支持：
+
+```
+Pid ! "Hello".
+```
+
+这就表示向 //Pid// 这个单元传递一个字符串 //Hello// 。
+
+传递过去的消息被保存在单元的“信箱”当中，使用 //receive// 语句来抽取信箱中的一条消息，然后进行模式匹配，做相应处理。
+
+```
+-module(demo).
+-export([start/0, daemon/0]).
+
+start() ->
+    spawn(demo, daemon, []).
+
+daemon() ->
+    receive
+        ok ->
+            io:format("ok, exit.");
+        Msg ->
+            io:format("~p\n", [Msg]),
+            daemon()
+    end.
+```
+
+编译后执行：
+
+```
+> Pid = demo:start().
+<0.80.0>
+
+> Pid ! "Haha".
+"Haha"
+"Haha"
+
+> Pid ! ok.
+ok, exit.ok
+```
+
+可以看到， ``Pid ! Msg`` 这个表达式的返回值是 //Msg// 。
+
+//receive// 语句可以有一个超时值，使用 //after// ：
+
+```
+-module(demo).
+-export([timeout/0, never/0]).
+
+
+timeout() ->
+    receive
+        Msg ->
+            io:format("~p\n", [Msg])
+    after 5000 ->
+            io:format("timeout\n")
+    end.
+
+
+never() ->
+    receive
+        Msg ->
+            io:format("~p\n", [Msg])
+    after infinty ->
+            io:format("timeout\n")
+    end.
+```
+
+//infinty// 表示永不超时。
+
+
+
+=并行单元的设计模式=
+
+并行单元有三种常用的实现模式：
+
+- Client/Server 模型，客户端/服务器。
+- FSM 模型，有限状态机。
+- Event Handler 模型，事件绑定机制。
+
+
+==Client/Server==
+
+这个模型将业务抽象成两种角色，服务器负责业务实现，客户端负责业务控制。然后两者以 请求/响应 的方式进行交互。在 Erlang 中的实现，就是把一些单元当成服务器用，再把一些单元当成客户端用。
+
+以一个简单的远程函数调用为例，服务器：
+
+```
+-module(server).
+-export([start/0, daemon/0]).
+
+start() ->
+    spawn(server, daemon, []).
+
+daemon() ->
+    receive
+        {Pid, A, B} ->
+            Pid ! A + B,
+            daemon();
+        {Pid, quit} ->
+            Pid ! ok
+    end.
+```
+
+客户端：
+
+```
+-module(client).
+-export([connect/1, request/2, quit/0]).
+
+connect(Pid) ->
+    register(srv, Pid).
+
+request(A, B) ->
+    srv ! {self(), A, B},
+    receive
+        Result ->
+            io:format("~p", [Result])
+    end.
+
+quit() ->
+    srv ! {self(), quit},
+    receive
+        ok ->
+            io:format("ok")
+    end.
+```
 
