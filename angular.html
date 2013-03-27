@@ -377,7 +377,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </pre>
 
 <p style="margin: 15px 0;">
-上面的例子在页面载入之后，我们可以在页面上看到 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">123</code> 。这时，我们可以打开一个终端控制器，输入：
+上面的例子在页面载入之后，我们可以在页面上看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">123</code> 。这时，我们可以打开一个终端控制器，输入：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -786,7 +786,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </ul>
 
 <p style="margin: 15px 0;">
-<b style=" color: red; font-weight: normal; ">注意：</b> 上面的这些只是单向绑定，即只是从数据到展示，不能反作用于数据。要双向绑定，还是要使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">ng-model</code> 。
+<b style=" color: red; font-weight: normal; ">注意：</b> 上面的这些只是单向绑定，即只是从数据到展示，不能反作用于数据。要双向绑定，还是要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ng-model</code> 。
 </p>
 
 <a id="toc19" name="toc19"></a>
@@ -820,7 +820,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </ul>
 
 <p style="margin: 15px 0;">
-对于事件对象本身，在函数调用时可以直接使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">$event</code> 进行传递：
+对于事件对象本身，在函数调用时可以直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">$event</code> 进行传递：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -897,7 +897,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </ul>
 
 <p style="margin: 15px 0;">
-其中的 <i style=" color: #d75100; font-style: normal; ">$error</i> 对象包含有所有字段的验证信息，及对相关字段的 <i style=" color: #d75100; font-style: normal; ">NgModelController</i> 实例的引用。它的结构是一个对象， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">key</code> 是失败信息， <i style=" color: #d75100; font-style: normal; ">required</i> ， <i style=" color: #d75100; font-style: normal; ">minlength</i> 之类的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">value</code> 是对应的字段实例列表。
+其中的 <i style=" color: #d75100; font-style: normal; ">$error</i> 对象包含有所有字段的验证信息，及对相关字段的 <i style=" color: #d75100; font-style: normal; ">NgModelController</i> 实例的引用。它的结构是一个对象， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">key</code> 是失败信息， <i style=" color: #d75100; font-style: normal; ">required</i> ， <i style=" color: #d75100; font-style: normal; ">minlength</i> 之类的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">value</code> 是对应的字段实例列表。
 </p>
 <p style="margin: 15px 0;">
 注意，这里的失败信息是按序列取的一个。比如，如果一个字段既要求 <i style=" color: #d75100; font-style: normal; ">required</i> ，也要求 <i style=" color: #d75100; font-style: normal; ">minlength</i> ，那么当它为空时， <i style=" color: #d75100; font-style: normal; ">$error</i> 中只有 <i style=" color: #d75100; font-style: normal; ">required</i> 的失败信息。只输入一个字符之后， <i style=" color: #d75100; font-style: normal; ">required</i> 条件满足了，才可能有 <i style=" color: #d75100; font-style: normal; ">minlength</i> 这个失败信息。
@@ -958,11 +958,11 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </p>
 
 <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><i style=" color: #d75100; font-style: normal; ">input type="number"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">number</code> 错误类型，多了 <i style=" color: #d75100; font-style: normal; ">max</i> ， <i style=" color: #d75100; font-style: normal; ">min</i> 属性。
+<li><i style=" color: #d75100; font-style: normal; ">input type="number"</i> 多了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">number</code> 错误类型，多了 <i style=" color: #d75100; font-style: normal; ">max</i> ， <i style=" color: #d75100; font-style: normal; ">min</i> 属性。
 </li>
-<li><i style=" color: #d75100; font-style: normal; ">input type="url"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">url</code> 错误类型。
+<li><i style=" color: #d75100; font-style: normal; ">input type="url"</i> 多了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">url</code> 错误类型。
 </li>
-<li><i style=" color: #d75100; font-style: normal; ">input type="email"</i> 多了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">email</code> 错误类型。
+<li><i style=" color: #d75100; font-style: normal; ">input type="email"</i> 多了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">email</code> 错误类型。
 </li>
 </ul>
 
@@ -1027,7 +1027,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 对于给定列表时的使用。
 </p>
 <p style="margin: 15px 0;">
-最简单的使用方法， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x for x in list</code> ：
+最简单的使用方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">x for x in list</code> ：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1060,7 +1060,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </pre>
 
 <p style="margin: 15px 0;">
-显示与值分别指定， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.v as x.name for x in o</code> ：
+显示与值分别指定， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">x.v as x.name for x in o</code> ：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1071,7 +1071,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </pre>
 
 <p style="margin: 15px 0;">
-加入分组的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.name group by x.g for x in o</code> ：
+加入分组的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">x.name group by x.g for x in o</code> ：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1082,7 +1082,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </pre>
 
 <p style="margin: 15px 0;">
-分组了还分别指定显示与值的， <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">x.v as x.name group by x.g for x in o</code> ：
+分组了还分别指定显示与值的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">x.v as x.name group by x.g for x in o</code> ：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1093,7 +1093,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </pre>
 
 <p style="margin: 15px 0;">
-如果参数是对象的话，基本也是一样的，只是把遍历的对象改成 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">(key, value)</code> ：
+如果参数是对象的话，基本也是一样的，只是把遍历的对象改成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">(key, value)</code> ：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1330,7 +1330,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 准确地说，这应该叫对 <i style=" color: #d75100; font-style: normal; ">hashchange</i> 事件的处理吧。
 </p>
 <p style="margin: 15px 0;">
-就是指 URL 中的锚点部分发生变化时，触发预先定义的业务逻辑。比如现在是 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/test#/x</code> ，锚点部分的值为 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">#</code> 后的 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/x</code> ，它就对应了一组处理逻辑。当这部分变化时，比如变成了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/test#/t</code> ，这时页面是不会刷新的，但是它可以触发另外一组处理逻辑，来做一些事，也可以让页面发生变化。
+就是指 URL 中的锚点部分发生变化时，触发预先定义的业务逻辑。比如现在是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/test#/x</code> ，锚点部分的值为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">#</code> 后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/x</code> ，它就对应了一组处理逻辑。当这部分变化时，比如变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/test#/t</code> ，这时页面是不会刷新的，但是它可以触发另外一组处理逻辑，来做一些事，也可以让页面发生变化。
 </p>
 <p style="margin: 15px 0;">
 这种机制对于复杂的单页面来说，无疑是一种强大的业务切分手段。就算不是复杂的单页面应用，在普通页面上善用这种机制，也可以让业务逻辑更容易控制。
@@ -1374,13 +1374,13 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 </pre>
 
 <p style="margin: 15px 0;">
-首先看 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">ng-view</code> 这个 directive ，它是一个标记“锚点作用区”的指令。目前页面上只能有一个“锚点作用区”。有人已经提了，“多个可命名”的锚点作用区的代码到官方，但是目前官方还没有接受合并，我觉得多个作用区这个功能是很重要的，希望下个发布版中能有。
+首先看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ng-view</code> 这个 directive ，它是一个标记“锚点作用区”的指令。目前页面上只能有一个“锚点作用区”。有人已经提了，“多个可命名”的锚点作用区的代码到官方，但是目前官方还没有接受合并，我觉得多个作用区这个功能是很重要的，希望下个发布版中能有。
 </p>
 <p style="margin: 15px 0;">
 锚点作用区的功能，就是让锚点路由定义时的那些模板， controller 等，它们产生的 HTML 代码放在作用区内。
 </p>
 <p style="margin: 15px 0;">
-比如上面的代码，当你刚打开页面时，页面是空白的。你手动访问 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/test</code> 就可以看到页面上出现了 <i style=" color: #d75100; font-style: normal; ">'test'</i> 的字样。
+比如上面的代码，当你刚打开页面时，页面是空白的。你手动访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/#/test</code> 就可以看到页面上出现了 <i style=" color: #d75100; font-style: normal; ">'test'</i> 的字样。
 </p>
 <p style="margin: 15px 0;">
 在 <i style=" color: #d75100; font-style: normal; ">angular.bootstrap()</i> 时也可以定义：
@@ -1402,7 +1402,7 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 <h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">8.2. 参数定义</h2>
 
 <p style="margin: 15px 0;">
-在作路由定义时，可以匹配一个规则，规则中可以定义路径中的某些部分作为参数之用，然后使用 <i style=" color: #d75100; font-style: normal; ">$routeParams</i> 服务获取到指定参数。比如 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book/test</code> 中， <i style=" color: #d75100; font-style: normal; ">test</i> 作为参数传入到 controller 中：
+在作路由定义时，可以匹配一个规则，规则中可以定义路径中的某些部分作为参数之用，然后使用 <i style=" color: #d75100; font-style: normal; ">$routeParams</i> 服务获取到指定参数。比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/#/book/test</code> 中， <i style=" color: #d75100; font-style: normal; ">test</i> 作为参数传入到 controller 中：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1428,7 +1428,7 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 </pre>
 
 <p style="margin: 15px 0;">
-访问： <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book/test</code>
+访问： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/#/book/test</code>
 </p>
 <p style="margin: 15px 0;">
 不需要预定义模式，也可以像普通 GET 请求那样获取到相关参数：
@@ -1450,7 +1450,7 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 </pre>
 
 <p style="margin: 15px 0;">
-访问： <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">/#/book?title=test</code>
+访问： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/#/book?title=test</code>
 </p>
 
 <a id="toc36" name="toc36"></a>
@@ -1548,7 +1548,7 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 <h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">9. 定义模板变量标识标签</h1>
 
 <p style="margin: 15px 0;">
-由于下面涉及动态内容，所以我打算起一个后端服务来做。但是我发现我使用的 Tornado 框架的模板系统，与 ng 的模板系统，都是使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">{{ }}</code> 这对符号来定义模板表达式的，这太悲剧了，不过幸好 ng 已经提供了修改方法：
+由于下面涉及动态内容，所以我打算起一个后端服务来做。但是我发现我使用的 Tornado 框架的模板系统，与 ng 的模板系统，都是使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">{{ }}</code> 这对符号来定义模板表达式的，这太悲剧了，不过幸好 ng 已经提供了修改方法：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
@@ -1673,7 +1673,7 @@ ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起�
 </ul>
 
 <p style="margin: 15px 0;">
-注意其中的 JSONP 方法，在实现上会在页面中添加一个 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">script</code> 标签，然后放出一个 GET 请求。你自己定义的，匿名回调函数，会被 ng 自已给一个全局变量。在定义请求，作为 GET 参数，你可以使用 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">JSON_CALLBACK</code> 这个字符串来暂时代替回调函数名，之后 ng 会为你替换成真正的函数名：
+注意其中的 JSONP 方法，在实现上会在页面中添加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">script</code> 标签，然后放出一个 GET 请求。你自己定义的，匿名回调函数，会被 ng 自已给一个全局变量。在定义请求，作为 GET 参数，你可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">JSON_CALLBACK</code> 这个字符串来暂时代替回调函数名，之后 ng 会为你替换成真正的函数名：
 </p>
 
 <pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">

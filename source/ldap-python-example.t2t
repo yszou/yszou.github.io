@@ -1,0 +1,69 @@
+使用 Python 实现 LDAP 交互的例子
+邹业盛 2013-3-27
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus
+%%toc
+
+
+这两天在配置 mutt 邮件客户端，有一个比较重要的功能就是需要实现使用 LDAP 查询公司的员工邮件。
+
+Python 上有现成的 ldap 模块，在 http://www.python-ldap.org/ ，虽然官方上也有示例代码，但是要正常从 MS 的服务中获取到数据也真是折腾了一番。后面发现其实这个问题在官方的 FAQ 中都有明确说明的。
+
+后来又看了一下 LDAP 协议中 ``filter`` 的写法，然后根据公司服务的情况自已定义了一些需要的属性。
+
+把一些东西搞明白之后，用起来还是比较顺手的 :)
+
+```
+# -*- coding: utf-8 -*-
+
+
+import sys
+import ldap
+
+ldap.set_option(ldap.OPT_REFERRALS, 0)    <--- 不加这个访问不到MS的服务
+con = ldap.initialize('server') 
+con.simple_bind_s( 'user', 'password' )
+
+base_dn = 'dc=xxx,dc=com'
+scope = ldap.SCOPE_SUBTREE
+
+input = sys.argv[1]
+
+filter = "(&(|(cn=*%(input)s*)(mail=*%(input)s*))(mail=*))" % {'input': input}
+
+attrs = ['mail', 'givenName', 'sn', 'department', 'telephoneNumber', 'displayName']
+
+result = []
+for i in con.search_s(base_dn, scope, filter, None):
+    if i[0]:
+        d = {}
+        for k in i[1]:
+            d[k] = i[1][k][0]
+
+        if 'telephoneNumber' not in d:
+            d['telephoneNumber'] = '(无电话)'
+
+        if 'department' not in d:
+            d['department'] = '(无部门)'
+
+        if 'sn' not in d and 'givenName' not in d:
+            d['givenName'] = d.get('displayName', '')
+
+        if 'sn' not in d:
+            d['sn'] = ''
+
+        if 'givenName' not in d:
+            d['givenName'] = ''
+
+        result.append(d)
+
+print '共找到结果 %s 条' % (len(result))
+for d in result:
+    print '%(mail)s\t%(sn)s%(givenName)s\t%(telephoneNumber)s %(department)s' % d
+```
+
+参考：
+
+- http://latty.iteye.com/blog/1694399
+- http://www.python-ldap.org/faq.shtml

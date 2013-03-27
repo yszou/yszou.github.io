@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Erlang学习笔记 - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="Erlang学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
+<meta name="description" content="Erlang学习笔记,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">Erlang学习笔记</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-03-12 23:55 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">数据类型</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc2" style="color: #0184b7; text-decoration: none">1.1. 整数</a>
+    </li>
+    <li><a href="#toc3" style="color: #0184b7; text-decoration: none">1.2. 浮点数</a>
+    </li>
+    <li><a href="#toc4" style="color: #0184b7; text-decoration: none">1.3. 原子</a>
+    </li>
+    <li><a href="#toc5" style="color: #0184b7; text-decoration: none">1.4. 布尔量</a>
+    </li>
+    <li><a href="#toc6" style="color: #0184b7; text-decoration: none">1.5. 元组</a>
+    </li>
+    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">1.6. 列表</a>
+    </li>
+    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">1.7. 字符串</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc9" style="color: #0184b7; text-decoration: none">运算符</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc10" style="color: #0184b7; text-decoration: none">2.1. 算术运算符</a>
+    </li>
+    <li><a href="#toc11" style="color: #0184b7; text-decoration: none">2.2. 逻辑运算符</a>
+    </li>
+    <li><a href="#toc12" style="color: #0184b7; text-decoration: none">2.3. 比较运算符</a>
+    </li>
+    </ul>
+  </li>
+  <li><a href="#toc13" style="color: #0184b7; text-decoration: none">列表结构</a>
+  </li>
+  <li><a href="#toc14" style="color: #0184b7; text-decoration: none">变量</a>
+  </li>
+  <li><a href="#toc15" style="color: #0184b7; text-decoration: none">模式匹配</a>
+  </li>
+  <li><a href="#toc16" style="color: #0184b7; text-decoration: none">模块与函数</a>
+  </li>
+  <li><a href="#toc17" style="color: #0184b7; text-decoration: none">独立单元与消息传递</a>
+  </li>
+  <li><a href="#toc18" style="color: #0184b7; text-decoration: none">并行单元的设计模式</a>
+    <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+    <li><a href="#toc19" style="color: #0184b7; text-decoration: none">8.1. Client/Server</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 数据类型</h1>
+
+<a id="toc2" name="toc2"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.1. 整数</h2>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  −234 0 10 100000000
+  2#1010 −16#EA
+</pre>
+
+<p style="margin: 15px 0;">
+ASCII 字符可以当整数用：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  $a
+  $b
+  $\n
+</pre>
+
+<a id="toc3" name="toc3"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.2. 浮点数</h2>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  17.368 −56.654 1.234E-10
+</pre>
+
+<a id="toc4" name="toc4"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.3. 原子</h2>
+
+<p style="margin: 15px 0;">
+类似于静态量的类型。
+</p>
+<p style="margin: 15px 0;">
+如果以小写字母开头，则可以使用字母，数字， <i style=" color: #d75100; font-style: normal; ">@</i> ， <i style=" color: #d75100; font-style: normal; ">.</i> ， <i style=" color: #d75100; font-style: normal; ">_</i> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  january fooBar alfa21 start_with_lower_case node@ramone true false
+</pre>
+
+<p style="margin: 15px 0;">
+如果直接以单引号包起来，则可以使用任意的字符：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  'January' 'a space' 'Anything inside quotes{}#@ \n\012'
+  'node@ramone.erlang-consulting.com'
+</pre>
+
+<a id="toc5" name="toc5"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.4. 布尔量</h2>
+
+<p style="margin: 15px 0;">
+Erlang 中没有单独的布尔类型，使用原子 <i style=" color: #d75100; font-style: normal; ">true</i> 和 <i style=" color: #d75100; font-style: normal; ">false</i> 来代替使用：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  true false
+</pre>
+
+<a id="toc6" name="toc6"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.5. 元组</h2>
+
+<p style="margin: 15px 0;">
+各种成员的组合就是元组，使用大括号包起来，各成员以逗号分割：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {123, bcd} {123, def, abc} {abc, {def, 123}, ghi} {}
+  {person, 'Joe', 'Armstrong'} {person, 'Mike', 'Williams'}
+</pre>
+
+<a id="toc7" name="toc7"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.6. 列表</h2>
+
+<p style="margin: 15px 0;">
+各种成员的有序组合是列表，使用中括号包起来，各成员以逗号分割：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  [january, february, march]
+  [123, def, abc]
+  [a,[b,[c,d,e],f], g]
+  []
+  [{person, 'Joe', 'Armstrong'}, {person, 'Robert', 'Virding'}, {person, 'Mike', 'Williams'}]
+  [72,101,108,108,111,32,87,111,114,108,100]
+  [$H,$e,$l,$l,$o,$ ,$W,$o,$r,$l,$d]
+  "Hello World"
+</pre>
+
+<a id="toc8" name="toc8"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">1.7. 字符串</h2>
+
+<p style="margin: 15px 0;">
+字符串实际上就是整数列表，或者反过来说整数列表就是字符串(至少 ASCII 范围内)：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  1&gt; "孤高天使".
+  [23396,39640,22825,20351]
+  
+  2&gt; [64,64,64,64].
+  "@@@@"
+</pre>
+
+<a id="toc9" name="toc9"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 运算符</h1>
+
+<a id="toc10" name="toc10"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.1. 算术运算符</h2>
+
+<table border="1" cellpadding="4" style=" border: 1px solid #0080bc; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<tr>
+<td style=" padding: 3px 10px;">+</td>
+<td style=" padding: 3px 10px;">加(正)</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">-</td>
+<td style=" padding: 3px 10px;">减法(负)</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">*</td>
+<td style=" padding: 3px 10px;">乘法</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">/</td>
+<td style=" padding: 3px 10px;">除法</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">div</td>
+<td style=" padding: 3px 10px;">整除</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">rem</td>
+<td style=" padding: 3px 10px;">求余</td>
+</tr>
+</table>
+
+<a id="toc11" name="toc11"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.2. 逻辑运算符</h2>
+
+<table border="1" cellpadding="4" style=" border: 1px solid #0080bc; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<tr>
+<td style=" padding: 3px 10px;">and</td>
+<td style=" padding: 3px 10px;">与</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">or</td>
+<td style=" padding: 3px 10px;">或</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">not</td>
+<td style=" padding: 3px 10px;">非</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">andalso</td>
+<td style=" padding: 3px 10px;">与(短路)</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">orelse</td>
+<td style=" padding: 3px 10px;">或(短路)</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">xor</td>
+<td style=" padding: 3px 10px;">异或</td>
+</tr>
+</table>
+
+<a id="toc12" name="toc12"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">2.3. 比较运算符</h2>
+
+<table border="1" cellpadding="4" style=" border: 1px solid #0080bc; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<tr>
+<td style=" padding: 3px 10px;">==</td>
+<td style=" padding: 3px 10px;">等于</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">/=</td>
+<td style=" padding: 3px 10px;">不等于</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">=:=</td>
+<td style=" padding: 3px 10px;">全等</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">=/=</td>
+<td style=" padding: 3px 10px;">不全等</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">=&lt;</td>
+<td style=" padding: 3px 10px;">等于或小于</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">&lt;</td>
+<td style=" padding: 3px 10px;">小于</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">&gt;=</td>
+<td style=" padding: 3px 10px;">等于或大于</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;">&gt;</td>
+<td style=" padding: 3px 10px;">大于</td>
+</tr>
+</table>
+
+<p style="margin: 15px 0;">
+不同类型之间不能按值比较，只遵循以下规则：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  number &lt; atom &lt; reference &lt; fun &lt; port &lt; pid &lt; tuple &lt; list &lt; binary
+</pre>
+
+<p style="margin: 15px 0;">
+列表的比较根据成员的字典序进行：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  5&gt; [boo,hoo]&lt;[adder,zebra,bee].
+  false
+  6&gt; [boo,hoo]&lt;[boo,hoo,adder,zebra,bee].
+  true
+</pre>
+
+<p style="margin: 15px 0;">
+元组的比较首先比较成员个数，再按列表规则比较成员：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  7&gt; {boo,hoo}&lt;{adder,zebra,bee}.
+  true
+  8&gt; {boo,hoo}&lt;{boo,hoo,adder,zebra,bee}.
+  true
+</pre>
+
+<p style="margin: 15px 0;">
+全等会同时检查类型，它通常更快，不过用得不多：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  1&gt; 1.0 == 1.
+  true
+  2&gt; 1.0 =:= 1.
+  false
+  5&gt; 1 =/= 1.0.
+  true
+</pre>
+
+<a id="toc13" name="toc13"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 列表结构</h1>
+
+<p style="margin: 15px 0;">
+列表可以以一种方便的语法切割成 <i style=" color: #d75100; font-style: normal; ">head</i> 和 <i style=" color: #d75100; font-style: normal; ">tail</i> 两部分，其中 <i style=" color: #d75100; font-style: normal; ">tail</i> 总是一个列表(可以是空列表)：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  List = [Element | List] or []
+  [1,2,3] == [1 | [2 | [3 | []]]]
+</pre>
+
+<a id="toc14" name="toc14"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 变量</h1>
+
+<p style="margin: 15px 0;">
+变量以大写字母开头，可以包含字母，数字，下划线。并且， Erlang 中某个变量只能被赋值一次，所有的变量传递都是值传递，作为函数参数时，变量先求得值再会去执行函数体。
+</p>
+<p style="margin: 15px 0;">
+在 Erlang shell 中可以使用 <i style=" color: #d75100; font-style: normal; ">f()</i> 和 <i style=" color: #d75100; font-style: normal; ">f(Var)</i> 取消所有或指定变量：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  f()
+  f(Double)
+</pre>
+
+<a id="toc15" name="toc15"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 模式匹配</h1>
+
+<p style="margin: 15px 0;">
+Erlang 中的模式匹配机制可以做的事有：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>变量赋值
+</li>
+<li>分支检查
+</li>
+<li>展开数据
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+当一个模式匹配被执行时：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>如果匹配成功，则相应变量被赋值
+</li>
+<li>如果匹配失败，则没有变量会改变
+</li>
+</ul>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  1&gt; List = [1,2,3,4].
+  [1,2,3,4]
+  
+  2&gt; [Head|Tail] = List.
+  [1,2,3,4]
+  
+  3&gt; Head.
+  1
+  
+  4&gt; Tail.
+  [2,3,4]
+  
+  5&gt; [A, B, C] = [1, 2, 3]
+  [1,2,3]
+  
+  6&gt; A.
+  1
+  
+  7&gt; [A, B, D] = [1,2,4].
+  [1,2,4]
+  
+  8&gt; D.
+  4
+</pre>
+
+<p style="margin: 15px 0;">
+复杂一点：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  {A, _, [B|_], {B}} = {abc, 23, [22, 23], {22}}
+</pre>
+
+<p style="margin: 15px 0;">
+其中的 <i style=" color: #d75100; font-style: normal; ">_</i> 表示无关量，它可以当变量用，但永远不会被赋值，也就可以重复用了。
+</p>
+
+<a id="toc16" name="toc16"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">6. 模块与函数</h1>
+
+<p style="margin: 15px 0;">
+之所有把函数和模块放到一起说，是因为在 Erlang shell 中是无法直接定义一个函数的，你必须地单独的文件中定义函数，然后在 shell 中编译它，之后才能使用。
+</p>
+<p style="margin: 15px 0;">
+模块文件的文件名使用 <i style=" color: #d75100; font-style: normal; ">.erl</i> 作为扩展名，并且文件名要和模块名相同，比如 <i style=" color: #d75100; font-style: normal; ">demo.erl</i> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(demo).
+  -export([double/1]).
+  
+  %This is a comment.
+  
+  double(Value) -&gt; times(Value, 2).
+  times(X, Y) -&gt; X * Y.
+</pre>
+
+<p style="margin: 15px 0;">
+之后在 shell 中先使用 <i style=" color: #d75100; font-style: normal; ">cd()</i> 到达指定目录，就可以编译这个模块了：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &gt; cd('xxx').
+  &gt; c(demo).
+  {ok,demo}
+  &gt; demo:double(10).
+  20
+</pre>
+
+<p style="margin: 15px 0;">
+模块文件中可以有一些使用 <i style=" color: #d75100; font-style: normal; ">-</i> 开头的选项，比如我们之前已经看到的：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(demo).
+  -export([double/1]).
+</pre>
+
+<p style="margin: 15px 0;">
+其它的比如还有： <i style=" color: #d75100; font-style: normal; ">import</i> 导入函数：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -import(math, [sqrt/1]).
+  hello(X) -&gt; sqrt(X).
+</pre>
+
+<p style="margin: 15px 0;">
+也可以使用任意的自定义选项，不过这些选项只能有一个参数，比如：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -author(zys).
+  -date(Date).
+</pre>
+
+<p style="margin: 15px 0;">
+模块的详细信息可以使用它的 <i style=" color: #d75100; font-style: normal; ">module_info/1</i> 函数获取：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  demo:module_info().
+</pre>
+
+<p style="margin: 15px 0;">
+模块的 <i style=" color: #d75100; font-style: normal; ">vsn</i> 属性是它的版本标识，如果不指定，则自动以当前文件内容的 MD5 值来填充。
+</p>
+
+<a id="toc17" name="toc17"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">7. 独立单元与消息传递</h1>
+
+<p style="margin: 15px 0;">
+并行编程是 Erlang 最大的一个特点， 项目中存在很多的单元（ Process ），单元与单元之间只能通过消息来传递信息。单元之间互不依赖，可以很方便进行分布式扩展。
+</p>
+<p style="margin: 15px 0;">
+要产生一个单元，直接使用 <i style=" color: #d75100; font-style: normal; ">spawn</i> 来执行一个函数即可：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(demo).
+  -export([echo/1]).
+  
+  echo(Msg) -&gt;
+      io:format("~p\n", [Msg]).
+</pre>
+
+<p style="margin: 15px 0;">
+编译模块之后执行：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  1&gt; Pid = spawn(demo, echo, ["new"]).
+</pre>
+
+<p style="margin: 15px 0;">
+能看到 <i style=" color: #d75100; font-style: normal; ">echo</i> 函数执行的结果。同时还有类似于 <i style=" color: #d75100; font-style: normal; ">&lt;0.61.0&gt;</i> 这样的单元号。
+</p>
+<p style="margin: 15px 0;">
+上面的过程，就是在一个新的单元中，执行了一个函数。
+</p>
+<p style="margin: 15px 0;">
+单元通过单元号来标识， Erlang shell 本身是运行一个单元当中的，当前环境也很多的单元在运行着。可以使用 <i style=" color: #d75100; font-style: normal; ">self()</i> 来获取当前单元号。通过 <i style=" color: #d75100; font-style: normal; ">processes()</i> 查看当前单元列表。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  1&gt; self().
+  &lt;0.35.0&gt;
+  
+  2&gt; processes().
+  [&lt;0.0.0&gt;,&lt;0.3.0&gt;,&lt;0.5.0&gt;,&lt;0.6.0&gt;,&lt;0.8.0&gt;,&lt;0.9.0&gt;,&lt;0.10.0&gt;,
+   &lt;0.11.0&gt;,&lt;0.12.0&gt;,&lt;0.13.0&gt;,&lt;0.14.0&gt;,&lt;0.15.0&gt;,&lt;0.16.0&gt;,
+   &lt;0.18.0&gt;,&lt;0.19.0&gt;,&lt;0.20.0&gt;,&lt;0.21.0&gt;,&lt;0.22.0&gt;,&lt;0.23.0&gt;,
+   &lt;0.24.0&gt;,&lt;0.25.0&gt;,&lt;0.26.0&gt;,&lt;0.27.0&gt;,&lt;0.28.0&gt;,&lt;0.29.0&gt;,
+   &lt;0.35.0&gt;]
+</pre>
+
+<p style="margin: 15px 0;">
+单元之间通过消息来传递信息，消息的传递有专门的一个语法支持：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  Pid ! "Hello".
+</pre>
+
+<p style="margin: 15px 0;">
+这就表示向 <i style=" color: #d75100; font-style: normal; ">Pid</i> 这个单元传递一个字符串 <i style=" color: #d75100; font-style: normal; ">Hello</i> 。
+</p>
+<p style="margin: 15px 0;">
+传递过去的消息被保存在单元的“信箱”当中，使用 <i style=" color: #d75100; font-style: normal; ">receive</i> 语句来抽取信箱中的一条消息，然后进行模式匹配，做相应处理。
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(demo).
+  -export([start/0, daemon/0]).
+  
+  start() -&gt;
+      spawn(demo, daemon, []).
+  
+  daemon() -&gt;
+      receive
+          ok -&gt;
+              io:format("ok, exit.");
+          Msg -&gt;
+              io:format("~p\n", [Msg]),
+              daemon()
+      end.
+</pre>
+
+<p style="margin: 15px 0;">
+编译后执行：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  &gt; Pid = demo:start().
+  &lt;0.80.0&gt;
+  
+  &gt; Pid ! "Haha".
+  "Haha"
+  "Haha"
+  
+  &gt; Pid ! ok.
+  ok, exit.ok
+</pre>
+
+<p style="margin: 15px 0;">
+可以看到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Pid ! Msg</code> 这个表达式的返回值是 <i style=" color: #d75100; font-style: normal; ">Msg</i> 。
+</p>
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">receive</i> 语句可以有一个超时值，使用 <i style=" color: #d75100; font-style: normal; ">after</i> ：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(demo).
+  -export([timeout/0, never/0]).
+  
+  
+  timeout() -&gt;
+      receive
+          Msg -&gt;
+              io:format("~p\n", [Msg])
+      after 5000 -&gt;
+              io:format("timeout\n")
+      end.
+  
+  
+  never() -&gt;
+      receive
+          Msg -&gt;
+              io:format("~p\n", [Msg])
+      after infinty -&gt;
+              io:format("timeout\n")
+      end.
+</pre>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">infinty</i> 表示永不超时。
+</p>
+
+<a id="toc18" name="toc18"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">8. 并行单元的设计模式</h1>
+
+<p style="margin: 15px 0;">
+并行单元有三种常用的实现模式：
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>Client/Server 模型，客户端/服务器。
+</li>
+<li>FSM 模型，有限状态机。
+</li>
+<li>Event Handler 模型，事件绑定机制。
+</li>
+</ul>
+
+<a id="toc19" name="toc19"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">8.1. Client/Server</h2>
+
+<p style="margin: 15px 0;">
+这个模型将业务抽象成两种角色，服务器负责业务实现，客户端负责业务控制。然后两者以 请求/响应 的方式进行交互。在 Erlang 中的实现，就是把一些单元当成服务器用，再把一些单元当成客户端用。
+</p>
+<p style="margin: 15px 0;">
+以一个简单的远程函数调用为例，服务器：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(server).
+  -export([start/0, daemon/0]).
+  
+  start() -&gt;
+      spawn(server, daemon, []).
+  
+  daemon() -&gt;
+      receive
+          {Pid, A, B} -&gt;
+              Pid ! A + B,
+              daemon();
+          {Pid, quit} -&gt;
+              Pid ! ok
+      end.
+</pre>
+
+<p style="margin: 15px 0;">
+客户端：
+</p>
+
+<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
+  -module(client).
+  -export([connect/1, request/2, quit/0]).
+  
+  connect(Pid) -&gt;
+      register(srv, Pid).
+  
+  request(A, B) -&gt;
+      srv ! {self(), A, B},
+      receive
+          Result -&gt;
+              io:format("~p", [Result])
+      end.
+  
+  quit() -&gt;
+      srv ! {self(), quit},
+      receive
+          ok -&gt;
+              io:format("ok")
+      end.
+</pre>
+
+
+<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'erlang';
+  var disqus_url = 'http://zouyesheng.com/erlang.html';
+  var disqus_title = 'Erlang学习笔记';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
