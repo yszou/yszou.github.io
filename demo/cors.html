@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html ng-app="Demo">
+<head>
+<meta charset="utf-8" />
+
+<title>跨域Demo</title>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
+</head>
+<body>
+<div ng-controller="CreateCtrl">
+  <h1>创建用户</h1>
+  <form>
+    <p><label>邮箱</label><input ng-model="email" /></p>
+    <p><label>密码</label><input ng-model="password" type="password" /></p>
+    <p><button ng-click="create(email, password); $event.preventDefault();">创建</button></p>
+    <p>返回码: [[ result ]]</p>
+    <p>返回信息: [[ msg ]]</p>
+  </form>
+</div>
+
+<hr />
+
+<div ng-controller="LoginCtrl">
+  <h1>用户登录</h1>
+  <form>
+    <p><label>邮箱</label><input ng-model="email" /></p>
+    <p><label>密码</label><input ng-model="password" type="password" /></p>
+    <p><button ng-click="login(email, password); $event.preventDefault();">登录</button></p>
+    <p>返回码: [[ result ]]</p>
+    <p>返回信息: [[ msg ]]</p>
+  </form>
+</div>
+
+<hr />
+
+<div ng-controller="InfoCtrl">
+  <h1>用户信息</h1>
+  <form>
+    <p><button ng-click="get_info(); $event.preventDefault();">获取</button></p>
+    <p>[[ info ]]</p>
+  </form>
+</div>
+
+
+<script type="text/javascript" charset="utf-8">
+window.HOST = 'http://noteexpress.3322.org:5000'
+window.PATH = function(p){return window.HOST + p}
+var CreateCtrl = function($scope){
+  $scope.create = function(email, password){
+    var defer = $.ajax({
+      url: PATH('/user'),
+      data: {_method: 'create', email: email, password: password, name: '测试', subject: 'Others'},
+      dataType: 'json',
+      success: function(response){
+        $scope.result = response.result;
+        $scope.msg = response.msg;
+        $scope.$digest();
+      }
+    });
+
+    defer.done(function(response){
+      var id = response.obj.PersonID;
+      var code = response.obj.ActivationCode;
+      $.ajax({
+        url: PATH('/user'),
+        data: {_method: 'activate', id: id, code: code},
+        dataType: 'json',
+        success: function(response){
+          $scope.result = response.result;
+          $scope.msg = response.msg;
+          $scope.$digest();
+        }
+      });
+    });
+  }
+}
+
+
+var LoginCtrl = function($scope){
+  $scope.login = function(email, password){
+    $.ajax({
+      url: PATH('/auth'),
+      data: {_method: 'login', email: email, password: password},
+      dataType: 'json',
+      xhrFields: { withCredentials: true },
+      success: function(response){
+        $scope.result = response.result;
+        $scope.msg = response.msg;
+        $scope.$digest();
+      }
+    });
+  }
+}
+
+
+var InfoCtrl = function($scope){
+  $scope.get_info = function(){
+    $.ajax({
+      url: PATH('/user'),
+      data: {_method: 'read'},
+      dataType: 'json',
+      xhrFields: { withCredentials: true },
+      success: function(response){
+        $scope.info = response;
+        $scope.$digest();
+      }
+    });
+  }
+}
+
+var app = angular.module('Demo', [], function($interpolateProvider){
+  $interpolateProvider.startSymbol('[[');
+  $interpolateProvider.endSymbol(']]');
+});
+</script>
+</body>
+</html>
