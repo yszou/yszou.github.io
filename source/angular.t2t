@@ -2,7 +2,7 @@ AngularJS学习笔记
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
-%!options(xhtml): --prettyprint --google-analytics --disqus
+%!options(xhtml): --google-analytics --disqus
 %%toc
 
 
@@ -26,7 +26,7 @@ ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己
 
 我们从一个完整的例子开始认识 ng ：
 
-```
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,7 +40,8 @@ ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己
 </head>
 <body>
   <div ng-controller="BoxCtrl">
-    <div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"></div>
+    <div style="width: 100px; height: 100px; background-color: red;"
+         ng-click="click()"></div>
     <p>{{ w }} x {{ h }}</p>
     <p>W: <input type="text" ng-model="w" /></p>
     <p>H: <input type="text" ng-model="h" /></p>
@@ -97,7 +98,7 @@ angular.bootstrap(document.documentElement);
 
 更完整的方法是定义一个 APP ：
 
-```
+```html
 <!DOCTYPE html>
 <html ng-app="MyApp">
 <head>
@@ -129,7 +130,16 @@ angular.module('MyApp', [], function(){console.log('here')});
 </html>
 ```
 
+这里说的一个 App 就是 //ng// 概念中的一个 //Module// 。对于 //Controller// 来说， 如果不想使用全局函数，也可以在 app 中定义：
 
+```javascript
+var app = angular.module('MyApp', [], function(){console.log('here')});
+app.controller('TestCtrl',
+  function($scope){
+    console.log('ok');
+  }
+);
+```
 
 
 =依赖注入=
@@ -160,7 +170,7 @@ var BoxCtrl = ['$scope', '$element', function(s, e){}];
 
 在 Python 中受限于函数名的命名规则，写出来不太好看。不过也得利于反省机制，做到这点也很容易：
 
-```
+```python
 # -*- coding: utf-8 -*-
 
 def f(Ia, Ib):
@@ -184,9 +194,11 @@ f(**srv)
 
 这里提到的“作用域”的概念，是一个在范围上与 DOM 结构一致，数据上相对于某个 //$scope// 对象的属性的概念。我们还是从 HTML 代码上来入手：
 
-```
+```html
 <div ng-controller="BoxCtrl">
-  <div style="width: 100px; height: 100px; background-color: red;" ng-click="click()"></div>
+  <div style="width: 100px; height: 100px; background-color: red;"
+       ng-click="click()">
+  </div>
   <p>{{ w }} x {{ h }}</p>
   <p>W: <input type="text" ng-model="w" /></p>
   <p>H: <input type="text" ng-model="h" /></p>
@@ -214,7 +226,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 
 使用 //{{ }}// 这个标记，就可以直接引用，并绑定一个作用域内的变量。在实现上， ng 自动创建了一个 //watcher// 。效果就是，不管因为什么，如果作用域的变量发生了改变，我们随时可以让相应的页面表现也随之改变。我们可以看一个更纯粹的例子：
 
-```
+```html
 <p id="test" ng-controller="TestCtrl">{{ a }}</p>
 
 <script type="text/javascript">
@@ -235,7 +247,7 @@ $('#test').scope().$digest();
 
 对于使用 ng 进行的事件绑定，在处理函数中就不需要去关心 //$digest()// 的调用了。因为 ng 会自己处理。源码中，对于 ng 的事件绑定，真正的处理函数不是指定名字的函数，而是经过 //$apply()// 包装过的一个函数。这个 //$apply()// 做的一件事，就是调用根作用域 //$rootScope// 的 //$digest()// ，这样整个世界就清净了：
 
-```
+```html
 <p id="test" ng-controller="TestCtrl" ng-click="click()">{{ a }}</p>
 
 <script type="text/javascript" charset="utf-8">
@@ -307,7 +319,7 @@ $('#test').scope().a
 
 最开始，我们面对的应该是这样一个东西：
 
-```
+```html
 <div ng-controller="TestCtrl">
   <div style="width: 100px; height: 10px; background-color: red"></div>
   <input type="text" name="width" ng-model="width" />
@@ -324,7 +336,7 @@ angular.bootstrap(document.documentElement);
 
 我们从响应数据变化，但又不使用 //change// 事件的角度来看，可以这样处理宽度变化：
 
-```
+```javascript
 var TestCtrl = function($scope, $element){
   $scope.width = 100;
   $scope.$watch('width',
@@ -339,9 +351,10 @@ var TestCtrl = function($scope, $element){
 
 当然，这种样式的问题，有更直接有效的手段， ng 的数据绑定总是让人惊异：
 
-```
+```html
 <div ng-controller="TestCtrl">
-  <div style="width: 10px; height: 10px; background-color: red" ng-style="style"></div>
+  <div style="width: 10px; height: 10px; background-color: red" ng-style="style">
+  </div>
   <input type="text" name="width" ng-model="style.width" />
 </div>
 
@@ -415,7 +428,7 @@ here, {{ 1 + 1 }}
 
 这算是唯一的一个控制标签么……，它的使用方法类型于：
 
-```
+```html
 <div ng-controller="TestCtrl">
   <ul ng-repeat="member in obj_list">
     <li>{{ member }}</li>
@@ -436,7 +449,7 @@ var TestCtrl = function($scope){
 - //$last// 是否为尾元素
 
 
-```
+```html
 <div ng-controller="TestCtrl">
   <ul ng-repeat="member in obj_list">
     <li>{{ $index }}, {{ member.name }}</li>
@@ -452,7 +465,7 @@ var TestCtrl = function($scope){
 
 这个指令可以在模板中直接赋值，它作用于 //angular.bootstrap// 之前，并且，定义的变量与 //$scope// 作用域无关。
 
-```
+```html
 <div ng-controller="TestCtrl" ng-init="a=[1,2,3,4];">
   <ul ng-repeat="member in a">
     <li>{{ member }}</li>
@@ -508,7 +521,7 @@ var TestCtrl = function($scope){
 
 后一个 //ng-switch// 是根据一个值来决定哪个节点显示，其它节点移除：
 
-```
+```html
 <div ng-init="a=2">
   <ul ng-switch on="a">
     <li ng-switch-when="1">1</li>
@@ -584,7 +597,7 @@ var TestCtrl = function($scope){
 
 很重要的一点， //form// 的相关方法要生效，必须为 //form// 标签指定 //name// 和 //ng-controller// ，并且每个控件都要绑定一个变量。 //form// 和控件的名字，即是 //$scope// 中的相关实例的引用变量名。
 
-```
+```html
 <form name="test_form" ng-controller="TestCtrl">
   <input type="text" name="a" required ng-model="a"  />
   <span ng-click="see()">{{ test_form.$valid }}</span>
@@ -621,7 +634,7 @@ var TestCtrl = function($scope){
 
 注意，这里的失败信息是按序列取的一个。比如，如果一个字段既要求 //required// ，也要求 //minlength// ，那么当它为空时， //$error// 中只有 //required// 的失败信息。只输入一个字符之后， //required// 条件满足了，才可能有 //minlength// 这个失败信息。
 
-```
+```html
 <form name="test_form" ng-controller="TestCtrl">
   <input type="text" name="a" required ng-model="a"  />
   <input type="text" name="b" required ng-model="b" ng-minlength="2" />
@@ -671,7 +684,7 @@ var TestCtrl = function($scope){
 
 它也算是 //input// 的扩展，不过，它没有验证相关的东西，只有选中与不选中两个值：
 
-```
+```html
 <form name="test_form" ng-controller="TestCtrl">
   <input type="checkbox" name="a" ng-model="a" ng-true-value="AA" ng-false-value="BB" />
   <span>{{ a }}</span>
@@ -713,7 +726,7 @@ var TestCtrl = function($scope){
 
 最简单的使用方法， ``x for x in list`` ：
 
-```
+```html
 <form name="test_form" ng-controller="TestCtrl" ng-init="o=[0,1,2,3]; a=o[1];">
   <select ng-model="a" ng-options="x for x in o" ng-change="show()">
     <option value="">可以加这个空值</option>
@@ -734,7 +747,8 @@ angular.bootstrap(document.documentElement);
 在 //$scope// 中， //select// 绑定的变量，其值和普通的 //value// 无关，可以是一个对象：
 
 ```
-<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA'}, {name: 'BB'}]; a=o[1];">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o=[{name: 'AA'}, {name: 'BB'}]; a=o[1];">
   <select ng-model="a" ng-options="x.name for x in o" ng-change="show()">
   </select>
 </form>
@@ -743,7 +757,8 @@ angular.bootstrap(document.documentElement);
 显示与值分别指定， ``x.v as x.name for x in o`` ：
 
 ```
-<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', v: '00'}, {name: 'BB', v: '11'}]; a=o[1].v;">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o=[{name: 'AA', v: '00'}, {name: 'BB', v: '11'}]; a=o[1].v;">
   <select ng-model="a" ng-options="x.v as x.name for x in o" ng-change="show()">
   </select>
 </form>
@@ -752,7 +767,8 @@ angular.bootstrap(document.documentElement);
 加入分组的， ``x.name group by x.g for x in o`` ：
 
 ```
-<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00'}, {name: 'BB', g: '11'}, {name: 'CC', g: '00'}]; a=o[1];">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o=[{name: 'AA', g: '00'}, {name: 'BB', g: '11'}, {name: 'CC', g: '00'}]; a=o[1];">
   <select ng-model="a" ng-options="x.name group by x.g for x in o" ng-change="show()">
   </select>
 </form>
@@ -769,23 +785,26 @@ angular.bootstrap(document.documentElement);
 
 如果参数是对象的话，基本也是一样的，只是把遍历的对象改成 ``(key, value)`` ：
 
-```
+```html
 <form name="test_form" ng-controller="TestCtrl" ng-init="o={a: 0, b: 1}; a=o.a;">
   <select ng-model="a" ng-options="k for (k, v) in o" ng-change="show()">
   </select>
 </form>
 
-<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00'}, b: {name: 'BB', v: '11'}}; a=o.a.v;">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o={a: {name: 'AA', v: '00'}, b: {name: 'BB', v: '11'}}; a=o.a.v;">
   <select ng-model="a" ng-options="v.v as v.name for (k, v) in o" ng-change="show()">
   </select>
 </form>
 
-<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a;">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a;">
   <select ng-model="a" ng-options="v.name group by v.g for (k, v) in o" ng-change="show()">
   </select>
 </form>
 
-<form name="test_form" ng-controller="TestCtrl" ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;">
+<form name="test_form" ng-controller="TestCtrl"
+      ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;">
   <select ng-model="a" ng-options="v.v as v.name group by v.g for (k, v) in o" ng-change="show()">
   </select>
 </form>
@@ -803,7 +822,7 @@ angular.bootstrap(document.documentElement);
 
 //orderBy// 是一个排序用的过滤器标签。它可以像 //sort// 函数那样支持一个排序函数，也可以简单地指定一个属性名进行操作：
 
-```
+```html
 <div ng-controller="TestCtrl">
   {{ data | orderBy: 'age' }} <br />
   {{ data | orderBy: '-age' }} <br />
@@ -832,7 +851,7 @@ angular.bootstrap(document.documentElement);
 
 如果参数是一个字符串，则列表成员中的任意属性值中有这个字符串，即为满足条件（忽略大小写）：
 
-```
+```html
 <div ng-controller="TestCtrl">
   {{ data | filter: 'b' }} <br />
   {{ data | filter: '!B' }} <br />
@@ -863,7 +882,7 @@ angular.bootstrap(document.documentElement);
 
 自定义的过滤函数也支持：
 
-```
+```html
 <div ng-controller="TestCtrl">
   {{ data | filter: f }} <br />
 </div>
@@ -892,7 +911,7 @@ angular.bootstrap(document.documentElement);
 
 时间戳格式化 //date// ：
 
-```
+```html
 <div ng-controller="TestCtrl">
 {{ a | date: 'yyyy-MM-dd HH:mm:ss' }}
 </div>
@@ -953,12 +972,14 @@ angular.bootstrap(document.documentElement);
 
 ==例子：搜索==
 
-```
+```html
 <div ng-controller="TestCtrl" ng-init="s=data[0].name; q=''">
   <div>
     <span>查找：</span> <input type="text" ng-model="q" />
   </div>
-  <select ng-multiple="true" ng-model="s" ng-options="o.name as o.name + '(' + o.age + ')' for o in data | filter: {name: q} | orderBy: ['age', 'name'] "></select>
+  <select ng-multiple="true" ng-model="s"
+          ng-options="o.name as o.name + '(' + o.age + ')' for o in data | filter: {name: q} | orderBy: ['age', 'name'] ">
+  </select>
 </div>
 
 <script type="text/javascript">
@@ -1024,7 +1045,7 @@ angular.module('ngView', [],
 
 在 //angular.bootstrap()// 时也可以定义：
 
-```
+```javascript
 angular.bootstrap(document.documentElement, [
   function($routeProvider){
     $routeProvider.when('/test',
@@ -1041,7 +1062,7 @@ angular.bootstrap(document.documentElement, [
 
 在作路由定义时，可以匹配一个规则，规则中可以定义路径中的某些部分作为参数之用，然后使用 //$routeParams// 服务获取到指定参数。比如 ``/#/book/test`` 中， //test// 作为参数传入到 controller 中：
 
-```
+```javascript
 <div ng-view></div>
 
 
@@ -1067,7 +1088,7 @@ angular.module('ngView', [],
 
 不需要预定义模式，也可以像普通 GET 请求那样获取到相关参数：
 
-```
+```javascript
 angular.module('ngView', [],
   function($routeProvider){
     $routeProvider.when('/book',
@@ -1093,7 +1114,7 @@ angular.module('ngView', [],
 
 这里先提一下另外一种与锚点路由相关的服务， //$route// 。这个服务里锚点路由在定义时，及匹配过程中的信息。比如我们搞怪一下：
 
-```
+```javascript
 angular.module('ngView', [],
   function($routeProvider){
     $routeProvider.when('/a',
@@ -1188,7 +1209,7 @@ ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起�
 
 基本的操作由 //$http// 服务提供。它的使用很简单，提供一些描述请求的参数，请求就出去了，然后返回一个扩充了 //success// 方法和 //error// 方法的 //promise// 对象（下节介绍），你可以在这个对象中添加需要的回调函数。
 
-```
+```javascript
 var TestCtrl = function($scope, $http){
   var p = $http({
     method: 'GET',
@@ -1216,7 +1237,7 @@ var TestCtrl = function($scope, $http){
 
 其中的 //transformRequest// 和 //transformResponse// 及 //headers// 已经有定义的，如果自定义则会覆盖默认定义：
 
-```
+```javascript
 var $config = this.defaults = {
   // transform incoming response data
   transformResponse: [function(data) {
@@ -1260,7 +1281,7 @@ var $config = this.defaults = {
 
 注意其中的 JSONP 方法，在实现上会在页面中添加一个 ``script`` 标签，然后放出一个 GET 请求。你自己定义的，匿名回调函数，会被 ng 自已给一个全局变量。在定义请求，作为 GET 参数，你可以使用 ``JSON_CALLBACK`` 这个字符串来暂时代替回调函数名，之后 ng 会为你替换成真正的函数名：
 
-```
+```javascript
 var p = $http({
   method: 'JSONP',
   url: '/json',
@@ -1298,7 +1319,7 @@ console.log($http.pendingRequests);
 - //deferred// 实例负责触发回调
 
 
-```
+```javascript
 var TestCtrl = function($q){
   var defer = $q.defer();
   var promise = defer.promise;
@@ -1324,7 +1345,7 @@ var TestCtrl = function($q){
 
 //$q.all()// 方法适用于并发场景很合适：
 
-```
+```javascript
 var TestCtrl = function($q, $http){
   var p = $http.get('/json', {params: {a: 1}});
   var p2 = $http.get('/json', {params: {a: 2}});
@@ -1338,7 +1359,7 @@ var TestCtrl = function($q, $http){
 
 要理解这东西，先看看 //promise// 的链式回调是如何运作的，看下面两段代码的区别：
 
-```
+```javascript
 var defer = $q.defer();
 var p = defer.promise;
 p.then(
@@ -1350,7 +1371,7 @@ p.then(
 defer.resolve('123');
 ```
 
-```
+```javascript
 var defer = $q.defer();
 var p = defer.promise;
 var p2 = p.then(
@@ -1366,7 +1387,7 @@ defer.resolve('123');
 
 而 //$q.reject()// 的作用就是触发后链的 //error// 回调：
 
-```
+```javascript
 var defer = $q.defer();
 var p = defer.promise;
 p.then(
@@ -1382,7 +1403,7 @@ defer.reject('123');
 
 最后的 //$q.when()// 是把数据封装成 //promise// 对象：
 
-```
+```javascript
 var p = $q.when(0, function(data){return data},
                    function(data){return data});
 p.then(
@@ -1401,7 +1422,7 @@ p.then(
 - //reject()// 失败回调
 
 
-```
+```javascript
 var defer = $q.defer();
 var promise = defer.promise;
 promise.then(function(data){console.log('ok, ' + data)},
@@ -1503,7 +1524,7 @@ ng 提供 //$log// 这个服务用于向终端输出相关信息：
 - warn()
 
 
-```
+```javascript
 var TestCtrl = function($log){
   $log.error('error');
   $log.info('info');
@@ -1516,7 +1537,7 @@ var TestCtrl = function($log){
 
 ng 提供了一个简单封装了缓存机制 //$cacheFactory// ，可以用来作为数据容器：
 
-```
+```javascript
 var TestCtrl = function($scope, $cacheFactory){
   $scope.cache = $cacheFactory('s_' + $scope.$id, {capacity: 3});
 
@@ -1567,7 +1588,7 @@ var TestCtrl = function($timeout){
 
 //$parse// 这个服务，为 js 提供了类似于 Python 中 //@property// 的能力：
 
-```
+```javascript
 var TestCtrl = function($scope, $parse){
   $scope.get_name = $parse('name');
   $scope.show = function(){console.log($scope.get_name($scope))}
@@ -1577,7 +1598,7 @@ var TestCtrl = function($scope, $parse){
 
 //$parse// 返回一个函数，调用这个函数时，可以传两个参数，第一个作用域，第二个是变量集，后者常用于覆盖前者的变量：
 
-```
+```javascript
 var get_name = $parse('name');
 var r = get_name({name: 'xx'}, {name: 'abc'});
 console.log(r);
@@ -1585,7 +1606,7 @@ console.log(r);
 
 //$parse// 返回的函数，也提供了相应的 assign 功能，可以为表达式赋值（如果可以的话）：
 
-```
+```javascript
 var get_name = $parse('name');
 var set_name = get_name.assign;
 var r = get_name({name: 'xx'}, {name: 'abc'});
@@ -1607,7 +1628,7 @@ ng 中的模板是很重要，也很强大的一个机制，自然少不了单�
 
 之后使用 //$compile// 就可以得到一个渲染好的节点对象了。当然， //$compile// 还要做其它一些工作，指令处理什么的。
 
-```
+```javascript
 var TestCtrl = function($scope, $element,$compile){
   $scope.a = '123';
   $scope.set = function(){
@@ -1616,5 +1637,373 @@ var TestCtrl = function($scope, $element,$compile){
     $element.append(e);
   }
 }
+```
+
+
+
+=自定义模块和服务=
+
+==模块和服务的概念与关系==
+
+总的来说，模块是组织业务的一个框框，在一个模块当中定义多个服务。当你引入了一个模块的时候，就可以使用这个模块提供的一种或多种服务了。
+
+比如 //AngularJS// 本身的一个默认模块叫做 //ng// ，它提供了 //$http// ， //$q// 等等服务。
+
+服务只是模块提供的多种机制中的一种，其它的还有命令（ //directive// ），过滤器（ //filter// ），及其它配置信息。
+
+然后在额外的 js 文件中有一个附加的模块叫做 //ngResource// ， 它提供了一个 //$resource// 服务。
+
+定义时，我们可以在已有的模块中新定义一个服务，也可以先新定义一个模块，然后在新模块中定义新服务。
+
+使用时，服务是需要显式地的声明依赖（引入）关系的，而服务则可以让 //ng// 自动地做注入，然后直接使用。
+
+
+==定义模块==
+
+定义模块的方法是使用 ``angular.module`` 。调用时声明了对其它模块的依赖，并定义了“初始化”函数。
+
+```javascript
+var my_module = angular.module('MyModule', [], function(){
+    console.log('here');
+});
+```
+
+这段代码定义了一个叫做 ``MyModule`` 的模块， ``my_module`` 这个引用可以在接下来做其它的一些事，比如定义服务。
+
+
+==定义服务==
+
+服务本身是一个任意的对象。但是 //ng// 提供服务的过程涉及它的依赖注入机制。在这里呢，就要先介绍一下叫 //provider// 的东西。
+
+简单来说， //provider// 是被“注入控制器”使用的一个对象，注入机制通过调用一个 //provider// 的 //$get()// 方法，把得到的东西作为参数进行相关调用（比如把得到的服务作为一个 //Controller// 的参数）。
+
+在这里“服务”的概念就比较不明确，对使用而言，服务仅指 //$get()// 方法返回的东西，但是在整体机制上，服务又要指提供了 //$get()// 方法的整个对象。
+
+```javascript
+//这是一个provider
+var pp = function(){
+  this.$get = function(){
+    return {'haha': '123'};
+  }
+}
+
+//我在模块的初始化过程当中, 定义了一个叫 PP 的服务
+var app = angular.module('Demo', [], function($provide){
+  $provide.provider('PP', pp);
+});
+
+//PP服务实际上就是 pp 这个 provider 的 $get() 方法返回的东西
+app.controller('TestCtrl',
+  function($scope, PP){
+    console.log(PP);
+  }
+);
+```
+
+上面的代码是一种定义服务的方法，当然， //ng// 还有相关的 shortcut， //ng// 总有很多 shortcut 。
+
+第一个是 //factory// 方法，由 //$provide// 提供， //module// 的 //factory// 是一个引用，作用一样。这个方法直接把一个函数当成是一个对象的 //$get()// 方法，这样你就不用显式地定义一个 //provider// 了：
+
+```javascript
+var app = angular.module('Demo', [], function($provide){
+  $provide.factory('PP', function(){
+    return {'hello': '123'};
+  });
+});
+app.controller('TestCtrl', function($scope, PP){ console.log(PP) });
+```
+
+在 //module// 中使用：
+
+```javascript
+var app = angular.module('Demo', [], function(){ });
+app.factory('PP', function(){return {'abc': '123'}});
+app.controller('TestCtrl', function($scope, PP){ console.log(PP) });
+```
+
+第二个是 //service// 方法，也是由 //$provide// 提供， //module// 中有对它的同名引用。 //service// 和 //factory// 的区别在于，前者是要求提供一个“构造方法”，后者是要求提供 //$get()// 方法。意思就是，前者一定是得到一个 ``object`` ，后者可以是一个数字或字符串。它们的关系大概是：
+
+```javascript
+var app = angular.module('Demo', [], function(){ });
+app.service = function(name, constructor){
+  app.factory(name, function(){
+    return (new constructor());
+  });
+}
+```
+
+这里插一句，js 中 //new// 的作用，以 ``new a()`` 为例，过程相当于：
+
++ 创建一个空对象 obj
++ 把 obj 绑定到 a 函数的上下文当中（即 a 中的 this 现在指向 obj ）
++ 执行 a 函数
++ 返回 obj 
+
+
+//service// 方法的使用就很简单了：
+
+```javascript
+var app = angular.module('Demo', [], function(){ });
+app.service('PP', function(){
+  this.abc = '123';
+});
+app.controller('TestCtrl', function($scope, PP){ console.log(PP) });
+```
+
+
+==引入模块并使用服务==
+
+结合上面的“定义模块”和“定义服务”，我们可以方便地组织自己的额外代码：
+
+```javascript
+angular.module('MyModule', [], function($provide){
+  $provide.factory('S1', function(){
+    return 'I am S1';
+  });
+  $provide.factory('S2', function(){
+    return {see: function(){return 'I am S2'}}
+  });
+});
+
+var app = angular.module('Demo', ['MyModule'], angular.noop);
+app.controller('TestCtrl', function($scope, S1, S2){
+  console.log(S1)
+  console.log(S2.see())
+});
+```
+
+
+=附加模块 ngResource=
+
+==使用引入与整体概念==
+
+//ngResource// 这个是 //ng// 官方提供的一个附加模块。附加的意思就是，如果你打算用它，那么你需要引入一人单独的 js 文件，然后在声明“根模块”时注明依赖的 //ngResource// 模块，接着就可以使用它提供的 //$resource// 服务了。完整的过程形如：
+
+```html
+<!DOCTYPE html>
+<html ng-app="Demo">
+<head>
+<meta charset="utf-8" />
+<title>AngularJS</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.js"></script>
+</head>
+<body>
+
+  <div ng-controller="TestCtrl"></div>
+
+
+<script type="text/javascript" charset="utf-8">
+
+var app = angular.module('Demo', ['ngResource'], angular.noop);
+app.controller('TestCtrl', function($scope, $resource){
+  console.log($resource);
+});
+
+</script>
+</body>
+</html>
+```
+
+//$resource// 服务，整体上来说，比较像是使用类似 ORM 的方式来包装了 AJAX 调用。区别就是 ORM 是操作数据库，即拼出 SQL 语句之后，作 ``execute`` 方法调用。而 //$resource// 的方式是构造出 AJAX 请求，然后发出请求。同时，AJAX 请求是需要回调处理的，这方面， //$resource// 的机制可以使你在一些时候省掉回调处理，当然，是否作回调处理在于业务情形及容错需求了。
+
+使用上 //$resource// 分成了“类”与“实例”这两个层面。一般地，类的方法调用就是直观的调用形式，通常会返回一个对象，这个对象即为“实例”。
+
+“实例”贯穿整个服务的使用过程。“实例”的数据是填充方式，即因为异步关系，回调函数没有执行时，实例已经存在，只是可能它还没有相关数据，回调执行之后，相关数据被填充到实例对象当中。实例的方法一般就是在类方法名前加一个 //$// ，调用上，根据定义，实例数据可能会做一些自动的参数填充，这点是区别实例与类的调用上的不同。
+
+好吧，上面这些话可能需要在看了接下来的内容之后再回过来理解。
+
+
+==基本定义==
+
+就像使用 ORM 一般要先定义 Model 一样，使用 //$resource// 需要先定义“资源”，也就是先定义一些 HTTP 请求。
+
+在业务场景上，我们假设为，我们需要操作“书”这个实体，包括创建create，获取详情read，修改update，删除delete，批量获取multi，共五个操作方法。实体属性有：唯一标识id，标题title，作者author。
+
+我们把这些操作定义成 //$resource// 的资源：
+
+```javascript
+var app = angular.module('Demo', ['ngResource'], angular.noop);
+app.controller('BookCtrl', function($scope, $resource){
+  var actions = {
+    create: {method: 'POST', params: {_method: 'create'}},
+    read: {method: 'POST', params: {_method: 'read'}},
+    update: {method: 'POST', params: {_method: 'update'}},
+    delete: {method: 'POST', params: {_method: 'delete'}},
+    multi: {method: 'POST', params: {_method: 'multi'}}
+  }
+  var Book = $resource('/book', {}, actions);
+});
+```
+
+定义是使用使用 //$resource// 这个函数就可以了，它接受三个参数：
+
+- url
+- 默认的params（这里的 params 即是 GET 请求的参数，POST 的参数单独叫做“postData”）
+- 方法映射
+
+
+方法映射是以方法名为 key ，以一个对象为 value ，这个 value 可以有三个成员：
+
+- method, 请求方法，'GET', 'POST', 'PUT', 'DELETE' 这些
+- params, 默认的 GET 参数
+- isArray, 返回的数据是不是一个列表
+
+
+==基本使用==
+
+在定义了资源之后，我们看如果使用这些资源，发出请求：
+
+```javascript
+var book = Book.read({id: '123'}, function(response){
+  console.log(response);
+});
+```
+
+这里我们进行 //Book// 的“类”方法调用。在方法的使用上，根据官方文档：
+
+```
+HTTP GET "class" actions: Resource.action([parameters], [success], [error])
+non-GET "class" actions: Resource.action([parameters], postData, [success], [error])
+non-GET instance actions: instance.$action([parameters], [success], [error])
+```
+
+
+我们这里是第二种形式，即类方法的非 GET 请求。我们给的参数会作为 ``postData`` 传递。如果我们需要 GET 参数，并且还需要一个错误回调，那么：
+
+```javascript
+var book = Book.read({get: 'haha'}, {id: '123'},
+  function(response){
+    console.log(response);
+  },
+  function(error){
+    console.log(error);
+  }
+);
+```
+
+调用之后，我们会立即得到的 ``book`` ，它是 Book 类的一个实例。这里所谓的实例，实际上就是先把所有的 //action// 加一个 **$** 前缀放到一个空对象里，然后把发出的参数填充进去。等请求返回了，把除 //action// 以外的成员删除掉，再把请求返回的数据填充到这个对象当中。所以，如果我们这样：
+
+```javascript
+var book = Book.read({id: '123'}, function(response){
+  console.log(book);
+});
+console.log(book)
+```
+
+就能看到 ``book`` 实例的变化过程了。
+
+现在我们得到一个真实的实例，看一下实例的调用过程：
+
+```javascript
+//响应的数据是 {result: 0, msg: '', obj: {id: 'xxx'}}
+var book = Book.create({title: '测试标题', author: '测试作者'}, function(response){
+  console.log(book);
+});
+```
+
+可以看到，在请求回调之后， ``book`` 这个实例的成员已经被响应内容填充了。但是这里有一个问题，我们返回的数据，并不适合一个 book 实例。格式先不说，它把 ``title`` 和 ``author`` 这些信息都丢了（因为响应只返回了 ``id`` ）。
+
+如果仅仅是格式问题，我们可以通过配置 //$http// 服务来解决（ AJAX 请求都要使用 //$http// 服务的）：
+
+```javascript
+$http.defaults.transformResponse = function(data){return angular.fromJson(data).obj};
+```
+
+当然，我们也可以自己来解决一下丢信息的问题：
+
+```javascript
+var p = {title: '测试标题', author: '测试作者'};
+var book = Book.create(p, function(response){
+  angular.extend(book, p);
+  console.log(book);
+});
+```
+
+不过，始终会有一些不方便了。比较正统的方式应该是调节服务器端的响应，让服务器端也具有和前端一样的实例概念，返回的是完整的实例信息。即使这样，你也还要考虑格式的事。
+
+现在我们得到了一个真实的 ``book`` 实例了，带有 ``id`` 信息。我们尝试一下实例的方法调用，先回过去头看一下那三种调用形式，对于实例只有第三种形式：
+
+```
+non-GET instance actions: instance.$action([parameters], [success], [error])
+```
+
+首先解决一个疑问，如果一个实例是进行一个 GET 的调用会怎么样？没有任何问题，这当然没有任何问题的，形式和上面一样。
+
+如何实例是做 POST 请求的话，从形式上看，我们无法控制请求的 //postData// ？是的，所有的 POST 请求，其 //postData// 都会被实例数据自动填充，形式上我们只能控制 //params// 。
+
+
+所以，如果是在做修改调用的话：
+
+```javascript
+book.$update({title: '新标题', author: '测试作者'}, function(response){
+  console.log(book);
+});
+```
+
+这样是没有意义的并且错误的。因为要修改的数据只是作为 GET 参数传递了，而 ``postData`` 传递的数据就是当前实例的数据，并没有任何修改。
+
+正确的做法：
+
+```javascript
+book.title = '新标题'
+book.$update(function(response){
+  console.log(book);
+});
+```
+
+显然，这种情况下，回调都可以省了：
+
+```javascript
+book.title = '新标题'
+book.$update();
+```
+
+
+==定义和使用时的占位量==
+
+两方面。一是在定义时，在其 URL 中可以使用变量引用的形式（类型于定义锚点路由时那样）。第二时定义默认 //params// ，即 GET 参数时，可以定义为引用 //postData// 中的某变量。比如我们这样改一下：
+
+```javascript
+var Book = $resource('/book/:id', {}, actions);
+var book = Book.read({id: '123'}, {}, function(response){
+  console.log(response);
+});
+```
+
+在 URL 中有一个 ``:id`` ，表示对 //params// 中 ``id`` 这个变量的引用。因为 ``read`` 是一个 POST 请求，根据调用形式，第一个参数是 //params// ，第二个参数是 //postData// 。这样的调用结果就是，我们会发一个 POST 请求到如下地址， //postData// 为空：
+
+```text
+/book/123?_method=read
+```
+
+再看默认的 //params// 中引用 //postData// 变量的形式：
+
+```javascript
+var Book = $resource('/book', {id: '@id'}, actions);
+var book = Book.read({title: 'xx'}, {id: '123'}, function(response){
+  console.log(response);
+});
+```
+
+这样会出一个 POST 请求， //postData// 内容中有一个 ``id`` 数据，访问的 URL 是：
+
+```text
+/book?_method=read&id=123&title=xx
+```
+
+这两个机制也可以联合使用：
+
+```javascript
+var Book = $resource('/book/:id', {id: '@id'}, actions);
+var book = Book.read({title: 'xx'}, {id: '123'}, function(response){
+  console.log(response);
+});
+```
+
+结果就是出一个 POST 请求， //postData// 内容中有一个 ``id`` 数据，访问的 URL 是：
+
+```text
+/book/123?_method=read&title=xx
 ```
 
