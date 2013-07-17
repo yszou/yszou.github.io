@@ -2007,3 +2007,41 @@ var book = Book.read({title: 'xx'}, {id: '123'}, function(response){
 /book/123?_method=read&title=xx
 ```
 
+
+==实例==
+
+//ngResource// 要举一个实例是比较麻烦的事。因为它必须要一个后端来支持，这里如果我用 Python 写一个简单的后端，估计要让这个后端跑起来对很多人来说都是问题。所以，我在几套公共服务的 API 中纠结考察了一番，最后使用 www.rememberthemilk.com 的 API 来做了一个简单的，可用的例子。
+
+例子见： http://zouyesheng.com/demo/ng-resource-demo.html  (可以直接下载看源码)
+
+先说一下 API 的情况。这里的请求调用全是跨域的，所以交互上全部是使用了 JSONP 的形式。 API 的使用有使用签名认证机制，嗯， js 中直接算 md5 是可行的，我用了一个现成的库（但是好像不能处理中文吧）。
+
+这个例子中的 ``LoginCtrl`` 大家就不用太关心了，参见官方的文档，走完流程拿到 //token// 完事。与 //ngResource// 相关的是 ``MainCtrl`` 中的东西。
+
+其实从这个例子中就可以看出，目前 //ngResource// 的机制对于服务端返回的数据的格式是严重依赖的，同时也可以反映出 //$http// 对一些场景根本无法应对的局限。所以，我现在的想法是理解 //ngResource// 的思想，真正需要的人自己使用 //jQuery// 重新实现一遍也许更好。这应该也花不了多少时间， //ngResource// 的代码本来不多。
+
+我为什么说 //$http// 在一些场景中有局限呢。在这个例子当中，所有的请求都需要带一个签名，签名值是由请求中带的参数根据规则使用 md5 方法计算出的值。我找不到一个 hook 可以让我在请求出去之前修改这个请求（添加上签名）。所以在这个例子当中，我的做法是根据 //ngResource// 的请求最后会使用 //$httpBackend// 这个底层服务，在 module 定义时我自己复制官方的相关代码，重新定义 //$httpBackend// 服务，在需要的地方做我自己的修改：
+
+```javascript
+script.src = sign_url(url);
+```
+
+不错，我就改了这一句，但我不得不复制了 50 行官方源码到我的例子中。
+
+另外一个需要说的是对返回数据的处理。因为 //ngResource// 会使用返回的数据直接填充实例，所以这个数据格式就很重要。
+
+首先，我们可以使用 ``$http.defaults.transformResponse`` 来统一处理一下返回的数据，但是这并不能解决所有问题，可目前 //ngResource// 并不提供对每一个 //action// 的单独的后处理回调函数项。除非你的服务端是经过专门的适应性设计的，否则你用 //ngResource// 不可能爽。例子中，我为了获取当前列表的结果，我不得不自己去封装结果：
+
+```javascript
+var list_list = List.getList(function(){
+  var res = list_list[1];
+  while(list_list.length > 0){list_list.pop()};
+  angular.forEach(res.list, function(v){
+    list_list.push(new List({list: v}));
+  });
+  $scope.list_list = list_list;
+  $scope.show_add = true;
+  return;
+});
+```
+

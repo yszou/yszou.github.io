@@ -15,7 +15,7 @@
 
 <div style=" float: right; font-size: 13px; color: #777; ">
     <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-07-03 18:28 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-07-17 17:58 更新</li>
         <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
     </ul>
 </div>
@@ -133,6 +133,8 @@
     <li><a href="#toc62" style="color: #0184b7; text-decoration: none">14.3. 基本使用</a>
     </li>
     <li><a href="#toc63" style="color: #0184b7; text-decoration: none">14.4. 定义和使用时的占位量</a>
+    </li>
+    <li><a href="#toc64" style="color: #0184b7; text-decoration: none">14.5. 实例</a>
     </li>
     </ul>
   </li>
@@ -2659,6 +2661,55 @@ ng 中的模板是很重要，也很强大的一个机制，自然少不了单�
 </p>
 
 <div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  /book/123?_method=read&amp;title=xx
+</pre></div>
+
+
+<a id="toc64" name="toc64"></a>
+<h2 style=" border-bottom: 1px solid #69ab01; color: #5e9802; padding: 2px; text-shadow: 1px 1px 1px gray; margin: 20px auto; font-size: medium;">14.5. 实例</h2>
+
+<p style="margin: 15px 0;">
+<i style=" color: #d75100; font-style: normal; ">ngResource</i> 要举一个实例是比较麻烦的事。因为它必须要一个后端来支持，这里如果我用 Python 写一个简单的后端，估计要让这个后端跑起来对很多人来说都是问题。所以，我在几套公共服务的 API 中纠结考察了一番，最后使用 <a href="http://www.rememberthemilk.com" style="color: #0184b7; text-decoration: none">www.rememberthemilk.com</a> 的 API 来做了一个简单的，可用的例子。
+</p>
+<p style="margin: 15px 0;">
+例子见： <a href="http://zouyesheng.com/demo/ng-resource-demo.html" style="color: #0184b7; text-decoration: none">http://zouyesheng.com/demo/ng-resource-demo.html</a>  (可以直接下载看源码)
+</p>
+<p style="margin: 15px 0;">
+先说一下 API 的情况。这里的请求调用全是跨域的，所以交互上全部是使用了 JSONP 的形式。 API 的使用有使用签名认证机制，嗯， js 中直接算 md5 是可行的，我用了一个现成的库（但是好像不能处理中文吧）。
+</p>
+<p style="margin: 15px 0;">
+这个例子中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">LoginCtrl</code> 大家就不用太关心了，参见官方的文档，走完流程拿到 <i style=" color: #d75100; font-style: normal; ">token</i> 完事。与 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 相关的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">MainCtrl</code> 中的东西。
+</p>
+<p style="margin: 15px 0;">
+其实从这个例子中就可以看出，目前 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 的机制对于服务端返回的数据的格式是严重依赖的，同时也可以反映出 <i style=" color: #d75100; font-style: normal; ">$http</i> 对一些场景根本无法应对的局限。所以，我现在的想法是理解 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 的思想，真正需要的人自己使用 <i style=" color: #d75100; font-style: normal; ">jQuery</i> 重新实现一遍也许更好。这应该也花不了多少时间， <i style=" color: #d75100; font-style: normal; ">ngResource</i> 的代码本来不多。
+</p>
+<p style="margin: 15px 0;">
+我为什么说 <i style=" color: #d75100; font-style: normal; ">$http</i> 在一些场景中有局限呢。在这个例子当中，所有的请求都需要带一个签名，签名值是由请求中带的参数根据规则使用 md5 方法计算出的值。我找不到一个 hook 可以让我在请求出去之前修改这个请求（添加上签名）。所以在这个例子当中，我的做法是根据 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 的请求最后会使用 <i style=" color: #d75100; font-style: normal; ">$httpBackend</i> 这个底层服务，在 module 定义时我自己复制官方的相关代码，重新定义 <i style=" color: #d75100; font-style: normal; ">$httpBackend</i> 服务，在需要的地方做我自己的修改：
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">script</span>.<span style="color: #e0eee0">src</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">sign_url</span>(<span style="color: #e0eee0">url</span>);
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+不错，我就改了这一句，但我不得不复制了 50 行官方源码到我的例子中。
+</p>
+<p style="margin: 15px 0;">
+另外一个需要说的是对返回数据的处理。因为 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 会使用返回的数据直接填充实例，所以这个数据格式就很重要。
+</p>
+<p style="margin: 15px 0;">
+首先，我们可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">$http.defaults.transformResponse</code> 来统一处理一下返回的数据，但是这并不能解决所有问题，可目前 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 并不提供对每一个 <i style=" color: #d75100; font-style: normal; ">action</i> 的单独的后处理回调函数项。除非你的服务端是经过专门的适应性设计的，否则你用 <i style=" color: #d75100; font-style: normal; ">ngResource</i> 不可能爽。例子中，我为了获取当前列表的结果，我不得不自己去封装结果：
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #bcd2ee">var</span> <span style="color: #e0eee0">list_list</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">List</span>.<span style="color: #e0eee0">getList</span>(<span style="color: #bcd2ee">function</span>(){
+    <span style="color: #bcd2ee">var</span> <span style="color: #e0eee0">res</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">list_list</span>[<span style="color: #00ffff">1</span>];
+    <span style="color: #90ee90">while</span>(<span style="color: #e0eee0">list_list</span>.<span style="color: #e0eee0">length</span> <span style="color: #7fff00">&gt;</span> <span style="color: #00ffff">0</span>){<span style="color: #e0eee0">list_list</span>.<span style="color: #e0eee0">pop</span>()};
+    <span style="color: #e0eee0">angular</span>.<span style="color: #e0eee0">forEach</span>(<span style="color: #e0eee0">res</span>.<span style="color: #e0eee0">list</span>, <span style="color: #bcd2ee">function</span>(<span style="color: #e0eee0">v</span>){
+      <span style="color: #e0eee0">list_list</span>.<span style="color: #e0eee0">push</span>(<span style="color: #90ee90">new</span> <span style="color: #e0eee0">List</span>({<span style="color: #e0eee0">list</span><span style="color: #7fff00">:</span> <span style="color: #e0eee0">v</span>}));
+    });
+    <span style="color: #e0eee0">$scope</span>.<span style="color: #e0eee0">list_list</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">list_list</span>;
+    <span style="color: #e0eee0">$scope</span>.<span style="color: #e0eee0">show_add</span> <span style="color: #7fff00">=</span> <span style="color: #90ee90">true</span>;
+    <span style="color: #90ee90">return</span>;
+  });
 </pre></div>
 
 
