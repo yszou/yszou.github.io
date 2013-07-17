@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html ng-app="Demo">
+<head>
+<meta charset="utf-8" />
+<title>AngularJS</title>
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.js"></script>
+<script type="text/javascript" src="http://cdn.finndns.eu/jshash/2.2/md5-min.js"></script>
+</head>
+<body>
+
+  <div ng-controller="LoginCtrl">
+    <div ng-show="!user">
+      <div ng-show="!wait">
+        <p>直接复制内容到输入框后, 请手动触发一下change事件</p>
+        <p>APP: <input type="text" ng-model="app" /></p>  
+        <p>SECRET: <input type="text" ng-model="secret" /></p>  
+        <p>TOKEN: <input type="text" ng-model="token" /></p>  
+        <p><button ng-click="login(app, secret)">获取登录地址</button></p>
+        <p><button ng-click="check(app, secret, token)">直接验证Token</button></p>
+        <p ng-show="login_url">请点击链接登录: <a ng-href="[[ login_url ]]" target="_blank" ng-click="wait=true">[[ login_url ]]</a></p>
+      </div>
+      <div ng-show="wait">
+        <button ng-click="get_token(frob)">登录成功</button>
+        <button>登录遇到问题</button>
+      </div>
+    </div>
+    <div>当前Token: [[ token ]] (复制保留一下哦)</div>
+    <div ng-show="user">
+      <p>用户ID: [[ user.id ]]</p>
+      <p>用户名: [[ user.username ]]</p>
+      <p>真名: [[ user.fullname ]]</p>
+    </div>
+  </div>
+  <hr />
+
+  <div ng-controller="MainCtrl">
+    <p>当前List列表, <span ng-show="show_add"><input ng-model="list_name" />(不要写中文)<button ng-click="add(list_name)">新增</button></span></p>
+    <ul>
+      <li ng-repeat="o in list_list" ng-hide="o.list.deleted">[[ o.list.name ]] <a ng-click="o.$delete({list_id: o.list.id})">删除</a> / <a ng-click="log(o)">查看</a></li>
+    </ul>
+  </div>
+
+
+<script type="text/javascript" charset="utf-8">
+
+(function(){
+  var secret = null;
+  window.set_secret = function(s){
+    secret = s;
+  }
+
+  window.sign_url = function(url){
+    var p = url.split('?')[1];
+    p = p.split('&');
+    var key = [];
+    angular.forEach(p, function(v){
+      var k = v.split('=');
+      key.push(k);
+    });
+    key.sort(function(a, b){return a[0] > b[0]});
+    var s = '';
+    angular.forEach(key, function(v){
+      s += (v[0] + v[1]);
+    });
+    var sign = hex_md5(secret + s);
+    url += ('&api_sig=' + sign);
+    return url;
+  }
+})();
+
+$.ajaxSetup({
+  type: 'GET',
+  dataType: 'jsonp',
+  cache: false,
+  timeout: 20 * 1000,
+  beforeSend: function(jqXHR, settings){
+    settings.url = sign_url(settings.url);
+  }
+});
+
+
+
+var app = angular.module('Demo', ['ngResource'],
+  function($interpolateProvider, $provide){
+    $interpolateProvider.startSymbol('[[');
+    $interpolateProvider.endSymbol(']]');
+
+
+    function createHttpBackend($browser, XHR, $browserDefer, callbacks, rawDocument, locationProtocol) {
+      // TODO(vojta): fix the signature
+      return function(method, url, post, callback, headers, timeout, withCredentials) {
+        $browser.$$incOutstandingRequestCount();
+        url = url || $browser.url();
+
+        var callbackId = '_' + (callbacks.counter++).toString(36);
+        callbacks[callbackId] = function(data) {
+          callbacks[callbackId].data = data;
+        };
+
+        jsonpReq(url.replace('JSON_CALLBACK', 'angular.callbacks.' + callbackId),
+            function() {
+          if (callbacks[callbackId].data) {
+            completeRequest(callback, 200, callbacks[callbackId].data);
+          } else {
+            completeRequest(callback, -2);
+          }
+          delete callbacks[callbackId];
+        });
+
+        function completeRequest(callback, status, response, headersString) {
+          // URL_MATCH is defined in src/service/location.js
+          var URL_MATCH = /^([^:]+):\/\/(\w+:{0,1}\w*@)?([\w\.-]*)(:([0-9]+))?(\/[^\?#]*)?(\?([^#]*))?(#(.*))?$/;
+
+          var protocol = (url.match(URL_MATCH) || ['', locationProtocol])[1];
+
+          // fix status code for file protocol (it's always 0)
+          status = (protocol == 'file') ? (response ? 200 : 404) : status;
+
+          // normalize IE bug (http://bugs.jquery.com/ticket/1450)
+          status = status == 1223 ? 204 : status;
+
+          callback(status, response, headersString);
+          $browser.$$completeOutstandingRequest(angular.noop);
+        }
+      };
+
+      function jsonpReq(url, done) {
+        // we can't use jQuery/jqLite here because jQuery does crazy shit with script elements, e.g.:
+        // - fetches local scripts via XHR and evals them
+        // - adds and immediately removes script elements from the document
+        var script = rawDocument.createElement('script'),
+            doneWrapper = function() {
+              rawDocument.body.removeChild(script);
+              if (done) done();
+            };
+
+        script.type = 'text/javascript';
+        script.src = sign_url(url);
+        script.onload = script.onerror = doneWrapper;
+        rawDocument.body.appendChild(script);
+      }
+    }
+
+    $provide.provider('$httpBackend', function(){
+      this.$get = ['$browser', '$window', '$document', function($browser, $window, $document) {
+        return createHttpBackend($browser, window.XMLHttpRequest, $browser.defer, $window.angular.callbacks,
+            $document[0], $window.location.protocol.replace(':', ''));
+      }];
+    });
+  }
+);
+
+
+app.controller('LoginCtrl', function($scope, $rootScope){
+  $scope.app = 'd6c13ae70eced6f656e49d6e5e19b85c';
+  $scope.secret = '26aa0ec9fc16c641';
+  $scope.token = '';
+
+  $scope.$watch('secret', function(new_v, old_v){window.set_secret(new_v)});
+
+  $scope.login = function(app, secret){
+    var defer = $.ajax({
+      url: 'http://api.rememberthemilk.com/services/rest/',
+      data: {method: 'rtm.auth.getFrob', api_key: app, format: 'json'}
+    });
+    defer.done(function(response){
+      var frob = response.rsp.frob;
+      var url = 'http://www.rememberthemilk.com/services/auth/?'
+                      + 'api_key=' + app + '&'
+                      + 'perms=' + 'delete' + '&'
+                      + 'frob=' + frob;
+      $scope.login_url = sign_url(url);
+      $scope.frob = frob;
+      $scope.$digest();
+    });
+  }
+
+  $scope.get_token = function(frob){
+    var defer = $.ajax({
+      url: 'http://api.rememberthemilk.com/services/rest/',
+      data: {method: 'rtm.auth.getToken', api_key: $scope.app, format: 'json', frob: frob}
+    });
+    defer.done(function(response){
+      $scope.token = response.rsp.auth.token;
+      $scope.user = response.rsp.auth.user;
+      $scope.$digest();
+      $rootScope.$broadcast('USER_LOGIN', $scope.user, $scope.token, $scope.app);
+    });
+  }
+
+  $scope.check = function(app, secret, token){
+    var defer = $.ajax({
+      url: 'http://api.rememberthemilk.com/services/rest/',
+      data: {method: 'rtm.auth.checkToken', api_key: app, format: 'json', auth_token: token}
+    });
+    defer.done(function(response){
+      if(response.rsp.stat != 'ok'){alert('验证失败'); return}
+      $scope.token = response.rsp.auth.token;
+      $scope.user = response.rsp.auth.user;
+      $scope.$digest();
+      $rootScope.$broadcast('USER_LOGIN', $scope.user, $scope.token, $scope.app);
+    });
+  }
+
+});
+
+
+
+app.controller('MainCtrl', function($scope, $resource, $http, $timeout){
+  $scope.$on('USER_LOGIN', function($event, user, token, app){
+    $scope.user = user;
+    $scope.token = token;
+    $scope.app = app;
+
+    $http.defaults.transformResponse = function(data){
+      if(data.rsp.stat != 'ok'){alert('出现了错误, ' + data.rsp.err.msg); return};
+      data = data.rsp;
+      return data;
+    }
+
+    var actions = {
+      getList: {method: 'JSONP', params: {method: 'rtm.lists.getList'}, isArray: true},
+      getTimeline: {method: 'JSONP', params: {method: 'rtm.timelines.create'}},
+      add: {method: 'JSONP', params: {method: 'rtm.lists.add', name: '', timeline: '0'}},
+      delete: {method: 'JSONP', params: {method: 'rtm.lists.delete', list_id: '', timeline: '0'}}
+    }
+
+    var List = $resource('http://api.rememberthemilk.com/services/rest/',
+                         {auth_token: token, format: 'json', api_key: $scope.app, callback: 'JSON_CALLBACK'},
+                         actions);
+    $scope.List = List;
+
+    var list_list = List.getList(function(){
+      var res = list_list[1];
+      while(list_list.length > 0){list_list.pop()};
+      angular.forEach(res.list, function(v){
+        list_list.push(new List({list: v}));
+      });
+      $scope.list_list = list_list;
+      $scope.show_add = true;
+      return;
+    });
+
+  });
+
+  $scope.log = function(obj){console.log(obj)}
+
+  $scope.add = function(name){
+    var timeline = $scope.List.getTimeline(function(){
+      $scope.List.add({name: name, timeline: timeline.timeline}, function(response){
+        var obj = response;
+        $scope.list_list.push(obj); 
+        $scope.List.getTimeline(function(response){
+          obj.list.timeline = response.timeline;
+        });
+      });
+    });
+  }
+
+});
+
+</script>
+</body>
+</html>
