@@ -2045,3 +2045,169 @@ var list_list = List.getList(function(){
 });
 ```
 
+
+=AngularJS与其它框架的混用(jQuery, Dojo)=
+
+这个问题似乎很多人都关心，但是事实是，如果了解了 ng 的工作方式，这本来就不是一个问题了。
+
+在我自己使用 ng 的过程当中，一直是混用 jQuery 的，以前还要加上一个 Dojo 。只要了解每种框架的工作方式，在具体的代码中每个框架都做了什么事，那么整体上控制起来就不会有问题。
+
+回到 ng 上来看，首先对于 jQuery 来说，最开始说提到过，在 DOM 操作部分， ng 与 jQuery 是兼容的，如果没有 jQuery ， ng 自己也实现了兼容的部分 API 。
+
+同时，最开始也提到过， ng 的使用最忌讳的一点就是修改 DOM 结构——你应该使用 ng 的模板机制进行数据绑定，以此来控制 DOM 结构，而不是直接操作。换句话来说，在不动 DOM 结构的这个前提之下，你的数据随便怎么改，随便使用哪个框架来控制都是没问题的，到时如有必要使用 ``$scope.$digest()`` 来通知 ng 一下即可。
+
+下面这个例子，我们使用了 jQuery 中的 //Deferred// ( ``$.ajax`` 就是返回一个 //Deferred// )，还使用了 ng 的 //$timeout// ，当然是在 ng 的结构之下：
+
+
+```html
+<!DOCTYPE html>
+<html ng-app="Demo">
+<head>
+<meta charset="utf-8" />
+<title>AngularJS</title>
+</head>
+<body>
+
+<div ng-controller="TestCtrl">
+  <span ng-click="go()">{{ a }}</span>
+</div>
+
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+</script>
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+
+<script type="text/javascript">
+var app = angular.module('Demo', [], angular.noop);
+app.controller('TestCtrl', function($scope, $timeout){
+  $scope.a = '点击我开始';
+
+  var defer = $.Deferred();
+  var f = function(){
+    if($scope.a == ''){$scope.a = '已停止'; return}
+    defer.done(function(){
+      $scope.a.length < 10 ? $scope.a += '>' : $scope.a = '>';
+      $timeout(f, 100);
+    });
+  }
+  defer.done(function(){$scope.a = '>'; f()});
+
+  $scope.go = function(){
+    defer.resolve();
+    $timeout(function(){$scope.a = ''}, 5000);
+  }
+});
+</script>
+</body>
+</html>
+```
+
+
+再把 Dojo 加进来看与 DOM 结构相关的例子。之前说过，使用 ng 就最好不要手动修改 DOM 结构，但这里说两点：
+
++ 对于整个页面，你可以只在局部使用 ng ，不使用 ng 的地方你可以随意控制 DOM 。
++ 如果 DOM 结构有变动，你可以在 DOM 结构定下来之后再初始化 ng 。
+
+
+下面这个例子使用了 //AngularJS// ， //jQuery// ， //Dojo// ：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>AngularJS</title>
+<link rel="stylesheet"
+  href="http://ajax.googleapis.com/ajax/libs/dojo/1.9.1/dijit/themes/claro/claro.css" media="screen" />
+</head>
+<body class="claro">
+
+<div ng-controller="TestCtrl" id="test_ctrl">
+
+  <p ng-show="!btn_disable">
+    <button ng-click="change()">调用dojo修改按钮</button>
+  </p>
+
+  <p id="btn_wrapper">
+    <button data-dojo-type="dijit/form/Button" type="button">{{ a }}</button>
+  </p>
+
+  <p>
+    <input ng-model="dialog_text" ng-init="dialog_text='对话框内容'" />
+    <button ng-click="dialog(dialog_text)">显示对话框</button>
+  </p>
+
+  <p ng-show="show_edit_text" style="display: none;">
+    <span>需要编辑的内容:</span>
+    <input ng-model="text" />
+  </p>
+
+  <div id="editor_wrapper">
+    <div data-dojo-type="dijit/Editor" id="editor"></div>
+  </div>
+
+</div>
+
+
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/dojo/1.9.1/dojo/dojo.js">
+</script>
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+</script>
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js">
+</script>
+
+<script type="text/javascript">
+
+require(['dojo/parser', 'dijit/Editor'], function(parser){
+  parser.parse($('#editor_wrapper')[0]).then(function(){
+    var app = angular.module('Demo', [], angular.noop);
+
+    app.controller('TestCtrl', function($scope, $timeout){
+      $scope.a = '我是ng, 也是dojo';
+      $scope.show_edit_text = true;
+
+      $scope.change = function(){
+        $scope.a = 'DOM结构已经改变(不建议这样做)';
+        require(['dojo/parser', 'dijit/form/Button', 'dojo/domReady!'],
+          function(parser){
+            parser.parse($('#btn_wrapper')[0]);
+            $scope.btn_disable = true;
+          }
+        );
+      }
+
+      $scope.dialog = function(text){
+        require(["dijit/Dialog", "dojo/domReady!"], function(Dialog){
+          var dialog = new Dialog({
+              title: "对话框哦",
+              content: text,
+              style: "width: 300px"
+          });
+          dialog.show();
+        });
+      }
+
+      require(['dijit/registry'], function(registry){
+        var editor = registry.byId('editor');
+        $scope.$watch('text', function(new_v){
+          editor.setValue(new_v);
+        });
+      });
+
+    });
+
+    angular.bootstrap(document, ['Demo']);
+  });
+
+});
+
+</script>
+</body>
+</html>
+```
+
