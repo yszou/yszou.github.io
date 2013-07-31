@@ -141,6 +141,16 @@ app.controller('TestCtrl',
 );
 ```
 
+上面我们使用 //ng-app// 来指明要使用的 App ，这样的话可以把显式的初始化工作省了。一般完整的过程是：
+
+```
+var app = angular.module('Demo', [], angular.noop);
+angular.bootstrap(document, ['Demo']);
+```
+
+使用 ``angular.bootstrap`` 来显示地做初始化工具，参数指明了根节点，装载的模块（可以是多个模块）。
+
+
 
 =依赖注入=
 
@@ -2210,4 +2220,79 @@ require(['dojo/parser', 'dijit/Editor'], function(parser){
 </body>
 </html>
 ```
+
+=自定义过滤器=
+
+先来回顾一下 ng 中的一些概念：
+
+- //module// ，代码的组织单元，其它东西都是在定义在具体的模块中的。
+- //app// ，业务概念，可能会用到多个模块。
+- //service// ，仅在数据层面实现特定业务功能的代码封装。
+- //controller// ，与 DOM 结构相关联的东西，即是一种业务封装概念，又体现了项目组织的层级结构。
+- //filter// ，改变输入数据的一种机制。
+- //directive// ，与 DOM 结构相关联的，特定功能的封装形式。
+
+
+上面的这几个概念基本上就是 ng 的全部。每一部分都可以自由定义，使用时通过各要素的相互配合来实现我们的业务需求。
+
+我们从最开始一致打交道的东西基本上都是 //controller// 层面的东西。在前面，也介绍了 //module// 和 //service// 的自定义。剩下的会介绍 //filter// 和 //directive// 的定义。基本上这几部分的定义形式都是一样的，原理上是通过 ``provider`` 来做注入形式的声明，在实际操作过程中，又有很多 shortcut 式的声明方式。
+
+
+过滤器的自定义是最简单的，就是一个函数，接受输入，然后返回结果。在考虑过滤器时，我觉得很重要的一点： **无状态** 。
+
+具体来说，过滤器就是一个函数，函数的本质含义就是确定的输入一定得到确定的输出。虽然 //filter// 是定义在 //module// 当中的，而且 //filter// 又是在 //controller// 的 DOM 范围内使用的，但是，它和具体的 //module// ， //controller// ， //scope// 这些概念都没有关系（虽然在这里你可以使用 js 的闭包机制玩些花样），它仅仅是一个函数，而已。换句话说，它没有任何上下文关联的能力。
+
+过滤器基本的定义方式：
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+app.filter('map', function(){
+  var filter = function(input){
+    return input + '...';
+  };
+  return filter;
+});
+```
+
+上面的代码定义了一个叫做 ``map`` 的过滤器。使用时：
+
+```html
+<p>示例数据: {{ a|map }}</p>
+```
+
+过滤器也可以带参数，多个参数之间使用 ``:`` 分割，看一个完整的例子：
+
+```javascript
+<div ng-controller="TestCtrl">
+<p>示例数据: {{ a|map:map_value:'>>':'(no)' }}</p>
+<p>示例数据: {{ b|map:map_value:'>>':'(no)' }}</p>
+</div>
+
+
+<script type="text/javascript">
+
+var app = angular.module('Demo', [], angular.noop);
+app.controller('TestCtrl', function($scope){
+  $scope.map_value = {
+    a: '一',
+    b: '二',
+    c: '三'
+  }
+  $scope.a = 'a';
+});
+
+app.filter('map', function(){
+  var filter = function(input, map_value, append, default_value){
+    var r = map_value[input];
+    if(r === undefined){ return default_value + append }
+    else { return r + append }
+  };
+  return filter;
+});
+
+angular.bootstrap(document, ['Demo']);
+</script>
+```
+
+
 
