@@ -2295,4 +2295,95 @@ angular.bootstrap(document, ['Demo']);
 ```
 
 
+=自定义指令directive=
+
+这是 ng 最强大的一部分，也是最复杂最让人头疼的部分。
+
+目前我们看到的所谓“模板”系统，只不过是官方实现的几个指令而已。这意味着，通过自定义各种指令，我们不但可以完全定义一套“模板”系统，更可以把 HTML 页面直接打造成为一种 DSL （领域特定语言）。
+
+
+==指令的使用==
+
+使用指令时，它的名字可以有多种形式，把指令放在什么地方也有多种选择。
+
+通常，指令的定义名是形如 ``ngBind`` 这样的 “camel cased” 形式。在使用时，它的引用名可以是：
+
+- ng:bind
+- ng_bind
+- ng-bind
+- x-ng-bind
+- data-ng-bind
+
+
+你可以根据你自己是否有 “HTML validator” 洁癖来选择。
+
+指令可以放在多个地方，它们的作用相同：
+
+- ``<span my-dir="exp"></span>`` 作为标签的属性
+- ``<span class="my-dir: exp;"></span>`` 作为标签类属性的值
+- ``<my-dir></my-dir>`` 作为标签
+- ``<!-- directive: my-dir exp -->`` 作为注释
+
+
+==指令的执行过程==
+
+ng 中对指令的解析与执行过程是这样的：
+
+- 浏览器得到 HTML 字符串内容，解析得到 DOM 结构。
+- ng 引入，把 DOM 结构扔给 ``$compile`` 函数处理：
+    - 找出 DOM 结构中有变量占位符
+    - 匹配找出 DOM 中包含的所有指令引用
+    - 把指令关联到 DOM 
+    - 关联到 DOM 的多个指令按权重排列
+    - 执行指令中的 ``compile`` 函数（改变 DOM 结构，返回 ``link`` 函数）
+    - 得到的所有 ``link`` 函数组成一个列表作为 ``$compile`` 函数的返回
+- 执行 ``link`` 函数（连接模板的 ``scope``）。
+
+
+==基本的自定义方法==
+
+自定义一个指令可以非常非常的复杂，但是其基本的调用形式，同自定义服务大概是相同的：
+
+```javascript
+<p show style="font-size: 12px;"></p>
+
+
+<script type="text/javascript">
+
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('show', function(){
+  var func = function($scope, $element, $attrs){
+    console.log($scope);
+    console.log($element);
+    console.log($attrs);
+  }    
+  return func;
+  //return {compile: function(){return func}}
+});
+
+
+angular.bootstrap(document, ['Demo']);
+</script>
+```
+
+如果在 ``directive`` 中直接返回一个函数，则这个函数会作为 ``compile`` 的返回值，也即是作为 ``link`` 函数使用。这里说的 ``compile`` 和 ``link`` 都是一个指令的组成部分，一个完整的定义应该返回一个对象，这个对象包括了多个属性：
+
+- name
+- priority
+- terminal
+- scope
+- controller
+- require
+- restrict
+- template
+- templateUrl
+- replace
+- transclude
+- compile
+- link
+
+
+上面的每一个属性，都可以单独探讨的。
+
 
