@@ -2325,6 +2325,12 @@ angular.bootstrap(document, ['Demo']);
 - ``<!-- directive: my-dir exp -->`` 作为注释
 
 
+这些方式可以使用指令定义中的 ``restrict`` 属性来控制。
+
+可以看出，指令即可以作为标签使用，也可以作为属性使用。仔细考虑一下，这在类 XML 的结构当中真算得上是一种神奇的机制。
+
+
+
 ==指令的执行过程==
 
 ng 中对指令的解析与执行过程是这样的：
@@ -2347,7 +2353,6 @@ ng 中对指令的解析与执行过程是这样的：
 ```javascript
 <p show style="font-size: 12px;"></p>
 
-
 <script type="text/javascript">
 
 var app = angular.module('Demo', [], angular.noop);
@@ -2361,7 +2366,6 @@ app.directive('show', function(){
   return func;
   //return {compile: function(){return func}}
 });
-
 
 angular.bootstrap(document, ['Demo']);
 </script>
@@ -2386,4 +2390,301 @@ angular.bootstrap(document, ['Demo']);
 
 上面的每一个属性，都可以单独探讨的。
 
+下面是一个完整的基本的指令定义例子：
+
+```html
+<code lines>
+//失去焦点使用 jQuery 的扩展支持冒泡
+app.directive('ngBlur', function($parse){
+  return function($scope, $element, $attr){
+    var fn = $parse($attr['ngBlur']);
+    $element.on('focusout', function(event){
+      fn($scope, {$event: event});
+    });
+  }
+});
+</code>
+
+<div code lines>
+//失去焦点使用 jQuery 的扩展支持冒泡
+app.directive('ngBlur', function($parse){
+  return function($scope, $element, $attr){
+    var fn = $parse($attr['ngBlur']);
+    $element.on('focusout', function(event){
+      fn($scope, {$event: event});
+    });
+  }
+});
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('code', function(){
+  var func = function($scope, $element, $attrs){
+
+    var html = $element.text();
+    var lines = html.split('\n');
+
+    //处理首尾空白
+    if(lines[0] == ''){lines = lines.slice(1, lines.length - 1)}
+    if(lines[lines.length-1] == ''){lines = lines.slice(0, lines.length - 1)}
+
+    $element.empty();
+
+    //处理外框
+    (function(){
+      $element.css('clear', 'both');
+      $element.css('display', 'block');
+      $element.css('line-height', '20px');
+      $element.css('height', '200px');
+    })();
+
+    //是否显示行号的选项
+    if('lines' in $attrs){
+      //处理行号
+      (function(){
+        var div = $('<div style="width: %spx; background-color: gray; float: left; text-align: right; padding-right: 5px; margin-right: 10px;"></div>'
+                    .replace('%s', String(lines.length).length * 10));
+        var s = '';
+        angular.forEach(lines, function(_, i){
+          s += '<pre style="margin: 0;">%s</pre>\n'.replace('%s', i + 1);
+        });
+        div.html(s);
+        $element.append(div);
+      })();
+    }
+
+    //处理内容
+    (function(){
+      var div = $('<div style="float: left;"></div>');
+      var s = '';
+      angular.forEach(lines, function(l){
+        s += '<span style="margin: 0;">%s</span><br />\n'.replace('%s', l.replace(/\s/g, '<span>&nbsp;</span>'));
+      });
+      div.html(s);
+      $element.append(div);
+    })();
+  }
+
+  return {link: func,
+          restrict: 'AE'}; //以元素或属性的形式使用命令
+});
+
+angular.bootstrap(document, ['Demo']);
+```
+
+上面这个自定义的指令，做的事情就是解析节点中的文本内容，然后修改它，再把生成的新内容填充到节点当中去。其间还涉及了节点属性值 ``lines`` 的处理。这算是指令中最简单的一种形式。因为它是“一次性使用”，中间没有变量的处理。比如如果节点原来的文本内容是一个变量引用，类似于 ``{{ code }}`` ，那上面的代码就不行了。这种情况麻烦得多。后面会讨论。
+
+
+==属性值类型的自定义==
+
+官方代码中的 ``ng-show`` 等算是我说的这种类型。使用时主要是在节点加添加一个属性值以附加额外的功能。看一个简单的例子：
+
+```html
+<p color="red">有颜色的文本</p>
+<color color="red">有颜色的文本</color>
+
+<script type="text/javascript">
+
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('color', function(){
+  var link = function($scope, $element, $attrs){
+    $element.css('color', $attrs.color);
+  }
+  return {link: link,
+          restrict: 'AE'};
+});
+
+angular.bootstrap(document, ['Demo']);
+</script>
+```
+
+我们定义了一个叫 ``color`` 的指令，可以指定节点文本的颜色。但是这个例子还无法像 ``ng-show`` 那样工作的，这个例子只能渲染一次，然后就无法根据变量来重新改变显示了。要响应变化，我们需要手工使用 ``scope`` 的 ``$watch`` 来处理：
+
+```html
+
+<div ng-controller="TestCtrl">
+  <p color="color">有颜色的文本</p>
+  <p color="'blue'">有颜色的文本</p>
+</div>
+
+<script type="text/javascript">
+
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('color', function(){
+  var link = function($scope, $element, $attrs){
+    $scope.$watch($attrs.color, function(new_v){
+      $element.css('color', new_v);
+    });
+  }
+  return link;
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.color = 'red';
+});
+
+angular.bootstrap(document, ['Demo']);
+</script>
+```
+
+
+==Compile的细节==
+
+指令的处理过程，是 ng 的 //Compile// 过程的一部分，它们也是紧密联系的。继续深入指令的定义方法，首先就要对 Compile 的过程做更细致的了解。
+
+前面说过， ng 对页面的处理过程：
+
+- 浏览器把 HTML 字符串解析成 DOM 结构。
+- ng 把 DOM 结构给 ``$compile`` ，返回一个 ``link`` 函数。
+- 传入具体的 ``scope`` 调用这个 ``link`` 函数。
+- 得到处理后的 DOM ，这个 DOM 处理了指令，连接了数据。
+
+
+``$compile`` 最基本的使用方式：
+
+```javascript
+var link = $compile('<p>{{ text }}</p>');
+var node = link($scope);
+console.log(node);
+```
+
+上面的 ``$compile`` 和 ``link`` 调用时都有额外参数来实现其它功能。先看 ``link`` 函数，它形如：
+
+```javascript
+function(scope[, cloneAttachFn]
+```
+
+第二个参数 ``cloneAttachFn`` 的作用是，表明是否复制原始节点，及对复制节点需要做的处理，下面这个例子说明了它的作用：
+
+```html
+<div ng-controller="TestCtrl"></div>
+<div id="a">A {{ text }}</div>
+<div id="b">B </div>
+```
+
+
+```javascript
+app.controller('TestCtrl', function($scope, $compile){
+  var link = $compile($('#a'));
+
+  //true参数表示新建一个完全隔离的scope,而不是继承的child scope
+  var scope = $scope.$new(true);
+  scope.text = '12345';
+
+  //var node = link(scope, function(){});
+  var node = link(scope);
+
+  $('#b').append(node);
+});
+```
+
+``cloneAttachFn`` 对节点的处理是有限制的，你可以添加 ``class`` ，但是不能做与数据绑定有关的其它修改（修改了也无效）：
+
+```javascript
+app.controller('TestCtrl', function($scope, $compile){
+  var link = $compile($('#a'));
+  var scope = $scope.$new(true);
+  scope.text = '12345';
+
+  var node = link(scope, function(clone_element, scope){
+    clone_element.text(clone_element.text() + ' ...'); //无效
+    clone_element.text('{{ text2 }}'); //无效
+    clone_element.addClass('new_class');
+  });
+
+  $('#b').append(node);
+});
+```
+
+修改无效的原因是，像 ``{{ text }}`` 这种所谓的 //Interpolate// 在 ``$compile`` 中已经被处理过了，生成了相关函数（这里起作用的是 ``directive`` 中的一个 ``postLink`` 函数），后面执行 ``link`` 就是执行了 ``$compile`` 生成的这些函数。当然，如果你的文本没有数据变量的引用，那修改是会有效果的。
+
+前面在说自定义指令时说过， ``link`` 函数是由 ``compile`` 函数返回的，也就像前面说的，应该把改变 DOM 结构的逻辑放在 ``compile`` 函数中做。
+
+
+``$compile`` 还有两个额外的参数：
+
+```javascript
+$compile(element, transclude, maxPriority);
+```
+
+``maxPriority`` 是指令的权重限制，这个容易理解，后面再说。
+
+``transclude`` 是一个函数，这个函数会传递给 ``compile`` 期间找到的 ``directive`` 的 ``compile`` 函数（编译节点的过程中找到了指令，指令的 ``compile`` 函数会接受编译时传递的 ``transclude`` 函数作为其参数）。
+
+但是在实际使用中，除我们手工在调用 ``$compile`` 之外，初始化时的根节点 ``compile`` 是不会传递这个参数的。
+
+在我们定义指令时，它的 ``compile`` 函数是这个样子的：
+
+```javascript
+function compile(tElement, tAttrs, transclude) { ... }
+```
+
+事实上， ``transclude`` 的值，就是 ``directive`` 所在的 **原始** 节点，把原始节点重新做了编译之后得到的 ``link`` 函数（需要 ``directive`` 定义时使用 ``transclude`` 选项），后面会专门演示这个过程。所以，官方文档上也把 ``transclude`` 函数描述成 ``link`` 函数的样子（如果自定义的指令只用在自己手动 ``$compile`` 的环境中，那这个函数的形式是可以随意的）：
+
+```javascript
+{function(angular.Scope[, cloneAttachFn]}
+```
+
+所以记住，定义指令时， ``compile`` 函数的第三个参数 ``transclude`` ，就是一个 ``link`` ，装入 ``scope`` 执行它你就得到了一个节点。
+
+
+==transclude的细节==
+
+``transclude`` 有两方面的东西，一个是使用 ``$compile`` 时传入的函数，另一个是定义指令的 ``compile`` 函数时接受的一个参数。虽然这里的一出一进本来是相互对应的，但是实际使用中，因为大部分时候不会手动调用 ``$compile`` ，所以，在“默认”情况下，指令接受的 ``transclude`` 又会是一个比较特殊的函数。
+
+看一个基本的例子：
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('more', function(){
+  var func = function(element, attrs, transclude){
+    var sum = transclude(1, 2);
+    console.log(sum);
+    console.log(element);  
+  }
+
+  return {compile: func,
+          restrict: 'E'};
+});
+
+app.controller('TestCtrl', function($scope, $compile, $element){
+  var s = '<more>123</more>';
+  var link = $compile(s, function(a, b){return a + b});
+  var node = link($scope);
+  $element.append(node);
+});
+
+angular.bootstrap(document, ['Demo']);
+```
+
+我们定义了一个 ``more`` 指令，它的 ``compile`` 函数的第三个参数，就是我们手工 ``$compile`` 时传入的。
+
+如果不是手工 ``$compile`` ，而是 ng 初始化时找出的指令，则 ``transclude`` 是一个 ``link`` 函数：
+
+
+```html
+<div more>123</div>
+```
+
+
+```javascript
+app.directive('more', function($rootScope, $document){
+  var func = function(element, attrs, link){
+    var node = link($rootScope);
+    node.removeAttr('more'); //不去掉就变死循环了
+    $('body', $document).append(node);
+  }
+
+  return {compile: func,
+          transclude: 'element', // element是节点没,其它值是节点的内容没
+          restrict: 'A'};
+});
+```
 
