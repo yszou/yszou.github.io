@@ -2666,7 +2666,7 @@ angular.bootstrap(document, ['Demo']);
 
 我们定义了一个 ``more`` 指令，它的 ``compile`` 函数的第三个参数，就是我们手工 ``$compile`` 时传入的。
 
-如果不是手工 ``$compile`` ，而是 ng 初始化时找出的指令，则 ``transclude`` 是一个 ``link`` 函数：
+如果不是手工 ``$compile`` ，而是 ng 初始化时找出的指令，则 ``transclude`` 是一个 ``link`` 函数（指令定义需要设置 ``transclude`` 选项）：
 
 
 ```html
@@ -2687,4 +2687,57 @@ app.directive('more', function($rootScope, $document){
           restrict: 'A'};
 });
 ```
+
+==把节点内容作为变量处理的类型==
+
+回顾最开始的那个代码显示的例子，那个例子只能处理一次节点内容。如果节点的内容是一个变量的话，需要用另外的思路来考虑。这里我们假设的例子是，定义一个指令 ``showLenght`` ，它的作用是在一段文本的开头显示出这段节点文本的长度，节点文本是一个变量。指令使用的形式是：
+
+```html
+<div ng-controller="TestCtrl">
+  <div show-length>{{ text }}</div>
+  <button ng-click="text='xx'">改变</button>
+</div>
+```
+
+从上面的 HTML 代码中，大概清楚 ng 解析它的过程（只看 ``show-length`` 那一行）：
+
+- 解析 ``div`` 时发现了一个 ``show-length`` 的指令。
+- 如果 ``show-length`` 指令设置了 ``transclude`` 属性，则 ``div`` 的节点内容被重新编译，得到的 ``link`` 函数作为指令 ``compile`` 函数的参数传入。
+- 如果 ``show-length`` 指令没有设置 ``transclude`` 属性，则继续处理它的子节点（ ``TextNode`` ）。
+- 不管是上面的哪种情况，都会继续处理到 ``{{ text }}`` 这段文本。
+- 发现 ``{{ text }}`` 是一个 ``Interpolate`` ，于是自动在此节点中添加了一个指令，这个指令的 ``link`` 函数就是为 ``scope`` 添加了一个 ``$watch`` ，实现的功能是是当 ``scope`` 作 ``$digest`` 的时候，就更新节点文本。
+
+
+与处理 ``{{ text }}`` 时添加的指令相同，我们实现 ``showLength`` 的思路，也就是：
+
+- 修改原来的 DOM 结构
+- 为 ``scope`` 添加 ``$watch`` ，当 ``$digest`` 时修改指定节点的文本，其值为指定节点文本的长度。
+
+
+代码如下：
+
+```javascript
+app.directive('showLength', function($rootScope, $document){
+  var func = function(element, attrs, link){
+
+    return function(scope, ielement, iattrs, controller){
+      var node = link(scope);
+      ielement.append(node);
+      var lnode = $('<span></span>');
+      ielement.prepend(lnode);
+
+      scope.$watch(function(scope){
+        lnode.text(node.text().length);
+      });
+    };
+  }
+
+  return {compile: func,
+          transclude: true, // element是节点没,其它值是节点的内容没
+          restrict: 'A'};
+});
+```
+
+
+上面代码中，因为设置了 ``transclude`` 属性，我们在 ``showLength`` 的 ``link`` 函数（就是 ``return`` 的那个函数）中，使用 ``func`` 的第三个函数来重塑了原来的文本节点，并放在我们需要的位置上。然后，我们添加自己的节点来显示长度值。最后给当前的 ``scope`` 添加 ``$watch`` ，以更新这个长度值。
 
