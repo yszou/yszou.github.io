@@ -2741,3 +2741,250 @@ app.directive('showLength', function($rootScope, $document){
 
 上面代码中，因为设置了 ``transclude`` 属性，我们在 ``showLength`` 的 ``link`` 函数（就是 ``return`` 的那个函数）中，使用 ``func`` 的第三个函数来重塑了原来的文本节点，并放在我们需要的位置上。然后，我们添加自己的节点来显示长度值。最后给当前的 ``scope`` 添加 ``$watch`` ，以更新这个长度值。
 
+
+==指令定义时的参数==
+
+
+指令定义时的参数如下：
+
+- name
+- priority
+- terminal
+- scope
+- controller
+- require
+- restrict
+- template
+- templateUrl
+- replace
+- transclude
+- compile
+- link
+
+
+现在我们开始一个一个地吃掉它们……，但是并不是按顺序讲的。
+
+: //priority//
+    这个值设置指令的权重，默认是 ``0`` 。当一个节点中有多个指令存在时，就按着权限从大到小的顺序依次执行它们的 ``compile`` 函数。相同权重顺序不定。
+: //terminal//
+    是否以当前指令的权重为结束界限。如果这值设置为 ``true`` ，则节点中权重小于当前指令的其它指令不会被执行。相同权重的会执行。
+: //restrict//
+    指令可以以哪些方式被使用，可以同时定义多种方式。
+    - E 元素方式 ``<my-directive></my-directive>``
+    - A 属性方式 ``<div my-directive="exp"> </div>``
+    - C 类方式 ``<div class="my-directive: exp;"></div>``
+    - M 注释方式 ``<!-- directive: my-directive exp -->``
+: //transclude//
+    前面已经讲过基本的用法了。可以是 ``'element'`` 或 ``true`` 两种值。
+: //compile//
+    基本的定义函数。
+: //link//
+    前面介绍过了。大多数时候我们不需要单独定义它。只有 ``compile`` 未定义时 ``link`` 才会被尝试。
+
+
+
+```html
+<a b></a>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(element, attrs, link){
+    console.log('a');
+  }
+
+  return {compile: func,
+          priority: 1,
+          restrict: 'EA'};
+});
+
+app.directive('b', function(){
+  var func = function(element, attrs, link){
+    console.log('b');
+  }
+
+  return {compile: func,
+          priority: 2,
+          //terminal: true,
+          restrict: 'A'};
+});
+```
+
+
+上面几个参数值都是比较简单且容易理想的。
+
+再看 //scope// 这个参数：
+
+```html
+<div ng-controller="TestCtrl">
+  <div a b></div>
+</div>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(element, attrs, link){
+    return function(scope){
+      console.log(scope);
+    }
+  }
+
+  return {compile: func,
+          scope: true,
+          restrict: 'A'};
+});
+
+app.directive('b', function(){
+  var func = function(element, attrs, link){
+    return function(scope){
+      console.log(scope);
+    }
+  }
+
+  return {compile: func,
+          restrict: 'A'};
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.a = '123';
+  console.log($scope);
+});
+```
+
+对于 //scope// ：
+
+- 默认为 ``false`` ， ``link`` 函数接受的 ``scope`` 为节点所在的 ``scope`` 。
+- 为 ``true`` 时，则 ``link`` 函数中第一个参数， ``scope`` 是节点所在的 ``scope`` 的 ``child scope`` ，并且如果节点中有多个指令，则只要其中一个指令是 ``true`` 的设置，其它所有指令都会受影响。
+
+
+这个参数还有其它取值。当其为 ``{}`` 时，则 ``link`` 接受一个完全隔离（isolate）的 ``scope`` ，于 ``true`` 的区别就是不会继承其它 ``scope`` 的属性。但是这时，这个 ``scope`` 的属性却可以有很灵活的定义方式：
+
+//@attr// 引用节点的属性。
+
+```html
+<div ng-controller="TestCtrl">
+  <div a abc="here" xx="{{ a }}" c="ccc"></div>
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(element, attrs, link){
+    return function(scope){
+      console.log(scope);
+    }
+  }
+
+  return {compile: func,
+          scope: {a: '@abc', b: '@xx', c: '@'},
+          restrict: 'A'};
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.a = '123';
+});
+```
+
+- //@abc// 引用 div 节点的 abc 属性。
+- //@xx// 引用 div 节点的 xx 属性，而 xx 属性又是一个变量绑定，于是 ``scope`` 中 ``b`` 属性值就和 ``TestCtrl`` 的 ``a`` 变量绑定在一起了。
+- //@// 没有写 attr name ，则默认取自己的值，这里是取 div 的 c 属性。
+
+
+//=attr// 相似，只是它把节点的属性值当成节点 ``scope`` 的属性名来使用，作用相当于上面例子中的 //@xx// ：
+
+```html
+<div ng-controller="TestCtrl">
+  <div a abc="here"></div>
+</div>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(element, attrs, link){
+    return function(scope){
+      console.log(scope);
+    }
+  }
+
+  return {compile: func,
+          scope: {a: '=abc'},
+          restrict: 'A'};
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.here = '123';
+});
+```
+
+
+//&attr// 是包装一个函数出来，这个函数以节点所在的 ``scope`` 为上下文。来看一个很爽的例子：
+
+```html
+<div ng-controller="TestCtrl">
+  <div a abc="here = here + 1" ng-click="show(here)">这里</div>
+  <div>{{ here }}</div>
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(element, attrs, link){
+    return function llink(scope){
+      console.log(scope);
+      scope.a();
+      scope.b();
+
+      scope.show = function(here){
+        console.log('Inner, ' + here);
+        scope.a({here: 5});
+      }
+    }
+  }
+
+  return {compile: func,
+          scope: {a: '&abc', b: '&ngClick'},
+          restrict: 'A'};
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.here = 123;
+  console.log($scope);
+
+  $scope.show = function(here){
+    console.log(here);
+  }
+});
+```
+
+scope.a 是 //&abc// ，即：
+
+```javascript
+scope.a = function(){here = here + 1}
+```
+
+只是其中的 ``here`` 是 ``TestCtrl`` 的。
+
+
+scope.b 是 //&ngClick// ，即：
+
+```javascript
+scope.b = function(){show(here)}
+```
+
+这里的 ``show()`` 和 ``here`` 都是 ``TestCtrl`` 的，于是上面的代码最开始会在终端输出一个 ``124`` 。
+
+当点击“这里”时，这时执行的 ``show(here)`` 就是 ``llink`` 中定义的那个函数了，与 ``TestCtrl`` 无关。但是，其间的 ``scope.a({here:5})`` ，因为 ``a`` 执行时是 ``TestCtrl`` 的上下文，于是向 ``a`` 传递的一个对象，里面的所有属性 ``TestCtrl`` 就全收下了，接着执行 ``here=here+1`` ，于是我们会在屏幕上看到 ``6`` 。
+
+这里是一个上下文交错的环境，通过 //&// 这种机制，让指令的 ``scope`` 与节点的 ``scope`` 发生了互动。真是鬼斧神工的设计。
