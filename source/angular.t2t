@@ -3284,5 +3284,123 @@ app.controller('TestCtrl', function($scope){
 从例子中可以看到，原始的节点属性值对，放到对象中之后，名字一定是“标准化”之后的。但是手动 ``$set`` 的新属性，不会自动做标准化处理。
 
 
+==示例：文本框==
+
+这个例子与官网上的那个例子相似。最终是要显示一个文本框，这个文本框由标题和内容两部分组成。而且标题和内容则是引用 controller 中的变量值。
+
+HTML 部分的代码：
+
+```html
+<div ng-controller="TestCtrl">
+  <ys-block title="title" text="text"></ys-block>
+  <p>标题: <input ng-model="title" /></p>
+  <p>内容: <input ng-model="text" /></p>
+  <ys-block title="title" text="text"></ys-block>
+</div>
+```
+
+从这个期望实现效果的 HTML 代码中，我们可以考虑设计指令的实现方式：
+
+- 这个指令的使用方式是“标签”， 即 //restrict// 这个参数应该设置为 ``E`` 。
+- 节点的属性值是对 controller 变量的引用，那么我们应该在指令的 //scope// 中使用 ``=`` 的方式来指定成员值。
+- 最终的效果显示需要进行 DOM 结构的重构，那直接使用 //template// 就好了。
+- 自定义的标签在最终效果中是多余的，所有 //replace// 应该设置为 ``true`` 。
+
+
+JS 部分的代码：
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('ysBlock', function(){
+  return {compile: angular.noop,
+          template: '<div style="width: 200px; border: 1px solid black;"><h1 style="background-color: gray; color: white; font-size: 22px;">{{ title }}</h1><div>{{ text }}</div></div>',
+          replace: true,
+          scope: {title: '=title', text: '=text'},
+          restrict: 'E'};
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.title = '标题在这里';
+  $scope.text = '内容在这里';
+});
+
+angular.bootstrap(document, ['Demo']);
+```
+
+
+可以看到，这种简单的组件式指令，只需要作 DOM 结构的变换即可实现，连 ``compile`` 函数都不需要写。
+
+
+==示例：模板控制语句for==
+
+这个示例尝试实现一个重复语句，功能同官方的 ``ngRepeat`` ，但是使用方式类似于我们通常编程语言中的 //for// 语句：
+
+```html
+<div ng-controller="TestCtrl" ng-init="obj_list=[1,2,3,4]; name='name'">
+  <ul>
+    <for o in obj_list>
+      <li>{{ o }}, {{ name }}</li>
+    </for>
+  </ul>
+  <button ng-click="obj_list=[1,2]; name='o?'">修改</button>
+</div>
+```
+
+
+同样，我们从上面的使用方式去考虑这个指令的实现：
+
+- 这是一个完全的控制指令，所以单个节点应该只有它一个指令起作用就好了，于是权重要比较高，并且“到此为止”—— //priority// 设置为 ``1000`` ， //terminal// 设置为 ``true`` 。
+- 使用时的语法问题。事实上浏览器会把 ``for`` 节点补充成一个正确的 HTML 结构，即里面的属性都会变成类似 ``o=""`` 这样。我们通过节点的 ``outerHTML`` 属性取到字符串并解析取得需要的信息。
+- 我们把 ``for`` 节点之间的内容作为一个模板，并且通过循环多次渲染该模板之后把结果填充到合适的位置。
+- 在处理上面的那个模板时，需要不断地创建新 ``scope`` 的，并且 ``o`` 这个成员需要单独赋值。
+
+
+注意：这里只是简单实现功能。官方的那个 //ngRepeat// 比较复杂，是做了专门的算法优化的。当然，这里的实现也可以是简单把 DOM 结构变成使用 //ngRepeat// 的形式 :)
+
+
+JS 部分代码：
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('for', function($compile){
+  var compile = function($element, $attrs, $link){
+    var match = $element[0].outerHTML.match('<for (.*?)=.*? in=.*? (.*?)=.*?>');
+    if(!match || match.length != 3){throw Error('syntax: <for o in obj_list>')}
+    var iter = match[1];
+    var list = match[2];
+    var tpl = $compile($.trim($element.html()));
+    $element.empty();
+
+    var link = function($scope, $ielement, $iattrs, $controller){
+
+      var new_node = [];
+
+      $scope.$watch(list, function(list){
+        angular.forEach(new_node, function(n){n.remove()});
+        var scp, inode;
+        for(var i = 0, ii = list.length; i < ii; i++){
+          scp = $scope.$new();
+          scp[iter] = list[i];
+          inode = tpl(scp, angular.noop);
+          $ielement.before(inode);
+          new_node.push(inode);
+        }
+
+      });
+    }
+
+    return link;
+  }
+  return {compile: compile,
+          priority: 1000,
+          terminal: true,
+          restrict: 'E'};
+});
+
+app.controller('TestCtrl', angular.noop);
+angular.bootstrap(document, ['Demo']);
+```
 
 
