@@ -2858,7 +2858,7 @@ app.controller('TestCtrl', function($scope){
 对于 //scope// ：
 
 - 默认为 ``false`` ， ``link`` 函数接受的 ``scope`` 为节点所在的 ``scope`` 。
-- 为 ``true`` 时，则 ``link`` 函数中第一个参数， ``scope`` 是节点所在的 ``scope`` 的 ``child scope`` ，并且如果节点中有多个指令，则只要其中一个指令是 ``true`` 的设置，其它所有指令都会受影响。
+- 为 ``true`` 时，则 ``link`` 函数中第一个参数（还有 ``controller`` 参数中的 ``$scope`` ）， ``scope`` 是节点所在的 ``scope`` 的 ``child scope`` ，并且如果节点中有多个指令，则只要其中一个指令是 ``true`` 的设置，其它所有指令都会受影响。
 
 
 这个参数还有其它取值。当其为 ``{}`` 时，则 ``link`` 接受一个完全隔离（isolate）的 ``scope`` ，于 ``true`` 的区别就是不会继承其它 ``scope`` 的属性。但是这时，这个 ``scope`` 的属性却可以有很灵活的定义方式：
@@ -2987,4 +2987,123 @@ scope.b = function(){show(here)}
 
 当点击“这里”时，这时执行的 ``show(here)`` 就是 ``llink`` 中定义的那个函数了，与 ``TestCtrl`` 无关。但是，其间的 ``scope.a({here:5})`` ，因为 ``a`` 执行时是 ``TestCtrl`` 的上下文，于是向 ``a`` 传递的一个对象，里面的所有属性 ``TestCtrl`` 就全收下了，接着执行 ``here=here+1`` ，于是我们会在屏幕上看到 ``6`` 。
 
-这里是一个上下文交错的环境，通过 //&// 这种机制，让指令的 ``scope`` 与节点的 ``scope`` 发生了互动。真是鬼斧神工的设计。
+这里是一个上下文交错的环境，通过 //&// 这种机制，让指令的 ``scope`` 与节点的 ``scope`` 发生了互动。真是鬼斧神工的设计。而实现它，只用了几行代码：
+
+```javascript
+case '&': {
+  parentGet = $parse(attrs[attrName]);
+  scope[scopeName] = function(locals) {
+    return parentGet(parentScope, locals);
+  }
+  break;
+}
+```
+
+再看 //controller// 这个参数。这个参数的作用是提供一个 controller 的构造函数，它会在 ``compile`` 函数之后， ``link`` 函数之前被执行。
+
+```html
+<a>haha</a>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(){
+    console.log('compile');
+    return function(){
+      console.log('link');
+    }
+  }
+
+  var controller = function($scope, $element, $attrs, $transclude){
+    console.log('controller');
+    console.log($scope);
+
+    var node = $transclude(function(clone_element, scope){
+      console.log(clone_element);
+      console.log('--');
+      console.log(scope);
+    });
+    console.log(node);
+  }
+
+  return {compile: func,
+          controller: controller,
+          transclude: true,
+          restrict: 'E'}
+});
+```
+
+``controller`` 的最后一个参数， ``$transclude`` ，是一个只接受 ``cloneAttachFn`` 作为参数的一个函数。
+
+按官方的说法，这个机制的设计目的是为了让各个指令之间可以互相通信。参考普通节点的处理方式，这里也是处理指令 ``scope`` 的合适位置。
+
+```html
+<a b>kk</a>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(){
+  }
+
+  var controller = function($scope, $element, $attrs, $transclude){
+    console.log('a');
+    this.a = 'xx';
+  }
+
+  return {compile: func,
+          name: 'not_a',
+          controller: controller,
+          restrict: 'E'}
+});
+
+app.directive('b', function(){
+  var func = function(){
+    return function($scope, $element, $attrs, $controller){
+      console.log($controller);
+    }
+  }
+
+  var controller = function($scope, $element, $attrs, $transclude){
+    console.log('b');
+  }
+
+  return {compile: func,
+          controller: controller,
+          require: 'not_a',
+          restrict: 'EA'}
+});
+```
+
+//name// 参数在这里可以用以为 ``controller`` 重起一个名字，以方便在 //require// 参数中引用。
+
+//require// 参数可以带两种前缀（可以同时使用）：
+
+- //?// ，如果指定的 controller 不存在，则忽略错误。即：
+
+```javascript
+require: '?not_b'
+```
+
+如果名为 ``not_b`` 的 controller 不存在时，不会直接抛出错误， ``link`` 函数中对应的 ``$controller`` 为 ``undefined`` 。
+
+- //^// ，同时在父级节点中寻找指定的 controller ，把上面的例子小改一下：
+
+```html
+<a><b>kk</b></a>
+```
+
+把 ``a`` 的 //require// 改成（否则就找不到 ``not_a`` 这个 controller ）：
+
+```
+require: '?^not_a'
+```
+
+
+
+
