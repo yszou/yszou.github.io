@@ -2777,9 +2777,9 @@ app.directive('showLength', function($rootScope, $document){
 : //transclude//
     前面已经讲过基本的用法了。可以是 ``'element'`` 或 ``true`` 两种值。
 : //compile//
-    基本的定义函数。
+    基本的定义函数。 ``function compile(tElement, tAttrs, transclude) { ... }``
 : //link//
-    前面介绍过了。大多数时候我们不需要单独定义它。只有 ``compile`` 未定义时 ``link`` 才会被尝试。
+    前面介绍过了。大多数时候我们不需要单独定义它。只有 ``compile`` 未定义时 ``link`` 才会被尝试。 ``function link(scope, iElement, iAttrs, controller) { ... }``
 
 
 
@@ -3103,6 +3103,185 @@ require: '?not_b'
 ```
 require: '?^not_a'
 ```
+
+
+还剩下几个模板参数：
+
+: //template// 模板内容，这个内容会根据 //replace// 参数的设置替换节点或只替换节点内容。
+: //templateUrl// 模板内容，获取方式是异步请求。
+: //replace// 设置如何处理模板内容。为 ``true`` 时为替换掉指令节点，否则只替换到节点内容。
+
+
+```html
+<div ng-controller="TestCtrl">
+  <h1 a>原始内容</h1>
+</div>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(){
+  }
+
+  return {compile: func,
+          template: '<p>标题 {{ name }} <button ng-click="name=\'hahaha\'">修改</button></p>',
+          //replace: true,
+          //controller: function($scope){$scope.name = 'xxx'},
+          //scope: {},
+          scope: true ,
+          controller: function($scope){console.log($scope)},
+          restrict: 'A'}
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.name = '123';
+  console.log($scope);
+});
+```
+
+//template// 中可以包括变量引用的表达式，其 ``scope`` 遵寻 //scope// 参数的作用（可能受继承关系影响）。
+
+//templateUrl// 是异步请求模板内容，并且是获取到内容之后才开始执行指令的 ``compile`` 函数。
+
+
+最后说一个 //compile// 这个参数。它除了可以返回一个函数用为 ``link`` 函数之外，还可以返回一个对象，这个对象能包括两个成员，一个 //pre// ，一个 //post// 。实际上， ``link`` 函数是由两部分组成，所谓的 //preLink// 和 //postLink// 。区别在于执行顺序，特别是在指令层级嵌套的结构之下， //postLink// 是在所有的子级指令 ``link`` 完成之后才最后执行的。 //compile// 如果只返回一个函数，则这个函数被作为 //postLink// 使用：
+
+```html
+<a><b></b></a>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('a', function(){
+  var func = function(){
+    console.log('a compile');
+    return {
+      pre: function(){console.log('a link pre')},
+      post: function(){console.log('a link post')},
+    }
+  }
+
+  return {compile: func,
+          restrict: 'E'}
+});
+
+app.directive('b', function(){
+  var func = function(){
+    console.log('b compile');
+    return {
+      pre: function(){console.log('b link pre')},
+      post: function(){console.log('b link post')},
+    }
+  }
+
+  return {compile: func,
+          restrict: 'E'}
+});
+```
+
+==Attributes的细节==
+
+节点属性被包装之后会传给 ``compile`` 和 ``link`` 函数。从这个操作中，我们可以得到节点的引用，可以操作节点属性，也可以为节点属性注册侦听事件。
+
+```html
+<test a="1" b c="xxx"></test>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var func = function($element, $attrs){
+    console.log($attrs);
+  }
+
+  return {compile: func,
+          restrict: 'E'}
+```
+
+
+整个 //Attributes// 对象是比较简单的，它的成员包括了：
+
+: //$$element// 属性所在的节点。
+: //$attr// 所有的属性值（类型是对象）。
+: //$normalize// 一个名字标准化的工具函数，可以把 ``ng-click`` 变成 ``ngClick`` 。
+: //$observe// 为属性注册侦听器的函数。
+: //$set// 设置对象属性，及节点属性的工具。
+
+
+除了上面这些成员，对象的成员还包括所有属性的名字。
+
+先看 //$observe// 的使用，基本上相当于 //$scope// 中的 //$watch// ：
+
+```html
+<div ng-controller="TestCtrl">
+  <test a="{{ a }}" b c="xxx"></test>
+  <button ng-click="a=a+1">修改</button>
+</div>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var func = function($element, $attrs){
+    console.log($attrs);
+
+    $attrs.$observe('a', function(new_v){
+      console.log(new_v);
+    });
+  }
+
+  return {compile: func,
+          restrict: 'E'}
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.a = 123;
+});
+```
+
+
+//$set// 方法的定义是： ``function(key, value, writeAttr, attrName) { ... }`` 。
+
+- //key// 对象的成员名。
+- //value// 需要设置的值。
+- //writeAttr// 是否同时修改 DOM 节点的属性（注意区别“节点”与“对象”），默认为 ``true`` 。
+- //attrName// 实际的属性名，与“标准化”之后的属性名有区别。
+
+
+```html
+<div ng-controller="TestCtrl">
+  <test a="1" ys-a="123" ng-click="show(1)">这里</test>
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var func = function($element, $attrs){
+    $attrs.$set('b', 'ooo');
+    $attrs.$set('a-b', '11');
+    $attrs.$set('c-d', '11', true, 'c_d');
+    console.log($attrs);
+  }
+
+  return {compile: func,
+          restrict: 'E'}
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.show = function(v){console.log(v);}
+});
+```
+
+从例子中可以看到，原始的节点属性值对，放到对象中之后，名字一定是“标准化”之后的。但是手动 ``$set`` 的新属性，不会自动做标准化处理。
 
 
 
