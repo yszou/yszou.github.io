@@ -3332,7 +3332,7 @@ angular.bootstrap(document, ['Demo']);
 可以看到，这种简单的组件式指令，只需要作 DOM 结构的变换即可实现，连 ``compile`` 函数都不需要写。
 
 
-==示例：模板控制语句for==
+==示例：模板控制语句 for==
 
 这个示例尝试实现一个重复语句，功能同官方的 ``ngRepeat`` ，但是使用方式类似于我们通常编程语言中的 //for// 语句：
 
@@ -3404,3 +3404,89 @@ angular.bootstrap(document, ['Demo']);
 ```
 
 
+==示例：模板控制语句 if/else==
+
+这个示例是尝试实现：
+
+```html
+<div ng-controller="TestCtrl">
+  <if true="a == 1">
+      <p>判断为真, {{ name }}</p>
+    <else>
+      <p>判断为假, {{ name }}</p>
+    </else>
+  </if>
+
+  <div>
+    <p>a: <input ng-model="a" /></p>
+    <p>name: <input ng-model="name" /></p>
+  </div>
+</div>
+```
+
+考虑实现的思路：
+
+- //else// 与 //if// 是两个指令，它们是父子关系。通过 ``scope`` 可以联系起来。至于 ``scope`` 是在 ``link`` 中处理还是 ``controller`` 中处理并不重要。
+- //true// 属性的条件判断通过 //$parse// 服务很容易实现。
+- 如果最终效果要去掉 //if// 节点，我们可以使用注释节点来“占位”。
+
+
+JS 代码：
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('if', function($parse, $compile){
+  var compile = function($element, $attrs){
+    var cond = $parse($attrs.true);
+    
+    var link = function($scope, $ielement, $iattrs, $controller){
+      $scope.if_node = $compile($.trim($ielement.html()))($scope, angular.noop);
+      $ielement.empty();
+      var mark = $('<!-- IF/ELSE -->');
+      $element.before(mark);
+      $element.remove();
+
+      $scope.$watch(function(scope){
+        if(cond(scope)){
+          mark.after($scope.if_node);
+          $scope.else_node.detach();
+        } else {
+          if($scope.else_node !== undefined){
+            mark.after($scope.else_node);
+            $scope.if_node.detach();
+          }
+        }
+      });
+    }
+    return link;
+  }
+
+  return {compile: compile,
+          scope: true,
+          restrict: 'E'}
+});
+
+app.directive('else', function($compile){
+  var compile = function($element, $attrs){
+    
+    var link = function($scope, $ielement, $iattrs, $controller){
+      $scope.else_node = $compile($.trim($ielement.html()))($scope, angular.noop);
+      $element.remove();
+    }
+    return link;
+  }
+
+  return {compile: compile,
+          restrict: 'E'}
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.a = 1;
+});
+
+angular.bootstrap(document, ['Demo']);
+```
+
+
+代码中注意一点，就是 ``if_node`` 在得到之时，就已经是做了变量绑定的了。错误的思路是，在 ``$watch`` 中再去不断地得到新的 ``if_node`` 。
