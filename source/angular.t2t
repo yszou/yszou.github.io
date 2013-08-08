@@ -22,6 +22,11 @@ ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己
 - 使用 ng 时不要冒然去改变相关 DOM 的结构。
 
 
+=关于本文档=
+
+这份文档如其名，是我自己学习 ng 的过程记录。只是过程记录，没有刻意像教程那样去做。所以呢，从前至后，中间不免有一些概念不清不明的地方。因为事实上，在某个阶段对于一些概念本来就不可能明白。所以，整个过程只求在形式上的能用即可——直到最后的“自定义”那几章，特别是“自定义指令”，那几章过完，你才能看清 ng 本来的面貌。前面就不要太纠结概念，本质，知道怎么用就好。
+
+
 =开始的例子=
 
 我们从一个完整的例子开始认识 ng ：
@@ -2780,6 +2785,20 @@ app.directive('showLength', function($rootScope, $document){
     基本的定义函数。 ``function compile(tElement, tAttrs, transclude) { ... }``
 : //link//
     前面介绍过了。大多数时候我们不需要单独定义它。只有 ``compile`` 未定义时 ``link`` 才会被尝试。 ``function link(scope, iElement, iAttrs, controller) { ... }``
+: //scope//
+    scope 的形式。 ``false`` 节点的 scope ， ``true`` 继承创建一个新的 scope ， ``{}`` 不继承创建一个新的隔离 scope 。 ``{@attr: '引用节点属性', =attr: '把节点属性值引用成scope属性值', &attr: '把节点属性值包装成函数'}``
+: //controller//
+    为指令定义一个 controller ， ``function controller($scope, $element, $attrs, $transclude) { ... }``
+: //name//
+    指令的 controller 的名字，方便其它指令引用。
+: //require//
+    要引用的其它指令 conroller 的名字， ``?name`` 忽略不存在的错误， ``^name`` 在父级查找。
+: //template//
+    模板内容。
+: //templateUrl//
+    从指定地址获取模板内容。
+: //replace//
+    是否使用模板内容替换掉整个节点， ``true`` 替换整个节点， ``false`` 替换节点内容。
 
 
 
@@ -3282,6 +3301,189 @@ app.controller('TestCtrl', function($scope){
 ```
 
 从例子中可以看到，原始的节点属性值对，放到对象中之后，名字一定是“标准化”之后的。但是手动 ``$set`` 的新属性，不会自动做标准化处理。
+
+
+==预定义的 NgModelController==
+
+在前面讲 conroller 参数的时候，提到过可以为指令定义一个 conroller 。官方的实现中，有很多已定义的指令，这些指令当中，有两个已定义的 conroller ，它们是 //NgModelController// 和 //FormController// ，对应 //ng-model// 和 //form// 这两个指令（可以参照前面的“表单控件”一章）。
+
+在使用中，除了可以通过 ``$scope`` 来取得它们的引用之外，也可以在自定义指令中通过 //require// 参数直接引用，这样就可以在 ``link`` 函数中使用 controller 去实现一些功能。
+
+先看 //NgModelController// 。这东西的作用有两个，一是控制 ``ViewValue`` 与 ``ModelValue`` 之间的转换关系（你可以实现看到的是一个值，但是存到变量里变成了另外一个值），二是与 //FormController// 配合做数据校验的相关逻辑。
+
+先看两个应该是最有用的属性：
+
+: //$formatters// 是一个由函数组成的列表，串行执行，作用是把变量值变成显示的值。
+: //$parsers// 与上面的方向相反，把显示的值变成变量值。
+
+
+假设我们在变量中要保存一个列表的类型，但是显示的东西只能是字符串，所以这两者之间需要一个转换：
+
+```html
+<div ng-controller="TestCtrl">
+  <input type="text" ng-model="a" test />
+  <button ng-click="show(a)">查看</button>
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var link = function($scope, $element, $attrs, $ctrl){
+
+    $ctrl.$formatters.push(function(value){
+      return value.join(',');
+    });
+
+    $ctrl.$parsers.push(function(value){
+      return value.split(',');
+    });
+  }
+
+  return {compile: function(){return link},
+          require: 'ngModel',
+          restrict: 'A'}
+});
+
+app.controller('TestCtrl', function($scope){
+  $scope.a = [];
+  //$scope.a = [1,2,3];
+  $scope.show = function(v){
+    console.log(v);
+  }
+});
+```
+
+上面在定义 ``test`` 这个指令， //require// 参数指定了 ``ngModel`` 。同时因为 DOM 结构， ``ng-model`` 是存在的。于是， ``link`` 函数中就可以获取到一个 //NgModelController// 的实例，即代码中的 ``$ctrl`` 。
+
+我们添加了需要的过滤函数：
+
+- 从变量( ``ModelValue`` )到显示值( ``ViewValue`` )的过程， ``$formatters`` 属性，把一个列表变成一个字符串。
+- 从显示值到变量的过程， ``$parsers`` 属性，把一个字符串变成一个列表。
+
+
+对于显示值和变量，还有其它的 API ，这里就不细说了。
+
+另一部分，是关于数据校验的，放到下一章同 //FormController// 一起讨论。
+
+
+==预定义的 FormController==
+
+前面的“表单控制”那章，实际上讲的就是 //FormController// ，只是那里是从 ``scope`` 中获取到的引用。现在从指令定义的角度，来更清楚地了解 //FormController// 及 //NgModelController// 是如何配合工作的。
+
+先说一下， //form// 和 //ngForm// 是官方定义的两个指令，但是它们其实是同一个东西。前者只允许以标签形式使用，而后者允许 ``EAC`` 的形式。DOM 结构中， ``form`` 标签不能嵌套，但是 ng 的指令没有这个限制。不管是 //form// 还是 //ngForm// ，它们的 ``controller`` 都被命名成了 ``form`` 。 所以 //require// 这个参数不要写错了。
+
+
+//FormController// 的几个成员是很好理解的：
+
+: //$pristine// 表单是否被动过
+: //$dirty// 表单是否没被动过
+: //$valid// 表单是否检验通过
+: //$invalid// 表单是否检验未通过
+: //$error// 表单中的错误
+: //$setDirty()// 直接设置 //$dirty// 及 //$pristine// 
+
+
+```html
+<div ng-controller="TestCtrl">
+  <div ng-form test>
+    <input ng-model="a" type="email" />
+    <button ng-click="do()">查看</button>
+  </div>
+</div>
+```
+
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var link = function($scope, $element, $attrs, $ctrl){
+    $scope.do = function(){
+      //$ctrl.$setDirty();
+      console.log($ctrl.$pristine); //form是否没被动过
+      console.log($ctrl.$dirty); //form是否被动过
+      console.log($ctrl.$valid); //form是否被检验通过
+      console.log($ctrl.$invalid); //form是否有错误
+      console.log($ctrl.$error); //form中有错误的字段
+    }
+  }
+
+  return {compile: function(){return link},
+          require: 'form',
+          restrict: 'A'}
+});
+
+app.controller('TestCtrl', function($scope){
+});
+```
+
+
+//$error// 这个属性，是一个对象， ``key`` 是错误名， ``value`` 部分是一个列表，其成员是对应的 //NgModelController// 的实例。
+
+//FormController// 可以自由增减它包含的那些，类似于 //NgModelController// 的实例。在 DOM 结构上，有 ``ng-model`` 的 ``input`` 节点的 //NgMoelController// 会被自动添加。
+
+: //$addControl()// 添加一个 conroller 
+: //$removeControl()// 删除一个 controller
+
+
+这两个手动使用机会应该不会很多。被添加的实例也可以手动实现所有的 //NgModelController// 的方法
+
+```html
+<div ng-controller="TestCtrl">
+  <bb />
+  <div ng-form test>
+    <input ng-model="a" type="email" />
+    <button ng-click="add()">添加</button>
+  </div>
+</div>
+```
+
+```javascript
+var app = angular.module('Demo', [], angular.noop);
+
+app.directive('test', function(){
+  var link = function($scope, $element, $attrs, $ctrl){
+    $scope.add = function(){
+      $ctrl.$addControl($scope.bb);
+      console.log($ctrl);
+    }
+  }
+
+  return {compile: function(){return link},
+          require: 'form',
+          restrict: 'A'}
+});
+
+app.directive('bb', function(){
+  var controller = function($scope, $element, $attrs, $transclude){
+    $scope.bb = this;
+    this.$name = 'bb';
+  }
+
+  return {compile: angular.noop,
+          restrict: 'E',
+          controller: controller}
+});
+
+app.controller('TestCtrl', function($scope){
+});
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ==示例：文本框==
