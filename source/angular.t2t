@@ -3473,16 +3473,52 @@ app.controller('TestCtrl', function($scope){
 ```
 
 
+整合 //FormController// 和 //NgModelController// 就很容易扩展各种类型的字段:
 
+```html
+<div ng-controller="TestCtrl">
+  <form name="f">
+    <input type="my" ng-model="a" />
+    <button ng-click="show()">查看</button>
+  </form>
+</div>
+```
 
+```html
+var app = angular.module('Demo', [], angular.noop);
 
+app.directive('input', function(){
+  var link = function($scope, $element, $attrs, $ctrl){
+    console.log($attrs.type);
+    var validator = function(v){
+      if(v == '123'){
+        $ctrl.$setValidity('my', true);
+        return v;
+      } else {
+        $ctrl.$setValidity('my', false);
+        return undefined;
+      }
+    }
 
+    $ctrl.$formatters.push(validator);
+    $ctrl.$parsers.push(validator);
+  }
 
+  return {compile: function(){return link},
+          require: 'ngModel',
+          restrict: 'E'}
+});
 
+app.controller('TestCtrl', function($scope){
+    $scope.show = function(){
+      console.log($scope.f);
+    }
+});
+```
 
+虽然官方原来定义了几种 ``type`` ，但这不妨碍我们继续扩展新的类型。如果新的 ``type`` 参数值不在官方的定义列表里，那会按 ``text`` 类型先做处理，这其实什么影响都没有。剩下的，就是写我们自己的验证逻辑就行了。
 
-
-
+上面的代码是参见官方的做法，使用格式化的过程，同时在里面做有效性检查。
 
 
 
