@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>在U盘上安装GRUB2直接引导ISO - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="在U盘上安装GRUB2直接引导ISO,Yesheng Zou,YS.Zou,邹业盛,AceFantasy"/>
+<meta name="description" content="在U盘上安装GRUB2直接引导ISO,Yesheng Zou,YS.Zou,邹业盛,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">在U盘上安装GRUB2直接引导ISO</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-09-29 21:28 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">格式化U盘创建活动分区</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">创建文件系统</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">安装GRUB2</a>
+  </li>
+  </ol>
+
+<p style="margin: 15px 0;">
+本文的内容来源于 <a href="http://maxmars.net/blog/2012/10/02/boot-multiple-iso-from-usb-using-linux/" style="color: #0184b7; text-decoration: none">http://maxmars.net/blog/2012/10/02/boot-multiple-iso-from-usb-using-linux/</a>
+</p>
+<p style="margin: 15px 0;">
+<b style=" color: red; font-weight: normal; ">以下所有命令都在 root 用户下进行。</b>
+</p>
+<p style="margin: 15px 0;">
+先把U盘卸载掉： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">umount /dev/sdx1</code> 。
+</p>
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 格式化U盘创建活动分区</h1>
+
+<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">fdisk -l</code>（注意哪个设备是你的U盘）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">fdisk /dev/sdx</code>（把x特换成你的U盘设备）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">d</code>（删除现存的分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">n</code>（创建一个新分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">p</code>（主分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">1</code>（创建第一个分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">回车</code>（使用第一个柱面）
+</li>
+<li>再次输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">回车</code>（使用默认值作为最后一个柱面）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a</code>（活动分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">1</code>（让第一个分区作为活动可启动分区）
+</li>
+<li>输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">w</code>（将修改写入并关闭fdisk）
+</li>
+</ol>
+
+<a id="toc2" name="toc2"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 创建文件系统</h1>
+
+<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>输入，（将分区格式化为fat32）
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  mkfs.vfat -F 32 -n MULTIBOOT /dev/sdx1
+</pre></div>
+
+
+</li>
+</ol>
+
+<a id="toc3" name="toc3"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 安装GRUB2</h1>
+
+<p style="margin: 15px 0;">
+重新插拔U盘，让它自动挂载到 <i style=" color: #d75100; font-style: normal; ">/media/MULTIBOOT</i> 下。
+</p>
+
+<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>输入，（安装Grub2）
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  grub-install --force --no-floppy \
+               --root-directory<span style="color: #7fff00">=</span>/media/MULTIBOOT /dev/sdx
+</pre></div>
+
+
+</li>
+<li>输入，（切换目录，这里面需要一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">grub.cfg</code> 文件）
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">cd</span> /media/MULTIBOOT/boot/grub
+</pre></div>
+
+
+<p style="margin: 15px 0;"></p>
+</li>
+<li>输入，（下载grub.cfg文件）
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  wget http://maxmars.net/downloads/code/multibootlinux/grub.cfg
+</pre></div>
+
+
+</li>
+</ol>
+
+<p style="margin: 15px 0;">
+文件内容类似于：
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  set timeout=10
+  set default=0
+  
+  menuentry &quot;Ubuntu 10.10 Desktop ISO&quot; {
+   loopback loop /ubuntu.iso
+   linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=/ubuntu.iso noeject noprompt splash --
+   initrd (loop)/casper/initrd.lz
+  }
+</pre></div>
+
+
+<hr style=" border-top: 1px solid gray; margin: 30px auto;" />
+
+<p style="margin: 15px 0;">
+能直接引导 ISO 之后，剩下的是安装系统或者直接使用系统就随便了。
+</p>
+<p style="margin: 15px 0;">
+我觉得对于移动硬盘也可以使用类似的流程来做的吧。
+</p>
+
+<script type="text/javascript">var prettyPrint = function(){}</script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'install-grub-on-udisk';
+  var disqus_url = 'http://zouyesheng.com/install-grub-on-udisk.html';
+  var disqus_title = '在U盘上安装GRUB2直接引导ISO';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

@@ -1,0 +1,54 @@
+PostgreSQL使用方法
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus --mathfax 
+%%toc
+
+
+=编译安装=
+
+- 编译 pg 时添加 ``--with-python`` 选择添加对 Python 的支持. 之后在 ``lib`` 目录下会有一个 ``plpython2.so`` .
+- 编译 pgadmin3 时需要的东西, 编译时使用 ``--with-pgsql`` 指定 pg 安装目录:
+    - wxGTK
+    - libxml2
+    - libxslt
+    - PostgreSQL
+    - Sphinx
+- pg 的层级概念:
+    - column -> row -> table -> database -> cluster
+- 系统的共享内存量(单位字节, 默认32M太小):
+    - $ ``sysctl -w kernel.shmmax=17179869184``
+    - $ ``sysctl -w kernel.shmall=4194304`` 页数(总数和 ``SHMMAX`` 一致), 每页大小通过 $ ``getconf PAGE_SIZE`` 查看(默认 4096 字节)
+
+
+
+=启动维护=
+
+- 启动服务之前要先创建一个 //cluster// , 即数据库使用的数据目录:
+    - ``$ initdb -D /usr/local/pgsql/data``
+    - ``$ pg_ctl -D /usr/local/pgsql/data initdb``
+- 启动服务:
+    - ``$ postgres -D /usr/local/pgsql/data``
+    - ``$ postgres -D /usr/local/pgsql/data >logfile 2>&1 &``
+    - ``$ pg_ctl start -l logfile``
+- 管理工具: ``pg_ctl``
+
+
+=数据库操作=
+
+- 创建库及删除库:
+    - ``$ createdb mydb``
+    - ``$ dropdb mydb``
+- 使用命令行客户端工具:
+    - ``$ psql mydb``
+- 添加 ``-i`` 参数表示单步执行:
+    - ``$ psql -i mydb``
+
+
+=psql使用=
+
+- ``-i`` 引用外部 sql 文件:
+    - ``mydb=> \i basics.sql``
+
+

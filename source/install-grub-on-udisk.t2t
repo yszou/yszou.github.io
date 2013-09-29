@@ -1,0 +1,78 @@
+在U盘上安装GRUB2直接引导ISO
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+本文的内容来源于 http://maxmars.net/blog/2012/10/02/boot-multiple-iso-from-usb-using-linux/
+
+**以下所有命令都在 root 用户下进行。**
+
+先把U盘卸载掉： ``umount /dev/sdx1`` 。
+
+
+=格式化U盘创建活动分区=
+
++ 输入 ``fdisk -l``（注意哪个设备是你的U盘）
++ 输入 ``fdisk /dev/sdx``（把x特换成你的U盘设备）
++ 输入 ``d``（删除现存的分区）
++ 输入 ``n``（创建一个新分区）
++ 输入 ``p``（主分区）
++ 输入 ``1``（创建第一个分区）
++ 输入 ``回车``（使用第一个柱面）
++ 再次输入 ``回车``（使用默认值作为最后一个柱面）
++ 输入 ``a``（活动分区）
++ 输入 ``1``（让第一个分区作为活动可启动分区）
++ 输入 ``w``（将修改写入并关闭fdisk）
+
+
+=创建文件系统=
+
++ 输入，（将分区格式化为fat32）
+```bash
+mkfs.vfat -F 32 -n MULTIBOOT /dev/sdx1
+```
+
+
+
+=安装GRUB2=
+
+重新插拔U盘，让它自动挂载到 ///media/MULTIBOOT// 下。
+
++ 输入，（安装Grub2）
+```bash
+grub-install --force --no-floppy \
+             --root-directory=/media/MULTIBOOT /dev/sdx
+```
++ 输入，（切换目录，这里面需要一个 ``grub.cfg`` 文件）
+```bash
+cd /media/MULTIBOOT/boot/grub
+```
+
++ 输入，（下载grub.cfg文件）
+```bash
+wget http://maxmars.net/downloads/code/multibootlinux/grub.cfg
+```
+
+
+文件内容类似于：
+
+```text
+set timeout=10
+set default=0
+
+menuentry "Ubuntu 10.10 Desktop ISO" {
+ loopback loop /ubuntu.iso
+ linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=/ubuntu.iso noeject noprompt splash --
+ initrd (loop)/casper/initrd.lz
+}
+```
+
+--------------------------
+
+能直接引导 ISO 之后，剩下的是安装系统或者直接使用系统就随便了。
+
+我觉得对于移动硬盘也可以使用类似的流程来做的吧。
+
