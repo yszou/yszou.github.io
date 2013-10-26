@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>异步调用中的上下文控制Tornado stack context  - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="异步调用中的上下文控制Tornado stack context ,Yesheng Zou,YS.Zou,邹业盛,AceFantasy"/>
+<meta name="description" content="异步调用中的上下文控制Tornado stack context ,Yesheng Zou,YS.Zou,邹业盛,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">异步调用中的上下文控制Tornado stack context </h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-10-26 19:11 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">面临的问题</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">尝试解决</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">Python中的上下文对象及with语句</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">Tornado中的stack_context相关内容</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">总结与比较</a>
+  </li>
+  </ol>
+
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 面临的问题</h1>
+
+<p style="margin: 15px 0;">
+这里说的"异步调用", 在形式上是指那种"调用函数"里, 需要传入一个"回调函数", 然后调用函数马上就返回. 在这种情况下, 回调函数的异常显然与调用函数的异常是不同的, 并且如果不作特殊处理, 回调函数的异常并不会影响调用函数的表现, 比如下例:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #507080"># -*- coding: utf-8 -*-</span>
+  
+  <span style="color: #90ee90">import</span> <span style="color: #e0eee0">tornado.ioloop</span>
+  <span style="color: #e0eee0">IL</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">ioloop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">IOLoop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">instance</span>()
+  
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">callback</span>():
+      <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00e5ee">&#39;in callback&#39;</span>
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">func</span>():
+      <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #e0eee0">callback</span>)
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">out</span>():
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #e0eee0">func</span>()
+      <span style="color: #90ee90">except</span>:
+          <span style="color: #90ee90">print</span> <span style="color: #00e5ee">&#39;ok&#39;</span>
+  
+  <span style="color: #e0eee0">out</span>()
+  <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">start</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+上面的代码中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 抛出的异常并没有影响到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 函数的表现, 于是我们看不到 <i style=" color: #d75100; font-style: normal; ">ok</i> 的输出.
+</p>
+<p style="margin: 15px 0;">
+但是在实践当中, 因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 的调用, 间接地是由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 造成的, 通常我们希望的一个结果是, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 抛出的异常, 应该就像是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 抛出的异常一样, 触发对应的异常处理, 输出 <i style=" color: #d75100; font-style: normal; ">ok</i> .
+</p>
+<p style="margin: 15px 0;">
+注意, 这里对异常的行为, 我们只说 <b style=" color: red; font-weight: normal; ">像</b> <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 抛出的, 或者说, 一个非 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 抛出的异常, 与一个就是由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 抛出的异常, 它们会造成相同的结果, 这是本质的问题.
+</p>
+
+<a id="toc2" name="toc2"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 尝试解决</h1>
+
+<p style="margin: 15px 0;">
+为了达到" <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 抛出的异常, 就像是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 抛出的一样 " , 这个目的, 我们最直观地会想到这样处理代码:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">callback</span>():
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00e5ee">&#39;in callback&#39;</span>
+      <span style="color: #90ee90">except</span>:
+          <span style="color: #90ee90">print</span> <span style="color: #00e5ee">&#39;ok&#39;</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+或者这样:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">like_other</span>(<span style="color: #e0eee0">func</span>):
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">wrapper</span>(<span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">karg</span>):
+          <span style="color: #90ee90">try</span>:
+              <span style="color: #e0eee0">func</span>(<span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">kargs</span>)
+          <span style="color: #90ee90">except</span>:
+              <span style="color: #90ee90">print</span> <span style="color: #00e5ee">&#39;ok&#39;</span>
+      <span style="color: #90ee90">return</span> <span style="color: #e0eee0">wrapper</span>
+  
+  <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #e0eee0">like_other</span>(<span style="color: #e0eee0">callback</span>))
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+好吧, 从现象上我不能说这样做不对, 但是逻辑上, 这种做法只能说是"碰巧"一样了. 顺着这个思路, 我们很容易想到这样的"正确"代码:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">callback</span>():
+      <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00e5ee">&#39;in callback&#39;</span>
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">func</span>():
+      <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #90ee90">lambda</span>: <span style="color: #e0eee0">env</span>(<span style="color: #e0eee0">callback</span>))
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">env</span>(<span style="color: #e0eee0">func</span>):
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #e0eee0">func</span>()
+      <span style="color: #90ee90">except</span>:
+          <span style="color: #90ee90">print</span> <span style="color: #00e5ee">&#39;ok&#39;</span>
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">out</span>():
+      <span style="color: #e0eee0">env</span>(<span style="color: #e0eee0">func</span>)
+  
+  <span style="color: #e0eee0">out</span>()
+  <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">start</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+我们把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 这两个函数都埋到同样的坑里, 这样它们抛出的异常就可以保证有着同样的表现.
+</p>
+<p style="margin: 15px 0;">
+这样做当然没有问题, 除了代码逻辑上的一个缺陷 -- <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 需要知道它的调用者, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out</code> 中的细节, 即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 要知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out</code> 在调用它时挖了一个叫 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">env</code> 的坑. 这个问题就大了, 而且很显然地, 调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 的地方可能有许多, 除了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">env</code> 它们还使用着各种不同的坑. 所以在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func</code> 中写死了 <i style=" color: #d75100; font-style: normal; ">env</i> 这点必须得到改进. 比如引入一个中间的容器:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">callback</span>():
+      <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00e5ee">&#39;in callback&#39;</span>
+  
+  <span style="color: #e0eee0">HOLE</span> <span style="color: #7fff00">=</span> {}
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">func</span>():
+      <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #90ee90">lambda</span>: <span style="color: #e0eee0">HOLE</span>[<span style="color: #00e5ee">&#39;&#39;</span>](<span style="color: #e0eee0">callback</span>))
+  
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">env</span>(<span style="color: #e0eee0">func</span>):
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #e0eee0">func</span>()
+      <span style="color: #90ee90">except</span>:
+          <span style="color: #90ee90">print</span> <span style="color: #00e5ee">&#39;ok&#39;</span>
+  
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">out</span>():
+      <span style="color: #e0eee0">HOLE</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">setdefault</span>(<span style="color: #00e5ee">&#39;&#39;</span>, <span style="color: #e0eee0">env</span>)(<span style="color: #e0eee0">func</span>)
+  
+  <span style="color: #e0eee0">out</span>()
+  <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">start</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+至此, 理想状态下问题似乎得到解决了. 但是实践当中, 情况则会复杂得多, 有不同的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out</code> , 不同的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">env</code> , 但是基本的处理方式是没有变的, 我们把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">env</code> 抽象成函数执行的"上下文", 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">HOLE</code> 抽象成一个全局的上下文管理容器, 两者配合, 就可以实现出更通用的结构.
+</p>
+<p style="margin: 15px 0;">
+在了解 Tornado 中具体的代码之前, 需要先了解 Python 中的 <i style=" color: #d75100; font-style: normal; ">Context Manager</i> 上下文对象, 及与之相关的 <i style=" color: #d75100; font-style: normal; ">with</i> 语句的一些基本知识.
+</p>
+
+<a id="toc3" name="toc3"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. Python中的上下文对象及with语句</h1>
+
+<p style="margin: 15px 0;">
+定义一个可以被 <i style=" color: #d75100; font-style: normal; ">with</i> 使用的对象, 只需要实现 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">__enter__</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">__exit__</code> 这两个方法就可以了的:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">class</span> <span style="color: #9bcd9b">Context</span>(<span style="color: #e0eee0">object</span>):
+  
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__enter__</span>(<span style="color: #e0eee0">self</span>):
+          <span style="color: #90ee90">return</span> <span style="color: #00ffff">123</span>
+  
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__exit__</span>(<span style="color: #e0eee0">self</span>, <span style="color: #e0eee0">type</span>, <span style="color: #e0eee0">value</span>, <span style="color: #e0eee0">traceback</span>):
+          <span style="color: #90ee90">return</span> <span style="color: #e0eee0">True</span>
+  
+  
+  <span style="color: #90ee90">with</span> <span style="color: #e0eee0">Context</span>() <span style="color: #90ee90">as</span> <span style="color: #e0eee0">i</span>:
+      <span style="color: #90ee90">print</span> <span style="color: #e0eee0">i</span>
+      <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00ffff">1</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">__exit__</code> 方法中接收的参数就是异常的一些信息, 可以从中判断是否抛出了异常. 最后如果返回是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">True</code> , 则忽略异常, 否则会将异常抛出.
+</p>
+<p style="margin: 15px 0;">
+另外, Python 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">contextlib</code> 的官方模块, 提供了一些方法, 以便更容易使用上下文对象, 比如一个把生成器转换成上下文对象的装饰器:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">import</span> <span style="color: #e0eee0">contextlib</span>
+  
+  <span style="color: #e0eee0">@contextlib.contextmanager</span>
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">process</span>():
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #90ee90">yield</span> <span style="color: #00ffff">123</span>
+      <span style="color: #90ee90">except</span>:
+          <span style="color: #90ee90">pass</span>
+  
+  <span style="color: #90ee90">with</span> <span style="color: #e0eee0">process</span>() <span style="color: #90ee90">as</span> <span style="color: #e0eee0">i</span>:
+      <span style="color: #90ee90">print</span> <span style="color: #e0eee0">i</span>
+      <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>, <span style="color: #00ffff">2</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+生成器中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出来的值, 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">with</code> 语句的接收值, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 语句的表现就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">with</code> 结构中语句的表现.
+</p>
+
+<a id="toc4" name="toc4"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. Tornado中的stack_context相关内容</h1>
+
+<p style="margin: 15px 0;">
+Tornado 中, 我觉得 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context.py</code> 是一个同 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 一样让人很难一下看明白的东西. 为了简单, 我们从 <i style=" color: #d75100; font-style: normal; ">1.0.1</i> 和 <i style=" color: #d75100; font-style: normal; ">1.1.0</i> 这两个比较旧的版本着手, 因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context</code> 的机制是从 <i style=" color: #d75100; font-style: normal; ">1.1.0</i> 开始加入的, 那时的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context.py</code> 内容比现在的少多了.
+</p>
+<p style="margin: 15px 0;">
+看下面的代码:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;"><span style="color: gray; padding: 0 5px 0 5px"> 1</span>   <span style="color: #507080"># -*- coding: utf-8 -*-</span>
+<span style="color: gray; padding: 0 5px 0 5px"> 2</span>   
+<span style="color: gray; padding: 0 5px 0 5px"> 3</span>   <span style="color: #90ee90">import</span> <span style="color: #e0eee0">tornado.httpserver</span>
+<span style="color: gray; padding: 0 5px 0 5px"> 4</span>   <span style="color: #90ee90">import</span> <span style="color: #e0eee0">tornado.ioloop</span>
+<span style="color: gray; padding: 0 5px 0 5px"> 5</span>   <span style="color: #90ee90">import</span> <span style="color: #e0eee0">tornado.options</span>
+<span style="color: gray; padding: 0 5px 0 5px"> 6</span>   <span style="color: #90ee90">import</span> <span style="color: #e0eee0">tornado.web</span>
+<span style="color: gray; padding: 0 5px 0 5px"> 7</span>   
+<span style="color: gray; padding: 0 5px 0 5px"> 8</span>   <span style="color: #e0eee0">IL</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">ioloop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">IOLoop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">instance</span>()
+<span style="color: gray; padding: 0 5px 0 5px"> 9</span>   
+<span style="color: gray; padding: 0 5px 0 5px">10</span>   <span style="color: #90ee90">from</span> <span style="color: #e0eee0">tornado.options</span> <span style="color: #90ee90">import</span> <span style="color: #e0eee0">define</span>, <span style="color: #e0eee0">options</span>
+<span style="color: gray; padding: 0 5px 0 5px">11</span>   
+<span style="color: gray; padding: 0 5px 0 5px">12</span>   <span style="color: #e0eee0">define</span>(<span style="color: #00e5ee">&quot;port&quot;</span>, <span style="color: #e0eee0">default</span><span style="color: #7fff00">=</span><span style="color: #00ffff">8888</span>, <span style="color: #e0eee0">help</span><span style="color: #7fff00">=</span><span style="color: #00e5ee">&quot;run on the given port&quot;</span>, <span style="color: #e0eee0">type</span><span style="color: #7fff00">=</span><span style="color: #e0eee0">int</span>)
+<span style="color: gray; padding: 0 5px 0 5px">13</span>   
+<span style="color: gray; padding: 0 5px 0 5px">14</span>   
+<span style="color: gray; padding: 0 5px 0 5px">15</span>   <span style="color: #90ee90">class</span> <span style="color: #9bcd9b">MainHandler</span>(<span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">web</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">RequestHandler</span>):
+<span style="color: gray; padding: 0 5px 0 5px">16</span>   
+<span style="color: gray; padding: 0 5px 0 5px">17</span>       <span style="color: #e0eee0">@tornado.web.asynchronous</span>
+<span style="color: gray; padding: 0 5px 0 5px">18</span>       <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">get</span>(<span style="color: #e0eee0">self</span>):
+<span style="color: gray; padding: 0 5px 0 5px">19</span>           <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">callback</span>)
+<span style="color: gray; padding: 0 5px 0 5px">20</span>   
+<span style="color: gray; padding: 0 5px 0 5px">21</span>       <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">callback</span>(<span style="color: #e0eee0">self</span>):
+<span style="color: gray; padding: 0 5px 0 5px">22</span>           <span style="color: #90ee90">raise</span> <span style="color: #90ee90">Exception</span>
+<span style="color: gray; padding: 0 5px 0 5px">23</span>           <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">finish</span>(<span style="color: #00e5ee">&quot;Hello, world&quot;</span>)
+<span style="color: gray; padding: 0 5px 0 5px">24</span>   
+<span style="color: gray; padding: 0 5px 0 5px">25</span>   
+<span style="color: gray; padding: 0 5px 0 5px">26</span>   <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">main</span>():
+<span style="color: gray; padding: 0 5px 0 5px">27</span>       <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">options</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">parse_command_line</span>()
+<span style="color: gray; padding: 0 5px 0 5px">28</span>       <span style="color: #e0eee0">application</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">web</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">Application</span>([
+<span style="color: gray; padding: 0 5px 0 5px">29</span>           (<span style="color: #00e5ee">r&quot;/&quot;</span>, <span style="color: #e0eee0">MainHandler</span>),
+<span style="color: gray; padding: 0 5px 0 5px">30</span>       ])
+<span style="color: gray; padding: 0 5px 0 5px">31</span>       <span style="color: #e0eee0">http_server</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">httpserver</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">HTTPServer</span>(<span style="color: #e0eee0">application</span>)
+<span style="color: gray; padding: 0 5px 0 5px">32</span>       <span style="color: #e0eee0">http_server</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">listen</span>(<span style="color: #e0eee0">options</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">port</span>)
+<span style="color: gray; padding: 0 5px 0 5px">33</span>       <span style="color: #e0eee0">tornado</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">ioloop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">IOLoop</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">instance</span>()<span style="color: #7fff00">.</span><span style="color: #e0eee0">start</span>()
+<span style="color: gray; padding: 0 5px 0 5px">34</span>   
+<span style="color: gray; padding: 0 5px 0 5px">35</span>   
+<span style="color: gray; padding: 0 5px 0 5px">36</span>   <span style="color: #90ee90">if</span> <span style="color: #e0eee0">__name__</span> <span style="color: #7fff00">==</span> <span style="color: #00e5ee">&quot;__main__&quot;</span>:
+<span style="color: gray; padding: 0 5px 0 5px">37</span>       <span style="color: #e0eee0">main</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+最简单的一个应用, 在两个不同版本的 Tornado 下, 实际运行访问当中, 有没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context</code> 结果区别很明显, 有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context</code> , 则得到 <i style=" color: #d75100; font-style: normal; ">500</i> 的响应, 否则一直没有响应.
+</p>
+<p style="margin: 15px 0;">
+实现的细节当中, 有两部分内容, 一是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">web.py</code> 中, 在执行具体的业务函数的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_execute</code> 函数里, 挖了一个上下文管理的坑:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">_execute</span>(<span style="color: #e0eee0">self</span>, <span style="color: #e0eee0">transforms</span>, <span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">kwargs</span>):
+      <span style="color: #00e5ee">&quot;&quot;&quot;Executes this request with the given output transforms.&quot;&quot;&quot;</span>
+      <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">_transforms</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">transforms</span>
+      <span style="color: #90ee90">with</span> <span style="color: #e0eee0">stack_context</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">StackContext</span>(<span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">_stack_context</span>):
+          <span style="color: #7fff00">...</span> <span style="color: #7fff00">...</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+同时在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ioloop.py</code> 中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">add_callback</code> 也对传入的回调函数作了上下文有关的包装:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">add_callback</span>(<span style="color: #e0eee0">self</span>, <span style="color: #e0eee0">callback</span>):
+      <span style="color: #00e5ee">&quot;&quot;&quot;Calls the given callback on the next I/O loop iteration.&quot;&quot;&quot;</span>
+      <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">_callbacks</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add</span>(<span style="color: #e0eee0">stack_context</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">wrap</span>(<span style="color: #e0eee0">callback</span>))
+      <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">_wake</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+就像前面说的, 为了通用, Tornado 在这些上下文的管理上可能做得比较巧妙, 在之后的版本当中, 这部分也可能变得比较复杂, 但是本质上的形式, 与最开始的那个理想化的例子是一致的.
+</p>
+<p style="margin: 15px 0;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">statck_context.StackContext</code> 对应于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">HOLE</code> , 是一个上下文的管理容器(准确地说它只是一个操作接口, 容器是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> ). 而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">statck_context.wrap</code> 则是一个类似于调度器的东西, 作用是给出正确的上下文环境, 理解它的关键是搞清楚"定义时状态"与"执行时状态"的关系与区别.
+</p>
+<p style="margin: 15px 0;">
+接下来分块说一下 Tornado 中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context.py</code> 的源码, 以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">1.1.0</code> 版本为例.
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">class</span> <span style="color: #9bcd9b">_State</span>(<span style="color: #e0eee0">threading</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">local</span>):
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__init__</span>(<span style="color: #e0eee0">self</span>):
+          <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> ()
+  <span style="color: #e0eee0">_state</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">_State</span>()
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+这里构造了一个线程安全的变量, 在 Tornado 运行时当中, 它就是全局量了, 所有上下文都会保存在里面. 在后面我们还会看到, 这部分的应用注意两点:
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> 的类型是一个 <i style=" color: #d75100; font-style: normal; ">tuple</i> , <i style=" color: #d75100; font-style: normal; ">tuple</i> 这个类型是不可变的.
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> 这个名字会在不同的时候指向不同的 <i style=" color: #d75100; font-style: normal; ">tuple</i> , 搞清楚"引用"与"值"的关系.
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+接下来看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">StackContext</code> :
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">@contextlib.contextmanager</span>
+  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">StackContext</span>(<span style="color: #e0eee0">context_factory</span>):
+      <span style="color: #e0eee0">old_contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span>
+      <span style="color: #90ee90">try</span>:
+          <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">old_contexts</span> <span style="color: #7fff00">+</span> (<span style="color: #e0eee0">context_factory</span>,)
+          <span style="color: #90ee90">with</span> <span style="color: #e0eee0">context_factory</span>():
+              <span style="color: #90ee90">yield</span>
+      <span style="color: #90ee90">finally</span>:
+          <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">old_contexts</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+它是一个接收上下文对象的一个上下文对象, 可能后面版本的不使用装饰器写法更好看一些:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">class</span> <span style="color: #9bcd9b">StackContext</span>(<span style="color: #e0eee0">object</span>):
+  
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__init__</span>(<span style="color: #e0eee0">self</span>, <span style="color: #e0eee0">context_factory</span>):
+          <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">context_factory</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">context_factory</span>
+  
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__enter__</span>(<span style="color: #e0eee0">self</span>):
+          <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">old_contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span>
+          <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">old_contexts</span> <span style="color: #7fff00">+</span> (<span style="color: #e0eee0">context_factory</span>,)
+  
+          <span style="color: #90ee90">try</span>:
+              <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">context</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">context_factory</span>()
+              <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">context</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">__enter__</span>()
+          <span style="color: #90ee90">except</span> <span style="color: #90ee90">Exception</span>:
+              <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">old_contexts</span>
+              <span style="color: #90ee90">raise</span>
+  
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">__exit__</span>(<span style="color: #e0eee0">self</span>, <span style="color: #e0eee0">type</span>, <span style="color: #e0eee0">value</span>, <span style="color: #e0eee0">traceback</span>):
+          <span style="color: #90ee90">try</span>:
+              <span style="color: #90ee90">return</span> <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">context</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">__exit__</span>(<span style="color: #e0eee0">type</span>, <span style="color: #e0eee0">value</span>, <span style="color: #e0eee0">traceback</span>)
+          <span style="color: #90ee90">finally</span>:
+              <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">old_contexts</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+简单来说, 一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">StackContext</code> 实例的作用, 就是包装一个上下文对象, 代码在具体执行时, 还是使用原来的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">context_factory</code> , 但是传入的这个上下文对象会被保存到全局的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> 当中.
+</p>
+<p style="margin: 15px 0;">
+单看这部分没有什么作用, 把上下文暂存起来的目的, 是为了在之后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> 函数当中的, 可以给出当前的, 定义时的状态信息.
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">wrap</span>(<span style="color: #e0eee0">fn</span>):
+      <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">wrapped</span>(<span style="color: #e0eee0">callback</span>, <span style="color: #e0eee0">contexts</span>, <span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">kwargs</span>):
+          <span style="color: #e0eee0">pairs</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">itertools</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">izip</span>(<span style="color: #e0eee0">itertools</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">chain</span>(<span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span>,
+                                                 <span style="color: #e0eee0">itertools</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">repeat</span>(<span style="color: #e0eee0">None</span>)),
+                                 <span style="color: #e0eee0">contexts</span>)
+          <span style="color: #e0eee0">new_contexts</span> <span style="color: #7fff00">=</span> []
+          <span style="color: #90ee90">for</span> <span style="color: #e0eee0">old</span>, <span style="color: #e0eee0">new</span> <span style="color: #7fff00">in</span> <span style="color: #e0eee0">itertools</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">dropwhile</span>(<span style="color: #90ee90">lambda</span> <span style="color: #e0eee0">x</span>: <span style="color: #e0eee0">x</span>[<span style="color: #00ffff">0</span>] <span style="color: #7fff00">is</span> <span style="color: #e0eee0">x</span>[<span style="color: #00ffff">1</span>], <span style="color: #e0eee0">pairs</span>):
+              <span style="color: #e0eee0">new_contexts</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">append</span>(<span style="color: #e0eee0">StackContext</span>(<span style="color: #e0eee0">new</span>))
+          <span style="color: #90ee90">if</span> <span style="color: #e0eee0">new_contexts</span>:
+              <span style="color: #90ee90">with</span> <span style="color: #e0eee0">contextlib</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">nested</span>(<span style="color: #7fff00">*</span><span style="color: #e0eee0">new_contexts</span>):
+                  <span style="color: #e0eee0">callback</span>(<span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">kwargs</span>)
+          <span style="color: #90ee90">else</span>:
+              <span style="color: #e0eee0">callback</span>(<span style="color: #7fff00">*</span><span style="color: #e0eee0">args</span>, <span style="color: #7fff00">**</span><span style="color: #e0eee0">kwargs</span>)
+  
+      <span style="color: #90ee90">if</span> <span style="color: #e0eee0">getattr</span>(<span style="color: #e0eee0">fn</span>, <span style="color: #00e5ee">&#39;stack_context_wrapped&#39;</span>, <span style="color: #e0eee0">False</span>):
+          <span style="color: #90ee90">return</span> <span style="color: #e0eee0">fn</span>
+  
+      <span style="color: #e0eee0">contexts</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">_state</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">contexts</span>
+      <span style="color: #e0eee0">result</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">functools</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">partial</span>(<span style="color: #e0eee0">wrapped</span>, <span style="color: #e0eee0">fn</span>, <span style="color: #e0eee0">contexts</span>)
+      <span style="color: #e0eee0">result</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">stack_context_wrapped</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">True</span>
+      <span style="color: #90ee90">return</span> <span style="color: #e0eee0">result</span>
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> 是一个函数装饰, 在定义时, 把当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> 保存了下来, 而且参照之前的分析, 当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.contexts</code> 可能是被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">StackContext</code> 替换过的(因为 <i style=" color: #d75100; font-style: normal; ">tuple</i> 不可变, 所以这里只能是"替换"). 之后, 在真正执行时, 又取一次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.context</code> , 那这时, 定义时的上下文, 与执行时的上下文, 之间就可能存在差异, 这部分差异, 就是定义时有, 而执行时已经脱离的那些上下文, 脱离的这些上下文就是我们需要的 -- 它可以让一些函数的错误表现, 像另一些函数一样. 最后, 我们让回调函数在这些脱离了的上下文中执行(没脱离的上下文仍然有作用), 结果就是我们想要的, 相同的上下文继续作用于回调函数, 某个回调函数抛出了错误, 这些错误都可以按相同的方式处理.
+</p>
+<p style="margin: 15px 0;">
+结合 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">StackContext</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> 来看整个流程, 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">StackContext</code> 负责在某个地方挖个坑, 在其作用域范围内, 所有的回调函数如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> 了的话, 就都会在相同的坑里执行.
+</p>
+<p style="margin: 15px 0;">
+如果你希望某些回调函数不受之前挖的坑的影响, 有一个临时的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">NullContext</code> 工具上下文, 它会动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.context</code> , 把它清空. 这里有一点可以思考, 为什么不是去动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> , 而在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.context</code> 上动手脚? 因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wrap</code> 是硬编码在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">add_callback</code> 这类函数当中的, 但是它们都受 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.context</code> 的影响, 所以换个思维去动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">_state.context</code> 就可以达到目的.
+</p>
+
+<a id="toc5" name="toc5"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 总结与比较</h1>
+
+<p style="margin: 15px 0;">
+可以看到, Tornado 用一种可以说很取巧的方法, 解决了回调函数的异常表现问题.
+</p>
+<p style="margin: 15px 0;">
+里面涉及了:
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">with</code> 语法糖的使用( <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">with</code> 的作用可以使用函数替换, 只是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">with</code> 可以直接作用于一块语句, 而函数只能作用于一个函数).
+</li>
+<li>全局量的使用.
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">itertools</code> 一系列工具的使用.
+</li>
+<li>偏函数的应用, 这东西和"名字空间", "闭包"都有一些互补的关系.
+</li>
+<li>还有一个与流程紧密相关的, 找出差异上下文的算法.
+</li>
+<li>最后是这套机制是一个递归的使用结构.
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+比较我要说的是 nodejs 中的机制. 在官方的 API 中, <i style=" color: #d75100; font-style: normal; ">Domain</i> 是做这块上下文管理的模块.
+</p>
+<p style="margin: 15px 0;">
+先回顾一下在简单的状态下我们碰到的问题:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #90ee90">def</span> <span style="color: #9bcd9b">get</span>(<span style="color: #e0eee0">self</span>):
+      <span style="color: #e0eee0">IL</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">add_callback</span>(<span style="color: #e0eee0">self</span><span style="color: #7fff00">.</span><span style="color: #e0eee0">callback</span>)
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">self.callback</code> 的异常给我们造成了麻烦, 为了不让这个异常在全局蔓延开, 我们会很直接地想到在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">self.callback</code> 的执行上下文中把它给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">try</code> 起来, 就是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">IL</code> 中对所有的回调函数都 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">try</code> 一下, 这样只能说是单纯地拿到了异常, 但是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">IL</code> 中并没有足够的信息, 让我们可以正确地处理这个异常(比如说返回 500 ). 所以, 这种简单直接的暴力大部分情况是没有用的.
+</p>
+<p style="margin: 15px 0;">
+反观 nodejs , 这个问题似乎简单得多了, 它的上下文的概念, 就是一个对象, 应用事件模式, 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">on</code> 定义事件回调, 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 调度全局的事件回调函数用以处理异常.
+</p>
+<p style="margin: 15px 0;">
+在 nodejs 中, 使用:
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">process</span>.<span style="color: #e0eee0">on</span>(<span style="color: #00e5ee">&#39;uncaughtException&#39;</span>, <span style="color: #e0eee0">uncaughtHandler</span>);
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+就可以直接拿到所有未捕获的异常. <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain.bind</code> 的执行会有一个注册行为, 后面执行 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 中的函数时就设置上当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain</code> , 这时如果有异常被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">process</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">uncaughtException</code> 拿到, 就可以被当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain.on('error', callback)</code> 处理.
+</p>
+
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #bcd2ee">var</span> <span style="color: #e0eee0">d</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">require</span>(<span style="color: #00e5ee">&#39;domain&#39;</span>).<span style="color: #e0eee0">create</span>();
+  <span style="color: #bcd2ee">var</span> <span style="color: #e0eee0">d2</span> <span style="color: #7fff00">=</span> <span style="color: #e0eee0">require</span>(<span style="color: #00e5ee">&#39;domain&#39;</span>).<span style="color: #e0eee0">create</span>();
+  
+  <span style="color: #e0eee0">d</span>.<span style="color: #e0eee0">on</span>(<span style="color: #00e5ee">&#39;error&#39;</span>, <span style="color: #bcd2ee">function</span>(<span style="color: #e0eee0">error</span>){
+    <span style="color: #e0eee0">console</span>.<span style="color: #e0eee0">error</span>(<span style="color: #00e5ee">&#39;error&#39;</span>, <span style="color: #e0eee0">error</span>);
+  });
+  
+  <span style="color: #e0eee0">d2</span>.<span style="color: #e0eee0">on</span>(<span style="color: #00e5ee">&#39;error&#39;</span>, <span style="color: #bcd2ee">function</span>(<span style="color: #e0eee0">error</span>){
+    <span style="color: #e0eee0">console</span>.<span style="color: #e0eee0">error</span>(<span style="color: #00e5ee">&#39;error2&#39;</span>, <span style="color: #e0eee0">error</span>);
+  });
+  
+  <span style="color: #e0eee0">d</span>.<span style="color: #e0eee0">bind</span>(<span style="color: #bcd2ee">function</span>(){
+    <span style="color: #e0eee0">setTimeout</span>(<span style="color: #bcd2ee">function</span>(){
+      <span style="color: #90ee90">throw</span> <span style="color: #00e5ee">&#39;I&#39;</span>;
+    }, <span style="color: #00ffff">3000</span>);
+  })();
+  
+  <span style="color: #e0eee0">d2</span>.<span style="color: #e0eee0">bind</span>(<span style="color: #bcd2ee">function</span>(){
+    <span style="color: #e0eee0">setTimeout</span>(<span style="color: #bcd2ee">function</span>(){
+      <span style="color: #90ee90">throw</span> <span style="color: #00e5ee">&#39;II&#39;</span>;
+    }, <span style="color: #00ffff">1000</span>);
+  })();
+</pre></div>
+
+
+<p style="margin: 15px 0;">
+现在剩下的一个问题就是, 当你拿到一个异常时, 如果获取到正确的"当前 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain</code> ", 特别是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setTimeout</code> 中的回调函数, 如何知道它对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain</code> 呢? 这个问题我看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain.js</code> 的代码看了很久, 认为它是不可能的, 后来我到网上去找, 发现, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">timer.js</code> 中实现的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setTimeout</code> 有处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">domain</code> 的东西, 我去......
+</p>
+<p style="margin: 15px 0;">
+至此, 比较 Tornado 和 nodejs 的 <i style=" color: #d75100; font-style: normal; ">Domain</i> , 其实它们本质上的使用行为是一致的, 一是都先要声明一个上下文的东西, 让这个东西在全局范围内被管理起来. 二是之后在具体的函数调用时, 声明使用一个上下文的调度行为.
+</p>
+<p style="margin: 15px 0;">
+同时, 它们的在实现上的行为与首手点却不相同. nodejs 通过全局的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">process</code> 对未捕获的异常开始着手, 在各个环节小心地控制 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">process.domain</code> , 通过事件模型来实现对异常的统一处理. 从外部看来清晰简单, 但是事实上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setTimeout</code> 这种玩意儿里隐藏了太多的东西.
+</p>
+<p style="margin: 15px 0;">
+而 Tornado 并没有选择在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ioloop</code> 层面对所有的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 做异常处理, 而是把这一个关键的集中点单独做到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack_context.py</code> 中, 并且以 Python 特殊的"上下文"对象这个更高层面的抽象来定义这个问题--异常处理只是上下文应用的一部分, 在直接结果上, 也只存在一个统一的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack</code> 来调度上下文就实现了嵌套等逻辑. 而 nodejs 中不光有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">active</code> 的概念, 也同样有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">stack</code> 的概念.
+</p>
+<p style="margin: 15px 0;">
+Tornado 的实现我觉得很巧妙, 但是要弄明白确实要花些时间. nodejs 的 <i style=" color: #d75100; font-style: normal; ">Domain</i> 实现很直观, 只关注异常处理, 整个流程统一于事件模型, 但是需要低层的一些东西来支持.
+</p>
+<p style="margin: 15px 0;">
+另外, 它们还有一点不同, Tornado 的上下文管理是一个必选项, 而 nodejs 的 <i style=" color: #d75100; font-style: normal; ">Domain</i> 功能则是可选的. 这点上的不同, 全造成如果 Tornado 按 nodejs 那种方式去解决问题, 会显得很别扭.
+</p>
+
+<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'context-in-async-env';
+  var disqus_url = 'http://zouyesheng.com/context-in-async-env.html';
+  var disqus_title = '异步调用中的上下文控制Tornado stack context ';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    styles: {
+        '.MathJax': {
+            'color': '#6D3333',
+        }
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
