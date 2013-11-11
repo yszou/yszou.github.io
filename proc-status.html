@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>proc进程信息字段解释 - 进出自由,我的分享</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="keywords" content="proc进程信息字段解释,Yesheng Zou,YS.Zou,邹业盛,AceFantasy"/>
+<meta name="description" content="proc进程信息字段解释,Yesheng Zou,YS.Zou,邹业盛,AceFantasy的个人网站" />
+</head>
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">proc进程信息字段解释</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-11-11 18:28 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">内存相关</a>
+  </li>
+  </ol>
+
+
+<a id="toc1" name="toc1"></a>
+<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 内存相关</h1>
+
+<dl style="font-size: small; margin: 10px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmPeak</dt><dd style="margin-left: 30px;">
+前进程运行过程中占用内存的峰值
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmSize</dt><dd style="margin-left: 30px;">
+虚拟内存大小。整个进程使用虚拟内存大小，是VmLib, VmExe, VmData, 和 VmStk的总和。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmLck</dt><dd style="margin-left: 30px;">
+进程已经锁住的物理内存的大小
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmHWM</dt><dd style="margin-left: 30px;">
+得到分配到物理内存的峰值
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmRSS</dt><dd style="margin-left: 30px;">
+虚拟内存驻留集合大小。这是驻留在物理内存的一部分。它没有交换到硬盘。它包括代码，数据和栈。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmData</dt><dd style="margin-left: 30px;">
+程序数据段的大小（所占虚拟内存的大小），堆使用的虚拟内存。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmStk</dt><dd style="margin-left: 30px;">
+任务在用户态的栈的大小，栈使用的虚拟内存
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmExe</dt><dd style="margin-left: 30px;">
+程序所拥有的可执行虚拟内存的大小，代码段，不包括任务使用的库
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmLib</dt><dd style="margin-left: 30px;">
+被映像到任务的虚拟内存空间的库的大小
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmPTE</dt><dd style="margin-left: 30px;">
+占用的页表的大小
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmSwap</dt><dd style="margin-left: 30px;">
+进程占用Swap的大小
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">Threads</dt><dd style="margin-left: 30px;">
+表示当前进程组有的线程数
+</dd>
+</dl>
+
+<p style="margin: 15px 0;">
+参考:
+</p>
+
+<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><a href="http://my.oschina.net/aiguozhe/blog/125477" style="color: #0184b7; text-decoration: none">http://my.oschina.net/aiguozhe/blog/125477</a>
+</li>
+<li><a href="http://blog.csdn.net/superqa/article/details/6817539" style="color: #0184b7; text-decoration: none">http://blog.csdn.net/superqa/article/details/6817539</a>
+</li>
+</ul>
+
+
+<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'proc-status';
+  var disqus_url = 'http://zouyesheng.com/proc-status.html';
+  var disqus_title = 'proc进程信息字段解释';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    styles: {
+        '.MathJax': {
+            'color': '#6D3333',
+        }
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
