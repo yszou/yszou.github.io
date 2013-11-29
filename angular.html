@@ -15,7 +15,7 @@
 
 <div style=" float: right; font-size: 13px; color: #777; ">
     <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-11-10 00:23 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-11-29 15:31 更新</li>
         <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
     </ul>
 </div>
@@ -634,7 +634,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
   
   <span style="color: #e0eee0">&lt;script type=</span><span style="color: #00e5ee">&quot;text/javascript&quot;</span> <span style="color: #e0eee0">charset=</span><span style="color: #00e5ee">&quot;utf-8&quot;</span><span style="color: #e0eee0">&gt;</span>
   <span style="color: #bcd2ee">var</span> <span style="color: #e0eee0">TestCtrl</span> <span style="color: #7fff00">=</span> <span style="color: #bcd2ee">function</span>(<span style="color: #e0eee0">$scope</span>){
-    <span style="color: #e0eee0">$scope</span>.<span style="color: #e0eee0">style</span> <span style="color: #7fff00">=</span> {<span style="color: #e0eee0">width</span><span style="color: #7fff00">:</span> <span style="color: #00ffff">100</span>};
+    <span style="color: #e0eee0">$scope</span>.<span style="color: #e0eee0">style</span> <span style="color: #7fff00">=</span> {<span style="color: #e0eee0">width</span><span style="color: #7fff00">:</span> <span style="color: #00ffff">100</span> <span style="color: #7fff00">+</span> <span style="color: #00e5ee">&#39;px&#39;</span>};
   }
   <span style="color: #e0eee0">angular</span>.<span style="color: #e0eee0">bootstrap</span>(<span style="color: #e0eee0">document</span>.<span style="color: #e0eee0">documentElement</span>);
   <span style="color: #e0eee0">&lt;/script&gt;</span>
@@ -787,7 +787,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 可以使用一个结构直接表示当前节点的样式：
 </p>
 
-<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">&lt;div</span> <span style="color: #e0eee0">ng-style=</span><span style="color: #00e5ee">&quot;{width: 100, height: 100, backgroundColor: &#39;red&#39;}&quot;</span><span style="color: #e0eee0">&gt;</span>
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">&lt;div</span> <span style="color: #e0eee0">ng-style=</span><span style="color: #00e5ee">&quot;{width: 100 + &#39;px&#39;, height: 100 + &#39;px&#39;, backgroundColor: &#39;red&#39;}&quot;</span><span style="color: #e0eee0">&gt;</span>
   <span style="color: #e0eee0">&lt;/div&gt;</span>
 </pre></div>
 
@@ -928,8 +928,8 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 对于事件对象本身，在函数调用时可以直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">$event</code> 进行传递：
 </p>
 
-<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">&lt;p</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;click($event)&quot;</span><span style="color: #e0eee0">&gt;</span>点击<span style="color: #e0eee0">&lt;/p&gt;</span>
-  <span style="color: #e0eee0">&lt;p</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;click($event.target)&quot;</span><span style="color: #e0eee0">&gt;</span>点击<span style="color: #e0eee0">&lt;/p&gt;</span>
+<div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">&lt;p</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;click(</span>$<span style="color: #e0eee0">event</span><span style="color: #00e5ee">)&quot;</span><span style="color: #e0eee0">&gt;</span>点击<span style="color: #e0eee0">&lt;/p&gt;</span>
+  <span style="color: #e0eee0">&lt;p</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;click(</span>$<span style="color: #e0eee0">event</span>.<span style="color: #e0eee0">target</span><span style="color: #00e5ee">)&quot;</span><span style="color: #e0eee0">&gt;</span>点击<span style="color: #e0eee0">&lt;/p&gt;</span>
 </pre></div>
 
 
@@ -1054,7 +1054,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 
 <div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  <span style="color: #e0eee0">&lt;form</span> <span style="color: #e0eee0">name=</span><span style="color: #00e5ee">&quot;test_form&quot;</span> <span style="color: #e0eee0">ng-controller=</span><span style="color: #00e5ee">&quot;TestCtrl&quot;</span><span style="color: #e0eee0">&gt;</span>
     <span style="color: #e0eee0">&lt;input</span> <span style="color: #e0eee0">type=</span><span style="color: #00e5ee">&quot;text&quot;</span> <span style="color: #e0eee0">name=</span><span style="color: #00e5ee">&quot;a&quot;</span> <span style="color: #e0eee0">ng-model=</span><span style="color: #00e5ee">&quot;a&quot;</span> required <span style="color: #e0eee0">ng-pattern=</span><span style="color: #00e5ee">&quot;/abc/&quot;</span> <span style="color: #e0eee0">/&gt;</span>
-    <span style="color: #e0eee0">&lt;span</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;see()&quot;</span><span style="color: #e0eee0">&gt;</span>{{ test_form.$error }}<span style="color: #e0eee0">&lt;/span&gt;</span>
+    <span style="color: #e0eee0">&lt;span</span> <span style="color: #e0eee0">ng-click=</span><span style="color: #00e5ee">&quot;see()&quot;</span><span style="color: #e0eee0">&gt;</span>{{ test_form.$<span style="color: #e0eee0">error</span> }}<span style="color: #e0eee0">&lt;/span&gt;</span>
   <span style="color: #e0eee0">&lt;/form&gt;</span>
 </pre></div>
 
@@ -1397,8 +1397,8 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 <span style="color: gray; padding: 0 5px 0 5px">13</span>   <span style="color: #e0eee0">&lt;/div&gt;</span>
 <span style="color: gray; padding: 0 5px 0 5px">14</span>   
 <span style="color: gray; padding: 0 5px 0 5px">15</span>   <span style="color: #e0eee0">&lt;script</span> <span style="color: #e0eee0">type=</span><span style="color: #00e5ee">&quot;text/javascript&quot;</span><span style="color: #e0eee0">&gt;</span>
-<span style="color: gray; padding: 0 5px 0 5px">16</span>   var TestCtrl = function($scope){
-<span style="color: gray; padding: 0 5px 0 5px">17</span>     $scope.data = [
+<span style="color: gray; padding: 0 5px 0 5px">16</span>   var TestCtrl = function($<span style="color: #e0eee0">scope</span>){
+<span style="color: gray; padding: 0 5px 0 5px">17</span>     $<span style="color: #e0eee0">scope</span>.<span style="color: #e0eee0">data</span> = [
 <span style="color: gray; padding: 0 5px 0 5px">18</span>       {name: &#39;B&#39;, age: 4},  
 <span style="color: gray; padding: 0 5px 0 5px">19</span>       {name: &#39;A&#39;, age: 1},  
 <span style="color: gray; padding: 0 5px 0 5px">20</span>       {name: &#39;D&#39;, age: 3},  
@@ -1476,10 +1476,10 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
   <span style="color: #e0eee0">&lt;script</span> <span style="color: #e0eee0">type=</span><span style="color: #00e5ee">&quot;text/javascript&quot;</span><span style="color: #e0eee0">&gt;</span>
   
   angular.module(&#39;ngView&#39;, [],
-    function($routeProvider){
-      $routeProvider.when(&#39;/test&#39;,
+    function($<span style="color: #e0eee0">routeProvider</span>){
+      $<span style="color: #e0eee0">routeProvider</span>.<span style="color: #e0eee0">when</span>(<span style="color: #00e5ee">&#39;/test&#39;</span>,
         {
-          template: &#39;test&#39;,
+          template: <span style="color: #00e5ee">&#39;test&#39;</span>,
         }
       );
     }
@@ -1642,12 +1642,12 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 </p>
 
 <div class="highlight" style="background: #103040"><pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: small; line-height: 1.5em; padding: 5px;; color: #e0eee0;">  angular.module(&#39;ngView&#39;, [],
-    function($routeProvider){
-      $routeProvider.when(&#39;/test&#39;,
+    function($<span style="color: #e0eee0">routeProvider</span>){
+      $<span style="color: #e0eee0">routeProvider</span>.<span style="color: #e0eee0">when</span>(<span style="color: #00e5ee">&#39;/test&#39;</span>,
         {
-          template: &#39;{{}}&#39;,
+          template: <span style="color: #00e5ee">&#39;{{}}&#39;</span>,
           controller: function(){
-            $(&#39;div&#39;).first().html(&#39;<span style="color: #e0eee0">&lt;b&gt;</span>OK<span style="color: #e0eee0">&lt;/b&gt;</span>&#39;);
+            $(<span style="color: #00e5ee">&#39;div&#39;</span>).<span style="color: #e0eee0">first</span>().<span style="color: #e0eee0">html</span>(<span style="color: #00e5ee">&#39;&lt;b&gt;OK&lt;/b&gt;&#39;</span>);
           }
         }
       );
