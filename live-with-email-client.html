@@ -15,7 +15,7 @@
 
 <div style=" float: right; font-size: 13px; color: #777; ">
     <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-12-09 20:02 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-12-09 20:22 更新</li>
         <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
     </ul>
 </div>
@@ -47,7 +47,7 @@
 最开始, 我只是拿 txt2tags 写写文档, 在 Gmail 的 Web 界面看看 CPyUG 而已.
 </p>
 <p style="margin: 15px 0;">
-工作中的邮件我先是使用的 <i style=" color: #d75100; font-style: normal; ">Thunderbird</i> 来处理, 虽然我觉得它的搜索功能很难用, 但是收发功能正常也就算了. 后来不知道从什么时候开始, 这东西是不是会出现无法发信的问题, 就是报一个网络错误, 也没有其它信息. 我开始想是不是公司的邮件服务器有问题, 但是同事些都好好的, 哪怕同样是用 Thunderbird 的也没有问题. 我也把问题反映到 ES 那里, 他们对此也无解.
+工作中的邮件我先是使用的 <i style=" color: #d75100; font-style: normal; ">Thunderbird</i> 来处理, 虽然我觉得它的搜索功能很难用, 但是收发功能正常也就算了. 后来不知道从什么时候开始, 这东西时不时会出现无法发信的问题, 就是报一个网络错误, 也没有其它信息. 我开始想是不是公司的邮件服务器有问题, 但是同事些都好好的, 哪怕同样是用 Thunderbird 的也没有问题. 我也把问题反映到 ES 那里, 他们对此也无解.
 </p>
 <p style="margin: 15px 0;">
 郁闷的是, Thunderbird 不能发信的时候, 我直接 telnet , 做完一个 SMTP 交互过程是没有任何问题的.
@@ -59,10 +59,13 @@
 没办法, 我开始考虑重新使用 <i style=" color: #d75100; font-style: normal; ">mutt</i> , 这个我曾经折腾过一阵放弃的东西. 与过去不同的是, 对于邮件, 现在我很熟悉. 这也使得我可以只关注使用 mutt 管理部分的功能, 收取与发送不使用它, 可能这样真给我少了很多麻烦.
 </p>
 <p style="margin: 15px 0;">
-下面我会挨着介绍相关的工具, 实际上, 整套东西不是我一开始就想做成这样的, 而是逐渐地, 在有一个想法之后, 会发现, 唉, 我可以把另外一个工具整合进来.
+下面我会挨着介绍相关的工具.
 </p>
 <p style="margin: 15px 0;">
-每部分介绍之后, 相关代码我会放到 <i style=" color: #d75100; font-style: normal; ">gist</i> 上, 它们只算是代码片段, 对我而言不算是项目, 只会随需随手修改, 很长一段时间内不会作为项目去统筹维护吧.
+整套东西不是我一开始就想做成这样的, 而是逐渐地, 在有一个想法之后, 会发现, 唉, 我可以把另外一个工具整合进来. 为了舒服的目的, 就一直折腾过来了.
+</p>
+<p style="margin: 15px 0;">
+每部分介绍之后, 相关代码我会放到 <i style=" color: #d75100; font-style: normal; ">gist</i> 上, 它们只算是代码片段, 对我而言不算是项目, 只会随需随手修改, 很长一段时间内不会作为项目去统筹维护的.
 </p>
 <p style="margin: 15px 0;">
 题目虽然是说"邮件客户端", 但是其实邮件只是一种载体, 只是使用这种形式去处理你的信息, 与信息本身是不是邮件没有关系. 后面会示例说明这点.
@@ -78,7 +81,7 @@
 其实在考虑这类标记语言之前, 我很长一段时间在固执地尝试将 <i style=" color: #d75100; font-style: normal; ">LaTeX</i> 作为日常工具使用, 最后在找到一个使用 <i style=" color: #d75100; font-style: normal; ">Lisp</i> 写成的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">LaTeX -&gt; HTML</code> 工具之后, 对于最重要的转换到 HTML 这部分功能算是能很好地控制了. 但是长期的折腾, 也使我意识到, 我平时需要写的东西, 真费不着扛上 LaTeX 这门超级大炮, 写起来比较累. 而它最大的优势, 各种科学记号与漂亮的纸质输出品质大部分时间我都用不着.
 </p>
 <p style="margin: 15px 0;">
-一个简单的工具, 能得到可控的 HTML 输出, 这就是我需要的. 我知道这类工具实现起来不难, 同时我更清楚, 肯定有人已经做过了, 只是我还没有找到. 于是, 后来单文件的 <i style=" color: #d75100; font-style: normal; ">txt2tags</i> 自然而言成了最合适的选择.
+一个简单的工具, 能得到可控的 HTML 输出, 这就是我需要的. 我知道这类工具实现起来不难, 同时我更清楚, 肯定有人已经做过了, 只是我还没有找到. 于是, 后来单文件的 <i style=" color: #d75100; font-style: normal; ">txt2tags</i> 自然而然成了最合适的选择.
 </p>
 <p style="margin: 15px 0;">
 <i style=" color: #d75100; font-style: normal; ">txt2tags</i> 的官网在 <a href="http://txt2tags.org/" style="color: #0184b7; text-decoration: none">http://txt2tags.org/</a> , 它源文件只有一个文件, 并且支持多种格式的输出.
@@ -93,10 +96,10 @@
 最开始, 我为了得到我期望中的 HTML 格式, 开始修改 txt2tags 的代码.
 </p>
 <p style="margin: 15px 0;">
-因为之前的一些折腾经验, 以及为了适应邮件需要的一种预感, 我直接放弃外链 CSS 文件, 而是直接在源码中修改各种标签, 并且在里面直接嵌入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">style</code> 属性以控制格式.
+因为之前的一些折腾经验, 以及为了适应邮件需要的一种预感, 我直接放弃外链 CSS 文件, 而是直接在源码中修改各种标签, 在里面嵌入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">style</code> 属性以控制格式.
 </p>
 <p style="margin: 15px 0;">
-刚开始的时候, 还是使用的 <i style=" color: #d75100; font-style: normal; ">prettyprint</i> 在页面中通过 js 做代码高亮. 我只是扩展了 txt2tags , 让它可以在源码中支持标记语言类型. 后来涉及邮件内容之后, js 实现高亮的方法就没法用了, 而且 prettyprint 的高亮效果也不是十分好看, 于是我尝试更大程度地修改 txt2tags 源码, 使用 <i style=" color: #d75100; font-style: normal; ">pygments</i> 输出格式加工后的 HTML . 我达到了我的目标. 当然, 后来我还给我的 txt2tags 添加了对 <i style=" color: #d75100; font-style: normal; ">gnuplot</i> 代码的支持, 让其输出 svg 嵌入到得到 HTML 中. 这对我记录一些课程的笔记很有用.
+刚开始的时候, 还是使用的 <i style=" color: #d75100; font-style: normal; ">prettyprint</i> 在页面中通过 js 做代码高亮. 我只是扩展了 txt2tags , 让它可以在源码中支持标记语言类型. 后来涉及邮件内容之后, js 实现高亮的方法就没法用了, 而且 prettyprint 的高亮效果也不是十分好看, 于是我尝试更大程度地修改 txt2tags 源码, 使用 <i style=" color: #d75100; font-style: normal; ">pygments</i> 输出格式加工后的 HTML . 我达到了我的目的. 当然, 后来我还给我的 txt2tags 添加了对 <i style=" color: #d75100; font-style: normal; ">gnuplot</i> 代码的支持, 让其输出 svg 嵌入到 HTML 中. 这对我记录一些课程的笔记很有用.
 </p>
 <p style="margin: 15px 0;">
 代码:
@@ -111,13 +114,13 @@
 <h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 一个编辑器 vim</h1>
 
 <p style="margin: 15px 0;">
-编辑器部分不用说太多. <i style=" color: #d75100; font-style: normal; ">vim</i> 的作用, 主要是两个:
+编辑器部分就不说太多了. <i style=" color: #d75100; font-style: normal; ">vim</i> 的作用, 主要是两个:
 </p>
 
 <ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
 <li>在 <i style=" color: #d75100; font-style: normal; ">mutt</i> 中作为编辑器写内容.
 </li>
-<li>为 txt2tags 语法配置各种方便的键绑定.
+<li>为 <i style=" color: #d75100; font-style: normal; ">txt2tags</i> 语法配置各种方便的键绑定.
 </li>
 </ul>
 
@@ -137,19 +140,19 @@
 <h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 一个邮件客户端 mutt</h1>
 
 <p style="margin: 15px 0;">
-使用 <i style=" color: #d75100; font-style: normal; ">mutt</i> 的原因开头说过了. 我只使用它管理邮件, 发送的收取我都使用自己做的工具完成, 这样做很有趣的.
+使用 <i style=" color: #d75100; font-style: normal; ">mutt</i> 的原因开头说过了. 我只使用它管理邮件, 发送和收取我都使用自己做的工具完成, 这样做很有趣的.
 </p>
 <p style="margin: 15px 0;">
 其实 mutt 本身的配置内容并不多, 但我强烈建议打一个 patch , 让其可以支持边栏分类的显示.
 </p>
 <p style="margin: 15px 0;">
-mutt 配置好之后, 在指定目录创建需要的分类目录, 使用自己的工具收到邮件, 或其它信息时, 只要把对应的内容做成 <i style=" color: #d75100; font-style: normal; ">RFC 822</i> 的那种格式, 就叫 <i style=" color: #d75100; font-style: normal; ">eml</i> 格式吧, 直接往对应目录下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 目录一扔就可以了. 剩下的就可以使用 mutt 来处理了.
+mutt 配置好之后, 在指定目录创建需要的分类目录, 使用自己的工具收到邮件, 或其它信息时, 只要把对应的内容做成 <i style=" color: #d75100; font-style: normal; ">RFC 822</i> 的那种格式, 就叫 <i style=" color: #d75100; font-style: normal; ">eml</i> 格式吧, 直接往对应目录下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 目录一扔就可以了. 剩下的就可以交给 mutt 来处理了.
 </p>
 <p style="margin: 15px 0;">
-发送邮件也简单, 直接配置调用一个命令工具, 剩下的全在工具里完成, mutt 也不需要做其它事.
+发送邮件也简单, 直接配置调用一个命令行工具, 剩下的全在工具里完成, mutt 也不需要做其它事.
 </p>
 <p style="margin: 15px 0;">
-这里另外要做的一件事, 就是对公司 Active Directory 中, 联系人的查询. 这个使用 Python 实现 LDAP 的交互也很简单了.
+这里另外要做的一件事, 就是对公司 Active Directory 中, 联系人的查询. 这个使用 Python 实现 LDAP 的交互也很容易.
 </p>
 <p style="margin: 15px 0;">
 代码:
@@ -166,16 +169,16 @@ mutt 配置好之后, 在指定目录创建需要的分类目录, 使用自己�
 <h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 获取信息</h1>
 
 <p style="margin: 15px 0;">
-这里我都说"获取信息", 没说"获取邮件"了. 最开始我是只想处理邮件的, 后来发现要处理其它需要交互的内容也根本不费什么事.
+这里我都说"获取信息", 没说"获取邮件"了. 最开始我是只想处理邮件的, 后来发现要处理其它需要交互的内容也不费什么事.
 </p>
 <p style="margin: 15px 0;">
 不同之处只在于, 获取邮件时, 是使用 POP 直接获取一封邮件内容, 放到目录下就完事. 而获取其它网站中的内容的话, 需要做"抓取"操作, 并且获取到的是 HTML 的文本, 还需要加工拼成一封信才能放入指定目录, 让 mutt 处理.
 </p>
 <p style="margin: 15px 0;">
-额外的一点, 就是使用邮件中的 <i style=" color: #d75100; font-style: normal; ">Message-ID</i> 这个头来做相关信息的传递. 这部分信息最重要的, 是在你回复这封信时, 知道原始来源, 这样后续你才能正确做出处理. 比如你从一个 <i style=" color: #d75100; font-style: normal; ">Discuz</i> 论坛抓取了一条信息, 当你想回复它时, 你要知道是哪个论坛, 信息的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">forum_id</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">thread_id</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">post_id</code> 是什么吧.
+额外说一下, 这里需要使用邮件中的 <i style=" color: #d75100; font-style: normal; ">Message-ID</i> 这个头来做相关信息的传递. 这部分信息最重要的, 是在你回复这封信时, 知道原始来源, 这样后续你才能正确做出处理. 比如你从一个 <i style=" color: #d75100; font-style: normal; ">Discuz</i> 论坛抓取了一条信息, 当你想回复它时, 你要知道是哪个论坛, 信息的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">forum_id</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">thread_id</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">post_id</code> 是什么吧.
 </p>
 <p style="margin: 15px 0;">
-至于实现 POP 客户端部分, 使用 Tornado 很容易做的.
+至于实现 POP 客户端部分, 使用 Tornado 也很容易做.
 </p>
 <p style="margin: 15px 0;">
 代码:
@@ -195,13 +198,13 @@ mutt 配置好之后, 在指定目录创建需要的分类目录, 使用自己�
 这部分是比较麻烦一些. 涉及邮件解析, 邮件拼装, 及 txt2tags 对各种格式的转换.
 </p>
 <p style="margin: 15px 0;">
-从流程上来说, 当 <i style=" color: #d75100; font-style: normal; ">mutt</i> 调用指定工具, 准备发信时, 我们的这个工具得到的是一封邮件, 及相应的投递信息. 但是如何处理这个信息, 却完全在我们的工具控制当中.
+从流程上来说, 当 <i style=" color: #d75100; font-style: normal; ">mutt</i> 调用指定工具, 准备发信时, 我们的这个工具得到的是一封邮件, 及相应的投递信息. 但是如何处理这个信息, 却完全在我们工具的控制当中.
 </p>
 <p style="margin: 15px 0;">
-行为上来说, 我们决定是通过 SMTP 交互来发出一个邮件, 还是通过新浪微博的 SSO 授权登录到一个论坛, 作一个 HTTP 的 POST 请求来发一个贴子.
+行为上来说, 我们决定是通过 SMTP 交互来发出一个邮件, 还是通过新浪微博的 SSO 授权登录到一个论坛, 通过一个 HTTP 的 POST 请求来发一个贴子.
 </p>
 <p style="margin: 15px 0;">
-内容上来说, 我们从邮件中解析得到的只是纯文本内容. 自然地, 可以是 txt2tags 格式的纯文本内容. 那么, 如果是发出一封邮件, 我们可以把 txt2tags 编译成 HTML 格式的文本, 然后重新拼成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">multipart/alternative</code> 的邮件. 如果我们是准备发一个贴子, 我们把 txt2tags 编译成 bbcode 格式. 附件也可以类似处理, 是打包到邮件, 还是上传到网盘什么的. 总之, 一切都可以在工具中完全控制.
+内容上来说, 我们从邮件中解析得到的只是纯文本内容. 自然地, 可以是使用 vim 写出的 txt2tags 格式的纯文本内容. 那么, 如果是发出一封邮件, 我们可以把 txt2tags 编译成 HTML 格式的文本, 然后重新拼成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">multipart/alternative</code> 的邮件. 如果我们是准备发一个贴子, 我们把 txt2tags 编译成 bbcode 格式. 附件也可以类似处理, 或打包到邮件, 或上传到网盘什么的. 总之, 一切都可以在工具中完全控制.
 </p>
 <p style="margin: 15px 0;">
 代码:
