@@ -1,0 +1,50 @@
+proc进程信息字段解释
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus --mathfax 
+%%toc
+
+=内存相关=
+
+: VmPeak
+前进程运行过程中占用内存的峰值
+
+: VmSize
+虚拟内存大小。整个进程使用虚拟内存大小，是VmLib, VmExe, VmData, 和 VmStk的总和。
+
+: VmLck
+进程已经锁住的物理内存的大小
+
+: VmHWM
+得到分配到物理内存的峰值
+
+: VmRSS
+虚拟内存驻留集合大小。这是驻留在物理内存的一部分。它没有交换到硬盘。它包括代码，数据和栈。
+
+: VmData
+程序数据段的大小（所占虚拟内存的大小），堆使用的虚拟内存。
+
+: VmStk
+任务在用户态的栈的大小，栈使用的虚拟内存
+
+: VmExe
+程序所拥有的可执行虚拟内存的大小，代码段，不包括任务使用的库
+
+: VmLib
+被映像到任务的虚拟内存空间的库的大小
+
+: VmPTE
+占用的页表的大小
+
+: VmSwap
+进程占用Swap的大小
+
+: Threads
+表示当前进程组有的线程数
+
+
+参考:
+
+- http://my.oschina.net/aiguozhe/blog/125477
+- http://blog.csdn.net/superqa/article/details/6817539
