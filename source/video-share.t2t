@@ -1,0 +1,99 @@
+录屏直播分享方案
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --prettyprint --google-analytics --disqus --mathfax 
+%%toc
+
+
+=摄像头=
+
+```
+ffmpeg -f video4linux2 -i /dev/video0 -s 400x300 -r 20 -qmax 10 -an -f mpeg1video http://xxx/avatar/400/300
+```
+
+
+=桌面=
+
+```
+ffmpeg -f x11grab -framerate 20 -i :0.0+0+0 -s 1024x768 -r 20 -qmax 10 -an \
+       -f mpeg1video http://xxx/lesson/1024/768
+```
+
+=话筒=
+
+```
+ffmpeg -f alsa -ac 2 -i hw:1 -ar 11.025k -ab 16k -vn \
+       -f flv -ac 1 rtmp://xxx/live/test
+```
+
+
+=桌面和话筒=
+
+```
+ffmpeg -f alsa -ac 1 -i pulse \
+       -f x11grab -framerate 20 -s 1024x768 -i :0.0+0+0 -r 20 \
+       -f flv -ar 11.025k -ab 16k rtmp://xxx/live/test
+```
+
+=桌面, 话筒, 摄像头=
+
+```
+ffmpeg -f alsa -ac 1 -i pulse \
+       -f x11grab -framerate 20 -s 1024x768 -i :0.0+0+0 -r 20 \
+       -f flv -ar 11.025k -ab 16k rtmp://xxx/live/test \
+       -f video4linux2 -i /dev/video0 -s 400x300 -r 20 -qmax 10 -an \
+       -f flv rtmp://xxx/live/avatar
+```
+
+
+=rtmp 的 nginx 配置=
+
+```nginx
+worker_processes  1;
+daemon off;
+
+events { worker_connections  1024; }
+
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4096;
+        application live { live on; record off; }
+    }
+}
+
+http {
+    server {
+        listen      8080;
+        location /stat { rtmp_stat all; rtmp_stat_stylesheet stat.xsl; }
+        location /stat.xsl { root stat; }
+        location / { root /home/zys/opt/www; }
+    }
+}
+```
+
+=jsmpg.js 的使用=
+
+```javascript
+var canvas = document.getElementById('v2');
+var ctx = canvas.getContext('2d');
+ctx.fillStyle = '#444';
+ctx.fillText('等待数据载入...', canvas.width / 2, canvas.height / 3);
+var client = new WebSocket( 'ws://xxx/avatar' );
+var player = new jsmpeg(client, {canvas:canvas});
+```
+
+
+=jwplayer 的使用=
+
+```javascript
+jwplayer("container").setup({
+    sources: [ { file: "rtmp://localhost/live/test" } ],
+    image: "bg.jpg",
+    autostart: false,
+    width: 1024,
+    height: 768,
+    primary: "flash"
+```
+
