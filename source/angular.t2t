@@ -785,7 +785,9 @@ angular.bootstrap(document.documentElement);
 
 ```
 <form name="test_form" ng-controller="TestCtrl"
-      ng-init="o=[{name: 'AA', g: '00'}, {name: 'BB', g: '11'}, {name: 'CC', g: '00'}]; a=o[1];">
+      ng-init="o=[{name: 'AA', g: '00'},
+                  {name: 'BB', g: '11'},
+                  {name: 'CC', g: '00'}]; a=o[1];">
   <select ng-model="a" ng-options="x.name group by x.g for x in o" ng-change="show()">
   </select>
 </form>
@@ -794,8 +796,12 @@ angular.bootstrap(document.documentElement);
 分组了还分别指定显示与值的， ``x.v as x.name group by x.g for x in o`` ：
 
 ```
-<form name="test_form" ng-controller="TestCtrl" ng-init="o=[{name: 'AA', g: '00', v: '='}, {name: 'BB', g: '11', v: '+'}, {name: 'CC', g: '00', v: '!'}]; a=o[1].v;">
-  <select ng-model="a" ng-options="x.v as x.name group by x.g for x in o" ng-change="show()">
+<form name="test_form" ng-controller="TestCtrl"
+ng-init="o=[{name: 'AA', g: '00', v: '='},
+            {name: 'BB', g: '11', v: '+'},
+            {name: 'CC', g: '00', v: '!'}]; a=o[1].v;">
+  <select ng-model="a" ng-options="x.v as x.name group by x.g for x in o"
+          ng-change="show()">
   </select>
 </form>
 ```
@@ -810,19 +816,24 @@ angular.bootstrap(document.documentElement);
 
 <form name="test_form" ng-controller="TestCtrl"
       ng-init="o={a: {name: 'AA', v: '00'}, b: {name: 'BB', v: '11'}}; a=o.a.v;">
-  <select ng-model="a" ng-options="v.v as v.name for (k, v) in o" ng-change="show()">
+  <select ng-model="a" ng-options="v.v as v.name for (k, v) in o"
+          ng-change="show()">
   </select>
 </form>
 
 <form name="test_form" ng-controller="TestCtrl"
-      ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a;">
-  <select ng-model="a" ng-options="v.name group by v.g for (k, v) in o" ng-change="show()">
+      ng-init="o={a: {name: 'AA', v: '00', g: '=='},
+                  b: {name: 'BB', v: '11', g: '=='}}; a=o.a;">
+  <select ng-model="a" ng-options="v.name group by v.g for (k, v) in o"
+          ng-change="show()">
   </select>
 </form>
 
 <form name="test_form" ng-controller="TestCtrl"
-      ng-init="o={a: {name: 'AA', v: '00', g: '=='}, b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;">
-  <select ng-model="a" ng-options="v.v as v.name group by v.g for (k, v) in o" ng-change="show()">
+      ng-init="o={a: {name: 'AA', v: '00', g: '=='},
+                  b: {name: 'BB', v: '11', g: '=='}}; a=o.a.v;">
+  <select ng-model="a" ng-options="v.v as v.name group by v.g for (k, v) in o"
+          ng-change="show()">
   </select>
 </form>
 ```
@@ -995,7 +1006,8 @@ angular.bootstrap(document.documentElement);
     <span>查找：</span> <input type="text" ng-model="q" />
   </div>
   <select ng-multiple="true" ng-model="s"
-          ng-options="o.name as o.name + '(' + o.age + ')' for o in data | filter: {name: q} | orderBy: ['age', 'name'] ">
+          ng-options="o.name as o.name + '(' + o.age + ')' for o in data
+                            | filter: {name: q} | orderBy: ['age', 'name'] ">
   </select>
 </div>
 
@@ -1802,8 +1814,10 @@ app.controller('TestCtrl', function($scope, S1, S2){
 <head>
 <meta charset="utf-8" />
 <title>AngularJS</title>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.js"></script>
+<script type="text/javascript"
+        src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+<script type="text/javascript"
+        src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-resource.js"></script>
 </head>
 <body>
 
@@ -2269,7 +2283,7 @@ app.filter('map', function(){
 
 过滤器也可以带参数，多个参数之间使用 ``:`` 分割，看一个完整的例子：
 
-```javascript
+```html
 <div ng-controller="TestCtrl">
 <p>示例数据: {{ a|map:map_value:'>>':'(no)' }}</p>
 <p>示例数据: {{ b|map:map_value:'>>':'(no)' }}</p>
@@ -2357,7 +2371,7 @@ ng 中对指令的解析与执行过程是这样的：
 
 自定义一个指令可以非常非常的复杂，但是其基本的调用形式，同自定义服务大概是相同的：
 
-```javascript
+```html
 <p show style="font-size: 12px;"></p>
 
 <script type="text/javascript">
@@ -2453,7 +2467,9 @@ app.directive('code', function(){
     if('lines' in $attrs){
       //处理行号
       (function(){
-        var div = $('<div style="width: %spx; background-color: gray; float: left; text-align: right; padding-right: 5px; margin-right: 10px;"></div>'
+        var div = $('<div style="width: %spx; background-color: gray;' +
+                    'float: left; text-align: right; padding-right: 5px;' +
+                    'margin-right: 10px;"></div>'
                     .replace('%s', String(lines.length).length * 10));
         var s = '';
         angular.forEach(lines, function(_, i){
@@ -2469,7 +2485,8 @@ app.directive('code', function(){
       var div = $('<div style="float: left;"></div>');
       var s = '';
       angular.forEach(lines, function(l){
-        s += '<span style="margin: 0;">%s</span><br />\n'.replace('%s', l.replace(/\s/g, '<span>&nbsp;</span>'));
+        s += '<span style="margin: 0;">%s</span><br />\n'
+             .replace('%s', l.replace(/\s/g, '<span>&nbsp;</span>'));
       });
       div.html(s);
       $element.append(div);
@@ -3554,7 +3571,9 @@ var app = angular.module('Demo', [], angular.noop);
 
 app.directive('ysBlock', function(){
   return {compile: angular.noop,
-          template: '<div style="width: 200px; border: 1px solid black;"><h1 style="background-color: gray; color: white; font-size: 22px;">{{ title }}</h1><div>{{ text }}</div></div>',
+          template: '<div style="width: 200px; border: 1px solid black;">' + 
+                     '<h1 style="background-color: gray; color: white; font-size: 22px;">' + 
+                     '{{ title }}' + '</h1><div>{{ text }}</div></div>',
           replace: true,
           scope: {title: '=title', text: '=text'},
           restrict: 'E'};
