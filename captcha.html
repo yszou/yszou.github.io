@@ -5,25 +5,23 @@
 <title>在Python中用PIL做验证码 - 进出自由,我的分享</title>
 <meta name="generator" content="http://txt2tags.org" />
 <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
-<meta name="keywords" content="在Python中用PIL做验证码,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
-<meta name="description" content="在Python中用PIL做验证码,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
-<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+<meta name="keywords" content="在Python中用PIL做验证码,Yesheng Zou,YS.Zou,邹业盛"/>
+<meta name="description" content="在Python中用PIL做验证码,Yesheng Zou,YS.Zou,邹业盛" />
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
+<div id="zys-wrapper" style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
 <h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">在Python中用PIL做验证码</h1>
 
 <div style=" float: right; font-size: 13px; color: #777; ">
     <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">2012-12-16 01:49 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">邹业盛</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-05-31 03:26 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
     </ul>
 </div>
 
 
-  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
   <li><a href="#toc1" style="color: #0184b7; text-decoration: none">基本操作</a>
   </li>
   <li><a href="#toc2" style="color: #0184b7; text-decoration: none">加入变化</a>
@@ -41,7 +39,7 @@
 首先考虑验证的制作方法，我们只想简单点的情况：
 </p>
 
-<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
 <li>生成一个固定大小的白色图片。
 </li>
 <li>在图片上随机写几个字母。
@@ -56,21 +54,21 @@
 </p>
 
 <a id="toc1" name="toc1"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 基本操作</h1>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 基本操作</h1>
 
 <p style="margin: 15px 0;">
 先来看如何得到一张带指定字母的图片。
 PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: normal; ">image</i> 对象来完成，这个对象可以是从图片文件中得到的，已经包含了位图信息的对象。也可以一个我们指定大小创建的，不包含图片信息的“空对象”。
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  <span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
   
-  from PIL import Image
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> Image
   
-  im = Image.new('1', (100, 100), 'white')
-  im.show()
-</pre>
+  im <span style="color: #000000; font-weight: bold">=</span> Image<span style="color: #000000; font-weight: bold">.</span>new(<span style="color: #dd1144">&#39;1&#39;</span>, (<span style="color: #009999">100</span>, <span style="color: #009999">100</span>), <span style="color: #dd1144">&#39;white&#39;</span>)
+  im<span style="color: #000000; font-weight: bold">.</span>show()
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 上面所示的代码，我们就可以得到一个 100x100 的白底空图片了。并且你可以看到图片显示了出来。
@@ -79,7 +77,7 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 <i style=" color: #d75100; font-style: normal; ">Image</i> 的 <i style=" color: #d75100; font-style: normal; ">new</i> 方法新创建一个图片对象，第一个参数指定“模式”，不同的模式对应的每个像素的颜色表示也不同。比如：
 </p>
 
-<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
 <li>1 按文档说是单色模式，但事实上它和 L 一样，是灰度模式。
 </li>
 <li>L 灰度模式，每个像素的颜色使用 0-255 的整数表示。
@@ -101,17 +99,17 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 接下来要做的事，就是在这张白色图片上写几个字符了，这要用到 <i style=" color: #d75100; font-style: normal; ">ImageDraw</i> 对象：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  <span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
   
-  from PIL import Image
-  from PIL import ImageDraw
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> Image
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageDraw
   
-  im = Image.new('1', (100, 100), 'white')
-  draw = ImageDraw.Draw(im)
-  draw.text((0, 0), 'hello world!')
-  im.show()
-</pre>
+  im <span style="color: #000000; font-weight: bold">=</span> Image<span style="color: #000000; font-weight: bold">.</span>new(<span style="color: #dd1144">&#39;1&#39;</span>, (<span style="color: #009999">100</span>, <span style="color: #009999">100</span>), <span style="color: #dd1144">&#39;white&#39;</span>)
+  draw <span style="color: #000000; font-weight: bold">=</span> ImageDraw<span style="color: #000000; font-weight: bold">.</span>Draw(im)
+  draw<span style="color: #000000; font-weight: bold">.</span>text((<span style="color: #009999">0</span>, <span style="color: #009999">0</span>), <span style="color: #dd1144">&#39;hello world!&#39;</span>)
+  im<span style="color: #000000; font-weight: bold">.</span>show()
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 结果如下图：
@@ -120,7 +118,7 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 <img align="middle" src="img/captcha-helloworld.jpg" alt="" style="border: 1px solid black;"/>
 </p>
 <p style="margin: 15px 0;">
-我们使用 <i style=" color: #d75100; font-style: normal; ">Draw</i> 对象的在新创建的白底图片的 <i style=" color: #d75100; font-style: normal; ">(0,0)</i> 位置写了 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">hello world!</code> 。
+我们使用 <i style=" color: #d75100; font-style: normal; ">Draw</i> 对象的在新创建的白底图片的 <i style=" color: #d75100; font-style: normal; ">(0,0)</i> 位置写了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">hello world!</code> 。
 </p>
 <p style="margin: 15px 0;">
 字有些小，这是使用默认的字体的原因。我们可以使用指定的字体来生成验证码。
@@ -129,27 +127,27 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 对于传统的位图字体， PCF， BDF 扩展名结束，先使用 PIL 提供的 <i style=" color: #d75100; font-style: normal; ">pilfont.py</i> 工具，产生 PIL 使用的专用字体文件：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  pilfont.py  xxx.pcf
-</pre>
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  pilfont.py  xxx.pcf
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 当前目录下，会得到两个需要的文件， <i style=" color: #d75100; font-style: normal; ">xxx.pil</i> 和 <i style=" color: #d75100; font-style: normal; ">xxx.pbm</i> ，然后要使用字体时：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  <span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
   
-  from PIL import Image
-  from PIL import ImageDraw
-  from PIL import ImageFont
-  FONT = ImageFont.load('xxx.pil')
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> Image
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageDraw
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageFont
+  FONT <span style="color: #000000; font-weight: bold">=</span> ImageFont<span style="color: #000000; font-weight: bold">.</span>load(<span style="color: #dd1144">&#39;xxx.pil&#39;</span>)
   
-  im = Image.new('1', (100, 100), 'white')
-  draw = ImageDraw.Draw(im)
-  draw.text((0, 0), 'hello world!', font=FONT)
-  im.show()
-</pre>
+  im <span style="color: #000000; font-weight: bold">=</span> Image<span style="color: #000000; font-weight: bold">.</span>new(<span style="color: #dd1144">&#39;1&#39;</span>, (<span style="color: #009999">100</span>, <span style="color: #009999">100</span>), <span style="color: #dd1144">&#39;white&#39;</span>)
+  draw <span style="color: #000000; font-weight: bold">=</span> ImageDraw<span style="color: #000000; font-weight: bold">.</span>Draw(im)
+  draw<span style="color: #000000; font-weight: bold">.</span>text((<span style="color: #009999">0</span>, <span style="color: #009999">0</span>), <span style="color: #dd1144">&#39;hello world!&#39;</span>, font<span style="color: #000000; font-weight: bold">=</span>FONT)
+  im<span style="color: #000000; font-weight: bold">.</span>show()
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 在使用 <i style=" color: #d75100; font-style: normal; ">text</i> 方法时，使用 <i style=" color: #d75100; font-style: normal; ">font</i> 参数指定字体就可以了。
@@ -164,16 +162,16 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 如何要使用现在常用的矢量字体，可以这样：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  font = ImageFont.truetype("arial.ttf", 15)
-</pre>
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  font <span style="color: #000000; font-weight: bold">=</span> ImageFont<span style="color: #000000; font-weight: bold">.</span>truetype(<span style="color: #dd1144">&quot;arial.ttf&quot;</span>, <span style="color: #009999">15</span>)
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 好了，能写出字了，就可以当验证码来用了。剩下就是加入一些图像的变化，以使验证码不容易被机器识别。
 </p>
 
 <a id="toc2" name="toc2"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 加入变化</h1>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 加入变化</h1>
 
 <p style="margin: 15px 0;">
 现在我们只是生成了一张图片，至于图片中的字母，随便找一个 OCR 软件都可以识别出来，我们还需要对它做一些变化处理。
@@ -209,21 +207,21 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 关于画线，在 PIL 中，可以使用 <i style=" color: #d75100; font-style: normal; ">ImageDraw</i> 对象的 <i style=" color: #d75100; font-style: normal; ">line</i> 方法：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  <span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
   
-  import PIL
-  from PIL import Image
-  from PIL import ImageDraw
+  <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">PIL</span>
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> Image
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageDraw
   
-  im = Image.new('1', (500, 500), 'white')
-  draw = ImageDraw.Draw(im)
-  draw.line(((0, 0), (100, 200)))
-  im.show()
-</pre>
+  im <span style="color: #000000; font-weight: bold">=</span> Image<span style="color: #000000; font-weight: bold">.</span>new(<span style="color: #dd1144">&#39;1&#39;</span>, (<span style="color: #009999">500</span>, <span style="color: #009999">500</span>), <span style="color: #dd1144">&#39;white&#39;</span>)
+  draw <span style="color: #000000; font-weight: bold">=</span> ImageDraw<span style="color: #000000; font-weight: bold">.</span>Draw(im)
+  draw<span style="color: #000000; font-weight: bold">.</span>line(((<span style="color: #009999">0</span>, <span style="color: #009999">0</span>), (<span style="color: #009999">100</span>, <span style="color: #009999">200</span>)))
+  im<span style="color: #000000; font-weight: bold">.</span>show()
+</pre></div>
+
 
 <a id="toc3" name="toc3"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 最后完成</h1>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 最后完成</h1>
 
 <p style="margin: 15px 0;">
 要做的事差不多了，最后输出图片就可以了。因为我们是验证码应用，所以不需要把图像的数据写到具体的文件当中，只需要输出字节流让应用返回给浏览器即可。
@@ -232,11 +230,11 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 保存图像信息，直接使用 <i style=" color: #d75100; font-style: normal; ">Image</i> 对象的 <i style=" color: #d75100; font-style: normal; ">save</i> 方法即可。这个方法接受两个参数，第一个参数是要写入的文件对象，第二个参数是指定文件类型。
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  fileio = StringIO()
-  im.save(fileio, 'gif')
-  im.show()  
-</pre>
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  fileio <span style="color: #000000; font-weight: bold">=</span> StringIO()
+  im<span style="color: #000000; font-weight: bold">.</span>save(fileio, <span style="color: #dd1144">&#39;gif&#39;</span>)
+  im<span style="color: #000000; font-weight: bold">.</span>show()  
+</pre></div>
+
 
 <p style="margin: 15px 0;">
 文件对象我们就使用 <i style=" color: #d75100; font-style: normal; ">cStringIO</i> 模块中的 <i style=" color: #d75100; font-style: normal; ">StringIO</i> 来代替了。
@@ -252,98 +250,87 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
 </p>
 
 <a id="toc4" name="toc4"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 代码</h1>
-
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  #AUTHOR: yeshengzou # # gmail.com
-  #DATE: 2012.4.23
-  #LICENCE: GPLv3
-  
-  import PIL
-  from PIL import Image
-  from PIL import ImageDraw
-  from PIL import ImageFont
-  from random import randint
-  from cStringIO import StringIO
-  
-  CHAR = 'acdefghijkmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXY345789'
-  LEN = len(CHAR) - 1
-  PADDING = 30 
-  X_SPACE = 6 #两个字符之间最少相隔多少个像素
-  TRY_COUNT = 30 #随机字符的位置尝试最多多少次,避免死循环
-  WIDTH = 70
-  HEIGHT = 40
-  FONT = ImageFont.load('font.pil')
-  
-  def gen():
-      im = Image.new('1', (WIDTH, HEIGHT), 'white')
-      draw = ImageDraw.Draw(im)
-      w, h = im.size
-  
-      #S = [(x, y, 'c')]
-      S = []
-      x_list = []
-      y_list = []
-      n = 0
-      while True:
-          n += 1
-          if n &gt; TRY_COUNT:
-              break
-          x = randint(0, w - PADDING)
-          flag = True
-          for i in x_list:
-              if abs(x - i) &lt; X_SPACE:
-                  flag = False
-                  continue
-              if not flag:
-                  break
-          if not flag:
-              continue
-  
-          y = randint(0, h - PADDING)
-          x_list.append(x)
-          y_list.append(y)
-          S.append((x, y, CHAR[randint(0, LEN)]))
-          if len(S) == 4:
-              break
-  
-      for x, y, c in S:
-          draw.text((x, y), c, font=FONT)
-  
-      #加3根干扰线
-      for i in range(3):
-          x1 = randint(0, (w - PADDING) / 2)
-          y1 = randint(0, (h- PADDING / 2))
-          x2 = randint(0, w)
-          y2 = randint((h - PADDING / 2), h)
-          draw.line(((x1, y1), (x2, y2)), fill=0, width=1)
-  
-      S.sort(lambda x, y: 1 if x[0] &gt; y[0] else -1)
-      char = [x[2] for x in S]
-      fileio = StringIO()
-      im.save(fileio, 'gif')
-      im.show()
-      return ''.join(char), fileio
-  
-  if __name__ == '__main__':
-      print gen()  
-</pre>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 代码</h1>
 
 
-<script type="text/javascript">
+<div class="highlight" style="background: #ffffff"><pre style=" background-color: white; border-left: 5px solid #999; font-size: small; line-height: 1.5em; padding: 5px;">  <span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+  <span style="color: #999988; font-style: italic">#AUTHOR: yeshengzou # # gmail.com</span>
+  <span style="color: #999988; font-style: italic">#DATE: 2012.4.23</span>
+  <span style="color: #999988; font-style: italic">#LICENCE: GPLv3</span>
+  
+  <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">PIL</span>
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> Image
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageDraw
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">PIL</span> <span style="color: #000000; font-weight: bold">import</span> ImageFont
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">random</span> <span style="color: #000000; font-weight: bold">import</span> randint
+  <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">cStringIO</span> <span style="color: #000000; font-weight: bold">import</span> StringIO
+  
+  CHAR <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;acdefghijkmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXY345789&#39;</span>
+  LEN <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">len</span>(CHAR) <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>
+  PADDING <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">30</span> 
+  X_SPACE <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">6</span> <span style="color: #999988; font-style: italic">#两个字符之间最少相隔多少个像素</span>
+  TRY_COUNT <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">30</span> <span style="color: #999988; font-style: italic">#随机字符的位置尝试最多多少次,避免死循环</span>
+  WIDTH <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">70</span>
+  HEIGHT <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">40</span>
+  FONT <span style="color: #000000; font-weight: bold">=</span> ImageFont<span style="color: #000000; font-weight: bold">.</span>load(<span style="color: #dd1144">&#39;font.pil&#39;</span>)
+  
+  <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">gen</span>():
+      im <span style="color: #000000; font-weight: bold">=</span> Image<span style="color: #000000; font-weight: bold">.</span>new(<span style="color: #dd1144">&#39;1&#39;</span>, (WIDTH, HEIGHT), <span style="color: #dd1144">&#39;white&#39;</span>)
+      draw <span style="color: #000000; font-weight: bold">=</span> ImageDraw<span style="color: #000000; font-weight: bold">.</span>Draw(im)
+      w, h <span style="color: #000000; font-weight: bold">=</span> im<span style="color: #000000; font-weight: bold">.</span>size
+  
+      <span style="color: #999988; font-style: italic">#S = [(x, y, &#39;c&#39;)]</span>
+      S <span style="color: #000000; font-weight: bold">=</span> []
+      x_list <span style="color: #000000; font-weight: bold">=</span> []
+      y_list <span style="color: #000000; font-weight: bold">=</span> []
+      n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+      <span style="color: #000000; font-weight: bold">while</span> <span style="color: #999999">True</span>:
+          n <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+          <span style="color: #000000; font-weight: bold">if</span> n <span style="color: #000000; font-weight: bold">&gt;</span> TRY_COUNT:
+              <span style="color: #000000; font-weight: bold">break</span>
+          x <span style="color: #000000; font-weight: bold">=</span> randint(<span style="color: #009999">0</span>, w <span style="color: #000000; font-weight: bold">-</span> PADDING)
+          flag <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">True</span>
+          <span style="color: #000000; font-weight: bold">for</span> i <span style="color: #000000; font-weight: bold">in</span> x_list:
+              <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">abs</span>(x <span style="color: #000000; font-weight: bold">-</span> i) <span style="color: #000000; font-weight: bold">&lt;</span> X_SPACE:
+                  flag <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">False</span>
+                  <span style="color: #000000; font-weight: bold">continue</span>
+              <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> flag:
+                  <span style="color: #000000; font-weight: bold">break</span>
+          <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> flag:
+              <span style="color: #000000; font-weight: bold">continue</span>
+  
+          y <span style="color: #000000; font-weight: bold">=</span> randint(<span style="color: #009999">0</span>, h <span style="color: #000000; font-weight: bold">-</span> PADDING)
+          x_list<span style="color: #000000; font-weight: bold">.</span>append(x)
+          y_list<span style="color: #000000; font-weight: bold">.</span>append(y)
+          S<span style="color: #000000; font-weight: bold">.</span>append((x, y, CHAR[randint(<span style="color: #009999">0</span>, LEN)]))
+          <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">len</span>(S) <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">4</span>:
+              <span style="color: #000000; font-weight: bold">break</span>
+  
+      <span style="color: #000000; font-weight: bold">for</span> x, y, c <span style="color: #000000; font-weight: bold">in</span> S:
+          draw<span style="color: #000000; font-weight: bold">.</span>text((x, y), c, font<span style="color: #000000; font-weight: bold">=</span>FONT)
+  
+      <span style="color: #999988; font-style: italic">#加3根干扰线</span>
+      <span style="color: #000000; font-weight: bold">for</span> i <span style="color: #000000; font-weight: bold">in</span> <span style="color: #0086B3">range</span>(<span style="color: #009999">3</span>):
+          x1 <span style="color: #000000; font-weight: bold">=</span> randint(<span style="color: #009999">0</span>, (w <span style="color: #000000; font-weight: bold">-</span> PADDING) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>)
+          y1 <span style="color: #000000; font-weight: bold">=</span> randint(<span style="color: #009999">0</span>, (h<span style="color: #000000; font-weight: bold">-</span> PADDING <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>))
+          x2 <span style="color: #000000; font-weight: bold">=</span> randint(<span style="color: #009999">0</span>, w)
+          y2 <span style="color: #000000; font-weight: bold">=</span> randint((h <span style="color: #000000; font-weight: bold">-</span> PADDING <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>), h)
+          draw<span style="color: #000000; font-weight: bold">.</span>line(((x1, y1), (x2, y2)), fill<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">0</span>, width<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>)
+  
+      S<span style="color: #000000; font-weight: bold">.</span>sort(<span style="color: #000000; font-weight: bold">lambda</span> x, y: <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">if</span> x[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">&gt;</span> y[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">else</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>)
+      char <span style="color: #000000; font-weight: bold">=</span> [x[<span style="color: #009999">2</span>] <span style="color: #000000; font-weight: bold">for</span> x <span style="color: #000000; font-weight: bold">in</span> S]
+      fileio <span style="color: #000000; font-weight: bold">=</span> StringIO()
+      im<span style="color: #000000; font-weight: bold">.</span>save(fileio, <span style="color: #dd1144">&#39;gif&#39;</span>)
+      im<span style="color: #000000; font-weight: bold">.</span>show()
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(char), fileio
+  
+  <span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+      <span style="color: #000000; font-weight: bold">print</span> gen()  
+</pre></div>
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
 
-</script>
+<script type="text/javascript">var prettyPrint = function(){}</script>
     
 
 <div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
@@ -361,6 +348,26 @@ PIL 中对图片的操作一般是通过 <i style=" color: #d75100; font-style: 
   })();
 </script>
 <noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
 </div></body></html>

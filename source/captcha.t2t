@@ -2,6 +2,7 @@
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
 %%toc
 
 为了防垃圾机器人，验证码是一种常用的手段。而自己来实现验证码也是很简单的事，只需要了解一点图像处理的方法就可以了。 PIL 是 Python 的一个图像处理库，可以很方便地处理位图。
@@ -22,7 +23,7 @@
 先来看如何得到一张带指定字母的图片。
 PIL 中对图片的操作一般是通过 //image// 对象来完成，这个对象可以是从图片文件中得到的，已经包含了位图信息的对象。也可以一个我们指定大小创建的，不包含图片信息的“空对象”。
 
-```
+```python
 # -*- coding: utf-8 -*-
 
 from PIL import Image
@@ -48,7 +49,7 @@ im.show()
 
 接下来要做的事，就是在这张白色图片上写几个字符了，这要用到 //ImageDraw// 对象：
 
-```
+```python
 # -*- coding: utf-8 -*-
 
 from PIL import Image
@@ -71,13 +72,13 @@ im.show()
 
 对于传统的位图字体， PCF， BDF 扩展名结束，先使用 PIL 提供的 //pilfont.py// 工具，产生 PIL 使用的专用字体文件：
 
-```
+```shell
 pilfont.py  xxx.pcf
 ```
 
 当前目录下，会得到两个需要的文件， //xxx.pil// 和 //xxx.pbm// ，然后要使用字体时：
 
-```
+```python
 # -*- coding: utf-8 -*-
 
 from PIL import Image
@@ -99,7 +100,7 @@ im.show()
 
 如何要使用现在常用的矢量字体，可以这样：
 
-```
+```python
 font = ImageFont.truetype("arial.ttf", 15)
 ```
 
@@ -130,7 +131,7 @@ font = ImageFont.truetype("arial.ttf", 15)
 
 关于画线，在 PIL 中，可以使用 //ImageDraw// 对象的 //line// 方法：
 
-```
+```python
 # -*- coding: utf-8 -*-
 
 import PIL
@@ -150,7 +151,7 @@ im.show()
 
 保存图像信息，直接使用 //Image// 对象的 //save// 方法即可。这个方法接受两个参数，第一个参数是要写入的文件对象，第二个参数是指定文件类型。
 
-```
+```python
 fileio = StringIO()
 im.save(fileio, 'gif')
 im.show()  
@@ -166,7 +167,7 @@ im.show()
 
 =代码=
 
-```
+```python
 # -*- coding: utf-8 -*-
 #AUTHOR: yeshengzou # # gmail.com
 #DATE: 2012.4.23
