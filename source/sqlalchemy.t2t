@@ -1,0 +1,106 @@
+SQLAlchemy参考
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus --mathfax 
+%%toc
+
+=基本流程=
+
+```python
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column
+from sqlalchemy.types import String, Integer
+from sqlalchemy.ext.declarative import declarative_base
+
+engine = create_engine('postgresql://test@localhost:5432/test')
+DBSession = sessionmaker(engine)
+session = DBSession()
+
+BaseModel = declarative_base()
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(String, primary_key=True)
+    username = Column(String, index=True)
+
+class Session(BaseModel):
+    __tablename__ = 'session'
+
+    id = Column(String, primary_key=True)
+    user = Column(String, index=True)
+    ip = Column(String)
+
+query = session.query(Session, User.username).join(User, User.id == Session.user)
+for i in query:
+    print dir(i)
+```
+
+
+=创建连接=
+
+SQLAlchemy 的连接创建是 Lazy 的方式, 即在需要使用时才会去真正创建. 之前做的工作, 全是"定义".
+
+连接的定义是在 //engine// 中做的.
+
+==Engine==
+
+//engine// 的定义包含了两部分的内容, 一是具体数据库类型的实现, 二是连接池.
+
+所谓的数据库类型即是 MYSQL , Postgresql , SQLite 这些不同的数据库.
+
+一般创建 //engine// 是使用 ``create_engine`` 方法:
+
+```python
+engine = create_engine('postgresql+psycopg2://scott:tiger@localhost/mydatabase')
+```
+
+参数字符串的各部分的意义:
+
+```
+dialect+driver://username:password@host:port/database
+```
+
+对于这个字符串, SQLAlchemy 提供了工具可用于处理它:
+
+```python
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine.url import make_url
+from sqlalchemy.engine.url import URL
+
+s = 'postgresql://test@localhost:5432/bbcustom'
+url = make_url(s)
+s = URL(drivername='postgresql', username='test', password="",
+        host="localhost", port=5432, database="bbcustom")
+
+engine = create_engine(url)
+engine = create_engine(s)
+
+print engine.execute('select id from "user"').fetchall()
+```
+
+
+==Engine的策略==
+
+==各数据库实现==
+
+==连接池==
+
+
+
+=模型使用=
+
+==查询==
+
+==创建, 修改, 删除==
+
+==JOIN==
+
+
+=会话与事务控制=
