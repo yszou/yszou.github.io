@@ -49,7 +49,7 @@ SQLAlchemy 的连接创建是 Lazy 的方式, 即在需要使用时才会去真�
 
 ==Engine==
 
-//engine// 的定义包含了两部分的内容, 一是具体数据库类型的实现, 二是连接池.
+//engine// 的定义包含了三部分的内容, 一是具体数据库类型的实现, 二是连接池, 三是策略(即 //engine// 自己的实现).
 
 所谓的数据库类型即是 MYSQL , Postgresql , SQLite 这些不同的数据库.
 
@@ -85,16 +85,141 @@ engine = create_engine(s)
 print engine.execute('select id from "user"').fetchall()
 ```
 
+``create_engine`` 函数有很多的控制参数, 这个后面再详细说.
+
 
 ==Engine的策略==
 
+``create_engine`` 的调用, 实际上会变成 ``strategy.create`` 的调用. 而 //strategy// 就是 //engine// 的实现细节. //strategy// 可以在 ``create_engine`` 调用时通过 ``strategy`` 参数指定, 目前官方的支持有三种:
+
+- plain, 默认的
+- threadlocal, 连接是线程局部的
+- mock, 所有的 SQL 语句的执行会使用指定的函数
+
+
+//mock// 这个实现, 会把所有的 SQL 语句的执行交给指定的函数来做, 这个函数是由 ``create_engine`` 的 ``executor`` 参数指定:
+
+```python
+def f(sql, *args, **kargs):
+    print sql, args, kargs
+
+s = 'postgresql://test@localhost:5432/bbcustom'
+engine = create_engine(s, strategy='mock', executor=f)
+
+print engine.execute('select id from "user"')
+```
+
+
 ==各数据库实现==
+
+各数据库的实现在 SQLAlchemy 中分成了两个部分, 一是数据库的类型, 二是具体数据库中适配的客户端实现. 比如对于 Postgresql 的访问, 可以使用 ``psycopg2`` , 也可以使用 ``pg8000`` :
+
+```python
+s = 'postgresql+psycopg2://test@localhost:5432/bbcustom'
+s = 'postgresql+pg8000://test@localhost:5432/bbcustom'
+engine = create_engine(s)
+```
+
+具体的适配工作, 是需要在代码中实现一个 ``Dialect`` 类来完成的. 官方的实现在 //dialects// 目录下.
+
+获取具体的 Dialect 的行为, 则是前面提到的 ``URL`` 对象的 ``get_dialect`` 方法. ``create_engine`` 时你单传一个字符串, SQLAlchemy 自己也会使用 ``make_url`` 得到一个 ``URL`` 的实例).
+
+
 
 ==连接池==
 
+SQLAlchemy 支持连接池, 在 ``create_engine`` 时添加相关参数即可使用.
+
+- pool_size 连接数
+- max_overflow 最多多几个连接
+- pool_recycle 连接重置周期
+- pool_timeout 连接超时时间
+
+
+连接池效果:
+
+```python
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import create_engine
+from sqlalchemy.engine.url import make_url
+from sqlalchemy.engine.url import URL
+
+s = 'postgresql://test@localhost:5432/bbcustom'
+engine = create_engine(s, pool_size=2, max_overflow=0)
+
+
+from threading import Thread
+
+def f():
+    print engine.execute('select pg_sleep(5)').fetchall()
+
+
+p = []
+for i in range(3):
+    p.append(Thread(target=f))
+
+for t in p:
+    t.start()
+```
+
+连接池的实现, 在 ``create_engine`` 调用时也可以指定:
+
+```python
+from sqlalchemy.pool import QueuePool
+engine = create_engine('sqlite:///file.db', poolclass=QueuePool)
+```
+
+```python
+from sqlalchemy.pool import NullPool
+engine = create_engine(
+         'postgresql+psycopg2://scott:tiger@localhost/test',
+          poolclass=NullPool)
+```
+
+
+或者仅仅是获取连接的方法:
+
+```python
+import sqlalchemy.pool as pool
+import psycopg2
+
+def getconn():
+    c = psycopg2.connect(username='ed', host='127.0.0.1', dbname='test')
+    # do things with 'c' to set up
+    return c
+
+engine = create_engine('postgresql+psycopg2://', creator=getconn)
+```
+
+连接池可以被单独使用:
+
+```python
+import sqlalchemy.pool as pool
+import psycopg2
+
+def getconn():
+    c = psycopg2.connect(username='ed', host='127.0.0.1', dbname='test')
+    return c
+
+mypool = pool.QueuePool(getconn, max_overflow=10, pool_size=5)
+
+conn = mypool.connect()
+cursor = conn.cursor()
+cursor.execute("select foo")
+```
+
+连接池可以被多个 engine 共享使用:
+
+```python
+e = create_engine('postgresql://', pool=mypool)
+```
 
 
 =模型使用=
+
+
+
 
 ==查询==
 
