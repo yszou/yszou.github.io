@@ -219,6 +219,65 @@ e = create_engine('postgresql://', pool=mypool)
 =模型使用=
 
 
+==模型定义==
+
+对于 //Table// 的定义, 本来是直接的实例化调用, 通过 ``declarative`` 的包装, 可以像"定义类"这样的更直观的方式来完成.
+
+```python
+user = Table('user', metadata,
+    Column('user_id', Integer, primary_key = True),
+    Column('user_name', String(16), nullable = False),
+    Column('email_address', String(60)),
+    Column('password', String(20), nullable = False)
+)
+```
+
+
+```python
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import create_engine
+from sqlalchemy import Column
+from sqlalchemy.types import String, Integer, CHAR, BIGINT
+from sqlalchemy.ext.declarative import declarative_base
+BaseModel = declarative_base()
+Engine = create_engine('postgresql://test@localhost:5432/test', echo=True)
+
+
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(CHAR(32), primary_key=True)
+    title = Column(String(64), server_default='', nullable=False)
+    text = Column(String, server_default='', nullable=False)
+    user = Column(CHAR(32), index=True, server_default='', nullable=False)
+    create = Column(BIGINT, index=True, server_default='0', nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(CHAR(32), primary_key=True)
+    name = Column(String(32), server_default='', nullable=False)
+    username = Column(String(32), index=True, server_default='', nullable=False)
+    password = Column(String(64), server_default='', nullable=False)
+
+
+def init_db():
+    BaseModel.metadata.create_all(Engine)
+
+def drop_db():
+    BaseModel.metadata.drop_all(Engine)
+
+
+if __name__ == '__main__':
+    #init_db()
+    drop_db()
+    #BaseModel.metadata.tables['user'].create(Engine, checkfirst=True)
+    #BaseModel.metadata.tables['user'].drop(Engine, checkfirst=False)
+    pass
+```
+
 
 
 ==查询==
