@@ -279,12 +279,92 @@ if __name__ == '__main__':
 ```
 
 
+==创建==
+
+
+```python
+session = Session()
+session.add(User(id=uuid.uuid4().hex))
+session.add(Blog(id=uuid.uuid4().hex))
+session.add_all([
+    User(id=uuid.uuid4().hex),
+    Blog(id=uuid.uuid4().hex)
+])
+session.commit()
+```
+
+执行的顺序并不一定会和代码顺序一致, SQLAlchemy 自己会整合逻辑再执行.
+
+
 
 ==查询==
 
-==创建, 修改, 删除==
+
+SQLAlchemy 实现的查询非常强大, 写起来有一种随心所欲的感觉.
+
+查询的结果, 有几种不同的类型, 这个需要注意, 像是:
+
+- instance
+- instance of list
+- keyed tuple of list
+- value of list
+
+
+
+: 基本查询
+```python
+session.query(User).filter_by(username='abc').all()
+session.query(User).filter(User.username=='abc').all()
+session.query(Blog).filter(Blog.create >= 0).all()
+session.query(Blog).filter(Blog.create >= 0).first()
+session.query(Blog).filter(Blog.create >= 0).offset(1).limit(1).scalar()
+session.query(User).filter(User.username ==  'abc').scalar()
+session.query(User.id).filter(User.username ==  'abc').scalar()
+session.query(Blog.id).filter(Blog.create >= 0).all()
+session.query(Blog.id).filter(Blog.create >= 0).all()[0].id
+dict(session.query(Blog.id, Blog.title).filter(Blog.create >= 0).all())
+session.query(Blog.id, Blog.title).filter(Blog.create >= 0).first().title
+session.query(User.id).order_by('id desc').all()
+session.query(User.id).order_by('id').first()
+session.query('id', 'username').select_from(User).all()
+session.query(User).get('16e19a64d5874c308421e1a835b01c69')
+```
+
+: 多表查询
+```python
+session.query(Blog, User).filter(Blog.user == User.id).first().User.username
+session.query(Blog, User.id, User.username).filter(Blog.user == User.id).first().id
+session.query(Blog.id,
+              User.id,
+              User.username).filter(Blog.user == User.id).first().keys()
+```
+
+: 条件查询
+```python
+from sqlalchemy import or_, not_
+
+session.query(User).filter(or_(User.id == '',
+                               User.id == '16e19a64d5874c308421e1a835b01c69')).all()
+session.query(User).filter(not_(User.id == '16e19a64d5874c308421e1a835b01c69')).all()
+session.query(User).filter(User.id.in_(['16e19a64d5874c308421e1a835b01c69'])).all()
+session.query(User).filter(User.id.like('16e19a%')).all()
+session.query(User).filter(User.id.startswith('16e19a')).all()
+dir(User.id)
+```
+
+: 函数
+```python
+from sqlalchemy import func
+session.query(func.count('1')).select_from(User).scalar()
+session.query(func.count('1'), func.max(User.username)).select_from(User).first()
+session.query(func.count('1')).select_from(User).scalar()
+session.query(func.md5(User.username)).select_from(User).all()
+session.query(func.current_timestamp()).scalar()
+```
 
 ==JOIN==
+
+==修改, 删除==
 
 
 =会话与事务控制=
