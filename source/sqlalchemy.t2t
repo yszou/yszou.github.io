@@ -360,11 +360,184 @@ session.query(func.count('1'), func.max(User.username)).select_from(User).first(
 session.query(func.count('1')).select_from(User).scalar()
 session.query(func.md5(User.username)).select_from(User).all()
 session.query(func.current_timestamp()).scalar()
+session.query(User).count()
 ```
+
+
+==修改==
+
+还是通常的两种方式:
+
+```python
+session.query(User).filter(User.username == 'abc').update({'name': '123'})
+session.commit()
+
+user = session.query(User).filter_by(username='abc').scalar()
+user.name = '223'
+session.commit()
+```
+
+如果涉及对属性原值的引用, 则要考虑 ``synchronize_session`` 这个参数.
+
+- ``'evaluate'`` 默认值, 会同时修改当前 session 中的对象属性.
+- ``'fetch'`` 修改前, 会先通过 ``select`` 查询条目的值.
+- ``False`` 不修改当前 session 中的对象属性.
+
+
+在默认情况下, 因为会有修改当前会话中的对象属性, 所以如果语句中有 SQL 函数, 或者"原值引用", 那是无法完成的操作, 自然也会报错, 比如:
+
+```python
+from sqlalchemy import func
+session.query(User).update({User.name: func.trim('123 ')})
+session.query(User).update({User.name: User.name + 'x'})
+```
+
+这种情况下, 就不能要求 SQLAlchemy 修改当前 session 的对象属性了, 而是直接进行数据库的交互, 不管当前会话值:
+
+```python
+session.query(User).update({User.name: User.name + 'x'}, synchronize_session=False)
+```
+
+是否修改当前会话的对象属性, 涉及到当前会话的状态. 如果当前会话过期, 那么在获取相关对象的属性值时, SQLAlchemy 会自动作一次数据库查询, 以便获取正确的值:
+
+```python
+user = session.query(User).filter_by(username='abc').scalar()
+print user.name
+session.query(User).update({User.name: 'new'}, synchronize_session=False)
+print user.name
+session.commit()
+print user.name
+```
+
+执行了 ``update`` 之后, 虽然相关对象的实际的属性值已变更, 但是当前会话中的对象属性值并没有改变. 直到 ``session.commit()`` 之后, 当前会话变成"过期"状态, 再次获取 ``user.name`` 时, SQLAlchemy 通过 ``user`` 的 ``id`` 属性, 重新去数据库查询了新值. (如果 ``user`` 的 ``id`` 变了呢? 那就会出事了啊.)
+
+``synchronize_session`` 设置成 ``'fetch'`` 不会有这样的问题, 因为在做 ``update`` 时已经修改了当前会话中的对象了.
+
+不管 ``synchronize_session`` 的行为如何, ``commit`` 之后 ``session`` 都会过期, 再次获取相关对象值时, 都会重新作一次查询.
+
+
+==删除==
+
+```python
+session.query(User).filter_by(username='abc').delete()
+
+user = session.query(User).filter_by(username='abc').first()
+session.delete(user)
+```
+
+删除同样有像修改一样的 ``synchronize_session`` 参数的问题, 影响当前会话的状态.
+
 
 ==JOIN==
 
-==修改, 删除==
+SQLAlchemy 可以很直观地作 ``join`` 的支持:
+
+```python
+r = session.query(Blog, User).join(User, Blog.user == User.id).all()
+for blog, user in r:
+    print blog.id, blog.user, user.id
+
+
+r = session.query(Blog, User.name, User.username).join(User, Blog.user == User.id).all()
+print r
+```
+
+
+=外键和关系定义=
+
+
+==外键约束==
+
+使用 //ForeignKey// 来定义一个外键约定:
+
+
+```python
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.types import String, Integer, CHAR, BIGINT
+
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    text = Column(String, server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+    create = Column(BIGINT, index=True, server_default='0', nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+    username = Column(String(32), index=True, server_default='', nullable=True)
+    password = Column(String(64), server_default='', nullable=False)
+```
+
+
+
+创建时:
+
+```python
+session = Session()
+user = User(name='first', username=u'新的')
+session.add(user)
+session.flush()
+blog = Blog(title=u'第一个', user=user.id)
+session.add(blog)
+session.commit()
+```
+
+``session.flush()`` 是进行数据库交互, 但是事务并没有提交. 进行数据库交互之后, ``user.id`` 才有值.
+
+定义了外键, 对查询来说, 并没有影响. 外键只是单纯的一条约束而已. 当然, 可以在外键上定义一些关联的事件操作, 比如当外键条目被删除时, 字段置成 ``null`` , 或者关联条目也被删除等.
+
+
+==关系定义==
+
+
+要定义关系, 必有使用 //ForeignKey// 约束. 当然, 这里说的只是在定义模型时必有要有, 至于数据库中是否真有外键约定, 这并不重要.
+
+
+```python
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.types import String, Integer, CHAR, BIGINT
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+
+
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+    create = Column(BIGINT, index=True, server_default='0', nullable=False)
+
+    user_obj = relationship('User')
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', order_by='Blog.create')
+```
+
+关系只是 SQLAlchemy 提供的工具, 与数据库无关, 所以任何时候添加都是可以的.
+
+上面的 //User-Blog// 是一个"一对多"关系, 通过 ``Blog`` 的 ``user`` 这个 //ForeignKey// , SQLAlchemy 可以自动处理关系的定义. 在查询时, 返回的结果自然也是, 一个是列表, 一个是单个对象:
+
+```python
+session = Session()
+print session.query(Blog).get(1).user_obj
+print session.query(User).get(1).blog_list
+```
+
+这种关系的定义, 并不影响查询并获取对象的行为, 不会添加额外的 ``join`` 操作. 在对象上取一个 ``user_obj`` 或者取 ``blog_list`` 都是发生了一个新的查询操作.
+
 
 
 =会话与事务控制=
