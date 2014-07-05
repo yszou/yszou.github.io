@@ -1,0 +1,210 @@
+Android学习参考
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+#关于此文#
+
+这是一个连 *java* 都不会写的人的学习过程.
+
+
+#下载开发工具和 SDK#
+
+先从 http://developer.android.com/sdk/index.html 下载开发工具(单独的开发工具即可), 下载好了之后运行它, 选择相应版本的 SDK 安装.
+
+```bash
+cd tools
+./android
+```
+
+
+工具中可以设置 http 代理, 自己准备一台墙外的机器吧.
+
+开发工具中已经包含了虚拟机, 但是相关的镜像文件是在对应版本的 SDK 中的.
+
+SDK 下载完成之后, 就可以创建一个相应版本的虚拟机, *avd* 了.
+
+对 *avd* 的管理是在开发工具中的, 也可以在启动时指定:
+
+```bash
+./android avd
+```
+
+为了之后使用方式, 把开发工具中的 ``tools`` 和 ``platform-tools`` 目录位置加入系统变量 ``PATH`` 中.
+
+
+#使用开发工具创建项目#
+
+Android 的项目有一套目录格式, 开发工具提供了创建项目的功能, 可以直接生成一个项目目录, 先查看一下目前已安装的 SDK 对应的 ID , 之后会用到:
+
+```bash
+android list targets
+```
+
+把对应版本的 SDK 的 ID 记一下, 然后创建项目:
+
+```bash
+android create project \
+--target 2 \
+--name hello \
+--path /home/zys/temp/hello \
+--activity MainActivity \
+--package me.zys.hello
+```
+
+正确情况下, 在 ``/home/zys/temp/hello`` 目录下就会生成一堆文件了:
+
+```text
+hello
+├── AndroidManifest.xml
+├── ant.properties
+├── bin
+├── build.xml
+├── libs
+├── local.properties
+├── proguard-project.txt
+├── project.properties
+├── res
+│   ├── drawable-hdpi
+│   │   └── ic_launcher.png
+│   ├── drawable-ldpi
+│   │   └── ic_launcher.png
+│   ├── drawable-mdpi
+│   │   └── ic_launcher.png
+│   ├── drawable-xhdpi
+│   │   └── ic_launcher.png
+│   ├── layout
+│   │   └── main.xml
+│   └── values
+│       └── strings.xml
+└── src
+    └── me
+        └── zys
+            └── hello
+                └── MainActivity.java
+```
+
+
+其中的文件:
+
+- ``AndroidManifest.xml`` , 项目的配置, 包括包名, 项目名, SDK 的版本, 注册的 *Activity* 等.
+- ``build.xml`` , *ant* 的配置文件.
+- ``bin`` , 构建后的目标文件所在的目录.
+- ``gen`` , 构建阶段生成的源文件所在的目录.
+- ``res/layout/main.xml`` *Activity* 的页面.
+- ``res/values/strings.xml`` 页面中的字符资源.
+- ``MainActivity.java`` 初始的一个 *Activity* 实现.
+
+
+接下来就可以来编译构建一个 *apk* 包了:
+
+```bash
+cd /home/zys/temp/hello
+ant build
+```
+
+注意相应版本的 SDK 的 *build-tools* 要安装好.
+
+成功的话在 ``bin`` 目录下会有一个 ``hello-debug.apk`` 文件生成, 现在把虚拟机启动起来, 使用 SDK 的 ``platform-tools`` 目录下的 *adb* 工具, 把 apk 包安装到虚拟机中:
+
+```bash
+adb install bin/hello-debug.apk
+```
+
+对于的卸载是:
+
+```bash
+adb uninstall me.zys.hello
+```
+
+
+还可以使用 *adb* 直接启动应用程序, 比如刚才我们安装的 *hello* 项目:
+
+```bash
+adb shell am start -n me.zys.hello/me.zys.hello.MainActivity
+```
+
+虚拟机会有相应的反应, 就能看到一个 ``Hello World`` 的页面了.
+
+
+#一个项目是怎么跑起来的#
+
+``AndroidManifest.xml`` 是整个项目的入口, 它里面定义了包名和注册的 *Activity* , 即相关的类名.
+
+项目启动时, 就可以找到一个 *Activity* 类, 比如 ``MainActivity`` :
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+public class MainActivity extends Activity
+{
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+    }
+}
+```
+
+``onCreate`` 方法会创建一个 *Activity* 页面, ``setContentView`` 会渲染一个"模板".
+
+``R`` 是在构建阶段, 放入 ``me.zys.hello`` 的对象.
+
+``res/layout/main.xml`` 就是页面的模板, 它里面的东西包括资源的引用, 布局管理, 组件管理:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<TextView
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:text="Hello World, MainActivity"
+    />
+</LinearLayout>
+```
+
+这里说是"模板", 其实有一些不恰当, 因为没有一个"传递参数"的概念, 要想设置模板中的"变量", 是直接把"模板"作为一个对象, 通过方法获取到里面的组件对象, 然后通过方法的调用去设置对象的状态.
+
+先给组件一个 *ID* :
+
+```xml
+<TextView android:id="@+id/text"
+          android:layout_width="fill_parent"
+          android:layout_height="wrap_content"
+          android:text="Hello World, MainActivity" />
+```
+
+在 *Activity* 的实现中, 就可以通过 *ID* 获取到组件对象, 然后作相应的操作:
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends Activity
+{
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+
+        TextView widget = (TextView) findViewById(R.id.text);
+        widget.setText("haha");
+    }
+}
+```
+
+
