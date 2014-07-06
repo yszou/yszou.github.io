@@ -113,7 +113,7 @@ ant build
 adb install bin/hello-debug.apk
 ```
 
-对于的卸载是:
+对应的卸载是:
 
 ```bash
 adb uninstall me.zys.hello
@@ -208,3 +208,211 @@ public class MainActivity extends Activity
 ```
 
 
+#一个多页面带交互的例子#
+
+做一个小的应用项目, 功能是有两个页面, 在第一个页面输入文本之后, 点击按钮切换到第二个页面. 第二个页面上会显示输入的文本, 同时有一个可以返回前一个输入页面的按钮.
+
+这个例子中会涉及的东西有:
+
+- 模板中的资源声明与使用.
+- 模板中组件的事件处理.
+- 多个 *Activity* 的处理机制.
+- 多个 *Activity* 中使用 *Intent* 传递信息.
+
+
+##准备真机的调试环境##
+
+虚拟机自然是可以的, 但是那东西的速度与感觉真的很尴尬. 找一部真的手机, 插上 USB 作开发调试吧.
+
+先通过:
+
+```bash
+lsusb
+```
+
+确认一下当前的 USB 设备. 插上的那部手机应该名列其中.
+
+然后在 *adb* 中查看一下设备是否已经准备好了:
+
+```bash
+adb devices
+```
+
+如果看到了 device , 就没问题了. 如果没有, 显示有权限问题, 那可以试着用 ``sudo`` 重启一下 *adb* :
+
+```bash
+sudo adb kill-server
+sudo adb devices
+```
+
+接下来就可以在 IDE 中创建一个项目, 并且马上编译在手机上看一下 ``Hello World`` 的效果了.
+
+
+##添加组件和事件处理##
+
+先修改 ``main.xml`` 这个模板:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent" >
+
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:text="Hello World" />
+
+    <EditText android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/text" />
+
+    <Button android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit" />
+</LinearLayout>
+```
+
+添加了 *EditText* 和 *Button* 这两个组件, 并且给 *EditText* 设置了一个 *id* . 编译后能看到页面效果.
+
+接下来给按钮添加一个点击的事件处理:
+
+```xml
+<Button android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Submit"
+        android:onClick="click" />
+```
+
+``android:onClick="click"`` 是标明点击时调用 *Activity* 对象中的 ``click`` 方法, 我们添加上 ``click`` 方法:
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+
+public class MainActivity extends Activity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+    }
+
+    public void click(View view) {
+        Log.v("info", "here");
+    }
+}
+```
+
+``Log.v`` 可以在终端打印信息.
+
+我们调整一下 ``click`` 方法的实现, 从 *id* 为 *text* 的组件中, 获取键入的文本:
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+
+public class MainActivity extends Activity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+    }
+
+    public void click(View view) {
+        EditText widget = (EditText) findViewById(R.id.text);
+        String msg = widget.getText().toString();
+        Log.v("info", msg);
+    }
+}
+```
+
+在 IDE 的调试终端输出中, 就可以看到键入的文本内容了.
+
+
+##添加第二个 Activity##
+
+前面获取的键入文本需要在另外一个页面显示, 所以我们需要再创建一个 *Activity* .
+
+同 ``MainActivity`` 一样, 继承 ``Activity`` , 然后渲染一个模板:
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+public class ShowActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.show);
+    }
+}
+```
+
+需要的 ``show.xml`` 是:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:text="Show" />
+
+</LinearLayout>
+```
+
+新的 *Activity* 还需要注册到 ``AndroidManifest.xml`` 文件中:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="me.zys.hello"
+          android:versionCode="1"
+          android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="10"/>
+    <application android:label="@string/app_name">
+
+        <activity android:name="MainActivity"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name="ShowActivity" android:label="show">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest> 
+```
+
+添加了 ``android.intent.action.MAIN`` 这个 ``action`` , 这个 *Activity* 就可以直接被指定启动, 像前面说的 *adb* 的使用方法:
+
+```bash
+adb shell am start -n me.zys.hello/me.zys.hello.ShowActivity
+```
+
+当然, 在 IDE 中选中相应的类, 点下 *Run* 之类的选项就可以了的.
+
+第二个 *Activity* 就创建好了. 下面要做的, 就是 *Activity* 之间的切换和信息传递.
