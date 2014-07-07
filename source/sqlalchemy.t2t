@@ -642,7 +642,41 @@ session.commit()
 
 前面提到的, 当操作关系, 实体时, 与其相关联的关系, 实体是否会被自动处理的问题, 在 SQLAlchemy 中是通过 //Cascades// 机制来定义和解决的. ( //Cascades// 这个词是来源于 //Hibernate// .)
 
-``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为.
+``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为. 默认值是 " //save-update//, //merge//" , 稍后会介绍每个词项的作用.
+
+: //save-update//
+    当一个对象被添加进 session 后, 此对象标记为 //save-update// 的 ``relationship`` 关系对象也会同时添加进这个 session .
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='')
+    blog_list_auto = relationship('Blog', cascade='save-update')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    user = User(name=u'哈哈')
+    blog = Blog(title=u'第一个')
+    user.blog_list = [blog]
+    #user.blog_list_auto = [blog]
+    session.add(user)
+    print blog in session
+    session.commit()
+```
 
 
 
