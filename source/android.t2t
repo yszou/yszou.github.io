@@ -154,7 +154,7 @@ public class MainActivity extends Activity
 
 ``onCreate`` 方法会创建一个 *Activity* 页面, ``setContentView`` 会渲染一个"模板".
 
-``R`` 是在构建阶段, 放入 ``me.zys.hello`` 的对象.
+``R`` 是在构建阶段, 放入 ``me.zys.hello`` 这个包的对象.
 
 ``res/layout/main.xml`` 就是页面的模板, 它里面的东西包括资源的引用, 布局管理, 组件管理:
 
@@ -351,12 +351,18 @@ package me.zys.hello;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 
 public class ShowActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.show);
+    }
+
+    public void click(View view) {
+        Log.v("info", "here");
     }
 }
 ```
@@ -374,6 +380,20 @@ public class ShowActivity extends Activity {
     <TextView android:layout_width="fill_parent"
               android:layout_height="wrap_content"
               android:text="Show" />
+
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:text="Input:" />
+
+    <TextView android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/input"
+              android:text="a" />
+
+    <Button android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:onClick="click" />
 
 </LinearLayout>
 ```
@@ -416,3 +436,95 @@ adb shell am start -n me.zys.hello/me.zys.hello.ShowActivity
 当然, 在 IDE 中选中相应的类, 点下 *Run* 之类的选项就可以了的.
 
 第二个 *Activity* 就创建好了. 下面要做的, 就是 *Activity* 之间的切换和信息传递.
+
+
+##Activity 切换和信息传递##
+
+*Activity* 之前的信息传递是通过 *Intent* 对象来完成的. 而实现切换的方法, 也和 *Intent* 有关.
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+
+public class ShowActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.show);
+    }
+
+    public void click(View view) {
+        Intent intent = getIntent();
+        intent.setClass(this, MainActivity.class);
+        startActivity(intent);
+    }
+}
+```
+
+这样, 点击按钮时, 就会切换到 ``MainActivity`` 页面了.
+
+现在还剩下最后一步, 从 ``MainActivity`` 切换到 ``ShowActivity`` 时, 带上输入的文本信息. 这个通过 *Intent* 实现:
+
+``MainActivity`` 的 ``click`` 方法要把文本信息放到 *Intent* 中, 然后切换到 ``ShowActivity`` :
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+
+public class MainActivity extends Activity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+    }
+
+    public void click(View view) {
+        EditText widget = (EditText) findViewById(R.id.text);
+        String msg = widget.getText().toString();
+        Intent intent = new Intent(this, ShowActivity.class);
+        intent.putExtra("text", msg);
+        startActivity(intent);
+    }
+}
+```
+
+``ShowActivity`` 的模板渲染时, 从 *Intent* 中取出信息, 调整组件的状态:
+
+```java
+package me.zys.hello;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class ShowActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.show);
+
+        Intent intent = getIntent();
+        String msg = intent.getStringExtra("text");
+        TextView widget = (TextView) findViewById(R.id.input);
+        widget.setText(msg);
+    }
+
+    public void click(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+}
+```
+
