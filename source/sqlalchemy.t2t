@@ -646,6 +646,7 @@ session.commit()
 
 : //save-update//
     当一个对象被添加进 session 后, 此对象标记为 //save-update// 的 ``relationship`` 关系对象也会同时添加进这个 session .
+
 ```python
 class Blog(BaseModel):
     __tablename__ = 'blog'
@@ -678,6 +679,183 @@ if __name__ == '__main__':
     session.commit()
 ```
 
+: //delete//
+    当一个对象在 session 中被标记为删除时, 其属性中 //relationship// 关联的对象也会被标记成删除, 否则, 关联对象中的对应外键字段会被改成 ``NULL`` , 不能为 ``NULL`` 则报错.
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='save-update, delete')
+
+
+if __name__ == '__main__':
+    session = Session()
+
+    #user = User(name=u'用户')
+    #user.blog_list = [Blog(title=u'哈哈')]
+    #session.add(user)
+    user = session.query(User).first()
+    session.delete(user)
+    session.commit()
+```
+
+: //delete-orphan//
+    当 //relationship// 属性变化时, 被 "去掉" 的对象会被自动删除. 比如之前是:
+
+```python
+user.blog_list = [blog, blog2]
+```
+
+现在变成:
+
+```python
+user.blog_list = [blog2]
+```
+
+那么 ``blog`` 这个关联实体是会自动删除的.
+
+这各机制只适用于 "一对多" 的关系中, "多对多" 和反过来的 "多对一" 都不适用. 在 ``relationship`` 定义时, 可以添加  ``single_parent = True`` 参数来强制约束. 当然, 在实现上 SQLAlchemy 是会先查出所有关联实体, 然后计算差集确认哪些需要被删除.
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='save-update, delete-orphan')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    #user = User(name=u'用户')
+    #blog = Blog(title=u'一')
+    #blog2 = Blog(title=u'二')
+    #user.blog_list = [blog, blog2]
+    #session.add(user)
+    user = session.query(User).first()
+    blog2 =  session.query(Blog).filter(Blog.title == u'二').first()
+    user.blog_list = [blog2]
+    #session.delete(user)
+    session.commit()
+```
+
+: //merge//
+    这个选项是标识在 ``session.merge()`` 时处理关联对象. ``session.merge()`` 的作用, 是把一个会话外的实例, "整合"进会话, 比如 "有则修改, 无则创建" 就是典型的一种 "整合":
+
+```python
+user = User(id=1, name="1")
+session.add(user)
+session.commit()
+
+user = User(id=1)
+user = session.merge(user)
+print user.name
+
+user = User(id=1, name="2")
+user = session.merge(user)
+session.commit()
+```
+
+``cascade`` 中的 ``merge`` 作用:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog',
+                             cascade='save-update, delete, delete-orphan, merge')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    user = User(id=1, name='1')
+    session.add(user)
+    session.commit(user)
+
+    user = User(id=1, blog_list=[Blog(title='哈哈')])
+    session.merge(user)
+
+    session.commit()
+```
+
+: //refresh-expire//
+    当使用 ``session.expire()`` 标识一个对象过期时, 此对象的关联对象是否也被标识为过期(访问属性会重新查询数据库).
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog',
+            cascade='save-update, delete, delete-orphan, merge, refresh-expire')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    #user = User(id=1, name='1')
+    #blog = Blog(title="abc")
+    #user.blog_list = [blog]
+    #session.add(user)
+
+    user = session.query(User).first()
+    blog = user.blog_list[0]
+    print user.name
+    print blog.title
+    session.expire(user)
+    print 'EXPIRE'
+    print user.name
+    print blog.title
+
+    session.commit()
+```
 
 
 
