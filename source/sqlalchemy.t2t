@@ -644,8 +644,19 @@ session.commit()
 
 ``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为. 默认值是 " //save-update//, //merge//" , 稍后会介绍每个词项的作用.
 
+``cascade`` 所有的可选字符串项是:
+
+- //save-update// , 关联对象自动添加到会话.
+- //delete// , 关联对象自动从会话中删除.
+- //delete-orphan// , 属性中去掉关联对象, 则会话中会自动删除关联对象.
+- //merge// , ``session.merge()`` 时会处理关联对象.
+- //refresh-expire// , ``session.expire()`` 时会处理关联对象.
+- //expunge// , ``session.expunge()`` 时会处理关联对象.
+
+
 : //save-update//
     当一个对象被添加进 session 后, 此对象标记为 //save-update// 的 ``relationship`` 关系对象也会同时添加进这个 session .
+
 ```python
 class Blog(BaseModel):
     __tablename__ = 'blog'
@@ -678,7 +689,383 @@ if __name__ == '__main__':
     session.commit()
 ```
 
+: //delete//
+    当一个对象在 session 中被标记为删除时, 其属性中 //relationship// 关联的对象也会被标记成删除, 否则, 关联对象中的对应外键字段会被改成 ``NULL`` , 不能为 ``NULL`` 则报错.
 
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='save-update, delete')
+
+
+if __name__ == '__main__':
+    session = Session()
+
+    #user = User(name=u'用户')
+    #user.blog_list = [Blog(title=u'哈哈')]
+    #session.add(user)
+    user = session.query(User).first()
+    session.delete(user)
+    session.commit()
+```
+
+: //delete-orphan//
+    当 //relationship// 属性变化时, 被 "去掉" 的对象会被自动删除. 比如之前是:
+
+```python
+user.blog_list = [blog, blog2]
+```
+
+现在变成:
+
+```python
+user.blog_list = [blog2]
+```
+
+那么 ``blog`` 这个关联实体是会自动删除的.
+
+这各机制只适用于 "一对多" 的关系中, "多对多" 和反过来的 "多对一" 都不适用. 在 ``relationship`` 定义时, 可以添加  ``single_parent = True`` 参数来强制约束. 当然, 在实现上 SQLAlchemy 是会先查出所有关联实体, 然后计算差集确认哪些需要被删除.
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='save-update, delete-orphan')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    #user = User(name=u'用户')
+    #blog = Blog(title=u'一')
+    #blog2 = Blog(title=u'二')
+    #user.blog_list = [blog, blog2]
+    #session.add(user)
+    user = session.query(User).first()
+    blog2 =  session.query(Blog).filter(Blog.title == u'二').first()
+    user.blog_list = [blog2]
+    #session.delete(user)
+    session.commit()
+```
+
+: //merge//
+    这个选项是标识在 ``session.merge()`` 时处理关联对象. ``session.merge()`` 的作用, 是把一个会话外的实例, "整合"进会话, 比如 "有则修改, 无则创建" 就是典型的一种 "整合":
+
+```python
+user = User(id=1, name="1")
+session.add(user)
+session.commit()
+
+user = User(id=1)
+user = session.merge(user)
+print user.name
+
+user = User(id=1, name="2")
+user = session.merge(user)
+session.commit()
+```
+
+``cascade`` 中的 ``merge`` 作用:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog',
+                             cascade='save-update, delete, delete-orphan, merge')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    user = User(id=1, name='1')
+    session.add(user)
+    session.commit(user)
+
+    user = User(id=1, blog_list=[Blog(title='哈哈')])
+    session.merge(user)
+
+    session.commit()
+```
+
+: //refresh-expire//
+    当使用 ``session.expire()`` 标识一个对象过期时, 此对象的关联对象是否也被标识为过期(访问属性会重新查询数据库).
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog',
+            cascade='save-update, delete, delete-orphan, merge, refresh-expire')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+
+    #user = User(id=1, name='1')
+    #blog = Blog(title="abc")
+    #user.blog_list = [blog]
+    #session.add(user)
+
+    user = session.query(User).first()
+    blog = user.blog_list[0]
+    print user.name
+    print blog.title
+    session.expire(user)
+    print 'EXPIRE'
+    print user.name
+    print blog.title
+
+    session.commit()
+```
+
+: //expunge//
+    与 //merge// 相反, 当 //session.expunge()// 把对象从会话中去除的时候, 此对象的关联对象也同时从会话中消失.
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='delete, delete-orphan, expunge')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+    user = User(name=u'用户')
+    blog = Blog(title=u'第一个')
+    user.blog_list = [blog]
+
+    session.add(user)
+    session.add(blog)
+
+    session.expunge(user)
+    print blog in session
+
+    #session.commit()
+```
 
 
 =会话与事务控制=
+
+==基本使用==
+
+SQLAlchemy 的 //session// 是用于管理数据库操作的一个像容器一样的东西. 模型实例对象本身独立存在, 而要让其修改(创建)生效, 则需要把它们加入某个 session . 同时你也可以把模型实例对象从 session 中去除. 被 session 管理的实例对象, 在 ``session.commit()`` 时被提交到数据库. 同时 ``session.rollback()`` 是回滚变更.
+
+``session.flush()`` 的作用是在事务管理内与数据库发生交互, 对应的实例状态被反映到数据库. 比如自增 ID 被填充上值.
+
+```python
+user = User(name=u'名字')
+session.add(user)
+session.commit()
+```
+
+```python
+try:
+    user = session.Query(User).first()
+    user.name = u'改名字
+    session.commit()
+except:
+    session.rollback()
+```
+
+
+==for update==
+
+SQLAlchemy 的 //Query// 支持 ``select ... for update / share`` .
+
+```python
+session.Query(User).with_for_update().first()
+session.Query(User).with_for_update(read=True).first()
+```
+
+完整形式是:
+
+```python
+with_for_update(read=False, nowait=False, of=None)
+```
+
+: //read//
+    是标识加互斥锁还是共享锁. 当为 ``True`` 时, 即 ``for share`` 的语句, 是共享锁. 多个事务可以获取共享锁, 互斥锁只能一个事务获取. 有"多个地方"都希望是"这段时间我获取的数据不能被修改, 我也不会改", 那么只能使用共享锁.
+
+: //nowait//
+    其它事务碰到锁, 是否不等待直接"报错".
+
+: //of//
+    指明上锁的表, 如果不指明, 则查询中涉及的所有表(行)都会加锁.
+
+
+==事务嵌套==
+
+SQLAlchemy 中的事务嵌套有两种情况. 一是在 session 中管理的事务, 本身有层次性. 二是 session 和原始的 connection 之间, 是一种层次关系, 在这 session , connection 两个概念之中的事务同样具有这样的层次.
+
+session 中的事务, 可能通过 ``begin_nested()`` 方法做 //savepoint// :
+
+```python
+session.add(u1)
+session.add(u2)
+
+session.begin_nested()
+session.add(u3)
+session.rollback() # rolls back u3, keeps u1 and u2
+
+session.commit()
+```
+
+或者使用上下文对象:
+
+```python
+for record in records:
+    try:
+        with session.begin_nested():
+            session.merge(record)
+    except:
+        print "Skipped record %s" % record
+session.commit()
+```
+
+嵌套的事务的一个效果, 是最外层事务提交整个变更才会生效.
+
+```python
+user = User(name='2')
+
+session.begin_nested()
+session.add(user)
+session.commit()
+
+session.rollback()
+```
+
+于是, 前面说的第二种情况有一种应用方式, 就是在 connection 上做一个事务, 最终也在 connection 上回滚这个事务, 如果 session 是 ``bind`` 到这个连接上的, 那么 session 上所做的更改全部不会生效:
+
+```python
+conn = Engine.connect()
+session = Session(bind=conn)
+trans = conn.begin()
+
+user = User(name='2')
+session.begin_nested()
+session.add(user)
+session.commit()
+
+session.commit()
+
+trans.rollback()
+```
+
+在测试中这种方式可能会有用.
+
+
+==二段式提交==
+
+二段式提交, Two-Phase, 是为解决分布式环境下多点事务控制的一套协议.
+
+与一般事务控制的不同是, 一般事务是 ``begin``, 之后 ``commit`` 结束.
+
+而二段式提交的流程上, ``begin`` 之后, 是 ``prepare transaction 'transaction_id'`` , 这时相关事务数据已经持久化了. 之后, 再在任何时候(哪怕重启服务), 作 ``commit prepared 'transaction_id'`` 或者 ``rollback prepared 'transaction_id'`` .
+
+从多点事务的控制来看, 应用层要做的事是, 先把任务分发出去, 然后收集"事务准备"的状态( ``prepare transaction`` 的结果). 根据收集的结果决定最后是 commit 还是 rollback .
+
+简单来说, 就是事务先保存, 再说提交的事.
+
+SQLAlchemy 中对这个机制的支持, 是在构建会话类是加入 ``twophase`` 参数:
+
+```python
+Session = sessionmaker(twophase=True)
+```
+
+然后会话类可以根据一些策略, 绑定多个 //Engine// , 可以是多个数据库连接, 比如:
+
+```python
+Session = sessionmaker(twophase=True)
+Session.configure(binds={User: Engine, Blog: Engine2})
+```
+
+这样, 在获取一个会话实例之后, 就处在二段式提交机制的支持之下, SQLAlchemy 自己会作多点的协调了. 完整的流程:
+
+```python
+Engine = create_engine('postgresql://test@localhost:5432/test', echo=True)
+Engine2 = create_engine('postgresql://test@localhost:5432/test2', echo=True)
+
+Session = sessionmaker(twophase=True)
+
+Session.configure(binds={User: Engine, Blog: Engine2})
+session = Session()
+
+user = User(name=u'名字')
+session.add(user)
+session.commit()
+```
+
+对应的 SQL 大概就是:
+
+```sql
+begin;
+insert into "user" (name) values (?);
+prepare transaction 'xx';
+commit prepared 'xx';
+```
+
+使用时, Postgresql 数据库需要把 //max_prepared_transactions// 这个配置项的值改成大于 0 .
+
+
+
