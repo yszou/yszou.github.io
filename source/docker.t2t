@@ -1,0 +1,226 @@
+Docker 简单使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+#安装#
+
+照着官方文档 http://docs.docker.com/installation/ubuntulinux/ 做吧.
+
+一般就是:
+
+- 更新内核:
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install linux-image-generic-lts-raring linux-headers-generic-lts-raring
+```
+
+- 重启系统.
+- 添加软件源的 KEY:
+
+```bash
+$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
+                   --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+```
+
+- 添加软件源:
+
+```bash
+$ sudo sh -c \
+  "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
+```
+
+- 更新源列表并安装:
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install lxc-docker
+```
+
+
+安装完成之后, 有一个 ``docker`` 的命令可供使用. 同时, ``docker`` 的服务默认监听在一个 *sock* 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
+
+权限方面, ``docker`` 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 ``sudo`` 用, 要么把当前用户加入到 docker 组:
+
+```bash
+$ sudo groupadd docker
+$ sudo gpasswd -a zys docker
+```
+
+重启一下系统吧.
+
+最后, 先安装一个可用的"镜像":
+
+```bash
+docker pull ubuntu:14.04
+```
+
+这可能需要一点时间, 也可能因为 GFW 的影响而不容易安装成功.
+
+然后作一个 ``Hello World`` :
+
+```bash
+docker run ubuntu:14.04 echo "Hello World"
+```
+
+安装成功.
+
+
+
+#一些概念#
+
+*docker* 是一套 Linux 的 *LXC* 管理工具.
+
+*LXC* (*Linux Containers*) 的概念类似于虚拟机, 但是形式上有区别. 虚拟机更像是提供"机器环境", 而 *LXC* 则是提供"运行环境". 单看概念它们的区别有些微妙, 但是 *LXC* 的特点就是, 同样是提供一套完全隔离的操作系统环境, 它很快, 超级快.
+
+在使用上, 概念上的区别就是, 用虚拟机, 可能更多是想, 做一个电脑, 让它跑起来, 然后再说让这台电脑干什么事.
+
+而 *docker* 的使用, 则是做一个环境(一组进程, 还有虚拟的设备等), 用环境来运行一个命令. *环境-命令* 是一体的, 命令一旦执行完成, 那么一个容器实例的任务就结束了. 所以如果我们想让一个容器像一台电脑那样, 通常我们给它一个像 ``/usr/bin/sshd -D`` 这样的命令, 这个容器像一台电脑, 是因为这个命令一直"没有执行完成"的效果.
+
+虚拟机的使用, 一个镜像就是一个安装好的系统. 而 *docker* 中, 镜像更像是一张安装光盘(刻盘后不能更改), 容器才是安装好的系统. 这种两层式结构相较于传统的"快照"机制, 要好用得多. (如何从真正的系统安装 ISO 镜像得到 docker 镜像, 我现在也不清楚怎么做)
+
+更具体一些, 使用 *docker* , 就是在指定的环境中执行一条命令, 比如:
+
+```bash
+docker run ubuntu:14.04 /bin/bash
+```
+
+意思就是, 在 *ubuntu:14.04* 这个环境中, 执行 */bin/bash* 这条命令. 当然, 这条命令显然是瞬间就执行完了的. 如果和这个命令立即有交互, 那么需要一些参数:
+
+```bash
+docker run -t -i ubuntu:14.04 /bin/bash
+```
+
+``-t`` 是分配一个虚拟终端, ``-i`` 是获取当前的输入. 这样你可以立即使用一个终端来和这个环境交互了.
+
+虽然终端是正常使用电脑最常用的交互方式, 不过真实使用 *docker* 的场景中, 会这样用的机会不会很多的. 通常是直接执行我们要做的事, 比如运行一个服务, 或者执行一系列的计算.
+
+使用 ``nc`` 来作一个例子:
+
+```bash
+docker run -t ubuntu:14.04 nc -l 8000
+```
+
+加上 ``-t`` 是因为需要一个终端来显示输出, 否则 ``nc`` 的标准输出就没地方去了.
+
+*docker* 安装之后, 会自动在系统中作一个网桥配置, ``run`` 出来的每个容器实例, 都会分配一个桥接的 IP 地址. 上面的命令执行之后, 已经有容器在运行了, 并且在其中, ``nc`` 正监听着 ``8000`` 端口. 我们要接上去试试, 首先需要找到这个容器实例的 IP 地址.
+
+先看当前运行着的实例列表:
+
+```bash
+docker ps
+```
+
+你先看到下面的信息:
+
+```text
+CONTAINER ID  IMAGE         COMMAND     CREATED        STATUS        PORTS  NAMES
+e1d0c9193025  ubuntu:14.04  nc -l 8000  5 seconds ago  Up 4 seconds         silly_curie
+```
+
+记下 ID , 不需要全部, 前面几位就可以了, 然后查看指定容器实例的细节:
+
+```bash
+docker inspect e1d0
+```
+
+会输出一串 json 字符串, 里面会有这样一节:
+
+```text
+"NetworkSettings": {
+    "Bridge": "docker0",
+    "Gateway": "172.17.42.1",
+    "IPAddress": "172.17.0.82",
+    "IPPrefixLen": 16,
+    "PortMapping": null,
+    "Ports": {}
+},
+```
+
+可以看到, 容器的 IP 是 ``172.17.0.82`` , 上面的网关 IP ``172.17.42.1`` 就是你"实体机"的.
+
+在实体机使用 ``telnet`` 连上去:
+
+```bash
+telnet 172.17.0.82 8000
+```
+
+现在能看到效果了.
+
+``^]`` 然后 ``quit`` 退出, ``nc`` 那边结束执行, 命令执行完, 之前的那个容器实例也就关闭了. 你使用 ``docker ps`` 看不到了. 但是使用:
+
+```bash
+docker ps -a
+```
+
+就能看到所有的容器实例. 在这里列出的实例是真实存在的, 只是当前并没有运行起来而已. 你可以随时让其中的实例再运行起来:
+
+```bash
+docker start e1d0c9193025
+```
+
+这样你又可以 ``telnet`` , 只是没地方看输出了.
+
+回顾上面的过程, 提出两个概念, *镜像* 和 *容器* .
+
+*镜像* 指上面的 ``ubuntu:14.04`` 这种, 嗯, 这种环境, 这种系统. 后面会讲如何做一个自己的 *镜像* .
+
+*容器* 是在具体的 *镜像* 上 ``run`` 具体的命令, 得到的一个"绑定状态". ``run`` 命令执行时的一些参数(比如和实体机的端口映射), 也是"状态"的一部分, ``run`` 过之后就不能更改了.
+
+它们的关系, 有些像编程语言中的 *类* 和 *实例* . ``run`` 时的命令就像是类实例化时的参数. 后面会提到, 你可以删除 *容器* , 也可以删除 *镜像* . 当你想删除 *镜像* , 但是使用它的 *容器* 还存在时, 你会得到操作失败的提示.
+
+*类* 有继承关系, 得利于 *AUFS* 这些的层级文件系统, *镜像* 的构建也是这种层层封装的结果.
+
+
+#基本命令#
+
+: ``docker images``
+    显示镜像列表
+: ``docker ps``
+    显示容器列表
+: ``docker run IMAGE_ID``
+    指定镜像, 运行一个容器
+: ``docker start/stop/pause/unpause/kill/restart CONTAINER_ID``
+    操作容器状态
+: ``docker tag IMAGE_ID [REGISTRYHOST/][USERNAME/]NAME[:TAG]``
+    给指定镜像命名
+: ``docker pull/push NAME:TAG``
+    下载, 推送镜像到 *Docker registry server* , NAME 部分包括了服务地址
+: ``docker rm/rmi CONTAINER_ID/IMAGE_ID``
+    删除容器, 镜像
+: ``docker inspect CONTAINER_ID/IMAGE_ID``
+    查看细节信息
+: ``docker top CONTAINER_ID``
+    查看指定的运行容器的进程情况
+: ``docker info``
+    查看系统配置信息
+: ``docker save/load``
+    保存, 恢复镜像信息
+: ``docker commit CONTAINER_ID``
+    从容器创建镜像
+: ``docker export > xxx.tar``
+    保存一个容器
+: ``docker import - < xxx.tar``
+    恢复一个容器
+: ``docker cp CONTAINER_ID:PATH HOSTPATH``
+    从镜像复制文件到实体机
+: ``docker diff CONTAINER_ID``
+    查看容器相对于镜像的文件变化
+: ``docker logs CONTAINER_ID``
+    查看容器日志
+: ``docker build``
+    从 ``Dockerfile`` 构建镜像
+: ``docker history IMAGE_ID``
+    查看镜像的构建历史
+
+
+#Dockerfile#
+
+#网络#
+
+#分区挂载#
+
