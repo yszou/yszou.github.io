@@ -558,6 +558,122 @@ session.query(User).get(1).blog_list.filter(Blog.title == 'abc').first()
 ```
 
 
+==关系的获取形式==
+
+前面介绍的关系定义中, 提到了两种关系的获取形式, 一种是:
+
+```python
+user_obj = relationship('User')
+```
+
+这种是在对象上获取关系对象时, 再去查询.
+
+另一种是:
+
+```python
+blog_list = relationship('Blog', lazy="dynamic")
+```
+
+这种的结果, 是在对象上获取关系对象时, 只返回 //Query// , 而查询的细节由人为来控制.
+
+总的来说, 关系的获取分成两种, //Lazy// 或 //Eager// . 在直接查询层面, 上面两种都属于 //Lazy// 的方式, 而 //Eager// 的一种, 就是在获取对象时的查询语句, 是直接带 ``join`` 的, 这样关系对象的数据在一个查询语句中就直接获取到了:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+    user = Column(BIGINT, ForeignKey('user.id'), index=True, nullable=False)
+
+    user_obj = relationship('User', lazy='joined', cascade='all')
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+```
+
+这样在查询时:
+
+```python
+blog = session.query(Blog).first()
+print blog.user_obj
+```
+
+便会多出 ``LEFT OUTER JOIN`` 的语句, 结果中直接获取到对应的 ``User`` 实例对象.
+
+也可以把 ``joined`` 换成子查询, ``subquery`` :
+
+```python
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(32), server_default='', nullable=False)
+
+    blog_list = relationship('Blog', cascade='all', lazy='subquery')
+
+
+if __name__ == '__main__':
+
+    session = Session()
+    user = session.query(User).first()
+    session.commit()
+```
+
+子查询会用到临时表.
+
+上面定义的:
+
+```python
+blog_list = relationship('Blog', lazy="dynamic")
+user_obj = relationship('User', lazy='joined')
+blog_list = relationship('Blog', lazy='subquery')
+```
+
+都算是一种默认方式. 在具体使用查询时, 还可以通过 ``options()`` 方法定义关联的获取方式:
+
+```python
+from sqlalchemy.orm import lazyload, joinedload, subqueryload
+user = session.query(User).options(lazyload('blog_list')).first()
+print user.blog_list
+```
+
+更多的用法:
+
+```python
+session.query(Parent).options(
+    joinedload('foo').joinedload('bar').joinedload('bat')
+    ).all()
+
+session.query(A).options(
+    defaultload("atob").joinedload("btoc")
+    ).all()
+
+session.query(MyClass).options(lazyload('*'))
+
+session.query(MyClass).options(
+    lazyload('*'), joinedload(MyClass.widget)
+    )
+
+session.query(User, Address).options(Load(Address).lazyload('*'))
+```
+
+如果关联的定义之前是 //Lazy// 的, 但是实际使用中, 希望在手工 //join// 之后, 把关联对象直接包含进结果实例, 可以使用 ``contains_eager()`` 来包装一下:
+
+```python
+from sqlalchemy.orm import contains_eager
+
+blog = session.query(Blog).join(Blog.user_obj)\
+              .options(contains_eager(Blog.user_obj)).first()
+print blog.user_obj
+```
+
+
+
 ==多对多关系==
 
 一个多对多关系是有三张表来表示的, 在定义 //relationship// 时, 就需要一个 ``secondary`` 参数来指明关系表:
@@ -644,8 +760,11 @@ session.commit()
 
 ``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为. 默认值是 " //save-update//, //merge//" , 稍后会介绍每个词项的作用.
 
+这里的所有规则介绍, 只涉及从 //Parent// 到 //Child// , //Parent// 即定义 //relationship//的类. 不涉及 //backref// .
+
 ``cascade`` 所有的可选字符串项是:
 
+- //all// , 所有操作都会自动处理到关联对象上.
 - //save-update// , 关联对象自动添加到会话.
 - //delete// , 关联对象自动从会话中删除.
 - //delete-orphan// , 属性中去掉关联对象, 则会话中会自动删除关联对象.
@@ -1068,4 +1187,55 @@ commit prepared 'xx';
 使用时, Postgresql 数据库需要把 //max_prepared_transactions// 这个配置项的值改成大于 0 .
 
 
+=字段类型=
 
+==基本类型==
+
+字段类型是在定义模型时, 对每个 ``Column`` 的类型约定. 不同类型的字段类型在输入输出上, 及支持的操作方面, 有所区别.
+
+这里只介绍 ``sqlalchemy.types.*`` 中的类型, SQL 标准类型方面, 是写什么最后生成的 DDL 语句就是什么, 比如 ``BIGINT``, ``BLOG`` 这些, 但是这些类型并不一定在所有数据库中都有支持. 除此而外, SQLAlchemy 也支持一些特定数据库的特定类型, 这些需要从具体的 ``dialects`` 实现里导入.
+
+
+: //Integer/BigInteger/SmallInteger//
+    整形.
+
+: //Boolean//
+    布尔类型. Python 中表现为 ``True/False`` , 数据库根据支持情况, 表现为 ``BOOLEAN`` 或 ``SMALLINT`` . 实例化时可以指定是否创建约束(默认创建).
+
+: //Date/DateTime/Time// ``(timezone=False)``
+    日期类型, ``Time`` 和 ``DateTime`` 实例化时可以指定是否带时区信息.
+
+: //Interval//
+    时间偏差类型. 在 Python 中表现为 ``datetime.timedelta()`` , 数据库不支持此类型则存为日期.
+
+: //Enum// ``(*enums, **kw)``
+    枚举类型, 根据数据库支持情况, SQLAlchemy 会使用原生支持或者使用 ``VARCHAR`` 类型附加约束的方式实现. 原生支持中涉及新类型创建, 细节在实例化时控制.
+
+: //Float//
+    浮点小数.
+
+: //Numeric// ``(precision=None, scale=None, decimal_return_scale=None, ...)``
+    定点小数, Python 中表现为 ``Decimal`` .
+
+: //LargeBinary// ``(length=None)``
+    字节数据. 根据数据库实现, 在实例化时可能需要指定大小.
+
+: //PickleType//
+    Python 对象的序列化类型.
+
+: //String// ``(length=None, collation=None, ...)``
+    字符串类型, Python 中表现为 ``Unicode`` , 数据库表现为 ``VARCHAR`` , 通常都需要指定长度.
+
+: //Unicode//
+    类似与字符串类型, 在某些数据库实现下, 会明确表示支持非 ASCII 字符. 同时输入输出也强制是 ``Unicode`` 类型.
+
+: //Text//
+    长文本类型, Python 表现为 ``Unicode`` , 数据库表现为 ``TEXT`` .
+
+: //UnicodeText//
+    参考 //Unicode// .
+
+
+==自定义类型==
+
+(用到再说)
