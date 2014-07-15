@@ -1239,3 +1239,155 @@ commit prepared 'xx';
 ==自定义类型==
 
 (用到再说)
+
+
+=示例: AdjacencyList, 单向链接列表=
+
+这里说的 //AdjacencyList// , 就是最常用来在关系数据库中表示树结构的, //parent// 方式:
+
+|| id | name | parent ||
+| 1 | 一 | null |
+| 2 | 二 | 1 |
+| 3 | 三 | 2 |
+
+
+上面的数据, 表示的结构就是:
+
+```text
+一
+  |- 二
+    |- 三
+```
+
+
+模型定义很好做:
+
+```python
+# -*- coding: utf-8 -*-
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.types import Integer, Unicode
+from sqlalchemy.orm import relationship, sessionmaker, joinedload
+
+BaseModel = declarative_base()
+Engine = create_engine('sqlite://', echo=True)
+Session = sessionmaker(Engine)
+
+class Node(BaseModel):
+    __tablename__ = 'node'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), nullable=False, server_default='')
+    parent = Column(Integer, ForeignKey('node.id'), index=True,
+                    nullable=False, server_default='0')
+```
+
+这里不让 ``parent`` 字段有 ``null`` , 而使用 ``0`` 代替.
+
+这个例子在关系上, 有一个纠结的地方, 因为 //node// 这个表, 它是自关联的, 所以如果想要 ``children`` 和 ``parent_obj`` 这两个关系时:
+
+```python
+children = relationship('Node')
+parent_obj = relationship('Node')
+```
+
+呃, 尴尬了.
+
+如果是两个表, 那么 SQLAlchemy 可以通过外键在哪张表这个信息, 来确定关系的方向:
+
+```python
+class Blog(BaseModel):
+    ...
+    user = Column(Integer, ForeignKey('user.id'))
+    user_obj = relationship('User')
+
+class User(BaseModel):
+    ...
+    blog_list = relationship('Blog')
+```
+
+因为外键在 ``Blog`` 中, 所以 //Blog -> User// 的 ``user_obj`` 是一个 //N -> 1// 关系.
+
+反之, //User -> Blog// 的 ``blog_list`` 则是一个 //1 -> N// 的关系.
+
+而自相关的 ``Node`` 无法直接判断方向, 所以 SQLAlchemy 会按 //1 -> N// 处理, 那么:
+
+```python
+children = relationship('Node')
+parent_obj = relationship('Node')
+```
+
+这两条之中, ``children`` 是正确的, 是我们想要的. 要定义 ``parent_obj`` 则需要在 ``relationship`` 中通过参数明确表示方向:
+
+```python
+parent_obj = relationship('Node', remote_side=[id])
+```
+
+这种方式就定义了一个, "到 id" 的 //N -> 1// 关系. 
+
+现在完整的模型定义是:
+
+```python
+class Node(BaseModel):
+    __tablename__ = 'node'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), nullable=False, server_default='')
+    parent = Column(Integer, ForeignKey('node.id'), index=True,
+                    nullable=False, server_default='0')
+
+    children = relationship('Node') # 1 -> N
+    parent_obj = relationship('Node', remote_side=[id])
+```
+
+查询方面没什么特殊的了, 不过我发现在自相关的模型关系, ``lazy`` 选项不起作用:
+
+```python
+children = relationship('Node', lazy="joined")
+parent_obj = relationship('Node', remote_side=[id], lazy="joined")
+```
+
+都是无效的, 只有在查询时, 手动使用 ``options()`` 定义:
+
+```python
+n = session.query(Node).filter(Node.name==u'一')\
+           .options(joinedload('parent_obj')).first()
+```
+
+如果要一次查出多级的子节点:
+
+```python
+n = session.query(Node).filter(Node.name==u'一')\
+           .options(joinedload('children').joinedload('children')).first()
+print n.name, n.children, n.children[0].children
+```
+
+多个 ``joinedload()`` 串连的话, 可以使用 ``joinedload_all()`` 来整合:
+
+```python
+from sqlalchemy.orm import joinedload_all
+
+n = session.query(Node).filter(Node.name==u'一')\
+           .options(joinedload_all('children', 'children')).first()
+```
+
+在修改方面, 删除的话, 配置了 ``cascade`` , 删除父节点, 则子节点也会自动删除:
+
+```python
+children = relationship('Node', lazy='joined', cascade='all') # 1 -> N
+node = session.query(Node).filter(Node.name == u'一').first()
+session.delete(node)
+session.commit()
+```
+
+如果只删除子节点, 那么 ``delete-orphan`` 选项就很好用了:
+
+```python
+children = relationship('Node', lazy='joined', cascade='all, delete-orphan') # 1 -> N
+node = session.query(Node).filter(Node.name == u'一').first()
+node.children = []
+session.commit()
+```
+
