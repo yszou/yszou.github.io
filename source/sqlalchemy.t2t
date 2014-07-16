@@ -170,6 +170,8 @@ from sqlalchemy.pool import QueuePool
 engine = create_engine('sqlite:///file.db', poolclass=QueuePool)
 ```
 
+还有:
+
 ```python
 from sqlalchemy.pool import NullPool
 engine = create_engine(
@@ -317,6 +319,8 @@ session.query(User).filter_by(username='abc').all()
 session.query(User).filter(User.username=='abc').all()
 session.query(Blog).filter(Blog.create >= 0).all()
 session.query(Blog).filter(Blog.create >= 0).first()
+session.query(Blog).filter(Blog.create >= 0 | Blog.title == 'A').first()
+session.query(Blog).filter(Blog.create >= 0 & Blog.title == 'A').first()
 session.query(Blog).filter(Blog.create >= 0).offset(1).limit(1).scalar()
 session.query(User).filter(User.username ==  'abc').scalar()
 session.query(User.id).filter(User.username ==  'abc').scalar()
@@ -558,6 +562,58 @@ session.query(User).get(1).blog_list.filter(Blog.title == 'abc').first()
 ```
 
 
+##关系的查询##
+
+关系定义之后, 除了在查询时会有自动关联的效果, 在作查询时, 也可以对定义的关系做操作:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(32), server_default='')
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+
+    user_obj = relationship('User')
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), server_default='')
+
+    blogs = relationship('Blog')
+```
+
+对于 *一对多* 的关系, 使用 ``any()`` 函数查询:
+
+```python
+user = session.query(User).filter(User.blogs.any(Blog.title == u'A')).first()
+```
+
+SQLAlchemy 会使用 ``exists`` 条件, 类似于:
+
+```sql
+SELECT *
+FROM user
+WHERE EXISTS
+    (SELECT 1
+     FROM blog
+     WHERE user.id = blog.user AND blog.title = ?)
+ LIMIT ? OFFSET ?
+```
+
+反之, 如果是 *多对一* 的关系, 则使用 ``has()`` 函数查询:
+
+```python
+blog = session.query(Blog).filter(Blog.user_obj.has(User.name == u'XX')).first()
+```
+
+最后的 SQL 语句都是一样的.
+
+
+
 ==关系的获取形式==
 
 前面介绍的关系定义中, 提到了两种关系的获取形式, 一种是:
@@ -673,12 +729,87 @@ print blog.user_obj
 ```
 
 
+##关系的表现形式##
+
+关系在对象属性中的表现, 默认是列表, 但是, 这不是唯一的形式. 根据需要, 可以作成 dictionary , set 或者其它你需要的对象.
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(32), server_default='')
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+
+    user_obj = relationship('User')
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), server_default='')
+
+    blogs = relationship('Blog')
+```
+
+对于上面的两个模型:
+
+```python
+user = session.query(User).first()
+print user.blogs
+```
+
+现在 ``user.blogs`` 是一个列表. 我们可以在 ``relationship()`` 调用时通过 ``collection_class`` 参数指定一个类, 来重新定义关系的表现形式:
+
+```python
+user = User(name=u'XX')
+session.add_all([Blog(title=u'A', user_obj=user), Blog(title=u'B', user_obj=user)])
+session.commit()
+
+user = session.query(User).first()
+print user.blogs
+```
+
+
+: *set* , 集合:
+
+```python
+blogs = relationship('Blog', collection_class=set)
+
+#InstrumentedSet([<__main__.Blog object at 0x1a58710>, <__main__.Blog object at 0x1a587d0>])
+```
+
+: *attribute_mapped_collection* , 字典, 键值从属性取:
+
+```python
+from sqlalchemy.orm.collections import attribute_mapped_collection
+
+blogs = relationship('Blog', collection_class=attribute_mapped_collection('title'))
+
+#{u'A': <__main__.Blog object at 0x20ed810>, u'B': <__main__.Blog object at 0x20ed8d0>}
+```
+
+如果 ``title`` 重复的话, 结果会覆盖.
+
+
+: *mapped_collection* , 字典, 键值自定义:
+
+```python
+from sqlalchemy.orm.collections import mapped_collection
+
+blogs = relationship('Blog', collection_class=mapped_collection(lambda blog: blog.title.lower()))
+
+#{u'a': <__main__.Blog object at 0x1de4890>, u'b': <__main__.Blog object at 0x1de4950>}
+```
+
+
 
 ==多对多关系==
 
 先考虑典型的多对多关系结构:
 
-```
+```python
 class Blog(BaseModel):
     __tablename__ = 'blog'
 
@@ -1154,6 +1285,31 @@ class User(BaseModel):
 ``creator`` 定义的方法, 返回的对象可以被对应的 ``blog_list`` 关系接收即可.
 
 
+在查询方面, *多对一* 的关系代理上, 可以直接使用属性:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(32), server_default='')
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+
+    user_obj = relationship('User')
+    user_name = association_proxy('user_obj', 'name')
+```
+
+查询:
+
+```python
+blog = session.query(Blog).filter(Blog.user_name == u'XX').first()
+```
+
+反过来的 *一对多* 关系代理上, 可以使用 ``contains()`` 函数:
+
+```python
+user = session.query(User).filter(User.blogs_title.contains('A')).first()
+```
 
 
 =会话与事务控制=
@@ -1368,9 +1524,155 @@ commit prepared 'xx';
     参考 //Unicode// .
 
 
-==自定义类型==
 
-(用到再说)
+#混合属性机制#
+
+
+##直接行为##
+
+混合属性, 官方文档中称之为 *Hybrid Attributes* . 这种机制表现为, 一个属性, 在 *类* 和层面, 和 *实例* 的层面, 其行为是不同的.
+
+定义模型的 *Column()* 就是一个典型的混合属性. 作为实例属性时, 是具体的对象值访问, 而作为类属性时, 则有构成 SQL 语句表达式的功能.
+
+```python
+class Interval(BaseModel):
+    __tablename__ = 'interval'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    start = Column(Integer)
+    end = Column(Integer)
+
+session.add(Interval(start=0, end=100))
+session.commit()
+```
+
+实例行为:
+
+```python
+ins = session.query(Interval).first()
+print ins.end - ins.start
+```
+
+类行为:
+
+```python
+ins = session.query(Interval).filter(Interval.end - Interval.start > 10).first()
+```
+
+这种机制其实一直在被使用, 但是可能大家都没有留意一个属性在类和实例上的区别.
+
+如果属性需要被进一步封装, 那么就需要明确声明 *Hybrid Attributes* 了:
+
+```python
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+
+class Interval(BaseModel):
+    __tablename__ = 'interval'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    start = Column(Integer)
+    end = Column(Integer)
+
+    @hybrid_property
+    def length(self):
+        return self.end - self.start
+
+    @hybrid_method
+    def bigger(self, i):
+        return self.length > i
+
+
+session.add(Interval(start=0, end=100))
+session.commit()
+
+ins = session.query(Interval).filter(Interval.length > 10).first()
+ins = session.query(Interval).filter(Interval.bigger(10)).first()
+print ins.bigger(1)
+```
+
+*setter* 的定义同样使用对应的装饰器即可:
+
+```python
+class Interval(BaseModel):
+    __tablename__ = 'interval'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    start = Column(Integer)
+    end = Column(Integer)
+
+    @hybrid_property
+    def length(self):
+        return abs(self.end - self.start)
+
+    @length.setter
+    def length(self, l):
+        self.end = self.start + l
+```
+
+
+
+##表达式行为##
+
+前面说的属性, 在类和实例上有不同行为, 可以看到, 在类上的行为, 其实就是生成 SQL 表达式时的行为. 上面的例子只是简单的运算, SQLAlchemy 可以自动处理好 Python 函数和 SQL 函数的区别. 但是如果是一些特性更强的 SQL 函数, 就需要手动指定了. 于时, 这时的情况变成, 实例行为是 Python 范畴的调用行为, 而类行为则是生成 SQL 函数的相关表达式.
+
+同时是前面的例子, 对于 ``length`` 的定义, 更严格上来说, 应该是取绝对值的.
+
+```python
+class Interval(BaseModel):
+    __tablename__ = 'interval'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    start = Column(Integer)
+    end = Column(Integer)
+
+    @hybrid_property
+    def length(self):
+        return abs(self.end - self.start)
+```
+
+但是, 如果使用了 Python 的 ``abs()`` 函数, 在生成 SQL 表达式时显示有无法处理了. 所以, 需要手动定义:
+
+```python
+from sqlalchemy import func
+
+class Interval(BaseModel):
+    __tablename__ = 'interval'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    start = Column(Integer)
+    end = Column(Integer)
+
+    @hybrid_property
+    def length(self):
+        return abs(self.end - self.start)
+
+    @length.expression
+    def length(self):
+        return func.abs(self.end - self.start)
+```
+
+这样查询时就可以直接使用:
+
+```python
+ins = session.query(Interval).filter(Interval.length > 1).first()
+```
+
+对应的 SQL :
+
+```sql
+SELECT *
+FROM interval
+WHERE abs(interval."end" - interval.start) > ?
+ LIMIT ? OFFSET ?
+```
+
+
+
+
+
+
+
+
 
 
 =示例: AdjacencyList, 单向链接列表=
