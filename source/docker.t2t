@@ -1,9 +1,10 @@
-Docker 简单使用
+Docker简单使用
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
 %!options(xhtml): --google-analytics --disqus
 %%toc
+
 
 
 #安装#
@@ -42,7 +43,7 @@ $ sudo apt-get install lxc-docker
 ```
 
 
-安装完成之后, 有一个 ``docker`` 的命令可供使用. 同时, ``docker`` 的服务默认监听在一个 *sock* 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
+安装完成之后, 有一个 ``docker`` 命令可供使用. 同时, ``docker`` 的服务默认监听在一个 *sock* 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
 
 权限方面, ``docker`` 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 ``sudo`` 用, 要么把当前用户加入到 docker 组:
 
@@ -79,7 +80,7 @@ docker run ubuntu:14.04 echo "Hello World"
 
 在使用上, 概念上的区别就是, 用虚拟机, 可能更多是想, 做一个电脑, 让它跑起来, 然后再说让这台电脑干什么事.
 
-而 *docker* 的使用, 则是做一个环境(一组进程, 还有虚拟的设备等), 用环境来运行一个命令. *环境-命令* 是一体的, 命令一旦执行完成, 那么一个容器实例的任务就结束了. 所以如果我们想让一个容器像一台电脑那样, 通常我们给它一个像 ``/usr/bin/sshd -D`` 这样的命令, 这个容器像一台电脑, 是因为这个命令一直"没有执行完成"的效果.
+而 *docker* 的使用, 则是做一个环境(一组进程, 还有虚拟的设备等), 用环境来运行一个命令. *环境-命令* 是一体的(一个容器), 命令一旦执行完成, 那么一个容器实例的任务就结束了. 所以如果我们想让一个容器像一台电脑那样, 通常我们给它一个像 ``/usr/bin/sshd -D`` 这样的命令, 这个容器像一台电脑, 是因为这个命令一直"没有执行完成"的效果.
 
 虚拟机的使用, 一个镜像就是一个安装好的系统. 而 *docker* 中, 镜像更像是一张安装光盘(刻盘后不能更改), 容器才是安装好的系统. 这种两层式结构相较于传统的"快照"机制, 要好用得多. (如何从真正的系统安装 ISO 镜像得到 docker 镜像, 我现在也不清楚怎么做)
 
@@ -151,7 +152,7 @@ telnet 172.17.0.82 8000
 
 现在能看到效果了.
 
-``^]`` 然后 ``quit`` 退出, ``nc`` 那边结束执行, 命令执行完, 之前的那个容器实例也就关闭了. 你使用 ``docker ps`` 看不到了. 但是使用:
+``^]`` 然后 ``quit`` 退出, ``nc`` 那边结束执行, 命令执行完, 之前的那个容器实例也就关闭了. 你使用 ``docker ps`` 看不到. 但是使用:
 
 ```bash
 docker ps -a
@@ -163,7 +164,7 @@ docker ps -a
 docker start e1d0c9193025
 ```
 
-这样你又可以 ``telnet`` , 只是没地方看输出了.
+这样你又可以 ``telnet`` , 只是没地方看输出.
 
 回顾上面的过程, 提出两个概念, *镜像* 和 *容器* .
 
@@ -220,7 +221,217 @@ docker start e1d0c9193025
 
 #Dockerfile#
 
+*Dockerfile* 是记录了镜像是如何被构建出来的配置文件, 可以被 ``docker`` 直接执行以创建一个镜像. 它的样子:
+
+```docker
+FROM ubuntu:14.04
+MAINTAINER YS.Zou <>
+
+ADD run /root/run
+ADD sources.list /etc/apt/sources.list
+ADD id_rsa.pub /tmp/pubkey
+ADD requirements /root/requirements
+
+RUN mkdir -p /root/.ssh && \
+    cat /tmp/pubkey >> /root/.ssh/authorized_keys && \
+    rm -rf /tmp/pubkey
+...
+
+CMD ["bash", "/root/run"]
+```
+
+把文件命名为 ``Dockerfile`` , 进入文件所在目录, 输入:
+
+```bash
+docker build .
+```
+
+就可以开始构建过程, 并且得到一个新的镜像了.
+
+*Dockerfile* 支持一些很简单的命令:
+
+: *FROM*
+    以哪个镜像为基础开始构建.
+
+: *MAINTAINER*
+    作者信息.
+
+: *RUN*
+    运行一条命令.
+
+: *CMD*
+    ``docker run IMAGE_ID cmd`` 这里的默认命令.
+
+: *ENTRYPOINT*
+    ``docker run IMAGE_ID cmd`` 这里的默认命令的前面部分, ``run`` 中 ``cmd`` 可以作为后续参数. 
+
+: *EXPOSE*
+    声明会用到的端口.
+
+: *ENV*
+    设置环境变量
+
+: *ADD*
+    从当前目录复制文件到容器. 会自动处理目录, 压缩包等情况.
+
+: *COPY*
+    从当前目录复制文件到容器. 只是单纯地复制文件.
+
+: *VOLUME*
+    声明一个数据卷, 可用于挂载.
+
+: *USER*
+    *RUN* 命令执行时的用户.
+
+: *WORKDIR*
+    *RUN*, *CMD*, *ENTRYPOINT* 这些命令执行时的当前目录.
+
+: *ONBUILD*
+    前缀命令, 放在上面这些命令前面, 表示生成的镜像再次作为"基础镜像"被用于构建时, 要执行的命令.
+
+
+``build`` 的过程, 会依次执行上面的命令, 实际上, docker 做的事, 也就是从基础镜像启一个容器, 然后执行一条命令, 修改之后提交此容器为新镜像. 以此类推, 直到所有命令都执行完. 所以在得到最终构建的镜像时, 会生成很多"中间镜像". 而如果 *Dockerfile* 中某条命令有错, 也是在当前中止, 过程中的"中间镜像"及"当前构建用的容器"仍然存在的.
+
+
 #网络#
 
-#分区挂载#
+docker 安装后, 会自动在系统做一个网桥配置 *docker0* . 其容器都会分配到此网桥配置下的独立, 私有 IP 地址.
 
+如果你要自己配置桥接, 也可以把 *docker0* 删除掉. ``docker run`` 的时候使用参数 ``-b`` 指定你自己配置的网桥.
+
+docker 容器的网络, 是相对于实体机的私有网络. 在网桥配置下, 只要知道 IP 地址, 各容器, 及实体机本身都可以自由通信.
+
+但是在实体机的网卡网络下, docker 容器就不可见了. 要让容器被外界访问到, 最简单的一个方法就是直接做端口映射, 把容器的端口和实体机端口成对连通. ``docker run`` 的时候使用 ``-p`` 参数就可以指定一对端口映射:
+
+```bash
+docker run -d -p 5000:22 -p 18888:8888 zys:common
+```
+
+上面的命令, 在启动容器时, 指定的端口映射表示实体机 5000 端口映射到容器 22 端口, 同时 18888 端口映射到容器 8888 端口. 这样做之后, 就可以通过实体机的 5000 端口 ssh 登录到容器了:
+
+```bash
+ssh root@localhost -p5000
+ssh root@realip -p5000
+```
+
+``docker run`` 时还有其它参数可用到控制容器的网络配置:
+
+: ``-p``
+    端口映射
+
+: ``-h``
+    设置主机名, 这个主机名是仅容器自己可见的.
+
+: ``--link=CONTAINER_NAME:ALIAS``
+    把另一个容器的地址配置成一个 ``ALIAS`` 主机名.
+
+: ``--dns``
+    配置 DNS 服务器.
+
+
+#分区挂载和数据卷#
+
+容器中的文件系统是独立的, 一旦容器被删除, 则文件系统也会被删除. 如果想容器和实体机在文件系统层面打通, 可以把指定目录挂载到容器当中:
+
+```bash
+docker run -d -p 5000:22 -v /home/zys/temp:/root/volumn zys:common
+```
+
+使用 ``-v`` 参数, 就可以把多个实体机目录挂载到容器的文件系统中.
+
+上面是直观的目录挂载. docker 还有自己的一个 *数据卷* 的概念. 它可以在容器中定义一些目录, 这些目录不使用层级的 AUFS 文件系统, 并且这些目录独立于容器而存在:
+
+```bash
+docker run -d -p 5000:22 -v /root/a --name=test zys:common
+```
+
+这样, 其 ``/root/a`` 目录就是一个数据卷, 如果使用 ``docker inspect`` 查看容器, 可以看到类似下面的信息:
+
+```text
+"Volumes": {
+    "/root/a": "/var/lib/docker/vfs/dir/xxx"
+},
+"VolumesRW": {
+    "/root/a": true
+}
+```
+
+其它的容器可以重用这个数据卷:
+
+```bash
+docker run -d -p 5000:22 --volumes-from=test zys:common
+```
+
+这里的形式有些别扭啊, 数据卷本来是独立于容器, 但是要想重用它, 又必须基于容器的名字.
+
+当所有容器被删除后, 数据卷本身是还存在的, 但是这时好像没办法再去直接使用它了, 不过里面的数据你可以想办法弄到容器里去再作下一步处理.
+
+
+#镜像服务器#
+
+docker 的镜像服务器 *docker-registry* 是 docker 项目的组成部分. 前面在谈 docker 的命令时, 它的 ``pull/push`` 命令就是和镜像服务器打交道. 并且, docker 的设计之中, 服务器地址不是单独配置的, 而是作为镜像名称的一部分.
+
+镜像的完整名称是:
+
+```text
+127.0.0.1:5000/zephyr/common:latest
+```
+
+各部分的意思:
+
+- ``127.0.0.1:5000`` 就是服务器地址
+- ``zephyr`` 是名字空间
+- ``common`` 是镜像名
+- ``latest`` 是版本
+
+
+*docker-registry* 的实现也是开源的, 在 github https://github.com/dotcloud/docker-registry 上拿下源码就可以跑起来.
+
+拿下源码之后, 项目中有一个 Dockerfile 文件, 我们可以开始构建镜像了. build 之前, 因为 GFW 的原因, 我们可以先把 Dockerfile 调整一下, 包括两部分:
+
+- 把 ubuntu 的软件源改成国内的.
+- 把 pip 的源改成国内的.
+
+
+然后开始构建:
+
+```bash
+docker build -rm -t registry .
+```
+
+完成之后, 你可以得到一个名为 registry 的镜像, 直接运行即可:
+
+```bash
+docker run -p 5000:5000 registry
+```
+
+访问 http://localhost:5000 能得到响应, 一个 *docker-registry* 服务就起来了.
+
+现在你可以把镜像提交到上面去:
+
+```bash
+docker tag xxx 127.0.0.1:5000/zephyr/common
+docker push 127.0.0.1:5000/zephyr/common
+```
+
+完成之后, 在浏览器中访问 http://localhost:5000/v1/search 可以看到列表.
+
+获取镜像:
+
+```bash
+docker pull 127.0.0.1:5000/zephyr/common
+```
+
+*docker-registry* 本身是设计成一套 Web API 的, 具体文档在 http://docs.docker.com/reference/api/registry_api/ .
+
+*docker* 本身的服务, 也是有一套基于网络的 API 可供使用的, 文档在 http://docs.docker.com/reference/api/docker_remote_api/ .
+
+
+
+
+#参考#
+
+- http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/
+- http://www.oschina.net/translate/docker-network-configuration
+- http://opjasee.com/2014/06/27/docker-data-storage/
+- http://www.cnblogs.com/xguo/p/3829329.html
