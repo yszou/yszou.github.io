@@ -676,7 +676,50 @@ print blog.user_obj
 
 ==多对多关系==
 
-一个多对多关系是有三张表来表示的, 在定义 //relationship// 时, 就需要一个 ``secondary`` 参数来指明关系表:
+先考虑典型的多对多关系结构:
+
+```
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    title = Column(String(64), server_default='', nullable=False)
+
+    tag_list = relationship('Tag')
+    tag_list = relationship('BlogAndTag')
+
+
+class Tag(BaseModel):
+    __tablename__ = 'tag'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    name = Column(String(16), server_default='', nullable=False)
+
+
+class BlogAndTag(BaseModel):
+    __tablename__ = 'blog_and_tag'
+
+    id = Column(BIGINT, primary_key=True, autoincrement=True)
+    blog = Column(BIGINT, ForeignKey('blog.id'), index=True)
+    tag = Column(BIGINT, ForeignKey('tag.id'), index=True)
+    create = Column(BIGINT, index=True, server_default='0')
+```
+
+在 ``Blog`` 中的:
+
+```python
+tag_list = relationship('Tag')
+```
+
+显示是错误的, 因为在 ``Tag`` 中并没有外键. 而:
+
+```python
+tag_list = relationship('BlogAndTag')
+```
+
+这样虽然正确, 但是 ``tag_list`` 的关系只是到达 ``BlogAndTag`` 这一层, 并没有到达我们需要的 ``Tag`` .
+
+这种情况下, 一个多对多关系是有三张表来表示的, 在定义 //relationship// 时, 就需要一个 ``secondary`` 参数来指明关系表:
 
 ```python
 class Blog(BaseModel):
@@ -704,7 +747,7 @@ class BlogAndTag(BaseModel):
     create = Column(BIGINT, index=True, server_default='0')
 ```
 
-在操作时可以直接获取到对应的实例列表:
+这样, 在操作时可以直接获取到对应的实例列表:
 
 ```python
 blog = session.query(Blog).filter(Blog.title == 'a').one()
@@ -1022,6 +1065,95 @@ if __name__ == '__main__':
 
     #session.commit()
 ```
+
+
+==属性代理==
+
+考虑这样的情况, 关系是关联的整个模型对象的, 但是, 有时我们对于这个关系, 并不关心整个对象, 只关心其中的某个属性. 考虑下面的场景:
+
+```python
+from sqlalchemy.ext.associationproxy import association_proxy
+
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(32), nullable=False, server_default='')
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+
+
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), nullable=False, server_default='')
+
+    blog_list = relationship('Blog')
+    blog_title_list = association_proxy('blog_list', 'title')
+```
+
+``blog_list`` 是一个正确的一对多关系. 下面的 ``blog_title_list`` 就是这个关系上的一个属性代理. ``blog_title_list`` 只处理 ``blog_list`` 这个关系中对应的对象的 ``title`` 属性, 包括获取和设置两个方向.
+
+```python
+session = Session()
+
+user = User(name='xxx')
+user.blog_list = [Blog(title='ABC')]
+session.add(user)
+session.commit()
+
+user = session.query(User).first()
+print user.blog_title_list
+```
+
+上面是获取属性的示例. 在"设置", 或者说"创建"时, 直接操作是有错的:
+
+```python
+user = session.query(User).first()
+user.blog_title_list = ['NEW']
+session.add(user)
+session.commit()
+```
+
+原因在于, 对于类 ``Blog`` 的初始化形式. ``association_proxy('blog_list', 'title')`` 中的 ``title`` 只是获取时的属性定义, 而在上面的设置过程中, 实际上的调用形式为:
+
+```python
+Blog('NEW')
+```
+
+``Blog`` 类没有明确定义 ``__init__()`` 方法, 所有这种形式的调用会报错. 可以把 ``__init__()`` 方法补上:
+
+```python
+class Blog(BaseModel):
+    __tablename__ = 'blog'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(32), nullable=False, server_default='')
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+
+    def __init__(self, title):
+        self.title = title
+```
+
+这样调用就没有问题了.
+
+另一个方法, 是在调用 ``association_proxy()`` 时使用 ``creator`` 参数明确定义"值"和"实例"的关系:
+
+```python
+class User(BaseModel):
+    __tablename__ = 'user'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), nullable=False, server_default='')
+
+    blog_list = relationship('Blog')
+    blog_title_list = association_proxy('blog_list', 'title',
+                                        creator=lambda t: User(title=t))
+```
+
+``creator`` 定义的方法, 返回的对象可以被对应的 ``blog_list`` 关系接收即可.
+
+
 
 
 =会话与事务控制=
