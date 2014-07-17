@@ -1530,7 +1530,9 @@ commit prepared 'xx';
 
 ##直接行为##
 
-混合属性, 官方文档中称之为 *Hybrid Attributes* . 这种机制表现为, 一个属性, 在 *类* 和层面, 和 *实例* 的层面, 其行为是不同的.
+混合属性, 官方文档中称之为 *Hybrid Attributes* . 这种机制表现为, 一个属性, 在 *类* 和层面, 和 *实例* 的层面, 其行为是不同的. 之所以需要关注这部分的差异, 原因源于 Python 上下文和 SQL 上下文的差异.
+
+*类* 层面经常是作为 SQL 查询时的一部分, 它面向的是 SQL 上下文. 而 *实例* 是已经得到或者创建的结果, 它面向的是 Python 上下文.
 
 定义模型的 *Column()* 就是一个典型的混合属性. 作为实例属性时, 是具体的对象值访问, 而作为类属性时, 则有构成 SQL 语句表达式的功能.
 
@@ -1667,10 +1669,85 @@ WHERE abs(interval."end" - interval.start) > ?
 ```
 
 
+##应用于关系##
+
+总体上没有特别之处:
+
+```python
+class Account(BaseModel):
+    __tablename__ = 'account'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    user = Column(Integer, ForeignKey('user.id'), index=True)
+    balance = Column(Integer, server_default='0')
 
 
+class User(BaseModel):
+    __tablename__ = 'user'
 
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), nullable=False, server_default='')
 
+    accounts = relationship('Account')
+    #balance = association_proxy('accounts', 'balance')
+
+    @hybrid_property
+    def balance(self):
+        return sum(x.balance for x in self.accounts)
+```
+
+查询时:
+
+```python
+user = session.query(User).first()
+print user.balance
+```
+
+这里涉及的东西都是 Python 自己的, 包括那个 ``sum()`` 函数, 和 SQL 没有关系.
+
+如果想实现的是, 使用 SQL 的 ``sum()`` 函数, 取出指定用户的总账户金额数, 那么就要考虑把 ``balance`` 作成表达式的形式:
+
+```python
+from sqlalchemy import select
+
+@hybrid_property
+def balance(self):
+    return select([func.sum(Account.balance)]).where(Account.user == self.id).label('balance_v')
+    #return func.sum(Account.balance)
+```
+
+这样的话, ``User.balance`` 只是单纯的一个表达式了, 查询时指定字段:
+
+```python
+user = session.query(User, User.balance).first()
+print user.balance_v
+```
+
+注意, 如果写成:
+
+```python
+session.query(User.balance).first()
+```
+
+意义就不再是"获取第一个用户的总金额", 而变成"获取总金额的第一个". 这里很坑吧.
+
+像上面这样改, 实例层面就无法使用 ``balance`` 属性. 所以, 还是先前介绍的, 表达式可以单独处理:
+
+```python
+@hybrid_property
+def balance(self):
+    return sum(x.balance for x in self.accounts)
+
+@balance.expression
+def balance(self):
+    return select([func.sum(Account.balance)]).where(Account.user == self.id).label('balance_v')
+```
+
+定义了表达式的 ``balance`` , 这部分作为查询条件上当然也是可以的:
+
+```python
+user = session.query(User).filter(User.balance > 1).first()
+```
 
 
 
@@ -1825,3 +1902,97 @@ node.children = []
 session.commit()
 ```
 
+
+#示例: 属性实体化建模#
+
+假设有这样的场景, 某实体在具体条目上, 其属性是不定的, 或者其属性是充分稀疏的:
+
+|| id | name | attr_0 | attr_1 | attr_2 | ... | attr_n ||
+| 1 | foo | 1 | abc | 33 | ... | any |
+
+
+这种情况下, 把属性看成是单独的实体, 是一个更好的建模方式:
+
+
+|| id | name ||
+| 1 | foo |
+
+
+|| id | entity_id | attr_name | attr_value ||
+| 1 | 1 | attr_0 | 1 |
+| 2 | 1 | attr_1 | 33 |
+| ... | ... | ... | ... |
+| n | 1 | attr_n | any |
+
+
+这种模型下, ORM 层面我们考虑封装一个对操作更友好的上层操作接口, 比如:
+
+```python
+obj = Entity()
+obj['attr_0'] = '1'
+obj['attr_1'] = '33'
+session.add(obj)
+session.commit()
+```
+
+实现上, 就是把对象的方法, 包装成 SQLAlchemy 的 ORM 中的对应的关系操作.
+
+```python
+class BaseModel(declarative_base()):
+    __abstract__ = True
+
+class Entity(BaseModel):
+    __tablename__ = 'entity'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(Unicode(32), server_default='')
+
+    _attributes = relationship('Attribute',
+                               collection_class=attribute_mapped_collection('key'),
+                               lazy='joined', cascade="all, delete-orphan")
+    attributes = association_proxy('_attributes', 'value',
+                                   creator=lambda k, v: Attribute(key=k, value=v))
+
+
+class Attribute(BaseModel):
+    __tablename__ = 'attribute'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    entity = Column(Integer, ForeignKey('entity.id'), index=True)
+    key = Column(Unicode(32), server_default='')
+    value = Column(UnicodeText, server_default='')
+
+
+if __name__ == '__main__':
+    BaseModel.metadata.create_all(Engine)
+
+    session = Session()
+
+    entity = Entity(name=u'哈哈')
+    entity.attributes[u'first'] = u'abc'
+    entity.attributes[u'sec'] = u'hoho'
+    session.add(entity)
+    session.commit()
+
+    entity = session.query(Entity).first()
+    print entity.attributes
+    del entity.attributes['first']
+    session.commit()
+
+    entity = session.query(Entity).first()
+    print entity.attributes
+```
+
+实现上就两点:
+
+- ``_attributes`` 关系中, 指定 ``collection_class`` , 于是就可以得到一个像 ``dict`` 的属性对象了.
+- ``association_proxy`` 从 ``dict`` 的属性对象中只抽出我们关心的 ``value`` 属性值.
+
+
+这个场景中, 还可以再进一步, 在 ``Entity`` 类上实现 ``dict`` 的一些方法, 直接操作其 ``attributes`` 属性, ``association_proxy`` 就直接返回 ``Entity`` 的实例, 这样代码可以变成这样:
+
+```python
+entity = Entity(name=u'ABC')
+entity[u'first'] = u'a'
+entity[u'sec'] = u'hoho'
+```
