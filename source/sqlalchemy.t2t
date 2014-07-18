@@ -5,7 +5,7 @@ SQLAlchemy参考
 %!options(xhtml): --google-analytics --disqus --mathfax 
 %%toc
 
-=基本流程=
+#基本流程#
 
 ```python
 # -*- coding: utf-8 -*-
@@ -41,19 +41,19 @@ for i in query:
 ```
 
 
-=创建连接=
+#创建连接#
 
 SQLAlchemy 的连接创建是 Lazy 的方式, 即在需要使用时才会去真正创建. 之前做的工作, 全是"定义".
 
-连接的定义是在 //engine// 中做的.
+连接的定义是在 *engine* 中做的.
 
-==Engine==
+##Engine##
 
-//engine// 的定义包含了三部分的内容, 一是具体数据库类型的实现, 二是连接池, 三是策略(即 //engine// 自己的实现).
+*engine* 的定义包含了三部分的内容, 一是具体数据库类型的实现, 二是连接池, 三是策略(即 *engine* 自己的实现).
 
 所谓的数据库类型即是 MYSQL , Postgresql , SQLite 这些不同的数据库.
 
-一般创建 //engine// 是使用 ``create_engine`` 方法:
+一般创建 *engine* 是使用 ``create_engine`` 方法:
 
 ```python
 engine = create_engine('postgresql+psycopg2://scott:tiger@localhost/mydatabase')
@@ -88,16 +88,16 @@ print engine.execute('select id from "user"').fetchall()
 ``create_engine`` 函数有很多的控制参数, 这个后面再详细说.
 
 
-==Engine的策略==
+##Engine的策略##
 
-``create_engine`` 的调用, 实际上会变成 ``strategy.create`` 的调用. 而 //strategy// 就是 //engine// 的实现细节. //strategy// 可以在 ``create_engine`` 调用时通过 ``strategy`` 参数指定, 目前官方的支持有三种:
+``create_engine`` 的调用, 实际上会变成 ``strategy.create`` 的调用. 而 *strategy* 就是 *engine* 的实现细节. *strategy* 可以在 ``create_engine`` 调用时通过 ``strategy`` 参数指定, 目前官方的支持有三种:
 
 - plain, 默认的
 - threadlocal, 连接是线程局部的
 - mock, 所有的 SQL 语句的执行会使用指定的函数
 
 
-//mock// 这个实现, 会把所有的 SQL 语句的执行交给指定的函数来做, 这个函数是由 ``create_engine`` 的 ``executor`` 参数指定:
+*mock* 这个实现, 会把所有的 SQL 语句的执行交给指定的函数来做, 这个函数是由 ``create_engine`` 的 ``executor`` 参数指定:
 
 ```python
 def f(sql, *args, **kargs):
@@ -110,7 +110,7 @@ print engine.execute('select id from "user"')
 ```
 
 
-==各数据库实现==
+##各数据库实现##
 
 各数据库的实现在 SQLAlchemy 中分成了两个部分, 一是数据库的类型, 二是具体数据库中适配的客户端实现. 比如对于 Postgresql 的访问, 可以使用 ``psycopg2`` , 也可以使用 ``pg8000`` :
 
@@ -120,13 +120,13 @@ s = 'postgresql+pg8000://test@localhost:5432/bbcustom'
 engine = create_engine(s)
 ```
 
-具体的适配工作, 是需要在代码中实现一个 ``Dialect`` 类来完成的. 官方的实现在 //dialects// 目录下.
+具体的适配工作, 是需要在代码中实现一个 ``Dialect`` 类来完成的. 官方的实现在 *dialects* 目录下.
 
 获取具体的 Dialect 的行为, 则是前面提到的 ``URL`` 对象的 ``get_dialect`` 方法. ``create_engine`` 时你单传一个字符串, SQLAlchemy 自己也会使用 ``make_url`` 得到一个 ``URL`` 的实例).
 
 
 
-==连接池==
+##连接池##
 
 SQLAlchemy 支持连接池, 在 ``create_engine`` 时添加相关参数即可使用.
 
@@ -218,12 +218,12 @@ e = create_engine('postgresql://', pool=mypool)
 ```
 
 
-=模型使用=
+#模型使用#
 
 
-==模型定义==
+##模型定义##
 
-对于 //Table// 的定义, 本来是直接的实例化调用, 通过 ``declarative`` 的包装, 可以像"定义类"这样的更直观的方式来完成.
+对于 *Table* 的定义, 本来是直接的实例化调用, 通过 ``declarative`` 的包装, 可以像"定义类"这样的更直观的方式来完成.
 
 ```python
 user = Table('user', metadata,
@@ -281,7 +281,7 @@ if __name__ == '__main__':
 ```
 
 
-==创建==
+##创建##
 
 
 ```python
@@ -299,7 +299,7 @@ session.commit()
 
 
 
-==查询==
+##查询##
 
 
 SQLAlchemy 实现的查询非常强大, 写起来有一种随心所欲的感觉.
@@ -368,7 +368,7 @@ session.query(User).count()
 ```
 
 
-==修改==
+##修改##
 
 还是通常的两种方式:
 
@@ -420,7 +420,7 @@ print user.name
 不管 ``synchronize_session`` 的行为如何, ``commit`` 之后 ``session`` 都会过期, 再次获取相关对象值时, 都会重新作一次查询.
 
 
-==删除==
+##删除##
 
 ```python
 session.query(User).filter_by(username='abc').delete()
@@ -432,7 +432,7 @@ session.delete(user)
 删除同样有像修改一样的 ``synchronize_session`` 参数的问题, 影响当前会话的状态.
 
 
-==JOIN==
+##JOIN##
 
 SQLAlchemy 可以很直观地作 ``join`` 的支持:
 
@@ -447,12 +447,12 @@ print r
 ```
 
 
-=外键和关系定义=
+#外键和关系定义#
 
 
-==外键约束==
+##外键约束##
 
-使用 //ForeignKey// 来定义一个外键约定:
+使用 *ForeignKey* 来定义一个外键约定:
 
 
 ```python
@@ -497,10 +497,10 @@ session.commit()
 定义了外键, 对查询来说, 并没有影响. 外键只是单纯的一条约束而已. 当然, 可以在外键上定义一些关联的事件操作, 比如当外键条目被删除时, 字段置成 ``null`` , 或者关联条目也被删除等.
 
 
-==关系定义==
+##关系定义##
 
 
-要定义关系, 必有使用 //ForeignKey// 约束. 当然, 这里说的只是在定义模型时必有要有, 至于数据库中是否真有外键约定, 这并不重要.
+要定义关系, 必有使用 *ForeignKey* 约束. 当然, 这里说的只是在定义模型时必有要有, 至于数据库中是否真有外键约定, 这并不重要.
 
 
 ```python
@@ -532,7 +532,7 @@ class User(BaseModel):
 
 关系只是 SQLAlchemy 提供的工具, 与数据库无关, 所以任何时候添加都是可以的.
 
-上面的 //User-Blog// 是一个"一对多"关系, 通过 ``Blog`` 的 ``user`` 这个 //ForeignKey// , SQLAlchemy 可以自动处理关系的定义. 在查询时, 返回的结果自然也是, 一个是列表, 一个是单个对象:
+上面的 *User-Blog* 是一个"一对多"关系, 通过 ``Blog`` 的 ``user`` 这个 *ForeignKey* , SQLAlchemy 可以自动处理关系的定义. 在查询时, 返回的结果自然也是, 一个是列表, 一个是单个对象:
 
 ```python
 session = Session()
@@ -542,7 +542,7 @@ print session.query(User).get(1).blog_list
 
 这种关系的定义, 并不影响查询并获取对象的行为, 不会添加额外的 ``join`` 操作. 在对象上取一个 ``user_obj`` 或者取 ``blog_list`` 都是发生了一个新的查询操作.
 
-上面的关系定义, 对应的属性是实际查询出的实例列表, 当条目数多的时候, 这样可能会有问题. 比如用户名下有成千上万的文章, 一次全取出就太暴力了. 关系对应的属性可以定义成一个 //Query// :
+上面的关系定义, 对应的属性是实际查询出的实例列表, 当条目数多的时候, 这样可能会有问题. 比如用户名下有成千上万的文章, 一次全取出就太暴力了. 关系对应的属性可以定义成一个 *Query* :
 
 ```python
 class User(BaseModel):
@@ -614,7 +614,7 @@ blog = session.query(Blog).filter(Blog.user_obj.has(User.name == u'XX')).first()
 
 
 
-==关系的获取形式==
+##关系的获取形式##
 
 前面介绍的关系定义中, 提到了两种关系的获取形式, 一种是:
 
@@ -630,9 +630,9 @@ user_obj = relationship('User')
 blog_list = relationship('Blog', lazy="dynamic")
 ```
 
-这种的结果, 是在对象上获取关系对象时, 只返回 //Query// , 而查询的细节由人为来控制.
+这种的结果, 是在对象上获取关系对象时, 只返回 *Query* , 而查询的细节由人为来控制.
 
-总的来说, 关系的获取分成两种, //Lazy// 或 //Eager// . 在直接查询层面, 上面两种都属于 //Lazy// 的方式, 而 //Eager// 的一种, 就是在获取对象时的查询语句, 是直接带 ``join`` 的, 这样关系对象的数据在一个查询语句中就直接获取到了:
+总的来说, 关系的获取分成两种, *Lazy* 或 *Eager* . 在直接查询层面, 上面两种都属于 *Lazy* 的方式, 而 *Eager* 的一种, 就是在获取对象时的查询语句, 是直接带 ``join`` 的, 这样关系对象的数据在一个查询语句中就直接获取到了:
 
 ```python
 class Blog(BaseModel):
@@ -718,7 +718,7 @@ session.query(MyClass).options(
 session.query(User, Address).options(Load(Address).lazyload('*'))
 ```
 
-如果关联的定义之前是 //Lazy// 的, 但是实际使用中, 希望在手工 //join// 之后, 把关联对象直接包含进结果实例, 可以使用 ``contains_eager()`` 来包装一下:
+如果关联的定义之前是 *Lazy* 的, 但是实际使用中, 希望在手工 *join* 之后, 把关联对象直接包含进结果实例, 可以使用 ``contains_eager()`` 来包装一下:
 
 ```python
 from sqlalchemy.orm import contains_eager
@@ -805,7 +805,7 @@ blogs = relationship('Blog', collection_class=mapped_collection(lambda blog: blo
 
 
 
-==多对多关系==
+##多对多关系##
 
 先考虑典型的多对多关系结构:
 
@@ -850,7 +850,7 @@ tag_list = relationship('BlogAndTag')
 
 这样虽然正确, 但是 ``tag_list`` 的关系只是到达 ``BlogAndTag`` 这一层, 并没有到达我们需要的 ``Tag`` .
 
-这种情况下, 一个多对多关系是有三张表来表示的, 在定义 //relationship// 时, 就需要一个 ``secondary`` 参数来指明关系表:
+这种情况下, 一个多对多关系是有三张表来表示的, 在定义 *relationship* 时, 就需要一个 ``secondary`` 参数来指明关系表:
 
 ```python
 class Blog(BaseModel):
@@ -928,27 +928,27 @@ session.commit()
 ```
 
 
-==Cascades 自动关系处理==
+##Cascades 自动关系处理##
 
-前面提到的, 当操作关系, 实体时, 与其相关联的关系, 实体是否会被自动处理的问题, 在 SQLAlchemy 中是通过 //Cascades// 机制来定义和解决的. ( //Cascades// 这个词是来源于 //Hibernate// .)
+前面提到的, 当操作关系, 实体时, 与其相关联的关系, 实体是否会被自动处理的问题, 在 SQLAlchemy 中是通过 *Cascades* 机制来定义和解决的. ( *Cascades* 这个词是来源于 *Hibernate* .)
 
-``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为. 默认值是 " //save-update//, //merge//" , 稍后会介绍每个词项的作用.
+``cascade`` 是一个 ``relationship`` 的参数, 其值是逗号分割的多个字符串, 以表示不同的行为. 默认值是 " *save-update*, *merge*" , 稍后会介绍每个词项的作用.
 
-这里的所有规则介绍, 只涉及从 //Parent// 到 //Child// , //Parent// 即定义 //relationship//的类. 不涉及 //backref// .
+这里的所有规则介绍, 只涉及从 *Parent* 到 *Child* , *Parent* 即定义 *relationship*的类. 不涉及 *backref* .
 
 ``cascade`` 所有的可选字符串项是:
 
-- //all// , 所有操作都会自动处理到关联对象上.
-- //save-update// , 关联对象自动添加到会话.
-- //delete// , 关联对象自动从会话中删除.
-- //delete-orphan// , 属性中去掉关联对象, 则会话中会自动删除关联对象.
-- //merge// , ``session.merge()`` 时会处理关联对象.
-- //refresh-expire// , ``session.expire()`` 时会处理关联对象.
-- //expunge// , ``session.expunge()`` 时会处理关联对象.
+- *all* , 所有操作都会自动处理到关联对象上.
+- *save-update* , 关联对象自动添加到会话.
+- *delete* , 关联对象自动从会话中删除.
+- *delete-orphan* , 属性中去掉关联对象, 则会话中会自动删除关联对象.
+- *merge* , ``session.merge()`` 时会处理关联对象.
+- *refresh-expire* , ``session.expire()`` 时会处理关联对象.
+- *expunge* , ``session.expunge()`` 时会处理关联对象.
 
 
-: //save-update//
-    当一个对象被添加进 session 后, 此对象标记为 //save-update// 的 ``relationship`` 关系对象也会同时添加进这个 session .
+: *save-update*
+    当一个对象被添加进 session 后, 此对象标记为 *save-update* 的 ``relationship`` 关系对象也会同时添加进这个 session .
 
 ```python
 class Blog(BaseModel):
@@ -982,8 +982,8 @@ if __name__ == '__main__':
     session.commit()
 ```
 
-: //delete//
-    当一个对象在 session 中被标记为删除时, 其属性中 //relationship// 关联的对象也会被标记成删除, 否则, 关联对象中的对应外键字段会被改成 ``NULL`` , 不能为 ``NULL`` 则报错.
+: *delete*
+    当一个对象在 session 中被标记为删除时, 其属性中 *relationship* 关联的对象也会被标记成删除, 否则, 关联对象中的对应外键字段会被改成 ``NULL`` , 不能为 ``NULL`` 则报错.
 
 ```python
 class Blog(BaseModel):
@@ -1014,8 +1014,8 @@ if __name__ == '__main__':
     session.commit()
 ```
 
-: //delete-orphan//
-    当 //relationship// 属性变化时, 被 "去掉" 的对象会被自动删除. 比如之前是:
+: *delete-orphan*
+    当 *relationship* 属性变化时, 被 "去掉" 的对象会被自动删除. 比如之前是:
 
 ```python
 user.blog_list = [blog, blog2]
@@ -1065,7 +1065,7 @@ if __name__ == '__main__':
     session.commit()
 ```
 
-: //merge//
+: *merge*
     这个选项是标识在 ``session.merge()`` 时处理关联对象. ``session.merge()`` 的作用, 是把一个会话外的实例, "整合"进会话, 比如 "有则修改, 无则创建" 就是典型的一种 "整合":
 
 ```python
@@ -1117,7 +1117,7 @@ if __name__ == '__main__':
     session.commit()
 ```
 
-: //refresh-expire//
+: *refresh-expire*
     当使用 ``session.expire()`` 标识一个对象过期时, 此对象的关联对象是否也被标识为过期(访问属性会重新查询数据库).
 
 ```python
@@ -1160,8 +1160,8 @@ if __name__ == '__main__':
     session.commit()
 ```
 
-: //expunge//
-    与 //merge// 相反, 当 //session.expunge()// 把对象从会话中去除的时候, 此对象的关联对象也同时从会话中消失.
+: *expunge*
+    与 *merge* 相反, 当 *session.expunge()* 把对象从会话中去除的时候, 此对象的关联对象也同时从会话中消失.
 
 ```python
 class Blog(BaseModel):
@@ -1198,7 +1198,7 @@ if __name__ == '__main__':
 ```
 
 
-==属性代理==
+##属性代理##
 
 考虑这样的情况, 关系是关联的整个模型对象的, 但是, 有时我们对于这个关系, 并不关心整个对象, 只关心其中的某个属性. 考虑下面的场景:
 
@@ -1312,11 +1312,11 @@ user = session.query(User).filter(User.blogs_title.contains('A')).first()
 ```
 
 
-=会话与事务控制=
+#会话与事务控制#
 
-==基本使用==
+##基本使用##
 
-SQLAlchemy 的 //session// 是用于管理数据库操作的一个像容器一样的东西. 模型实例对象本身独立存在, 而要让其修改(创建)生效, 则需要把它们加入某个 session . 同时你也可以把模型实例对象从 session 中去除. 被 session 管理的实例对象, 在 ``session.commit()`` 时被提交到数据库. 同时 ``session.rollback()`` 是回滚变更.
+SQLAlchemy 的 *session* 是用于管理数据库操作的一个像容器一样的东西. 模型实例对象本身独立存在, 而要让其修改(创建)生效, 则需要把它们加入某个 session . 同时你也可以把模型实例对象从 session 中去除. 被 session 管理的实例对象, 在 ``session.commit()`` 时被提交到数据库. 同时 ``session.rollback()`` 是回滚变更.
 
 ``session.flush()`` 的作用是在事务管理内与数据库发生交互, 对应的实例状态被反映到数据库. 比如自增 ID 被填充上值.
 
@@ -1336,9 +1336,9 @@ except:
 ```
 
 
-==for update==
+##for update##
 
-SQLAlchemy 的 //Query// 支持 ``select ... for update / share`` .
+SQLAlchemy 的 *Query* 支持 ``select ... for update / share`` .
 
 ```python
 session.Query(User).with_for_update().first()
@@ -1351,21 +1351,21 @@ session.Query(User).with_for_update(read=True).first()
 with_for_update(read=False, nowait=False, of=None)
 ```
 
-: //read//
+: *read*
     是标识加互斥锁还是共享锁. 当为 ``True`` 时, 即 ``for share`` 的语句, 是共享锁. 多个事务可以获取共享锁, 互斥锁只能一个事务获取. 有"多个地方"都希望是"这段时间我获取的数据不能被修改, 我也不会改", 那么只能使用共享锁.
 
-: //nowait//
+: *nowait*
     其它事务碰到锁, 是否不等待直接"报错".
 
-: //of//
+: *of*
     指明上锁的表, 如果不指明, 则查询中涉及的所有表(行)都会加锁.
 
 
-==事务嵌套==
+##事务嵌套##
 
 SQLAlchemy 中的事务嵌套有两种情况. 一是在 session 中管理的事务, 本身有层次性. 二是 session 和原始的 connection 之间, 是一种层次关系, 在这 session , connection 两个概念之中的事务同样具有这样的层次.
 
-session 中的事务, 可能通过 ``begin_nested()`` 方法做 //savepoint// :
+session 中的事务, 可能通过 ``begin_nested()`` 方法做 *savepoint* :
 
 ```python
 session.add(u1)
@@ -1422,7 +1422,7 @@ trans.rollback()
 在测试中这种方式可能会有用.
 
 
-==二段式提交==
+##二段式提交##
 
 二段式提交, Two-Phase, 是为解决分布式环境下多点事务控制的一套协议.
 
@@ -1440,7 +1440,7 @@ SQLAlchemy 中对这个机制的支持, 是在构建会话类是加入 ``twophas
 Session = sessionmaker(twophase=True)
 ```
 
-然后会话类可以根据一些策略, 绑定多个 //Engine// , 可以是多个数据库连接, 比如:
+然后会话类可以根据一些策略, 绑定多个 *Engine* , 可以是多个数据库连接, 比如:
 
 ```python
 Session = sessionmaker(twophase=True)
@@ -1472,56 +1472,56 @@ prepare transaction 'xx';
 commit prepared 'xx';
 ```
 
-使用时, Postgresql 数据库需要把 //max_prepared_transactions// 这个配置项的值改成大于 0 .
+使用时, Postgresql 数据库需要把 *max_prepared_transactions* 这个配置项的值改成大于 0 .
 
 
-=字段类型=
+#字段类型#
 
-==基本类型==
+##基本类型##
 
 字段类型是在定义模型时, 对每个 ``Column`` 的类型约定. 不同类型的字段类型在输入输出上, 及支持的操作方面, 有所区别.
 
 这里只介绍 ``sqlalchemy.types.*`` 中的类型, SQL 标准类型方面, 是写什么最后生成的 DDL 语句就是什么, 比如 ``BIGINT``, ``BLOG`` 这些, 但是这些类型并不一定在所有数据库中都有支持. 除此而外, SQLAlchemy 也支持一些特定数据库的特定类型, 这些需要从具体的 ``dialects`` 实现里导入.
 
 
-: //Integer/BigInteger/SmallInteger//
+: *Integer/BigInteger/SmallInteger*
     整形.
 
-: //Boolean//
+: *Boolean*
     布尔类型. Python 中表现为 ``True/False`` , 数据库根据支持情况, 表现为 ``BOOLEAN`` 或 ``SMALLINT`` . 实例化时可以指定是否创建约束(默认创建).
 
-: //Date/DateTime/Time// ``(timezone=False)``
+: *Date/DateTime/Time* ``(timezone=False)``
     日期类型, ``Time`` 和 ``DateTime`` 实例化时可以指定是否带时区信息.
 
-: //Interval//
+: *Interval*
     时间偏差类型. 在 Python 中表现为 ``datetime.timedelta()`` , 数据库不支持此类型则存为日期.
 
-: //Enum// ``(*enums, **kw)``
+: *Enum* ``(*enums, **kw)``
     枚举类型, 根据数据库支持情况, SQLAlchemy 会使用原生支持或者使用 ``VARCHAR`` 类型附加约束的方式实现. 原生支持中涉及新类型创建, 细节在实例化时控制.
 
-: //Float//
+: *Float*
     浮点小数.
 
-: //Numeric// ``(precision=None, scale=None, decimal_return_scale=None, ...)``
+: *Numeric* ``(precision=None, scale=None, decimal_return_scale=None, ...)``
     定点小数, Python 中表现为 ``Decimal`` .
 
-: //LargeBinary// ``(length=None)``
+: *LargeBinary* ``(length=None)``
     字节数据. 根据数据库实现, 在实例化时可能需要指定大小.
 
-: //PickleType//
+: *PickleType*
     Python 对象的序列化类型.
 
-: //String// ``(length=None, collation=None, ...)``
+: *String* ``(length=None, collation=None, ...)``
     字符串类型, Python 中表现为 ``Unicode`` , 数据库表现为 ``VARCHAR`` , 通常都需要指定长度.
 
-: //Unicode//
+: *Unicode*
     类似与字符串类型, 在某些数据库实现下, 会明确表示支持非 ASCII 字符. 同时输入输出也强制是 ``Unicode`` 类型.
 
-: //Text//
+: *Text*
     长文本类型, Python 表现为 ``Unicode`` , 数据库表现为 ``TEXT`` .
 
-: //UnicodeText//
-    参考 //Unicode// .
+: *UnicodeText*
+    参考 *Unicode* .
 
 
 
@@ -1752,9 +1752,9 @@ user = session.query(User).filter(User.balance > 1).first()
 
 
 
-=示例: AdjacencyList, 单向链接列表=
+#示例: AdjacencyList, 单向链接列表#
 
-这里说的 //AdjacencyList// , 就是最常用来在关系数据库中表示树结构的, //parent// 方式:
+这里说的 *AdjacencyList* , 就是最常用来在关系数据库中表示树结构的, *parent* 方式:
 
 || id | name | parent ||
 | 1 | 一 | null |
@@ -1797,7 +1797,7 @@ class Node(BaseModel):
 
 这里不让 ``parent`` 字段有 ``null`` , 而使用 ``0`` 代替.
 
-这个例子在关系上, 有一个纠结的地方, 因为 //node// 这个表, 它是自关联的, 所以如果想要 ``children`` 和 ``parent_obj`` 这两个关系时:
+这个例子在关系上, 有一个纠结的地方, 因为 *node* 这个表, 它是自关联的, 所以如果想要 ``children`` 和 ``parent_obj`` 这两个关系时:
 
 ```python
 children = relationship('Node')
@@ -1819,11 +1819,11 @@ class User(BaseModel):
     blog_list = relationship('Blog')
 ```
 
-因为外键在 ``Blog`` 中, 所以 //Blog -> User// 的 ``user_obj`` 是一个 //N -> 1// 关系.
+因为外键在 ``Blog`` 中, 所以 *Blog -> User* 的 ``user_obj`` 是一个 *N -> 1* 关系.
 
-反之, //User -> Blog// 的 ``blog_list`` 则是一个 //1 -> N// 的关系.
+反之, *User -> Blog* 的 ``blog_list`` 则是一个 *1 -> N* 的关系.
 
-而自相关的 ``Node`` 无法直接判断方向, 所以 SQLAlchemy 会按 //1 -> N// 处理, 那么:
+而自相关的 ``Node`` 无法直接判断方向, 所以 SQLAlchemy 会按 *1 -> N* 处理, 那么:
 
 ```python
 children = relationship('Node')
@@ -1836,7 +1836,7 @@ parent_obj = relationship('Node')
 parent_obj = relationship('Node', remote_side=[id])
 ```
 
-这种方式就定义了一个, "到 id" 的 //N -> 1// 关系. 
+这种方式就定义了一个, "到 id" 的 *N -> 1* 关系. 
 
 现在完整的模型定义是:
 
