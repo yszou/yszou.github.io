@@ -1,0 +1,224 @@
+VB和VBA
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+#变量声明#
+
+```vb.net
+Dim a As Integer
+Dim b As String
+Dim a As Integer = 0
+Dim a As Integer = 1 + 1
+Dim b as String = "default"
+Dim c as String
+a = 1
+c = b
+print a
+```
+
+
+#数据类型#
+
+##字符串##
+
+```vb.net
+Dim a as String
+Dim b as String
+Dim c as String = ""
+
+a = "123"
+b = "345"
+
+c = a & " " & b
+```
+
+
+##数组##
+
+```vb.net
+Dim a() as String
+Dim a(9) as String
+a(0) = "good"
+Dim a() as Integer = {0, 1, 2, 3, 4}
+```
+
+
+#逻辑比较#
+
+|| 运算符 | 说明 ||
+| = | 等于 |
+| <> | 不等于 |
+| > | 大于 |
+| < | 小于 |
+| >= | 大于或等于 |
+| <= | 小于或等于 |
+
+
+#过程和函数#
+
+过程不返回值:
+
+```vb.net
+sub test()
+  ...
+end sub
+```
+
+
+函数有返回值:
+
+```vb.net
+function get_a() as integer
+  return 1
+end function
+```
+
+
+参数的声明:
+
+```vb.net
+Sub PlaySound(ByVal SoundFile As String, ByVal Volume As Integer)
+  My.Computer.Audio.Play(SoundFile, Volume)
+End Sub
+```
+
+``ByVal`` 是指明按值传递?
+
+
+#过程控制#
+
+
+##for - next##
+
+```vb.net
+dim a as integer
+for a = 0 to 10
+  print a
+next
+```
+
+
+##if - then##
+
+```vb.net
+dim as as integer
+for a = 0 to 10
+  if a > 5 then
+    print a
+  end if
+next
+```
+
+加上 ``else`` :
+
+```
+dim as as integer
+for a = 0 to 10
+  if a > 5 then
+    print a
+  else
+    print a + 1
+  end if
+next
+
+```
+
+##do - white 和 do - unitl##
+
+```vb.net
+dim a as integer = 0
+do while a < 100
+    a = a + 10
+    print a
+loop
+```
+
+``until`` 相反:
+
+```vb.net
+dim a as integer = 0
+do until a > 100
+    a = a + 10
+    print a
+loop
+```
+
+
+##select - case##
+
+```vb.net
+DIM a AS Integer = 0
+SELECT CASE a
+  CASE 1 TO 10
+    PRINT "ok"
+  CASE ELSE 
+    PRINT "xx"
+END SELECT
+```
+
+如果是字符串的话:
+
+```vb.net
+DIM a AS String = "123"
+SELECT CASE a
+  CASE "123"
+    PRINT "ok"
+  CASE ELSE 
+    PRINT "xx"
+END SELECT
+```
+
+``is`` 关键字:
+
+```vb.net
+DIM a AS Integer = 0
+SELECT CASE a
+  CASE is < 10
+    PRINT "ok"
+  CASE ELSE 
+    PRINT "xx"
+END SELECT
+```
+
+多值:
+
+```vb.net
+DIM a AS Integer = 0
+SELECT CASE a
+  CASE 0, 1, 2
+    PRINT "ok"
+  CASE ELSE 
+    PRINT "xx"
+END SELECT
+```
+
+字符串也可以多值:
+
+```vb.net
+DIM a AS String = "123"
+SELECT CASE a
+  CASE "123", "foo", "bar"
+    PRINT "ok"
+  CASE ELSE 
+    PRINT "xx"
+END SELECT
+```
+
+
+#错误处理#
+
+```vb.net
+Try
+  Dim aNumber As Double = CDbl(Textbox1.Text)
+  MsgBox("You entered the number " & aNumber)
+Catch
+  MsgBox("Please enter a number.")
+Finally
+  MsgBox("Why not try it again?")
+End Try
+```
+
