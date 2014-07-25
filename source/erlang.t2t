@@ -6,18 +6,32 @@ Erlang学习笔记
 %%toc
 
 
+#交互环境#
+
+``erl`` 是 Erlang 的交互终端.
+
+Erlang 的每一个语句是 ``.`` 结束:
+
+```text
+1> 1 + 1.
+2
+2> 
+```
+
+
+
 =数据类型=
 
 ==整数==
 
-```
+```erlang
 −234 0 10 100000000
 2#1010 −16#EA
 ```
 
 ASCII 字符可以当整数用：
 
-```
+```erlang
 $a
 $b
 $\n
@@ -26,7 +40,7 @@ $\n
 
 ==浮点数==
 
-```
+```erlang
 17.368 −56.654 1.234E-10
 ```
 
@@ -37,13 +51,13 @@ $\n
 
 如果以小写字母开头，则可以使用字母，数字， //@// ， //.// ， //_// ：
 
-```
+```erlang
 january fooBar alfa21 start_with_lower_case node@ramone true false
 ```
 
 如果直接以单引号包起来，则可以使用任意的字符：
 
-```
+```erlang
 'January' 'a space' 'Anything inside quotes{}#@ \n\012'
 'node@ramone.erlang-consulting.com'
 ```
@@ -53,7 +67,7 @@ january fooBar alfa21 start_with_lower_case node@ramone true false
 
 Erlang 中没有单独的布尔类型，使用原子 //true// 和 //false// 来代替使用：
 
-```
+```erlang
 true false
 ```
 
@@ -62,7 +76,7 @@ true false
 
 各种成员的组合就是元组，使用大括号包起来，各成员以逗号分割：
 
-```
+```erlang
 {123, bcd} {123, def, abc} {abc, {def, 123}, ghi} {}
 {person, 'Joe', 'Armstrong'} {person, 'Mike', 'Williams'}
 ```
@@ -72,7 +86,7 @@ true false
 
 各种成员的有序组合是列表，使用中括号包起来，各成员以逗号分割：
 
-```
+```erlang
 [january, february, march]
 [123, def, abc]
 [a,[b,[c,d,e],f], g]
@@ -88,7 +102,7 @@ true false
 
 字符串实际上就是整数列表，或者反过来说整数列表就是字符串(至少 ASCII 范围内)：
 
-```
+```erlang
 1> "孤高天使".
 [23396,39640,22825,20351]
 
@@ -132,13 +146,13 @@ true false
 
 不同类型之间不能按值比较，只遵循以下规则：
 
-```
+```erlang
 number < atom < reference < fun < port < pid < tuple < list < binary
 ```
 
 列表的比较根据成员的字典序进行：
 
-```
+```erlang
 5> [boo,hoo]<[adder,zebra,bee].
 false
 6> [boo,hoo]<[boo,hoo,adder,zebra,bee].
@@ -147,7 +161,7 @@ true
 
 元组的比较首先比较成员个数，再按列表规则比较成员：
 
-```
+```erlang
 7> {boo,hoo}<{adder,zebra,bee}.
 true
 8> {boo,hoo}<{boo,hoo,adder,zebra,bee}.
@@ -156,7 +170,7 @@ true
 
 全等会同时检查类型，它通常更快，不过用得不多：
 
-```
+```erlang
 1> 1.0 == 1.
 true
 2> 1.0 =:= 1.
@@ -170,7 +184,7 @@ true
 
 列表可以以一种方便的语法切割成 //head// 和 //tail// 两部分，其中 //tail// 总是一个列表(可以是空列表)：
 
-```
+```erlang
 List = [Element | List] or []
 [1,2,3] == [1 | [2 | [3 | []]]]
 ```
@@ -182,7 +196,7 @@ List = [Element | List] or []
 
 在 Erlang shell 中可以使用 //f()// 和 //f(Var)// 取消所有或指定变量：
 
-```
+```erlang
 f()
 f(Double)
 ```
@@ -203,7 +217,7 @@ Erlang 中的模式匹配机制可以做的事有：
 - 如果匹配失败，则没有变量会改变
 
 
-```
+```erlang
 1> List = [1,2,3,4].
 [1,2,3,4]
 
@@ -231,7 +245,7 @@ Erlang 中的模式匹配机制可以做的事有：
 
 复杂一点：
 
-```
+```erlang
 {A, _, [B|_], {B}} = {abc, 23, [22, 23], {22}}
 ```
 
@@ -245,7 +259,7 @@ Erlang 中的模式匹配机制可以做的事有：
 
 模块文件的文件名使用 //.erl// 作为扩展名，并且文件名要和模块名相同，比如 //demo.erl// ：
 
-```
+```erlang
 -module(demo).
 -export([double/1]).
 
@@ -257,7 +271,7 @@ times(X, Y) -> X * Y.
 
 之后在 shell 中先使用 //cd()// 到达指定目录，就可以编译这个模块了：
 
-```
+```erlang
 > cd('xxx').
 > c(demo).
 {ok,demo}
@@ -267,28 +281,28 @@ times(X, Y) -> X * Y.
 
 模块文件中可以有一些使用 //-// 开头的选项，比如我们之前已经看到的：
 
-```
+```erlang
 -module(demo).
 -export([double/1]).
 ```
 
 其它的比如还有： //import// 导入函数：
 
-```
+```erlang
 -import(math, [sqrt/1]).
 hello(X) -> sqrt(X).
 ```
 
 也可以使用任意的自定义选项，不过这些选项只能有一个参数，比如：
 
-```
+```erlang
 -author(zys).
 -date(Date).
 ```
 
 模块的详细信息可以使用它的 //module_info/1// 函数获取：
 
-```
+```erlang
 demo:module_info().
 ```
 
@@ -303,7 +317,7 @@ demo:module_info().
 
 要产生一个单元，直接使用 //spawn// 来执行一个函数即可：
 
-```
+```erlang
 -module(demo).
 -export([echo/1]).
 
@@ -313,7 +327,7 @@ echo(Msg) ->
 
 编译模块之后执行：
 
-```
+```erlang
 1> Pid = spawn(demo, echo, ["new"]).
 ```
 
@@ -323,7 +337,7 @@ echo(Msg) ->
 
 单元通过单元号来标识， Erlang shell 本身是运行一个单元当中的，当前环境也很多的单元在运行着。可以使用 //self()// 来获取当前单元号。通过 //processes()// 查看当前单元列表。
 
-```
+```erlang
 1> self().
 <0.35.0>
 
@@ -337,7 +351,7 @@ echo(Msg) ->
 
 单元之间通过消息来传递信息，消息的传递有专门的一个语法支持：
 
-```
+```erlang
 Pid ! "Hello".
 ```
 
@@ -345,7 +359,7 @@ Pid ! "Hello".
 
 传递过去的消息被保存在单元的“信箱”当中，使用 //receive// 语句来抽取信箱中的一条消息，然后进行模式匹配，做相应处理。
 
-```
+```erlang
 -module(demo).
 -export([start/0, daemon/0]).
 
@@ -364,7 +378,7 @@ daemon() ->
 
 编译后执行：
 
-```
+```erlang
 > Pid = demo:start().
 <0.80.0>
 
@@ -380,7 +394,7 @@ ok, exit.ok
 
 //receive// 语句可以有一个超时值，使用 //after// ：
 
-```
+```erlang
 -module(demo).
 -export([timeout/0, never/0]).
 
@@ -422,7 +436,7 @@ never() ->
 
 以一个简单的远程函数调用为例，服务器：
 
-```
+```erlang
 -module(server).
 -export([start/0, daemon/0]).
 
@@ -441,7 +455,7 @@ daemon() ->
 
 客户端：
 
-```
+```erlang
 -module(client).
 -export([connect/1, request/2, quit/0]).
 
