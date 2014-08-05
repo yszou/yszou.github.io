@@ -1,0 +1,194 @@
+SPF参考
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+
+#SPF是什么#
+
+SPF, Sender Policy Framework, 是一种用于确认邮件来源的手段.
+
+SMTP 服务器之间进行交互时, 对于请求来源是无法直接确认的, 因为邮件交互是公开的行为, 就像你不能阻止有人往你的门缝里塞小卡片一样. 作为收信服务器, 你收到一个请求, 声称它来自于 *gmail.com*, 你如何能确认这个请求就是来源于 google 的服务器呢?
+
+于是, 对域名的确认, 自然解决方案就落在了域名的配置上. 比如你可以看看来源 IP 是否和域名的 A 记录一致, 或者和 MX 记录一致. 但是很显然, 这并不是一个好方法, 因为 A 记录和 MX 记录, 其本来的用途本来和发信服务就不相关. 简单来说, 一个域下的发信服务和收信服务在不同的服务器上完成太正常不过了.
+
+所以, 在域名的 TXT 记录中, 就有了一个专门的 *SPF* 来完成上面所述的工作.
+
+*gmail.com* 这个域名, 配置其对应的 *SPF* 规则, 来描述我的投信请求, 可能来源于哪些 IP 地址. 这个信息是可以通过公开的 DNS 服务查询到的. 那么收信服务器收到 *gmail.com* 的投信请求时, 就根据查询到的 *SPF* 规则来检查来源 IP .
+
+```bash
+dig gmail.com -ttxt
+```
+
+得到:
+
+```txt
+;; ANSWER SECTION:
+gmail.com. 300 IN TXT "v=spf1 redirect=_spf.google.com"
+```
+
+继续:
+
+```bash
+dig _spf.google.com -ttxt
+```
+
+得到:
+
+```txt
+;; ANSWER SECTION:
+_spf.google.com. 300 IN TXT "v=spf1 include:_netblocks.google.com \
+                                    include:_netblocks2.google.com \
+                                    include:_netblocks3.google.com ~all"
+```
+
+我们取一个看看:
+
+```bash
+dig _netblocks.google.com -ttxt
+```
+
+结果有:
+
+```txt
+_netblocks.google.com. 2158 IN TXT "v=spf1 ip4:216.239.32.0/19 ip4:64.233.160.0/19 \
+                                           ip4:66.249.80.0/20 ip4:72.14.192.0/18 \
+                                           ip4:209.85.128.0/17 ip4:66.102.0.0/20 \
+                                           ip4:74.125.0.0/16 ip4:64.18.0.0/20 \
+                                           ip4:207.126.144.0/20 ip4:173.194.0.0/16 ~all"
+```
+
+
+根据这些规则所描述的 IP 段, 收信服务器就可以判断请求来源是不是 *gmail.com* 这个域. 或者说得准确点, 对于声称是 *gmail.com* 的请求来源, 根据它的来源 IP 的不同, 而应该采取什么样的处理策略, 是拒绝, 标记, 还是通过.
+
+
+#SPF语法#
+
+从前面查询 *gmail.com* 的过程, 看几个例子:
+
+```txt
+"v=spf1 redirect=_spf.google.com"
+"v=spf1 include:_netblocks.google.com ~all"
+"v=spf1 ip4:216.239.32.0/19 ~all"
+```
+
+形式上, *SPF* 记录分成四个部分, 用 *双引号* 括起来.
+
+0 ``v=spf1`` .
+0 可能出现的 *Modifiers* , 比如 ``redirect`` .
+0 一个或多个 *Mechanisms* , 比如 ``include`` , ``ip4`` .
+0 最后用一个 ``all`` 结尾.
+
+
+所有的规则, 从左往右开始匹配.
+
+
+
+
+#Modifiers#
+
+SPF 记录中可以包括两种可选的 *Modifiers* , 其只能出现一次:
+
+: *redirect*
+    用指定域名的 SPF 记录替换当前记录, 如 ``redirect=_spf.google.com``
+
+: *exp*
+    (没见用过)
+
+
+#前缀#
+
+*Mechanisms* 可以带 4 种前缀:
+
+- ``+`` Pass
+- ``-`` Fail
+- ``~`` Soft Fail
+- ``?`` Neutral
+
+
+默认是 ``+`` Pass .
+
+四种前缀表示对应规则匹配时, 建议的服务器处理策略:
+
+|| 结果 | 含义 | 建议处理 ||
+| Pass | IP 合法 | 收信 |
+| Fail | IP 非法 | 退信 |
+| Soft Fail | IP 非法 | 收信, 但标记 |
+| Neutral | 不清楚 | 收信 |
+| None | 无 SPF 记录 | 收信 |
+| PermError | 严重错误(SPF 格式错误) | 无规定 |
+| TempError | 临时错误(DNS 查询失败) | 随便 |
+
+
+#Mechanisms#
+
+*mechanisms* 有下面这些:
+
+- *all* , 所有 IP , 一般放在最后.
+- *ip4* , 指定 ipv4 的地址段.
+- *ip6* , 指定 ipv6 的地址段.
+- *a* , 指定域名的 A 记录.
+- *mx* , 指定域名的 MX 记录.
+- *include* , 引入指定域名的 SPF 记录.
+- *exists* , 检查指定域名的 A 记录.
+- *ptr* , 指定域名的反查记录.
+
+
+: *all* 一般放最后, 定义未匹配时的处理.
+```txt
+"v=spf1 ip4:216.239.32.0/19 ~all"
+```
+
+: *ip4* 指定一个 IPv4 地址, 或地址段.
+```txt
+"v=spf1 ip4:216.239.32.0 ~all"
+"v=spf1 ip4:216.239.32.0/19 ~all"
+```
+
+: *ip6* 指定一个 IPv6 地址, 或地址段.
+```txt
+"v=spf1 ip6:2001:4860:4000:: ~all"
+"v=spf1 ip6:2001:4860:4000::/36 ~all"
+```
+
+: *a* 指定一个域名(或默认本域名)的 A 记录, 可以添加段范围.
+```txt
+"v=spf1 a ~all"
+"v=spf1 a:mail.google.com ~all"
+"v=spf1 a/12 ~all"
+"v=spf1 a:mail.google.com/18 ~all"
+```
+
+: *mx* 指定一个域名(或默认本域名)的 MX 记录, 可以添加段范围.
+```txt
+"v=spf1 mx ~all"
+"v=spf1 mx:mail.google.com ~all"
+"v=spf1 mx/12 ~all"
+"v=spf1 mx:mail.google.com/18 ~all"
+```
+
+: *include* 引入指定域名的 SPF 记录.
+```txt
+"v=spf1 include:mail.google.com ~all"
+```
+
+: *exists* 检查指定域名的 A 记录, 有结果则为命中.
+```txt
+"v=spf1 exists:google.com ~all"
+```
+
+: *ptr* 反查指定域名的 IP 地址.
+```txt
+"v=spf1 ptr:google.com ~all"
+```
+
+
+多个 *mechanisms* 规则以空格分开, 比如上面的某个规则和最后的 *all*.
+
+
+#参考资料#
+
+- 作者: Renfei Song , 来自: http://www.renfei.org/blog/introduction-to-spf.html
