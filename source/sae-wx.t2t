@@ -1,0 +1,525 @@
+SAE上微信公众账号开发参考
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+微信公众账号因为格式相对固定, 比做一个 Web 类应用简单多了.
+
+此文以 SAE 环境为背景介绍开发过程, 从 0 开始, 不依赖任何 Web 框架, 以 *wsgi* 接口为基础. 如果你是想学习, 那么搞明白数据流和处理规则是唯一的重点, 至于 Web 框架随意.
+
+在开发过程中, 会涉及一些辅助工具的开发, 这些东西不涉及项目最终部署, 但是却为日常开发带来方便. 因为这些东西可能会涉及其它方面的基础知识, 所以我不会详细介绍实现, 有兴趣者在理解原理之后可以自己实现适合自己的东西.
+
+#申请测试账号#
+
+要做微信公众账号开发, 首先要去弄一个公众账号. 企鹅提供了专门的测试账号服务, 直接申请即可.
+
+Google 一下 "微信公众账号 测试账号" 找到申请页:
+
+http://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login
+
+
+选择登录之后, 用你的手机微信客户端连上网扫一码就可以了.
+
+测试账号的页面有账号的各种基本信息, 下文有开发需要的文档.
+
+需要开发者配置的是 *接口配置信息* 部分. 这里 *Token* 就自己随机生成一串字符即可. 而 *URL* 则会需要一个"认证"过程. 在修改这个 *URL* 时腾讯的服务器会向此地址发一个 GET 请求, 要求得到一个指定响应, 响应的文本是请求中的 ``echostr`` 参数. 对应的文档在:
+
+http://mp.weixin.qq.com/wiki/index.php?title=%E9%AA%8C%E8%AF%81%E6%B6%88%E6%81%AF%E7%9C%9F%E5%AE%9E%E6%80%A7
+
+当然, 目前我们不需要去管它的"验证"逻辑, 直接返回参数中的 ``echostr`` 的值就可以了. SAE 中怎么做下面会介绍.
+
+先去注册一个 SAE 账号, 并创建一个 Python 类型的 app , 把代码拿下来.
+
+#wsgi简单介绍#
+
+SAE 的初始化的 Python 项目, 在对应版本的目录下, 只有两个文件:
+
+```text
+- config.yaml
+- index.wsgi
+```
+
+``config.yaml`` 是 SAE 的项目配置文件. 先不管它. ``index.wsgi`` 就是 *wsgi* 接口的 *application* 的定义文件.
+
+这个文件虽然扩展名是 ``.wsgi`` , 其实它就是普通的 Python 文件, 根据 SAE 的环境要求, 它里面需要定义一个名为 ``application`` 的可调用对象(比如一个函数). 这个 ``application`` 实现的是 *wsgi* 接口的规范.
+
+*wsgi* 的这套东西不用太细究, 我们只用到它的基础形式就可以让我们的应用跑起来了.
+
+初始状态的 ``index.wsgi`` 大概是这样的样子的:
+
+```python
+def application(environ, start_response):
+    start_response('200 ok', [('content-type', 'text/plain')])
+    return ["Hello SAE"]
+```
+
+``application`` 的可调用对象(函数), 接收两个参数, ``environ`` 和 ``start_response`` .
+
+``start_response`` 是一个函数, 用以响应 HTTP 的头. 比如上面的代码中, 对 ``start_response`` 的调用即是, 响应的状态码是 200 , 有一个 ``content-type`` 的头, 表明响应的内容是纯文本.
+
+``application`` 函数需要返回一个 ``iterable`` 的对象, 比如一个列表. 里面的内容就是 HTTP 响应的 body 部分.
+
+一个请求的所有细节, 比如 GET 参数, POST 参数, 请求头这些, 都封装在 ``environ`` 对象里了. 这是一个类似于 *dict* 的对象, 相应的属性都通过 *key* 的方式获取, 比如获取 GET 参数, 就是 ``environ['QUERY_STRING']`` .
+
+在后面我们可能还需要继续和 ``environ`` 对象打交道, 所以我们最好自己做一个 *wsgi* 的运行环境, 以方便需要查看地 ``environ`` 的细节. 用 Tornado 做这事很容易.
+
+在目录下新建一个 ``server.py`` 文件, 内容如下:
+
+```python
+# -*- coding: utf-8 -*-
+
+import imp
+with open('index.wsgi', 'rb') as f:
+    sae_application = imp.load_source('', 'index.wsgi', f).application
+
+import tornado.httpserver
+import tornado.wsgi
+import tornado.ioloop
+
+def main():
+    app = tornado.wsgi.WSGIContainer(sae_application)
+    server = tornado.httpserver.HTTPServer(app)
+    server.listen(8888)
+    tornado.ioloop.IOLoop.instance().start()
+
+if __name__ == '__main__':
+    main()
+```
+
+这个服务会读入 ``index.wsgi`` 中的 ``application`` 对象, 然后让它在一个 Web 服务器上跑起来.
+
+```bash
+python server.py
+```
+
+服务启动之后, 在浏览器访问 ``http://localhost:8888`` 就可以看到 ``application`` 中返回内容了. 同理, 我们可以随时在 ``application`` 中加入 ``print dir(environ)`` 之类的内容来获取帮助信息.
+
+
+#对接服务#
+
+回到微信的话题上来. 目前我们需要完成的一件事是, 当接受到微信服务器的 GET 请求时, 直接响应请求中的 ``echostr`` 参数的内容即可.
+
+把 ``index.wsgi`` 改成:
+
+```python
+# -*- coding: utf-8 -*-
+
+import re
+
+def application(environ, start_response):
+    q = environ.get('QUERY_STRING')
+    m = re.findall('echostr=(.*)', q)[0]
+    s = m.split('&', 1)[0]
+    start_response('200 ok', [('content-type', 'text/plain')])
+    return [s]
+```
+
+先使用 ``environ.get('QUERY_STRING')`` 获取 GET 参数部分, 大概形如:
+
+```text
+signature=xx&timestamp=xxx&nonce=xxx&echostr=xxx
+```
+
+各个参数的顺序是不一定的, 如果参数中有非 ascii 的内容, 它还是被编码后像 ``xx%xx%`` 这种样子的.
+
+我们现在不关心验证, 只是简单地把 ``echostr`` 的值取出来返回即可.
+
+获取 ``echostr`` 的值方法是通过正则表达式拿到 ``echostr=`` 后面的所有内容, 然后用 ``&`` 字符切一下就好了. 这样不管 ``echostr`` 字段其顺序是在中间还是在最后, 都可以正常处理.
+
+```text
+signature=xx&timestamp=xxx&nonce=xxx&echostr=xxx
+signature=xx&echostr=xxx&nonce=xxx&timestamp=xxx
+```
+
+把代码通过 svn 提交, 这样在测试账号的页面, 就可以把对接服务的 *URL* 设置上了. 这里推荐设置成 ``http://xxx.sinaapp.com/wx`` 的形式, 加一个 ``/wx`` 的 PATH 方便后面的逻辑切分, 当然, 我们现在在 *wsgi* 接口上的处理还完全不涉及请求的 PATH  .
+
+
+#了解数据格式#
+
+到了这一步, 在微信上关注那个测试账号, 发送的信息已经会到我们的 SAE 的 app 服务上了.
+
+微信过来的信息都是 XML 格式的, 具体地可以参考文档:
+
+http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E6%99%AE%E9%80%9A%E6%B6%88%E6%81%AF
+
+虽然文档上有具体的数据例子, 但是, 一般还是自己亲眼看到过来的数据, 心理上才会踏实一些吧. 所以, 我们在代码上添加一些逻辑, 使用 *storage* 服务把请求过来的数据保存下来. SAE 环境上标准的输出不太好用, 所以开发时把 *storage* 当成记日志的地方就好了, 还有现成的 Web 工具可以直接查看呢.
+
+**先去把应用的 storage 服务开启, 并创建一个 Bucket**, Bucket 我这里取的名字是 ``log`` , 为了方便查看, 把权限改成 *public* .
+
+然后修改 ``index.wsgi`` 代码:
+
+```python
+# -*- coding: utf-8 -*-
+
+import re
+import time
+from sae.storage import Bucket
+
+def application(environ, start_response):
+    if environ.get('REQUEST_METHOD', 'GET') == 'GET':
+        q = environ.get('QUERY_STRING')
+        m = re.findall('echostr=(.*)', q)[0]
+        s = m.split('&', 1)[0]
+        start_response('200 ok', [('content-type', 'text/plain')])
+        return [s]
+
+
+    length = environ.get('CONTENT_LENGTH', 0)
+    length = int(length)
+    body = environ['wsgi.input'].read(length)
+
+    bucket = Bucket('log')
+    bucket.put_object('%s.txt' % int(time.time()), body)
+    start_response('200 ok', [('content-type', 'text/plain')])
+    return ['']
+```
+
+用户的数据都是通过 POST 方法过来的, 所以, 对于 GET 方法, 我们还是原来的逻辑, 直接返回 ``echostr`` 的数据即可.
+
+*wsgi* 接口上, 获取 POST 数据的简单方法, 就是先拿到 ``CONTENT_LENGTH`` 头, 它标识了 HTTP 请求的 body 部分的长度. 然后从 ``environ['wsgi.input']`` 这个 file like 对象中读取指定长度的数据即可.
+
+上面代码中, ``body`` 就是一个 XML 形式的数据了, 我们目前也不做任何处理, 直接以时间戳为名, 存到 *storage* 中去.
+
+提交代码, 然后在微信上向这个测试账号发一些不同类型的信息吧, 文字, 图像, 语音.
+
+文字内容:
+
+```xml
+<xml><ToUserName><![CDATA[gh_b47caeadeeb7]]></ToUserName>
+<FromUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></FromUserName>
+<CreateTime>1407299911</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[文本内容]]></Content>
+<MsgId>6044307093609310161</MsgId>
+</xml>
+```
+
+图像内容:
+
+```xml
+<xml><ToUserName><![CDATA[gh_b47caeadeeb7]]></ToUserName>
+<FromUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></FromUserName>
+<CreateTime>1407300008</CreateTime>
+<MsgType><![CDATA[image]]></MsgType>
+<PicUrl><![CDATA[http://mmbiz.qpic.cn/mmbiz/EiaMylXxR8B.../0]]></PicUrl>
+<MsgId>6044307510221137887</MsgId>
+<MediaId><![CDATA[HFQ8FFcieYaRJaNJZecI602qXXU16pqDz3SGY44PGDWbe_mqQBPiQbD_62_N6UDu]]></MediaId>
+</xml>
+```
+
+直接访问 ``PicUrl`` 都可以看到图片的.
+
+语音内容:
+
+```xml
+<xml><ToUserName><![CDATA[gh_b47caeadeeb7]]></ToUserName>
+<FromUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></FromUserName>
+<CreateTime>1407300099</CreateTime>
+<MsgType><![CDATA[voice]]></MsgType>
+<MediaId><![CDATA[qYVLd_UHsrXw5xPiu5ZMNFtIhxpjVojHICbuCvXLPWnarPF8hvY0Ft-GaF2pfUVo]]></MediaId>
+<Format><![CDATA[amr]]></Format>
+<MsgId>6044307901063161835</MsgId>
+<Recognition><![CDATA[]]></Recognition>
+</xml>
+```
+
+现在也不用去管这堆 XML 的解析问题, 了解一下这些数据就可以了.
+
+
+#第一个响应#
+
+现在我们要做的, 就是让用户发了信息之后, 可以得到回应. 回应的内容, 暂且就是 "hello" 吧, 刚开始写死就可以了.
+
+我们目前只考虑普通的文本消息的回复, 对应的文档在:
+
+http://mp.weixin.qq.com/wiki/index.php?title=%E5%8F%91%E9%80%81%E8%A2%AB%E5%8A%A8%E5%93%8D%E5%BA%94%E6%B6%88%E6%81%AF
+
+要回复的内容:
+
+```xml
+<xml>
+<ToUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></ToUserName>
+<FromUserName><![CDATA[gh_b47caeadeeb7]]></FromUserName>
+<CreateTime>12345678</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[hello]]></Content>
+</xml>
+```
+
+注意里面的 ``ToUserName`` 和 ``FromUserName`` 用前面的内容换一下.
+
+现在的 ``index.wsgi`` :
+
+```python
+# -*- coding: utf-8 -*-
+
+import re
+import time
+from sae.storage import Bucket
+
+def application(environ, start_response):
+    if environ.get('REQUEST_METHOD', 'GET') == 'GET':
+        q = environ.get('QUERY_STRING')
+        m = re.findall('echostr=(.*)', q)[0]
+        s = m.split('&', 1)[0]
+        start_response('200 ok', [('content-type', 'text/plain')])
+        return [s]
+
+    length = environ.get('CONTENT_LENGTH', 0)
+    length = int(length)
+    body = environ['wsgi.input'].read(length)
+
+    bucket = Bucket('log')
+    bucket.put_object('%s.txt' % int(time.time()), body)
+    start_response('200 ok', [('content-type', 'text/plain')])
+
+    s = '''<xml>
+<ToUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></ToUserName>
+<FromUserName><![CDATA[gh_b47caeadeeb7]]></FromUserName>
+<CreateTime>12345678</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[hello]]></Content>
+</xml>'''    
+    return [s]
+```
+
+``s`` 的第一行不要空行. (我记得空行好像会出错)
+
+提交代码到 SAE , 现在向测试账号发消息, 就可以得到一个 ``hello`` 的回应了.
+
+
+#使用lxml处理XML数据#
+
+数据的解析是不可避免的, 我们继续推进我们的代码.
+
+下一个目标, 是在回复了消息的基础上更一步. 不是固守地回复一个 ``hello`` , 而是用户发什么文本, 就回复什么文本.
+
+看到前面的 xml 数据, 可能有人就直接暴力地操上正则表达式, 去抽取各字段的内容了. 这当然也行, 毕竟这套 xml 格式是很简单的. 当然, 即使如此, 你写的正则表达式也不一定总能正式工作了, 比如我发的消息内容就是 ``]]>`` , 那么微信服务器过来的数据就是:
+
+```xml
+<xml><ToUserName><![CDATA[gh_b47caeadeeb7]]></ToUserName>
+<FromUserName><![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]></FromUserName>
+<CreateTime>1407301203</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[]]>]]></Content>
+<MsgId>6044312642707056806</MsgId>
+</xml>
+```
+
+有些纠结了吧. 你可以拿 ``]]>`` 这些字符串去试一下其它的公众账号的反应, 上面的内容不是合格的 XML .
+
+正则不是不能写, 但是解析 xml , 还是上专业的工具更合适, 也更高效与方便. 同时我们不光要解析 XML 数据, 在回复时还需要构建 XML 数据, 虽然在构建上使用 lxml 的 api 不一定比直接上模板直观.
+
+``lxml`` 是 Python 的第三方模块, 是对 C 实现的 ``libxml`` 的封装. SAE 已经预装了此模块, 谢天谢地. 此项目的官网在 http://lxml.de/ . 你可以需要去上面看看文档和示例代码.
+
+使用 ``lxml`` 解析比较小的 xml 时, ``xpath`` 是一个强大的工具, 你可能需要额外地去了解一下 ``xpath`` 的基本使用.
+
+要在 SAE 中使用 *lxml* 这个模块, 需要在 ``config.yaml`` 中单独配置一下, 先在下面的文档看看 SAE 支持的预装模块及对应的版本:
+
+http://sae.sina.com.cn/doc/python/runtime.html#pre-installed-package-list
+
+修改 ``config.yaml`` 文件:
+
+```yaml
+name: xxx
+version: 1
+libraries:
+- name: lxml
+  version: "2.3.4"
+```
+
+前面说过了, 除了解析 XML , 我们还使用 *lxml* 生成响应的 XML 数据. *lxml* 提供的 *E-factory* 这个 API 用来生成 XML 数据很好用. 不过坏消息是它不支持节点的填充内容为 ``CDATA`` , 好消息是在 github 上的 *lxml* 项目的开发源码中, 已经添加了这个特性.
+
+这里我们就要自己动手搞点东西了, 我们把 github 上的 ``builder.py`` 的最新源码拿下来单独用. 为了组织代码方便, 我们先在项目目录中创建一个 ``packages`` 目录, 第三方模块就往这里放.
+
+```bash
+mkdir packages
+cd packages
+wget https://raw.githubusercontent.com/lxml/lxml/master/src/lxml/builder.py -Olxml_builder.py
+```
+
+这样就可以了. 现在慢慢地我们的逻辑在增加, 每做一次修改, 都要把代码提交到 SAE 上, 然后打开手机, 发送消息来检查代码的正确于否, 这样做太痛苦了. 还记得之前做的 ``server.py`` 么, 我们应该在本机完成更多的测试工作.
+
+在不添加验证逻辑的情况下, 和微信服务器的交互, 仅仅是处理 POST 的数据而已. 这点我们在本机很容易实现.
+
+创建一个 ``sample`` 目录, 把之前在 *storage* 中保存的那几个文本, 图片, 音频的请求数据存到文件中去.
+
+现在我们项目的目录树是这样的了:
+
+```text
+.
+├── config.yaml
+├── index.wsgi
+├── packages
+│   ├── lxml_builder.py
+├── sample
+│   ├── wx-img.xml
+│   ├── wx-txt.xml
+│   └── wx-voice.xml
+└── server.py
+```
+
+开始在 ``index.wsgi`` 中实现我们的逻辑, 用户发什么, 我们就回复什么:
+
+```python
+# -*- coding: utf-8 -*-
+
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'packages'))
+
+import re
+from lxml import etree
+from lxml_builder import E
+from lxml.etree import CDATA
+
+def application(environ, start_response):
+    if environ.get('REQUEST_METHOD', 'GET') == 'GET':
+        q = environ.get('QUERY_STRING')
+        m = re.findall('echostr=(.*)', q)[0]
+        s = m.split('&', 1)[0]
+        start_response('200 ok', [('content-type', 'text/plain')])
+        return [s]
+
+
+    length = environ.get('CONTENT_LENGTH', 0)
+    length = int(length)
+    body = environ['wsgi.input'].read(length)
+
+    try:
+        root = etree.XML(body.decode('utf8'))
+    except:
+        start_response('200 ok', [('content-type', 'text/xml')])
+        return ['']
+
+
+    me = root.xpath('/xml/ToUserName/text()')[0]
+    user = root.xpath('/xml/FromUserName/text()')[0]
+    create = root.xpath('/xml/CreateTime/text()')[0]
+    type = root.xpath('/xml/MsgType/text()')[0]
+    content = root.xpath('/xml/Content/text()')[0]
+    id = root.xpath('/xml/MsgId/text()')[0]
+
+    xml = (
+        E.xml(
+            E.ToUserName(CDATA(user)),
+            E.FromUserName(CDATA(me)),
+            E.CreateTime(CDATA(create)),
+            E.MsgType(CDATA('text')),
+            E.Content(CDATA('\n'.join([me, user, create, type, content, id]))),
+        )
+    )
+
+    s = etree.tostring(xml, encoding='utf-8')
+
+    start_response('200 ok', [('content-type', 'text/xml')])
+    return [s]
+```
+
+这里我们不光回复了用户输入的内容, 还把整个请求信息都得现一遍.
+
+先在本机跑跑, 启动 ``python server.py`` , 然后使用 ``curl`` 发送保存 ``sample`` 目录下的数据看看结果:
+
+```bash
+curl -d @sample/wx-txt.xml 'http://localhost:8888'
+```
+
+得到正确的 xml 响应就没问题了. 把代码提交到 SAE , 用手机上的微信试试了.
+
+
+#自定义菜单#
+
+##获取access_token##
+
+自定义菜单的接口调用需要用到 *access_token* , 它的获取方式是通过 GET 调用获取到, 文档在:
+
+http://mp.weixin.qq.com/wiki/index.php?title=%E8%8E%B7%E5%8F%96access_token
+
+
+需要的 *appid* 和 *secret* 在测试账号的页面都可以找到.
+
+```python
+# -*- coding: utf-8 -*-
+
+import json
+import urllib
+
+def get_access_token(appid, secret):
+    url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=%s&secret=%s' % (appid, secret)
+    res = urllib.urlopen(url)
+    r = json.loads(res.read())
+    return r
+
+
+if __name__ == '__main__':
+    print get_access_token('x', 'x')
+```
+
+拿到的 *access_token* 形如:
+
+```text
+XHF6G0NCBrLEEjmkjGZF6QcuBrHcwxt7r93Q1TlCf4YsvozD9a6zg3T17XCQXSd8MdAD-iP8QmO-z3tX7sAJ3A
+```
+
+
+##创建自定义菜单##
+
+官方的文档在:
+
+http://mp.weixin.qq.com/wiki/index.php?title=%E8%87%AA%E5%AE%9A%E4%B9%89%E8%8F%9C%E5%8D%95%E5%88%9B%E5%BB%BA%E6%8E%A5%E5%8F%A3
+
+假设我们要创建的菜单是:
+
+- 第二个
+- 帮助
+- 一级
+    - ZYS(www.zouyesheng.com)
+    - HAHA
+
+
+对应的 JSON 结构就是:
+
+```json
+{
+     "button":[
+          {
+            "type":"click",
+            "name":"第二个",
+            "key":"2"
+          },
+          {
+            "type":"click",
+            "name":"帮助",
+            "key":"help"
+          },
+          {
+            "name":"一级",
+            "sub_button": [
+              {
+                "type": "view",
+                "name": "ZYS",
+                "url": "http://www.zouyesheng.com"
+              },
+              {
+                "type": "click",
+                "name": "HAHA",
+                "key": "haha",
+              }
+            ]
+          }
+     ]
+}
+```
+
+创建自定义菜单不是经常有的操作, 把上面的 json 数据存到文件, 用 curl 做一个请求就好了.
+
+```bash
+curl -d @sample/menu.json 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=xxx'
+```
+
+得到正确的响应之后, 重新关注测试账号就可以看到菜单了.
+
+
