@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>SAE上的Channel服务演示 - YS.Zou</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">SAE上的Channel服务演示</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-08-13 23:23 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">Channel服务是什么</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">Web服务器</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">浏览器客户端</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">命令行客户端</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">Web服务器改进</a>
+  </li>
+  </ol>
+
+
+<a name="toc1"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. Channel服务是什么</h1>
+
+<p style="margin: 15px 0;">
+SAE 上的 <em style=" color: #d75100; font-style: normal; ">Channel</em> 服务就是一个共用的 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 服务器.
+</p>
+<p style="margin: 15px 0;">
+和自建的服务器的双工形式有些不同, 因为是共用的, 所以逻辑必须统一. 于是对于所有往服务器的 <em style=" color: #d75100; font-style: normal; ">写</em> 操作, 全部是回调对应的应用的固定 URL . 既然这样, 我们就当它不能写好了, 写的相关逻辑, 我们自己在应用上通过 <em style=" color: #d75100; font-style: normal; ">HTTP</em> 实现.
+</p>
+<p style="margin: 15px 0;">
+这样, 其实 <em style=" color: #d75100; font-style: normal; ">Channel</em> 服务就是一个很单纯的 <em style=" color: #d75100; font-style: normal; ">广播站</em> 了. 通过 API 写入的数据, 会广播给当前的所有连接.
+</p>
+<p style="margin: 15px 0;">
+信息流上, 就是一个简单的环状:
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">      +-----------------+
+      |   app server    |&lt;----+
+      +-----------------+     |
+               |              |
+               |              |
+               v              |
+      +-----------------+     |
+      | channel server  |     |
+      +-----------------+     |
+               |              |
+               |              |
+               v              |
+      +-----------------+     |
+      | browser/client  |-----+
+      +-----------------+
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+当然, 如果你要处理"连接创建", "连接关闭"这两个事件, 那你还是得去处理 <em style=" color: #d75100; font-style: normal; ">Channel</em> 的回调. 只是处理数据的话, 就别管回调了, 上面那个环就可以了.
+</p>
+
+<a name="toc2"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. Web服务器</h1>
+
+<p style="margin: 15px 0;">
+Web服务器, 就是前面环图中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">app server</code> , 它要做两个事:
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>创建 <em style=" color: #d75100; font-style: normal; ">ws</em> 服务, 即获取一个 <em style=" color: #d75100; font-style: normal; ">ws</em> 服务的 URL .
+</li>
+<li>获取请求数据, 往 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">channel server</code> 中写入数据.
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+这两个事对应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sae.channel</code> 中的仅有的两个函数:
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sae.channel.create_channel(name, duration=None)</code>
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sae.channel.send_message(name, message)</code>
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+我们也正好把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GET</code> 方法用于第一件事, 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">POST</code> 方法用于第二件事, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 文件:
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+
+CHANNEL_NAME <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;zchannel&#39;</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">sae.channel</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">application</span>(environ, start_response):
+    <span style="color: #000000; font-weight: bold">if</span> environ<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;REQUEST_METHOD&#39;</span>, <span style="color: #dd1144">&#39;GET&#39;</span>) <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;GET&#39;</span>:
+        <span style="color: #999988; font-style: italic">#url -&gt; ws://channel.sinaapp.com/com/xxx</span>
+        url <span style="color: #000000; font-weight: bold">=</span> sae<span style="color: #000000; font-weight: bold">.</span>channel<span style="color: #000000; font-weight: bold">.</span>create_channel(CHANNEL_NAME)
+        start_response(<span style="color: #dd1144">&#39;200 ok&#39;</span>, [(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;text/plain&#39;</span>)])
+        <span style="color: #000000; font-weight: bold">return</span> [url]
+
+    length <span style="color: #000000; font-weight: bold">=</span> environ<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;CONTENT_LENGTH&#39;</span>, <span style="color: #009999">0</span>)
+    length <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(length)
+    body <span style="color: #000000; font-weight: bold">=</span> environ[<span style="color: #dd1144">&#39;wsgi.input&#39;</span>]<span style="color: #000000; font-weight: bold">.</span>read(length)
+    msg <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>unquote(body<span style="color: #000000; font-weight: bold">.</span>split(<span style="color: #dd1144">&#39;=&#39;</span>, <span style="color: #009999">1</span>)[<span style="color: #009999">1</span>])
+    sae<span style="color: #000000; font-weight: bold">.</span>channel<span style="color: #000000; font-weight: bold">.</span>send_message(CHANNEL_NAME, msg)
+    start_response(<span style="color: #dd1144">&#39;200 ok&#39;</span>, [(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;text/html&#39;</span>)])
+    <span style="color: #000000; font-weight: bold">return</span> [<span style="color: #dd1144">&#39;ok&#39;</span>]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc3"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 浏览器客户端</h1>
+
+<p style="margin: 15px 0;">
+高级浏览器对 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 早已支持, 使用 js 操作 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 很容易:
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> ws <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> WebSocket(ws_url);
+
+ws.onmessage <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(msg){
+  console.log(msg)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+当然, 我们可以加一些简单的标签来实现一个页面应用. 后面会有代码.
+</p>
+
+<a name="toc4"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 命令行客户端</h1>
+
+<p style="margin: 15px 0;">
+<em style=" color: #d75100; font-style: normal; ">Tornado</em> 中已经实现了一个 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 的客户端(至少 4.0.1 这个版本有), 所以我们可以做一个:
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>从标准输入中读取内容.
+</li>
+<li>然后以 POST 方法写到 <em style=" color: #d75100; font-style: normal; ">HTTP</em> 服务器.
+</li>
+<li>同时读取 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 服务器的内容并显示到标准输出.
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+命令行客户端代码:
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">re</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.ioloop</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.websocket</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.gen</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.iostream</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.httpclient</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.httputil</span>
+
+<span style="color: #3c5d5d; font-weight: bold">@tornado.gen.coroutine</span>
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">show_message</span>():
+    client <span style="color: #000000; font-weight: bold">=</span> tornado<span style="color: #000000; font-weight: bold">.</span>httpclient<span style="color: #000000; font-weight: bold">.</span>AsyncHTTPClient()
+    res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> client<span style="color: #000000; font-weight: bold">.</span>fetch(<span style="color: #dd1144">&#39;http://zchannel.sinaapp.com/&#39;</span>)
+    ws <span style="color: #000000; font-weight: bold">=</span> re<span style="color: #000000; font-weight: bold">.</span>findall(<span style="color: #dd1144">&quot;WebSocket\(&#39;(.*?)&#39;\)&quot;</span>, res<span style="color: #000000; font-weight: bold">.</span>body)[<span style="color: #009999">0</span>];
+    conn <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> tornado<span style="color: #000000; font-weight: bold">.</span>websocket<span style="color: #000000; font-weight: bold">.</span>websocket_connect(ws)
+    <span style="color: #000000; font-weight: bold">while</span> <span style="color: #009999">1</span>:
+        msg <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> conn<span style="color: #000000; font-weight: bold">.</span>read_message()
+        <span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;&gt;&#39;</span>, msg
+
+
+<span style="color: #3c5d5d; font-weight: bold">@tornado.gen.coroutine</span>
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">write_message</span>():
+    stream <span style="color: #000000; font-weight: bold">=</span> tornado<span style="color: #000000; font-weight: bold">.</span>iostream<span style="color: #000000; font-weight: bold">.</span>PipeIOStream(fd<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">0</span>)
+    client <span style="color: #000000; font-weight: bold">=</span> tornado<span style="color: #000000; font-weight: bold">.</span>httpclient<span style="color: #000000; font-weight: bold">.</span>AsyncHTTPClient()
+    <span style="color: #000000; font-weight: bold">while</span> <span style="color: #009999">1</span>:
+        s <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">yield</span> stream<span style="color: #000000; font-weight: bold">.</span>read_until(<span style="color: #dd1144">&#39;\n&#39;</span>))<span style="color: #000000; font-weight: bold">.</span>rstrip()
+        <span style="color: #000000; font-weight: bold">yield</span> client<span style="color: #000000; font-weight: bold">.</span>fetch(<span style="color: #dd1144">&#39;http://zchannel.sinaapp.com/&#39;</span>, method<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;POST&#39;</span>,
+                           body<span style="color: #000000; font-weight: bold">=</span>tornado<span style="color: #000000; font-weight: bold">.</span>httputil<span style="color: #000000; font-weight: bold">.</span>urlencode({<span style="color: #dd1144">&#39;msg&#39;</span>: s}))
+
+
+<span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    show_message()
+    write_message()
+    tornado<span style="color: #000000; font-weight: bold">.</span>ioloop<span style="color: #000000; font-weight: bold">.</span>IOLoop<span style="color: #000000; font-weight: bold">.</span>current()<span style="color: #000000; font-weight: bold">.</span>start()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+直接执行上面的代码, 就可以在终端中输入内容, 并看到 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 服务器吐出来的数据了.
+</p>
+<p style="margin: 15px 0;">
+代码中对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GET</code> 方法访问 <em style=" color: #d75100; font-style: normal; ">HTTP</em> 服务器时获取的数据做了处理, 是因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GET</code> 方法我不光返回一个简单的 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 的 URL 了, 而是返回了一个完整的 HTML 页面, <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 的 URL 需要从页面内容中提取. 完整代码在后面.
+</p>
+
+<a name="toc5"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. Web服务器改进</h1>
+
+<p style="margin: 15px 0;">
+Web服务器在实现上, 它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GET</code> 方法只返回一个 <em style=" color: #d75100; font-style: normal; ">WebSocket</em> 的 URL 有些浪费, 我们可以直接返回一个完整的 HTML 页面, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 文件:
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+
+s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;</span>
+<span style="color: #dd1144">&lt;!DOCTYPE html&gt;</span>
+<span style="color: #dd1144">&lt;html&gt;</span>
+<span style="color: #dd1144">&lt;head&gt;</span>
+<span style="color: #dd1144">&lt;meta charset=&quot;utf-8&quot; /&gt;</span>
+<span style="color: #dd1144">&lt;title&gt;zchannel&lt;/title&gt;</span>
+<span style="color: #dd1144">&lt;/head&gt;</span>
+<span style="color: #dd1144">&lt;body&gt;</span>
+
+<span style="color: #dd1144">  &lt;iframe name=&quot;iframe&quot; style=&quot;display: none;&quot;&gt;&lt;/iframe&gt;</span>
+<span style="color: #dd1144">  &lt;form action=&quot;http://zchannel.sinaapp.com/&quot; method=&quot;post&quot; target=&quot;iframe&quot;&gt;</span>
+<span style="color: #dd1144">    &lt;input type=&quot;text&quot; name=&quot;msg&quot; /&gt;&lt;button type=&quot;submit&quot;&gt;发送&lt;/button&gt;</span>
+<span style="color: #dd1144">  &lt;/form&gt;</span>
+<span style="color: #dd1144">  &lt;pre id=&quot;show&quot;&gt;</span>
+<span style="color: #dd1144">  &lt;/pre&gt;</span>
+
+<span style="color: #dd1144">&lt;script type=&quot;text/javascript&quot;&gt;</span>
+
+<span style="color: #dd1144">var ws = new WebSocket(&#39;%s&#39;);</span>
+
+<span style="color: #dd1144">ws.onmessage = function(msg){</span>
+<span style="color: #dd1144">  document.getElementById(&#39;show&#39;).innerHTML += &#39;&lt;br /&gt; &gt; &#39; + msg.data;</span>
+<span style="color: #dd1144">}</span>
+
+<span style="color: #dd1144">&lt;/script&gt;</span>
+
+<span style="color: #dd1144">&lt;/body&gt;</span>
+<span style="color: #dd1144">&lt;/html&gt;</span>
+<span style="color: #dd1144">&#39;&#39;&#39;</span>
+
+CHANNEL_NAME <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;zchannel&#39;</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">sae.channel</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
+
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">application</span>(environ, start_response):
+    <span style="color: #000000; font-weight: bold">if</span> environ<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;REQUEST_METHOD&#39;</span>, <span style="color: #dd1144">&#39;GET&#39;</span>) <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;GET&#39;</span>:
+        <span style="color: #999988; font-style: italic">#url -&gt; ws://channel.sinaapp.com/com/xxx</span>
+        url <span style="color: #000000; font-weight: bold">=</span> sae<span style="color: #000000; font-weight: bold">.</span>channel<span style="color: #000000; font-weight: bold">.</span>create_channel(CHANNEL_NAME)
+        html <span style="color: #000000; font-weight: bold">=</span> (s <span style="color: #000000; font-weight: bold">%</span> url)<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf-8&#39;</span>)
+        start_response(<span style="color: #dd1144">&#39;200 ok&#39;</span>, [(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;text/html&#39;</span>)])
+        <span style="color: #000000; font-weight: bold">return</span> [html]
+
+    length <span style="color: #000000; font-weight: bold">=</span> environ<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;CONTENT_LENGTH&#39;</span>, <span style="color: #009999">0</span>)
+    length <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(length)
+    body <span style="color: #000000; font-weight: bold">=</span> environ[<span style="color: #dd1144">&#39;wsgi.input&#39;</span>]<span style="color: #000000; font-weight: bold">.</span>read(length)
+    msg <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>unquote(body<span style="color: #000000; font-weight: bold">.</span>split(<span style="color: #dd1144">&#39;=&#39;</span>, <span style="color: #009999">1</span>)[<span style="color: #009999">1</span>])
+    sae<span style="color: #000000; font-weight: bold">.</span>channel<span style="color: #000000; font-weight: bold">.</span>send_message(CHANNEL_NAME, msg)
+    start_response(<span style="color: #dd1144">&#39;200 ok&#39;</span>, [(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;text/html&#39;</span>)])
+    <span style="color: #000000; font-weight: bold">return</span> [<span style="color: #dd1144">&#39;ok&#39;</span>]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+现在可以访问 <a href="http://zchannel.sinaapp.com/" style="color: #0184b7; text-decoration: none">http://zchannel.sinaapp.com/</a> 看效果了.
+</p>
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'sae-channel';
+  var disqus_url = 'http://zouyesheng.com/sae-channel.html';
+  var disqus_title = 'SAE上的Channel服务演示';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

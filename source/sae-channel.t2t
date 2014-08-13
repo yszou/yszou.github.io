@@ -1,0 +1,219 @@
+SAE上的Channel服务演示
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+#Channel服务是什么#
+
+SAE 上的 *Channel* 服务就是一个共用的 *WebSocket* 服务器.
+
+和自建的服务器的双工形式有些不同, 因为是共用的, 所以逻辑必须统一. 于是对于所有往服务器的 *写* 操作, 全部是回调对应的应用的固定 URL . 既然这样, 我们就当它不能写好了, 写的相关逻辑, 我们自己在应用上通过 *HTTP* 实现.
+
+这样, 其实 *Channel* 服务就是一个很单纯的 *广播站* 了. 通过 API 写入的数据, 会广播给当前的所有连接.
+
+信息流上, 就是一个简单的环状:
+
+```text
+
+      +-----------------+
+      |   app server    |<----+
+      +-----------------+     |
+               |              |
+               |              |
+               v              |
+      +-----------------+     |
+      | channel server  |     |
+      +-----------------+     |
+               |              |
+               |              |
+               v              |
+      +-----------------+     |
+      | browser/client  |-----+
+      +-----------------+
+
+```
+
+当然, 如果你要处理"连接创建", "连接关闭"这两个事件, 那你还是得去处理 *Channel* 的回调. 只是处理数据的话, 就别管回调了, 上面那个环就可以了.
+
+
+
+#Web服务器#
+
+
+Web服务器, 就是前面环图中的 ``app server`` , 它要做两个事:
+
+- 创建 *ws* 服务, 即获取一个 *ws* 服务的 URL .
+- 获取请求数据, 往 ``channel server`` 中写入数据.
+
+
+这两个事对应 ``sae.channel`` 中的仅有的两个函数:
+
+- ``sae.channel.create_channel(name, duration=None)``
+- ``sae.channel.send_message(name, message)``
+
+
+我们也正好把 ``GET`` 方法用于第一件事, 把 ``POST`` 方法用于第二件事, ``index.wsgi`` 文件:
+
+```python
+# -*- coding: utf-8 -*-
+
+CHANNEL_NAME = 'zchannel'
+
+import sae.channel
+import urllib
+
+def application(environ, start_response):
+    if environ.get('REQUEST_METHOD', 'GET') == 'GET':
+        #url -> ws://channel.sinaapp.com/com/xxx
+        url = sae.channel.create_channel(CHANNEL_NAME)
+        start_response('200 ok', [('content-type', 'text/plain')])
+        return [url]
+
+    length = environ.get('CONTENT_LENGTH', 0)
+    length = int(length)
+    body = environ['wsgi.input'].read(length)
+    msg = urllib.unquote(body.split('=', 1)[1])
+    sae.channel.send_message(CHANNEL_NAME, msg)
+    start_response('200 ok', [('content-type', 'text/html')])
+    return ['ok']
+```
+
+
+#浏览器客户端#
+
+高级浏览器对 *WebSocket* 早已支持, 使用 js 操作 *WebSocket* 很容易:
+
+```javascript
+var ws = new WebSocket(ws_url);
+
+ws.onmessage = function(msg){
+  console.log(msg)
+}
+```
+
+当然, 我们可以加一些简单的标签来实现一个页面应用. 后面会有代码.
+
+
+#命令行客户端#
+
+*Tornado* 中已经实现了一个 *WebSocket* 的客户端(至少 4.0.1 这个版本有), 所以我们可以做一个:
+
+- 从标准输入中读取内容.
+- 然后以 POST 方法写到 *HTTP* 服务器.
+- 同时读取 *WebSocket* 服务器的内容并显示到标准输出.
+
+
+命令行客户端代码:
+
+
+```python
+# -*- coding: utf-8 -*-
+
+import re
+import tornado.ioloop
+import tornado.websocket
+import tornado.gen
+import tornado.iostream
+import tornado.httpclient
+import tornado.httputil
+
+@tornado.gen.coroutine
+def show_message():
+    client = tornado.httpclient.AsyncHTTPClient()
+    res = yield client.fetch('http://zchannel.sinaapp.com/')
+    ws = re.findall("WebSocket\('(.*?)'\)", res.body)[0];
+    conn = yield tornado.websocket.websocket_connect(ws)
+    while 1:
+        msg = yield conn.read_message()
+        print '>', msg
+
+
+@tornado.gen.coroutine
+def write_message():
+    stream = tornado.iostream.PipeIOStream(fd=0)
+    client = tornado.httpclient.AsyncHTTPClient()
+    while 1:
+        s = (yield stream.read_until('\n')).rstrip()
+        yield client.fetch('http://zchannel.sinaapp.com/', method='POST',
+                           body=tornado.httputil.urlencode({'msg': s}))
+
+
+if __name__ == '__main__':
+    show_message()
+    write_message()
+    tornado.ioloop.IOLoop.current().start()
+```
+
+
+直接执行上面的代码, 就可以在终端中输入内容, 并看到 *WebSocket* 服务器吐出来的数据了.
+
+代码中对 ``GET`` 方法访问 *HTTP* 服务器时获取的数据做了处理, 是因为 ``GET`` 方法我不光返回一个简单的 *WebSocket* 的 URL 了, 而是返回了一个完整的 HTML 页面, *WebSocket* 的 URL 需要从页面内容中提取. 完整代码在后面.
+
+
+#Web服务器改进#
+
+Web服务器在实现上, 它的 ``GET`` 方法只返回一个 *WebSocket* 的 URL 有些浪费, 我们可以直接返回一个完整的 HTML 页面, ``index.wsgi`` 文件:
+
+```python
+# -*- coding: utf-8 -*-
+
+s = u'''
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>zchannel</title>
+</head>
+<body>
+
+  <iframe name="iframe" style="display: none;"></iframe>
+  <form action="http://zchannel.sinaapp.com/" method="post" target="iframe">
+    <input type="text" name="msg" /><button type="submit">发送</button>
+  </form>
+  <pre id="show">
+  </pre>
+
+<script type="text/javascript">
+
+var ws = new WebSocket('%s');
+
+ws.onmessage = function(msg){
+  document.getElementById('show').innerHTML += '<br /> > ' + msg.data;
+}
+
+</script>
+
+</body>
+</html>
+'''
+
+CHANNEL_NAME = 'zchannel'
+
+import sae.channel
+import urllib
+
+
+def application(environ, start_response):
+    if environ.get('REQUEST_METHOD', 'GET') == 'GET':
+        #url -> ws://channel.sinaapp.com/com/xxx
+        url = sae.channel.create_channel(CHANNEL_NAME)
+        html = (s % url).encode('utf-8')
+        start_response('200 ok', [('content-type', 'text/html')])
+        return [html]
+
+    length = environ.get('CONTENT_LENGTH', 0)
+    length = int(length)
+    body = environ['wsgi.input'].read(length)
+    msg = urllib.unquote(body.split('=', 1)[1])
+    sae.channel.send_message(CHANNEL_NAME, msg)
+    start_response('200 ok', [('content-type', 'text/html')])
+    return ['ok']
+```
+
+
+现在可以访问 http://zchannel.sinaapp.com/ 看效果了.
+
+
