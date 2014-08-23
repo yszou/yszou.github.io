@@ -330,6 +330,8 @@ dict(session.query(Blog.id, Blog.title).filter(Blog.create >= 0).all())
 session.query(Blog.id, Blog.title).filter(Blog.create >= 0).first().title
 session.query(User.id).order_by('id desc').all()
 session.query(User.id).order_by('id').first()
+session.query(User.id).order_by(User.id).first()
+session.query(User.id).order_by(-User.id).first()
 session.query('id', 'username').select_from(User).all()
 session.query(User).get('16e19a64d5874c308421e1a835b01c69')
 ```
