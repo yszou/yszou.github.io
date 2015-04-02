@@ -219,11 +219,23 @@ var get_group = function(count, per_page, page){
 ```html
 <div>
   <div ng-show="sum_page > 1">
-    <div ng-repeat="o in left" ng-show="o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+    <div ng-repeat="o in left"
+         ng-show="o <= sum_page" ng-click="goto(o)"
+         ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+
     <div ng-show="middle[0] > left[L_COUNT - 1] + 1">···</div>
-    <div ng-repeat="o in middle" ng-show="o > left[L_COUNT - 1] && o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+
+    <div ng-repeat="o in middle"
+         ng-show="o > left[L_COUNT - 1] && o <= sum_page"
+         ng-click="goto(o)"
+         ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+
     <div ng-show="right[0] > middle[M_OFFSET * 2] + 1">···</div>
-    <div ng-repeat="o in right" ng-show="o > middle[M_OFFSET * 2] && o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+
+    <div ng-repeat="o in right"
+         ng-show="o > middle[M_OFFSET * 2] && o <= sum_page"
+         ng-click="goto(o)"
+         ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
   </div>
 </div>
 ```
