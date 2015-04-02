@@ -186,3 +186,45 @@ R = [S - 2 , S - 1 , S]
 最后, 附上使用 *AngularJS* 实现的上面说的分页器的简单代码:
 
 
+```javascript
+scope.L_COUNT = 2;
+scope.M_OFFSET = 1;
+scope.R_COUNT = 2;
+
+//计算左,中,右分页
+var get_group = function(count, per_page, page){
+    scope.sum_page = Math.ceil(count / per_page);
+    if(page > scope.sum_page || page <= 0){page = 1; scope.page = page}
+    scope.left = [];
+    scope.middle = [];
+    scope.right = [];
+    for(var i = 0, l = scope.L_COUNT; i < l; i++){
+        scope.left.push(i+1);
+    }
+    for(var i = 0, l = scope.M_OFFSET; i < l; i++){
+        scope.middle.push(page-i-1);
+    }
+    scope.middle.push(page);
+    for(var i = 0, l = scope.M_OFFSET; i < l; i++){
+        scope.middle.push(page+i+1);
+    }
+    for(var i = 0, l = scope.R_COUNT; i < l; i++){
+        scope.right.unshift(scope.sum_page-i);
+    }
+}
+```
+
+模板部分:
+
+```html
+<div>
+  <div ng-show="sum_page > 1">
+    <div ng-repeat="o in left" ng-show="o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+    <div ng-show="middle[0] > left[L_COUNT - 1] + 1">···</div>
+    <div ng-repeat="o in middle" ng-show="o > left[L_COUNT - 1] && o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+    <div ng-show="right[0] > middle[M_OFFSET * 2] + 1">···</div>
+    <div ng-repeat="o in right" ng-show="o > middle[M_OFFSET * 2] && o <= sum_page" ng-click="goto(o)" ng-class="{true: 'u-current'}[o == page]">{{ o }}</div>
+  </div>
+</div>
+```
+
