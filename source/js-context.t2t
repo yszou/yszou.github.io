@@ -1,0 +1,278 @@
+Javascript 中的上下文，我的认识的三个阶段
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+js 中的 *上下文 Context*，可以说是一个，你即使不知道，没听过，也不影响你继续写 js 代码的一个概念。但是，它又确确实实是无所不在的一个东西，是的，无所不在。
+
+从我自己的经验来看，对上下文的认识，算是分成了三个阶段，每一个阶段，都让我从外在的表现中，理解了一些更本质上的东西。
+
+
+#第一阶段，不知#
+
+我最开始接触 js 的时候，看到了它的 ``new`` ，看到了它的 ``this`` ，很自然地会把 js 和其它的一些 OOP 语言等同起来看待，并且，好像，也是这么回事。比如：
+
+```javascript
+var Class = function(a){
+  this.a = a;
+  this.add = function(){
+    this.a++;
+  }
+}
+
+var ins = new Class(1);
+ins.add();
+console.log(ins.a); //2
+```
+
+上面的代码，可以按预期的那样，最后得到 ``2`` 的输出。
+
+但是，如果仅仅是 *类，实例* 这种层面的认识，我无法解释下面的问题：
+
+```javascript
+var ins = new Class(1);
+var func = ins.add;
+func();
+console.log(ins.a); //1
+```
+
+甚至解释不清楚下面的代码：
+
+```javascript
+var obj = {
+  a: 1,
+  add: function(){
+    this.a++;
+  }
+}
+obj.add();
+console.log(obj.a); //2
+```
+
+这里可没有 *类* ，也没有 *实例* 。
+
+我上面的最开始对 js 的认识当中，局限就在于，把 ``this`` 理解成了 *实例* 。也许在其它语言中（比如 Python 常用的实例方法第一个参数 ``self``），是这样。但是在 js 中， ``this`` 跟 *实例* 完全没有关系。
+
+
+#第二阶段，this#
+
+当我明白问题出在 ``this`` 上，或者说，当我终于理解了 ``this`` 这个东西之后，上面的代码，再也不会困扰我了。
+
+我知道了， js 中有一个东西叫 *上下文* ，可惜的是，这时，我对上下文的概念，仅仅停留在 ``this`` 上。
+
+这时我的理解是： ``this`` 表示的是，函数调用时的 *上下文* 。
+
+说得详细一点，就是 ``this`` 不是表示的 *实例* ，而是函数调用时的 *上下文* 。 *上下文* 这个东西，默认是 ``window`` ，即 *全局* 。但是，你可以明确地为函数指定一个 *上下文* 。回到 ``this`` 上，就是在定义时你根本不知道 ``this`` 是什么，因为在调用时，它可以是任何东西（因为 *上下文* 是可以人为指定的）。
+
+回到刚开始的代码：
+
+```javascript
+var Class = function(a){
+  this.a = a;
+  this.add = function(){
+    this.a++;
+  }
+}
+
+var ins = new Class(1);
+ins.add();
+console.log(ins.a); //2
+```
+
+这段代码的结构之所以是 ``2`` ，不是因为 *实例* ，而是因为 *上下文* 。
+
+首先说一下 ``new`` 。 ``new`` 在 js 中，其实仅仅相当于是一个语法糖。它的作用，相当于是先创建了一个空的对象，然后把这个空的对象，作为 *构造函数* 的 *上下文* ，再去执行 *构造函数* ，最后再返回这个当初的空对象。即：
+
+```javascript
+var what_new = function(func, a){
+  var context = {};
+  func.apply(context, [a]);
+  return context;
+}
+
+var Class = function(a){
+  this.a = a;
+  this.add = function(){
+    this.a++;
+  }
+}
+
+var ins = what_new(Class, 1);
+ins.add();
+console.log(ins.a);
+```
+
+当然， ``new`` 除了上面的 ``func.apply`` 的作用之外， **它还会处理原型链** ，这里就不介绍了。上面的代码仅是为了说明 ``new`` 对于所谓的构造函数做了什么事。
+
+有了上下文，就不难解释 ``ins`` 这个东西了。所谓的构造函数，只是在指定了 ``this`` 到底是哪一个对象之后，作了相应的赋值操作而已，最后得到这个对象的返回，经过了一些赋值操作，对象中就有了新的东西了。
+
+同样，对于一个在定义时包含了 ``this`` 的函数，比如前面的例子：
+
+```javascript
+var obj = {
+  a: 1,
+  add: function(){
+    this.a++;
+  }
+}
+```
+
+如果来一句：
+
+```javascript
+var func = obj.add;
+func(); //undefined
+func.apply({a: 0}) //1
+```
+
+这些都很容易明白了。 js 中的函数，都是一些很单纯的函数，所有的函数跟它在哪里定义完全没有关系（考虑闭包的情况除外）。所以上面的代码，虽然 ``add`` 函数是写在 ``obj`` 中的，但是，它跟你在 ``window`` 中写一个函数是 **完全一样** 的：
+
+```javascript
+var add = function(){this.a++}
+var obj = {
+  a: 1,
+  add: add
+}
+```
+
+既然 ``add`` 函数中有 ``this`` ，那么这个函数执行时的行为，就要小心一点了。所以上面明确地指定了一个上下文给它 ``func.apply({a: 0})`` 。
+
+还是回到开始的代码：
+
+```javascript
+var obj = {
+  a: 1,
+  add: function(){
+    this.a++;
+  }
+}
+```
+
+对于上面的代码，我知道了：
+
+```javascript
+obj.add();
+```
+
+和：
+
+```javascript
+var func = obj.add();
+func();
+```
+
+会得到不一样的结果。并且知道，这个不一样的结果是上下文引起的，还知道，后者 ``func()`` 执行时，上下文是全局的 ``window`` 了。
+
+我虽然知道是这样的一个情况，但是，为什么？
+
+我在很长时间里，都没有去细细考虑过这个问题。不过，因为知道了“上下文是一个在定义时无意义，其具体值完全由执行时决定”这点之后，我都尽量避免去使用 ``this`` ，实在要用，在调用时，我都会通过 ``apply`` 或 ``call`` 明确指定上下文，这样，至少不会踩坑里。
+
+
+#第三阶段，一切都是上下文#
+
+某天，我在网上看到了这样一段代码（原始出处不知道）：
+
+```javascript
+var bind = Function.prototype.call.bind(Function.prototype.bind)
+```
+
+这个新定义的 ``bind`` 函数具体做什么事我并不关心，我好奇的是 ``call.bind()`` 这个调用。因为 ``call`` 这个函数，之前一直以为它是 ``Function`` 对象的一个方法（它本身也是一个函数），但是，如果按“对象的方法”这个角度去想的话，那对它绑定一个上下文（ ``bind()`` 的调用 ）不就完全没有意义了么？
+
+后来看到了这篇文章， http://www.html-js.com/article/JavaScript-functional-programming-in-Javascript-Bind-Call-and-Apply
+
+其中以 ``slice`` 函数举的例子让我恍然大悟：
+
+- 上下文不仅仅是 ``this`` ，所有的点 ``.`` ，都是上下文。
+- js 中的函数比我想像的还要纯，根本没有“对象中的方法”这个东西，即使是“原生对象”中。（它仅仅起一个名字空间的作用）
+
+
+所有的函数调用，都有两层意义，比如 ``c.f()``：
+
+- ``f`` 这个函数，它在 ``c`` 中。（名字空间的问题）
+- 把 ``c`` 作为 ``f`` 的上下文，去调用 ``f`` 。（前提是 ``f`` 没有绑定过上下文）
+
+
+如果 ``c`` 没有，则默认是 ``window`` 。
+
+所有的，js 中所有的函数调用，都是如此。即使是 ``f.call(context, x)`` ，我之前只看到了第一层意义（ ``f`` 中有一个 ``call`` 方法可以使用），则忽略了第二层意义 —— 把 ``f`` 作为 ``call`` 的上下文。
+
+简单来说，我们可以相像 ``call`` 这个函数，它的代码大概是这样的（可变参数的问题我先不管了）：
+
+```javascript
+var call = function(context, a){
+    var new_func = this.bind(context);
+    retur new_func(a);
+}
+```
+
+它的作用，就是把 *指定的上下文* 作为 *自己的上下文* 的 *上下文* ，然后再调用 *自己的上下文* 。
+
+上面一句话有些纠结哈，主要搞明白多种上下文的关系， *自己的上下文* 上面是 ``f`` 。 *指定的上下文* 上面是 ``context`` 。
+
+再看 ``f.call(context, x)`` 这个代码结合“函数是单纯”这点，我想到，即使是原生对象的那些方法， **也不过是把一些单纯的函数放到了 prototype 中而已** ，比如把 ``call`` 函数放到了 ``Function.prototype`` 当中。
+
+至此，再看 ``c.f()`` ， ``a.b.c()`` 这些，不要去想是调用 ``c`` 对象中的 ``f`` 方法（这么说没错，但是名字空间的问题是显而易见的嘛），而是想成，调用时把 ``c`` 作为 ``f`` 的上下文。
+
+好了，回到开始的那行例子：
+
+```javascript
+var new_bind = Function.prototype.call.bind(Function.prototype.bind)
+```
+
+这个就非常好理解了（为了描述方便，我改成 ``new_bind`` 了），把 ``bind`` 作为上下文绑定到 ``call`` 中。
+
+这里注意一下，绑定了上下文的 ``call`` 函数，还是 ``call`` 函数，但是 “此 ``call`` 已经非彼 ``call``” 了。
+
+所以：
+
+```javascript
+new_bind != Function.prototype.call
+```
+
+虽然调用形式上， ``new_bind`` 和 ``call`` 完全一样，但是他们的上下文行为不一样：
+
+- ``call`` 是未绑定状态，所以 ``f.call()`` 会在执行时把 ``f`` 作为上下文绑定到 ``call`` 函数中。
+- ``new_bind`` 是已绑定状态，所以 ``f.new_bind()`` 对 ``new_bind()`` 的执行完全没影响。
+
+
+我们可以以这样的流程来帮助我们理解：
+
+```text
+new_bind => call => bind.call => bind.call(f, context) => f.bind(context)
+```
+
+
+一步一步解释：
+
+: ``new_bind => call``
+    ``new_bind`` 在形式上就是 ``call`` 。
+
+: ``call => bind.call``
+    只是这个 ``call`` ，是指定了 ``bind`` 作为它的上下文的。既然是 ``bind`` 作为它的上下文，那我们可以写成是 ``bind.call`` 的样式。
+
+: ``bind.call(f, context) => f.bind(context)``
+    ``new_bind`` 的调用 ``new_bind(f, context)`` 就相当于是 ``bind.call(f, context)`` 。考虑 ``call`` 函数之前的行为： ``f.call(context, a)`` 是把 ``context`` 作为 ``f`` 的上下文，也就是 ``context.f(a)`` ，那么 ``bind.call(f, context)`` 对应的就是 ``f.bind(context)`` 。
+
+: ``f.bind(context)``
+    不用多说了吧，把 ``context`` 绑定到 ``f`` 上，返回一个绑定了上下文的新函数。
+
+
+完全是最基本的代数推导嘛，形式上，上下文前置总是没有问题的。
+
+
+#结语#
+
+我一直认同，要理解 js 的东西，从函数式语言入手，非常合适。硬要往面向对象的那套东西上套，自找没趣。
+
+我是花了很长很长的时间，才算是自认为知道了 js 中 *上下文* 这个东西，也许这些对于一个系统学习过 *Lisp* 的人来说，再自然不过了。
+
+当然，我不知道弄明白了最后那个“代数推导”到底有什么好处，也许没有，因为我不明白这些也不影响我写了很多正常工作的 js 代码嘛。只是，我以后再写，思路上的可能会有一些不同了。
+
+- 比如原型链，它的一大作用，就是直接可以产生 ``c.f()`` 的形式。而不需要去单独做一下 ``c.f = f`` 。
+- 比如链式调用， ``c.f1().f2().f3()`` ，定义 ``f1`` ， ``f2`` ， ``f3`` 时，返回 ``this`` 就可以了。
+- 比如代码组织的形式上，可以尝试把很多的小函数做到不同的“名字空间”中，然后再在业务层面，通过 *Mixin* 来拼出来不同的业务对象。
+
+
