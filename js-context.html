@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Javascript 中的上下文，我的认识的三个阶段 - YS.Zou</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">Javascript 中的上下文，我的认识的三个阶段</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-04-24 03:06 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">第一阶段，不知</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">第二阶段，this</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">第三阶段，一切都是上下文</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">结语</a>
+  </li>
+  </ol>
+
+<p style="margin: 15px 0;">
+js 中的 <em style=" color: #d75100; font-style: normal; ">上下文 Context</em>，可以说是一个，你即使不知道，没听过，也不影响你继续写 js 代码的一个概念。但是，它又确确实实是无所不在的一个东西，是的，无所不在。
+</p>
+<p style="margin: 15px 0;">
+从我自己的经验来看，对上下文的认识，算是分成了三个阶段，每一个阶段，都让我从外在的表现中，理解了一些更本质上的东西。
+</p>
+
+<a name="toc1"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 第一阶段，不知</h1>
+
+<p style="margin: 15px 0;">
+我最开始接触 js 的时候，看到了它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> ，看到了它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> ，很自然地会把 js 和其它的一些 OOP 语言等同起来看待，并且，好像，也是这么回事。比如：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> Class <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a){
+  <span style="color: #000000; font-weight: bold">this</span>.a <span style="color: #000000; font-weight: bold">=</span> a;
+  <span style="color: #000000; font-weight: bold">this</span>.add <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> ins <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Class(<span style="color: #009999">1</span>);
+ins.add();
+console.log(ins.a); <span style="color: #999988; font-style: italic">//2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+上面的代码，可以按预期的那样，最后得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2</code> 的输出。
+</p>
+<p style="margin: 15px 0;">
+但是，如果仅仅是 <em style=" color: #d75100; font-style: normal; ">类，实例</em> 这种层面的认识，我无法解释下面的问题：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> ins <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Class(<span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> ins.add;
+func();
+console.log(ins.a); <span style="color: #999988; font-style: italic">//1</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+甚至解释不清楚下面的代码：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {
+  a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span>,
+  add<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+obj.add();
+console.log(obj.a); <span style="color: #999988; font-style: italic">//2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+这里可没有 <em style=" color: #d75100; font-style: normal; ">类</em> ，也没有 <em style=" color: #d75100; font-style: normal; ">实例</em> 。
+</p>
+<p style="margin: 15px 0;">
+我上面的最开始对 js 的认识当中，局限就在于，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 理解成了 <em style=" color: #d75100; font-style: normal; ">实例</em> 。也许在其它语言中（比如 Python 常用的实例方法第一个参数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">self</code>），是这样。但是在 js 中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 跟 <em style=" color: #d75100; font-style: normal; ">实例</em> 完全没有关系。
+</p>
+
+<a name="toc2"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 第二阶段，this</h1>
+
+<p style="margin: 15px 0;">
+当我明白问题出在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 上，或者说，当我终于理解了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 这个东西之后，上面的代码，再也不会困扰我了。
+</p>
+<p style="margin: 15px 0;">
+我知道了， js 中有一个东西叫 <em style=" color: #d75100; font-style: normal; ">上下文</em> ，可惜的是，这时，我对上下文的概念，仅仅停留在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 上。
+</p>
+<p style="margin: 15px 0;">
+这时我的理解是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 表示的是，函数调用时的 <em style=" color: #d75100; font-style: normal; ">上下文</em> 。
+</p>
+<p style="margin: 15px 0;">
+说得详细一点，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 不是表示的 <em style=" color: #d75100; font-style: normal; ">实例</em> ，而是函数调用时的 <em style=" color: #d75100; font-style: normal; ">上下文</em> 。 <em style=" color: #d75100; font-style: normal; ">上下文</em> 这个东西，默认是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">window</code> ，即 <em style=" color: #d75100; font-style: normal; ">全局</em> 。但是，你可以明确地为函数指定一个 <em style=" color: #d75100; font-style: normal; ">上下文</em> 。回到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 上，就是在定义时你根本不知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 是什么，因为在调用时，它可以是任何东西（因为 <em style=" color: #d75100; font-style: normal; ">上下文</em> 是可以人为指定的）。
+</p>
+<p style="margin: 15px 0;">
+回到刚开始的代码：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> Class <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a){
+  <span style="color: #000000; font-weight: bold">this</span>.a <span style="color: #000000; font-weight: bold">=</span> a;
+  <span style="color: #000000; font-weight: bold">this</span>.add <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> ins <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Class(<span style="color: #009999">1</span>);
+ins.add();
+console.log(ins.a); <span style="color: #999988; font-style: italic">//2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+这段代码的结构之所以是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2</code> ，不是因为 <em style=" color: #d75100; font-style: normal; ">实例</em> ，而是因为 <em style=" color: #d75100; font-style: normal; ">上下文</em> 。
+</p>
+<p style="margin: 15px 0;">
+首先说一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 在 js 中，不考虑原型链它的作用，相当于是先创建了一个空的对象，然后把这个空的对象，作为 <em style=" color: #d75100; font-style: normal; ">构造函数</em> 的 <em style=" color: #d75100; font-style: normal; ">上下文</em> ，再去执行 <em style=" color: #d75100; font-style: normal; ">构造函数</em> ，最后再返回这个当初的空对象。即：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> what_new <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(func, a){
+  <span style="color: #000000; font-weight: bold">var</span> context <span style="color: #000000; font-weight: bold">=</span> {};
+  func.apply(context, [a]);
+  <span style="color: #000000; font-weight: bold">return</span> context;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> Class <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a){
+  <span style="color: #000000; font-weight: bold">this</span>.a <span style="color: #000000; font-weight: bold">=</span> a;
+  <span style="color: #000000; font-weight: bold">this</span>.add <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> ins <span style="color: #000000; font-weight: bold">=</span> what_new(Class, <span style="color: #009999">1</span>);
+ins.add();
+console.log(ins.a);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+当然， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 除了上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func.apply</code> 的作用之外， <strong style=" color: red; font-weight: normal; ">它还会处理原型链</strong> ，这里就不介绍了。上面的代码仅是为了说明 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 对于所谓的构造函数做了什么事。
+</p>
+<p style="margin: 15px 0;">
+有了上下文，就不难解释 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ins</code> 这个东西了。所谓的构造函数，只是在指定了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 到底是哪一个对象之后，作了相应的赋值操作而已，最后得到这个对象的返回，经过了一些赋值操作，对象中就有了新的东西了。
+</p>
+<p style="margin: 15px 0;">
+同样，对于一个在定义时包含了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> 的函数，比如前面的例子：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {
+  a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span>,
+  add<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+如果来一句：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> obj.add;
+func(); <span style="color: #999988; font-style: italic">//undefined</span>
+func.apply({a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}) <span style="color: #999988; font-style: italic">//1</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+这些都很容易明白了。 js 中的函数，都是一些很单纯的函数，所有的函数跟它在哪里定义完全没有关系（考虑闭包的情况除外）。所以上面的代码，虽然 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">add</code> 函数是写在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">obj</code> 中的，但是，它跟你在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">window</code> 中写一个函数是 <strong style=" color: red; font-weight: normal; ">完全一样</strong> 的：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> add <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){<span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>}
+<span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {
+  a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span>,
+  add<span style="color: #000000; font-weight: bold">:</span> add
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+既然 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">add</code> 函数中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> ，那么这个函数执行时的行为，就要小心一点了。所以上面明确地指定了一个上下文给它 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func.apply({a: 0})</code> 。
+</p>
+<p style="margin: 15px 0;">
+还是回到开始的代码：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {
+  a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span>,
+  add<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">this</span>.a<span style="color: #000000; font-weight: bold">++</span>;
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+对于上面的代码，我知道了：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">obj.add();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+和：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> obj.add();
+func();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+会得到不一样的结果。并且知道，这个不一样的结果是上下文引起的，还知道，后者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">func()</code> 执行时，上下文是全局的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">window</code> 了。
+</p>
+<p style="margin: 15px 0;">
+我虽然知道是这样的一个情况，但是，为什么？执行同一个函数结果怎么就不一样了呢？
+</p>
+<p style="margin: 15px 0;">
+我在很长时间里，都没有去细细考虑过这个问题。不过，因为知道了“上下文是一个在定义时无意义，其具体值完全由执行时决定”这点之后，我都尽量避免去使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> ，实在要用，在调用时，我都会通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">apply</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 明确指定上下文，这样，至少不会踩坑里。
+</p>
+
+<a name="toc3"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 第三阶段，一切都是上下文</h1>
+
+<p style="margin: 15px 0;">
+某天，我在网上看到了这样一段代码（原始出处不知道）：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">Function</span>.prototype.call.bind(<span style="color: #0086B3">Function</span>.prototype.bind)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+这个新定义的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 函数具体做什么事先不管它，我好奇的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call.bind()</code> 这个调用。因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 这个函数，之前一直以为它是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Function</code> 对象的一个方法（它本身也是一个函数），但是，如果按“对象的方法”这个角度去想的话，那对它绑定一个上下文（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind()</code> 的调用 ）不就完全没有意义了么？（因为对象的方法应该是跟上下文无关的）
+</p>
+<p style="margin: 15px 0;">
+后来看到了这篇文章， <a href="http://www.html-js.com/article/JavaScript-functional-programming-in-Javascript-Bind-Call-and-Apply" style="color: #0184b7; text-decoration: none">http://www.html-js.com/article/JavaScript-functional-programming-in-Javascript-Bind-Call-and-Apply</a>
+</p>
+<p style="margin: 15px 0;">
+其中以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">slice</code> 函数举的例子让我恍然大悟：
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li>上下文控制不仅仅是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">apply</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code>，所有的点 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.</code> ，都是在指定上下文。
+</li>
+<li>js 中的函数比我想像的还要纯，根本没有“对象中的方法”这个东西，即使是“原生对象”中。（它仅仅起一个名字空间的作用）
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+所有的函数调用，都有两层意义，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c.f()</code>：
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 这个函数，它在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c</code> 中。（名字空间的问题）
+</li>
+<li>把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c</code> 作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 的上下文，去调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 。（前提是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 没有绑定过上下文）
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c</code> 没有，则默认是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">window</code> 。
+</p>
+<p style="margin: 15px 0;">
+所有的，js 中所有的函数调用，都是如此。即使是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.call(context, x)</code> ，我之前只看到了第一层意义（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 中有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 方法可以使用），则忽略了第二层意义 —— 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 的上下文。
+</p>
+<p style="margin: 15px 0;">
+简单来说，我们可以相像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 这个函数，它的代码大概是这样的（可变参数的问题先不管）：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> call <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(context, a){
+    <span style="color: #000000; font-weight: bold">var</span> new_func <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.bind(context);
+    retur new_func(a);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+它的作用，就是把 <em style=" color: #d75100; font-style: normal; ">指定的上下文（context）</em> 作为 <em style=" color: #d75100; font-style: normal; ">自己的上下文（this）</em> 的 <em style=" color: #d75100; font-style: normal; ">上下文</em> ，然后再调用 <em style=" color: #d75100; font-style: normal; ">自己的上下文（绑定上下文之后的 this）</em> 。
+</p>
+<p style="margin: 15px 0;">
+上面一句话有些纠结哈，主要搞明白多种上下文的关系， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.call(context, x)</code> 当中， <em style=" color: #d75100; font-style: normal; ">自己的上下文</em> 上面是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 。 <em style=" color: #d75100; font-style: normal; ">指定的上下文</em> 上面是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">context</code> 。
+</p>
+<p style="margin: 15px 0;">
+再看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.call(context, x)</code> 这个代码，结合“函数是单纯”这点，我想到，即使是原生对象的那些方法， <strong style=" color: red; font-weight: normal; ">也不过是把一些单纯的函数放到了 prototype 中而已</strong> ，比如把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 函数放到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Function.prototype</code> 当中。
+</p>
+<p style="margin: 15px 0;">
+至此，再看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c.f()</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a.b.c()</code> 这些，不要去想是调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c</code> 对象中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 方法（这么说没错，但是名字空间的问题是显而易见的嘛），而是想成，调用时把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">c</code> 作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 的上下文。
+</p>
+<p style="margin: 15px 0;">
+好了，回到开始的那行例子：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> new_bind <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">Function</span>.prototype.call.bind(<span style="color: #0086B3">Function</span>.prototype.bind)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+这个就非常好理解了（为了描述方便，我改成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind</code> 了），把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 作为上下文绑定到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 中。
+</p>
+<p style="margin: 15px 0;">
+这里注意一下，绑定了上下文的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 函数，还是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 函数，但是 “此 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 已经非彼 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code>” 了。
+</p>
+<p style="margin: 15px 0;">
+所以：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">new_bind <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #0086B3">Function</span>.prototype.call
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+虽然调用形式上， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 完全一样，但是他们的上下文行为不一样：
+</p>
+
+<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 是未绑定状态，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.call()</code> 会在执行时把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 作为上下文绑定到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 函数中。
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind</code> 是已绑定状态，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.new_bind()</code> 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind()</code> 的执行完全没影响。
+</li>
+</ul>
+
+<p style="margin: 15px 0;">
+我们可以以这样的流程来帮助我们理解：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">new_bind =&gt; call =&gt; bind.call =&gt; bind.call(f, context) =&gt; f.bind(context)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px 0;">
+一步一步解释：
+</p>
+
+<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
+<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind =&gt; call</code></dt><dd style="margin-left: 30px;">
+    <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind</code> 在形式上就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call =&gt; bind.call</code></dt><dd style="margin-left: 30px;">
+    只是这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> ，是指定了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 作为它的上下文的。既然是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind</code> 作为它的上下文，那我们可以写成是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind.call</code> 的样式。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind.call(f, context) =&gt; f.bind(context)</code></dt><dd style="margin-left: 30px;">
+    <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind</code> 的调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new_bind(f, context)</code> 就相当于是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind.call(f, context)</code> 。考虑 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 函数之前的行为： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.call(context, a)</code> 是把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">context</code> 作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 的上下文，也就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">context.f(a)</code> ，那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bind.call(f, context)</code> 对应的就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.bind(context)</code> 。
+<p style="margin: 15px 0;"></p>
+</dd>
+<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f.bind(context)</code></dt><dd style="margin-left: 30px;">
+    不用多说了吧，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">context</code> 绑定到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">f</code> 上，返回一个绑定了上下文的新函数。
+</dd>
+</dl>
+
+<p style="margin: 15px 0;">
+完全是最基本的代数推导嘛，形式上，上下文前置总是没有问题的。
+</p>
+
+<a name="toc4"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 结语</h1>
+
+<p style="margin: 15px 0;">
+我一直认同，要理解 js 的东西，从函数式语言入手，非常合适。硬要往面向对象的那套东西上套，太纠结了（我不管概念上到底什么样才叫面向对象，原生没有类定义，没有继承，没有实例化，就别扯这些就完了。对了，我认为原型追溯那不叫继承哈）。
+</p>
+<p style="margin: 15px 0;">
+当然，我不知道弄明白了最后那个“代数推导”到底有什么好处，也许没有，因为就算不明白这些也不影响我写了很多可以正常工作的 js 代码嘛。只是，我以后再写，思路上的可能会有一些不同了。比如代码组织的形式上，可以尝试把很多的小函数做到不同的“名字空间”中，然后再在业务层面，通过 <em style=" color: #d75100; font-style: normal; ">Mixin</em> 来拼出不同的业务对象。这些函数中可能到处充斥着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">this</code> ，我能控制好它们了。
+</p>
+
+<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'js-context';
+  var disqus_url = 'http://zouyesheng.com/js-context.html';
+  var disqus_title = 'Javascript 中的上下文，我的认识的三个阶段';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
