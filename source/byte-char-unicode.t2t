@@ -41,6 +41,8 @@
 
 #从字符到字节的编码#
 
+*编码* 这个概念，其实不太好定义，可大可小。广义地来说，协议，流程，这些都是一种编码。狭义地讲， *ASCII* 这种具体的概念是一种编码。后面不会强调说的 *编码* 到底是指什么，了解内容就好。
+
 字符是需要展现的信息，字节是唯一的载体。那么使用字节去表示字符，就需要去“定义上下文”，或者说，就需要去约定一套方法。
 
 如果我们约定的方法是：
@@ -77,7 +79,7 @@
 0x61  ->  0110 0001  ->  a
 ```
 
-*ASCII* 算是“过时”但是仍然正常工作（因为新标准会兼容它）的东西，所以，可以很容易直接验证它：
+*ASCII* 算是“过时”但是仍能正常工作（因为新标准会兼容它）的东西，所以，可以很容易直接验证它：
 
 ```bash
 echo -n 'bcda' > a.bin
@@ -103,7 +105,7 @@ vim -b a.bin
 
 于是，对于纯英文来说，以前一个字符占一个字节，现在需要用四个字节来存，空间浪费比较严重，很多人纠结了……，简单的一一对应的编码方式不好用， *Unicode* 的标准又不能返回去重造，那么，就单独来考虑字节编码的事吧。
 
-（当然，我不知道 *Unicode* 把内码和编码方式分开，是刻意设计还是历史自然演变，也许今天的它是折衷的一个结果。但是，把码表独立抽象出来，编码方式再单独设计，这种做法很漂亮，我个人是这样认为的。）
+（我不知道 *Unicode* 把内码和编码方式分开，是刻意设计还是历史自然演变，也许今天的它是折衷的一个结果。但是，把码表独立抽象出来，编码方式再单独设计，这种做法很漂亮，我个人是这样认为的。）
 
 
 所以，我们说 *Unicode* 是标准，这里面是有两层含义的。
@@ -199,7 +201,375 @@ u'一些文内容'.encode('gb18030').decode('gb18030') == u'一些文本内容'.
 
 ##一个简单的 HTTP Server##
 
-接下来，就是去挨个看看跟 Web 相关的种种编码问题了。为此，我们需要先做一个简单的 HTTP 服务器，以便可以清楚地了解到报文交互的一些细节。
+接下来，就是去挨个看看跟 Web 相关的种种编码问题了。为此，我们需要先做一个简单的 HTTP 应用服务器，以便可以清楚地了解到报文交互的一些细节。
+
+这里使用 Python 的 Tornado 框架实现一个简单的应用服务。代码如下：
+
+```python
+# -*- coding: utf-8 -*-
+
+import tornado.web
+import tornado.httpserver
+import tornado.ioloop
+
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        print self.request.headers
+        print self.request.query
+        self.finish(u'UTF-8 中文'.encode('utf-8'))
+
+    def post(self):
+        print self.request.headers
+        print [self.request.body]
+        self.finish(u'GBK 中文'.encode('gbk'))
+
+
+class JSHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.finish('later...')
+
+
+def main():
+    application = tornado.web.Application([('/', Handler), ('/js', JSHandler)], debug=True)
+    server = tornado.httpserver.HTTPServer(application)
+    server.listen(8888)
+    print 'Server is starting on 8888 ...'
+    tornado.ioloop.IOLoop().current().start()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+上面代码的细节就不说了，实现上注意三点即可：
+
+- 获取请求的头信息。
+- 获取请求参数的原始字节信息（特别是 POST 方法的 *body* 部分的原始字节）。
+- 写回连接时的字节内容自己控制。
+
+
+##页面上涉及编码标识的地方##
+
+在进行实际的相关试验前，先试着列一下页面中与编码标识有关的几个地方：
+
+- 请求响应头中的 *Content-Type* 。比如： ``Content-Type: text/html; charset=utf-8`` 。
+- HTML 中的相关 *meta* 标签，比如： ``<meta charset="utf-8" />`` 。
+- HTML 中的 *javascript* 标签，比如： ``<script src="abc.js" charset="utf-8"></script>``
+
+
+然后，再考虑会被编码影响的几个地方：
+
+- 页面的渲染，主要是 HTML 部分。
+- 数据的获取与处理，比如 js 中通过 ajax 获取数据。
+- 用户输入内容的编码，比如 *input* ， *textarea* 这些获取用户输入的东西。
+- 数据的原始 form 提交。
+- 数据的 ajax 提交。
+- ...
+
+
+简单来说，就是获取与提交两个方面，所有涉及交互的地方，都会有编码问题。后面会尽量实际确认每种场景对于编码的处理到底是以一个什么方式来做的。
+
+
+##单纯的HTML页面渲染##
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        中文
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+```
+
+上面的代码，单纯响应一段 HTML 内容。内容的原始字节是 gbk 编码的。经过实际试验，结论是：
+
+**对于 HTML 内容的渲染，编码上浏览器只认响应的 Content-Type 头。meta 标签的编码指定与 HTML 内容渲染无关。**
+
+
+##原始的form提交##
+
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <form action="/" method="post">
+        <input name="a" />
+        <button type="submit">提交</button>
+        </form>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        print [self.request.body], '*' * 40
+        self.redirect('/')
+```
+
+上面的代码，会使用 HTML 传统的方式提交表单。经过操作，结论是：
+
+**HTML 中的传统表单提交，内容的编码是和页面编码保持一致的。**
+
+简单来说，如果页面编码（参见前一节）是 gbk ，那么你在 input 中输入了“中文”两个字，那么最后提交出去的内容是 ``a=%D6%D0%CE%C4`` 。而如果是 utf-8 编码，那么提交出去的内容就是 ``a=%E4%B8%AD%E6%96%87`` 。
+
+Python 中要解百分号的这种 *URLEncode* ，可以使用 ``urllib`` 模块中的方法处理：
+
+```python
+>>> import urllib
+>>> s = '%D6%D0%CE%C4'
+>>> print [urllib.unquote(s).decode('gbk')]
+[u'\u4e2d\u6587']
+
+>>> s = '%E4%B8%AD%E6%96%87'
+>>> print [urllib.unquote(s).decode('utf8')]
+[u'\u4e2d\u6587']
+```
+
+注意，这里说的 form 的直接提交，只针对需要编码的内容，像 *multipart/form-data* 这种本来就不涉及编码的，原来是什么字节提交时还是什么字节。
+
+
+##encodeURIComponent的编码问题##
+
+在后面的和 js 有关的编码当中，要确定在浏览器环境中的 js 里的“字节和字符”问题，真不太好办，js 这块基本上是空白。
+
+不过好在浏览器有一组和 *URLEncode* 相关的函数，可以得到那种百分号的编码形式，这样，就可以看到“字节形式”了。
+
+最开始我们已经确认过 HTML 页面自己的渲染时编码问题，在此基础之上，加入 js ，并使用 ``encodeURIComponent`` 看看结果如何：
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <span>中文</span>
+        <form method="post" action="/">
+        <input type="text" name="a" />
+        <button type="submit">提交</button>
+        </form>
+        <script type="text/javascript">
+        console.log(
+            encodeURIComponent(
+                document.getElementsByTagName('span')[0].innerHTML.replace(/\s/g, '')
+        ));
+
+        document.getElementsByTagName('input')[0].addEventListener('change', function(){
+            console.log(
+                encodeURIComponent(
+                    document.getElementsByTagName('input')[0].value.replace(/\s/g, '')
+            ));
+        });
+        </script>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        print [self.request.body], '*' * 40
+        self.redirect('/')
+```
+
+操作的结论是：
+
+**encodeURIComponent 总是以字符的 UTF-8 编码的字节来进行 URL 编码。**
+
+
+##js加载时的编码##
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <span></span>
+        <script type="text/javascript" src="/js" charset="utf-8"></script>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        print [self.request.body], '*' * 40
+        self.redirect('/')
+
+
+class JSHandler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''
+        document.getElementsByTagName('span')[0].innerHTML = 'にほんご';
+        console.log(encodeURIComponent('にほんご'));
+        '''.encode('sjis')
+
+        self.set_header('Content-Type', 'text/javascript; charset=Shift_JIS')
+        self.finish(s)
+```
+
+上面的代码，有两个地方涉及到了编码的指定，一是 js 响应本身的 *Content-Type* 头，二是 ``script`` 标签的 ``charset`` 属性。结论是：
+
+**js加载时的编码按以下优先级处理：1. 响应的 Content-Type 头；2. script 标签的 charset 属性；3. 页面编码。**
+
+这里多说一点， *firebug* 中对于响应内容的显示（查看某个请求的响应内容），固定按 utf-8 编码处理。 chrome 的调试工具能正确处理各种编码，只要指定正确。
+
+
+
+##加载js后又使用XHR加载其它编码资源##
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <span></span>
+        <script type="text/javascript" src="/js" charset="utf-8"></script>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        s = u'<em>電腦</em>'.encode('big5')
+        self.set_header('Content-Type', 'text/html; charset=big5')
+        self.finish(s)
+
+
+class JSHandler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/', false);
+        xhr.send();
+        document.getElementsByTagName('span')[0].innerHTML = xhr.responseText;
+        '''.encode('sjis')
+
+        self.set_header('Content-Type', 'text/javascript; charset=Shift_JIS')
+        self.finish(s)
+```
+
+上的代码，是在一个 *gbk* 编码的内容中，加载了 *Shift_JIS* 编码的 js 文件，js 文件中又通过 XHR 获取了 *big5* 编码的内容，并把响应内容添加到原来的 *gbk* 编码的页面中。
+
+结论：
+
+**XHR 获取的内容的编码，由响应中的 Content-Type 头指定，如果未指定，按 UTF-8 处理。**
+
+
+##XHR提交数据时的编码##
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <span></span>
+        <script type="text/javascript" src="/js" charset="utf-8"></script>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        print [self.request.body], '*' * 40
+        s = u'<em>電腦</em>'.encode('big5')
+        self.set_header('Content-Type', 'text/html; charset=big5')
+        self.finish(s)
+
+
+class JSHandler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/', false);
+        xhr.send('にほんご');
+        document.getElementsByTagName('span')[0].innerHTML = xhr.responseText;
+        '''.encode('sjis')
+
+        self.set_header('Content-Type', 'text/javascript; charset=Shift_JIS')
+        self.finish(s)
+```
+
+上面的代码中，虽然 ``xhr.send()`` 那里是 *Shift_JIS* 编码，但是实际执行时，浏览器提交的内容却是 *UTF-8* 编码的。结论：
+
+**XHR提交的内容总是 UTF-8 编码的原始字节。**
+
+
+##再看form的原始提交##
+
+从前面几部分的内容来看，对于提交数据，不管是用 ``encodeURIComponent`` 自己作编码，或者是 ``xhr.send()`` 直接提交未编码内容，浏览器都是统一按 UTF-8 处理的。但是，对于直接的 form 原始提交方法，浏览器却是按页面编码来的，这相当尴尬。
+
+然后我去翻文档，看 form 标签支持的属性，果然，有一个 **accept-charset** ，这东西我以前还从来没有用过（因为真用不着，我 UTF-8 一条路走到黑），这个属性可以指定 form 提交的数据使用何种编码。
+
+
+```python
+class Handler(tornado.web.RequestHandler):
+    def get(self):
+        s = u'''<!DOCTYPE html>
+        <html>
+        <head>
+        <title>编码的问题</title>
+        <meta charset="gbk">
+        </head>
+        <body>
+        <form action="/" method="post" accept-charset="Shift_JIS">
+        <input name="a" />
+        <button type="submit">提交</button>
+        </form>
+        </body>
+        '''.encode('gbk')
+        self.set_header('Content-Type', 'text/html; charset=gbk')
+        self.finish(s)
+
+    def post(self):
+        print [self.request.body], '*' * 40
+        self.redirect('/')
+```
+
+
+#总结#
+
+先说明一下，这篇文章所有的内容，及相关代码，仅限于反映了 PC 上的现代浏览器的表现。移动端和 IE 我不知道是什么样的结果。
+
+需要搞明白的东西，前面应该已经都讲清楚了，所以，在一个大系统中，不同的项目使用了不同的编码，这不是什么问题哈，但是需要：
+
+- 响应时，总是设置正确的 *Content-Type* ，包括编码。
+- 服务器端处理请求时，总是以 *UTF-8* 编码对待提交内容。
+- 如果要直接提交表单，不使用 ajax 方式，则在 form 标签中，使用 ``accept-charset`` 属性指定编码为 *UTF-8* 。
+
+
+
 
 
 
