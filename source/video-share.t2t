@@ -9,7 +9,7 @@
 #编译安装#
 
 ```bash
-sudo apt-get install yasm librtmp-dev libv4l-dev
+sudo apt-get install yasm librtmp-dev libv4l-dev libx11-dev
 
 ./configure --prefix=/opt/ffmpeg --enable-x11grab --enable-gpl --enable-librtmp --enable-libv4l2
 ```
@@ -17,6 +17,10 @@ sudo apt-get install yasm librtmp-dev libv4l-dev
 
 
 =摄像头=
+
+```
+ffmpeg -f video4linux2 -i /dev/video0 -s 400x300 -r 20 -qmax 10 -an -f flv ~/out.flv
+```
 
 ```
 ffmpeg -f video4linux2 -i /dev/video0 -s 400x300 -r 20 -qmax 10 -an -f mpeg1video http://xxx/avatar/400/300
