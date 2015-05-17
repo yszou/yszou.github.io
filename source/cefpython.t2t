@@ -507,6 +507,73 @@ def ReadResponse(self, data, bytes_to_read, bytes_readed, callback):
 
 
 
+#正确处理引用与释放资源#
+
+*CEFPython* 是对 C++ 的 *CEF* 的绑定，所有在一些地方，资源的引用与释放，没有办法自动地做到那么彻底，这种情况下，就需要人为地处理掉。
+
+
+##ResourceHandler的显示引用保留##
+
+这个问题之前就提过了。在 ``ClientHandler`` 的 ``GetResourceHandler`` 方法中，返回的 ``ResourceHandler`` 需要显示地保留它的引用。比如之前的代码：
+
+```python
+class ClientHandler(object):
+    def GetResourceHandler(self, br, frame, request):
+        if not request.GetUrl().startswith('data://'):
+            return
+
+        self.res = ResourceHandler()
+        return self.res
+```
+
+把 ``ResourceHandler`` 的实例放到 ``self.res`` 中。
+
+
+##CEFPython的正确关闭##
+
+官方示例代码中的做法，在结束掉 *wx* 的 *Application* 实例之后，先清除 *app* 的引用，然后调用 *CEFPython* 的关闭方法。
+
+```python
+if __name__ == '__main__':
+    settings = {
+        "locales_dir_path": cefpython.GetModuleDirectory() + "/locales",
+        "browser_subprocess_path": cefpython.GetModuleDirectory() + "/subprocess",
+    }
+    cefpython.Initialize(settings)
+    app = App(False)
+    app.MainLoop()
+
+    del app
+    cefpython.Shutdown()
+```
+
+
+##Browser对象的正确结束##
+
+官方示例代码中的做法，因为涉及多个 *Browser* 实例的调度，在父窗口要关闭时，需要通知出去。 *CEFPython* 在 *Browser* 对象中提供了一个现成的方法， ``br.ParentWindowWillClose`` 。
+
+```python
+class MainFrame(wx.Frame):
+    def __init__(self):
+        ... ...
+
+        mainPanel = wx.Panel(self)
+        windowInfo = cefpython.WindowInfo()
+        windowInfo.SetAsChild(mainPanel.GetGtkWidget())
+        self.br = cefpython.CreateBrowserSync(windowInfo,
+                                              browserSettings={},
+                                              navigateUrl='')
+        ... ...
+        self.Bind(wx.EVT_CLOSE, self.OnClose, self)
+
+    def OnClose(self, event):
+        self.br.ParentWindowWillClose()
+        event.Skip()
+```
+
+上面的代码，处理在 ``MainFrame`` 关闭时，总去处理 ``ParentWindowWillClose`` 。
+
+
 
 
 
