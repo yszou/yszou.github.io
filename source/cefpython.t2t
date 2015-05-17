@@ -1,0 +1,517 @@
+使用 CEFPython 打造自己的浏览器视图
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml):
+%%toc
+
+
+#CEFPython是什么东西#
+
+
+*CEFPython* 是 *CEF* 的 *Python* 绑定实现。
+
+*CEF* https://bitbucket.org/chromiumembedded/cef ，是 *Chromium* 的一套嵌入式实现。
+
+简单来说， *CEF* 实现了浏览器外在的简单功能，可以直接渲染一个全功能的页面。它包含了页面布局渲染的引擎，也包含了执行 JS 的引擎（V8）。但是它不管一个完整浏览器还需要的其它功能，比如标签页，比如下载管理等等。
+
+使用 *CEFPython* ，就可以很容易地把一个浏览器视图做到 *GUI* 的环境当中，比如 *wxPython* 。这样最直接的作用，就是可以使用标准的 Web 技术，比如 HTML , JS 来完成桌面客户端的一些功能。
+
+当然，仅仅这样是不够的，因为浏览器环境中，它自己本身是缺少一些系统级的功能的，比如文件系统的访问，比如数据的持久化存储。用 *CEFPython* ，你可以非常容易地添加这个浏览器视图的 API ，这样通过 JS 实现与 Python 代码的互相调用，你想干什么都可以了。
+
+
+#一个简单的例子#
+
+```python
+# -*- coding: utf-8 -*-
+
+from cefpython3 import cefpython
+import wx
+
+class MainFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY, title='wx', size=(800,600))
+        mainPanel = wx.Panel(self)
+        windowInfo = cefpython.WindowInfo()
+        windowInfo.SetAsChild(mainPanel.GetGtkWidget())
+        br = cefpython.CreateBrowserSync(windowInfo,
+                                         browserSettings={},
+                                         navigateUrl='http://www.zouyesheng.com')
+
+class App(wx.App):
+    timer = None
+
+    def OnInit(self):
+        self.timer = wx.Timer(self, 1)
+        self.timer.Start(10)
+        wx.EVT_TIMER(self, 1, lambda e: cefpython.MessageLoopWork())
+        frame = MainFrame()
+        frame.Show()
+        return True
+
+if __name__ == '__main__':
+    settings = {
+        "locales_dir_path": cefpython.GetModuleDirectory() + "/locales",
+        "browser_subprocess_path": cefpython.GetModuleDirectory() + "/subprocess",
+    }
+    cefpython.Initialize(settings)
+    app = App(False)
+    app.MainLoop()
+```
+
+执行上面的代码，你会看到一个 *wx* 创建的窗口中，显示了一个 HTML 页面。
+
+一个最简单的使用 *CEFPython* 的流程大概要做的事有：
+
+- 获取组件， ``windowInfo = cefpython.WindowInfo()`` 。
+- 嵌入对应的适配环境中， ``windowInfo.SetAsChild(mainPanel.GetGtkWidget())`` 。
+- 初始化浏览器环境， ``cefpython.CreateBrowserSync(windowInfo, browserSettings, navigateUrl)`` 。
+- 处理事件刷新， ``wx.EVT_TIMER(self, 1, lambda e: cefpython.MessageLoopWork())`` 。
+
+
+#扩展浏览器视图的API#
+
+上面的代码，创建的浏览器环境算是一个标准的环境，对于：
+
+```python
+br = cefpython.CreateBrowserSync(windowInfo,
+                                 browserSettings={},
+                                 navigateUrl='http://www.zouyesheng.com')
+```
+
+得到的这个 ``br`` ，我们可以添加额外的，可供 JS 使用的其它 API 。比如：
+
+```python
+class MainFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY, title='wx', size=(800,600))
+        mainPanel = wx.Panel(self)
+        windowInfo = cefpython.WindowInfo()
+        windowInfo.SetAsChild(mainPanel.GetGtkWidget())
+        br = cefpython.CreateBrowserSync(windowInfo,
+                                         browserSettings={},
+                                         navigateUrl='file:///home/zys/temp/cef/demo.html')
+
+        js = cefpython.JavascriptBindings()
+        js.SetFunction("py_func", self.py_func)
+        js.SetProperty("other", {"a": 1})
+
+        br.SetJavascriptBindings(js)
+
+    def py_func(self):
+        print 'I am in Python'
+```
+
+其中 ``demo.html`` 的内容为：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>测试</title>
+<script src="jquery-2.1.4.js" type="text/javascript"></script>
+</head>
+<body>
+  <h1>哈哈哈</h1>
+  <script type="text/javascript">
+    $(function(){
+      py_func();
+      alert(other.a);
+    });
+  </script>
+</body>
+</html>
+```
+
+上面 js 中的， ``py_func()`` 的实现是由 Python 完成的（你能在终端中看到输出的一段字符串），而 ``other.a`` 这个数据，也是在 *CEFPython* 中人为添加的。这一切都非常简单。
+
+不过，这样直接添加全局的函数或者数据，会让前端变得混乱。 *CEFPython* 也提供了添加对象的方法, ``br.SetObject()``：
+
+```python
+class Ext(object):
+    def get_info(self, callback):
+        callback.Call('123');
+
+    def action(self, msg):
+        print msg, type(msg)
+
+class MainFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY, title='wx', size=(800,600))
+        mainPanel = wx.Panel(self)
+        windowInfo = cefpython.WindowInfo()
+        windowInfo.SetAsChild(mainPanel.GetGtkWidget())
+        br = cefpython.CreateBrowserSync(windowInfo,
+                                         browserSettings={},
+                                         navigateUrl='file:///home/zys/temp/cef/demo.html')
+
+        js = cefpython.JavascriptBindings()
+        js.SetObject('Ext', Ext())
+
+        br.SetJavascriptBindings(js)
+```
+
+``SetObject`` 可以把 Python 的一个实例添加到 js 中作为一个对象（但是目前它有一个限制，就是只处理实例对象中的方法，不处理属性）。
+
+对应的 ``demo.html`` 我们可以这样：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>测试</title>
+<script src="jquery-2.1.4.js" type="text/javascript"></script>
+</head>
+<body>
+  <h1>哈哈哈</h1>
+  <a href="demo2.html">另一页</a>
+  <script type="text/javascript">
+    $(function(){
+      Ext.action('我在JS中');
+      Ext.get_info(function(data){
+        alert(data);
+      });
+    });
+  </script>
+</body>
+</html>
+```
+
+虽然 *CEFPython* 中还有其它的一些功能，文档在 https://code.google.com/p/cefpython/wiki/API ，但我觉得，一个 ``SetObject`` 已经解决了 Python 和 JS 之间互相传递消息的所有问题：
+
+- JS -> Python ， 调用， ``Ext.action('我在JS中')`` 。
+- Python -> JS ， 回调， ``Ext.get_info(function(data){alert(data)})`` 。
+
+
+从这部分也可以看出，不同环境的相互传递消息，还是异步的方式。而且后面也可以看到，“主动控制”中执行的 JS ，也是异步执行的。
+
+
+
+#Python主动调用JS#
+
+前面讲的是扩展，从 Python 方面来看，这算是一个被动的形式。对于 *CEFPython* ，Python 这边是可以主动控制，调度浏览器视图的。下面以两个菜单按钮执行 JS 逻辑为例说明一下，先在 *Frame* 上添加菜单栏：
+
+```python
+clss MainFrame(wx.Frame):
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY, title='wx', size=(800,600))
+        menu = wx.Menu()
+        act_a = menu.Append(1, '行为A')
+        act_b = menu.Append(2, '行为B')
+        menu_bar = wx.MenuBar()
+        menu_bar.Append(menu, '动作')
+        self.SetMenuBar(menu_bar)
+        self.Bind(wx.EVT_MENU, self.on_a, act_a)
+        self.Bind(wx.EVT_MENU, self.on_b, act_b)
+
+    ... ...
+```
+
+这里把 ``act_a`` 和 ``act_b`` 两个菜单按钮的按键行为绑定到两个对应的实例方法上了，这两个方法：
+
+```python
+def on_a(self, event):
+    self.br.GetMainFrame().ExecuteFunction('Ext.action', 'xx')
+    print 'async'
+
+def on_b(self, event):
+    self.br.GetMainFrame().ExecuteJavascript('alert("Python")')
+```
+
+上面代码是两种执行 JS 逻辑的方法。第一种是直接以名字调用指定的 JS 函数，可以带参数。第二种是给定 JS 语句直接执行。两种对 JS 的执行方法，都是异步的。（所以实践中你会先看到 ``async`` 的输出。）
+
+这里的 ``ExecuteFunction`` 和 ``ExecuteJavascript`` 是在 *Frame* 对象上的（新版本的 *CEFPython* 好像在 *Browser* 上也添加了两个方法了）。
+
+
+
+#事件模拟#
+
+浏览器中的各种事件，其实 JS 也可以处理，不过我在 *CEFPython* 的文档中看到了比较“暴力”的一个 API，``SendMouseClickEvent`` ，它直接是指定坐标给一个 ``Click`` 。
+
+先修改一个 HTML 文件：
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>测试</title>
+<script src="jquery-2.1.4.js" type="text/javascript"></script>
+</head>
+<body>
+  <h1>哈哈哈</h1>
+  <a href="demo2.html">另一页</a>
+  <script type="text/javascript">
+    $(function(){
+      $(document).on('click', function(eventObj){
+        Ext.log(eventObj.clientX, eventObj.clientY);
+      });
+    });
+  </script>
+</body>
+</html>
+```
+
+代码中的 ``Ext.log()`` 是我自己加的，因为这个环境中没有 ``console`` 用嘛，就把信息打到终端查看就好了，实现上是在 ``Ext`` 中加一个方法：
+
+```python
+def log(self, *args):
+    print args
+```
+
+
+上面的 HTML 中，有一个链接，经过实际测试，它的位置在 ``39, 93`` ，我们把之前的菜单按钮的处理改成：
+
+```python
+def on_a(self, event):
+    self.br.SendMouseClickEvent(39, 93, cefpython.MOUSEBUTTON_LEFT, False, 1)
+    self.br.SendMouseClickEvent(39, 93, cefpython.MOUSEBUTTON_LEFT, True, 1)
+    print 'async'
+```
+
+之所以是两次调用，是因为我们需要的其实是， **鼠标按下，又松开** ，简单说就是我们要的是 *release* ，不是 *down* 也不是 *up* 。
+
+好了，现在去选中菜单项点击，就可以看到终端中的坐标信息，以及页面加载新的 *demo2.html* 了。
+
+
+#请求的交互流程控制#
+
+这部分是比较麻烦一点的地方了。
+
+用一个嵌入的浏览器视图，前面说的扩展浏览器 API 部分，只是站在前端角度看到的“很有用”的一部分。而如果站在全局的系统角度，一个嵌入式的浏览器视图，它更多的威力，是来自对请求与响应的控制。
+
+我之前在找， *CEFPython* 有没有办法，直接往视图中渲染一段指定的 HTML 内容，结果是，好像不能（也许是 *CEFPython* 没有封装相应的“原生”层面的 API）。就是说，在流程上，这个环境始终是 Web 式的，请求 + 响应。所以，实现“直接渲染指定的 HTML 内容”的方式，也就变成了如何自己创造一个“响应”的问题。考虑“请求 + 响应”的流程，这个问题就是，如何额外定义另一套，兼容 Web 方式的，“请求 + 响应”流程。
+
+这样，这个问题就很明了，也很简单了。它的做法，我们都见过，比如 *Chrome* 中的“配置”，其实就是内置的 Web 页面。 *Firefox* 的“配置项”，也是内置的 Web 页面。这些 Web 页面的地址，都是使用的 **自定义协议** 的方式处理的。于是，我就想，我可以在 HTML 中加一个访问链接，它形如：
+
+```text
+cef://some-data
+```
+
+自定义的 ``cef`` 协议。不过实际操作中发现这样不行，要做自定义协议，需要显式地自己去定义扩展（否则标准的处理流程会中断，你无法正常响应这个请求），而且不幸的是， *CEFPython* 中并没有封装相应的 API 。后来发现 *CEF* 自己默认的协议中： ``HTTP, HTTPS, FILE, FTP, ABOUT, DATA`` ，有一个 ``DATA`` ，暂且就把它用来自己扩展使用吧。
+
+那么在 HTML 页面，我可以写一个地址：
+
+```text
+data://some-data
+```
+
+这样，整个 *CEF* 的“请求 + 响应”流程完全不受影响。
+
+
+##基本的流程与处理方式##
+
+这里的流程，指的就是“请求 + 响应”。在 *CEFPython* 中，你可以通过调用 ``br.SetClientHandler()`` 方法，来自己完全指定一套流程处理的实现。或者，仅仅使用 ``br.SetClientCallback()`` 来指定具体的事件回调函数。
+
+在整个流程中， *CEF* 在扩展上的实现，是类似于“事件注册”的 Hook 方式。如果需要自定义，那么自己做一个对象，里面实现相应的方法即可。
+
+注意一下，这里说的“事件点”，其实只有一套，但是在 *CEF* 的概念中，它又把这些事件点“分组”了，对应到文点中不同的 *Handler* ，比如 *RequestHandler* ， *LoadHandler* ， *KeyboarHandler* 等，都是这些事件的分组。而总的你需要实现的 *ClientHandler* ，是可选地，需要去实现这些不同的“分组”中的方法的。
+
+比如：
+
+```python
+class MyClientHandler(object):
+
+    def OnBeforeResourceLoad(self, *args):
+        '来自RequestHandler的要求'
+        pass
+
+    def OnLoadingStateChange(self, *args):
+        '来自LoadHandler的要求'
+        pass
+
+    def OnKeyEvent(self, *args):
+        '来自KeyboarHandler的要求'
+        pass
+```
+
+这些内容虽然有点多（ https://code.google.com/p/cefpython/wiki/API 中的 *Client handlers* 部分），但是我们单纯考虑“请求 + 响应”的话，只需要处理两个方法就可以了（其实是三个的）。因为我们面对的场景，只需要考虑三点：
+
+- 如何修改请求。
+- 如何修改响应。
+- 如何创建响应。
+
+
+
+##修改请求##
+
+修改请求指的是，当你在流程中“截取”到请求时，在这个请求正式“发出”之前，修改它的相关属性。
+
+比如一个请求本来是到 ``file:///home/zys/temp/cef/demo.html`` ，你把它的 URL 改到 ``http://www.zouyesheng.com`` 了（MB，这个时候我的 www.zouyesheng.com 好像被墙了）。这部分的实现很容易。
+
+先修改一个 ``br`` ，注册一个 ``ClientHandler`` 给它：
+
+```python
+br.SetClientHandler(ClientHandler())
+```
+
+然后 ``ClientHandler`` 这个类的实现，只需要做一个方法， ``RequestHandler`` https://code.google.com/p/cefpython/wiki/RequestHandler 中的 ``OnBeforeResourceLoad`` 方法：
+
+```python
+class ClientHandler(object):
+    def OnBeforeResourceLoad(self, br, frame, request):
+        if request.GetUrl().endswith('www.zouyesheng.com'):
+            return
+        else:
+            request.SetUrl('http://www.zouyesheng.com')
+            return
+```
+
+``OnBeforeResourceLoad`` 方法中，可以随意修改 ``request`` 的属性， https://code.google.com/p/cefpython/wiki/Request 。
+
+注意一下， ``OnBeforeResourceLoad`` 对 ``request`` 的修改，是全局影响的，这样一改，相应的 JS, CSS 请求就全失效了。
+
+
+##修改响应##
+
+修改响应是指，当请求完成，获取到响应内容之后，在这些内容被渲染前，修改内容。比如你想把页面上的广告内容全部删除。
+
+像前面的“修改请求”一样，本来是实现一个方法就可以搞定的事，但不幸的是， *CEF* 中还没有实现这个唯一的 API  ``OnResourceResponse`` ，文档中的说法是，这个 API 你可以自己搞定……
+
+自己搞定的意思，就是后面讲的，自己创建需要的，任意的响应。
+
+
+##创建响应##
+
+这部分，算是一个完整的流程控制了。“创建”，即指的是无中生有，不像前面的，只是“修改”层面的动作了（因为直接的“修改响应”的缺失，在这里只实现“修改响应”也是可以的）。
+
+“请求 + 响应”中，最重要的一部分，对于 HTTP 协议来说，就是发出请求，然后按 HTTP 协议解析响应的报文。这部分， *CEF* 中原本是按标准的 HTTP 协议实现好了的，它提供了 API ，允许自定义这部分的实现（简单说，你甚至可以自己用 ``urllib`` 来搞，不考虑线程与阻塞什么的话）。
+
+这部分的实现，分两部：
+
+- ``RequestHandler`` 中的 ``GetResourceHandler`` 方法，要求返回一个 ``ResourceHandler`` 的实例。
+- ``ResourceHandler`` 的实现，完成了发出请求，解析报文等操作 https://code.google.com/p/cefpython/wiki/ResourceHandler。
+
+
+所以，我们要做的，就是做一个自己的 ``ResourceHandler`` 。 它和 ``ClientHandler`` 有些不同，虽然都不是继承已有的类，但 ``ClientHandler`` 只需要实现用得到的方法即可，而 ``ResourceHandler`` 中的所有被要求的方法，必须实现。
+
+
+先处理 ``ClientHandler`` （前面的 ``br.SetClientHandler()`` 一样的）：
+
+```python
+class ClientHandler(object):
+    def GetResourceHandler(self, br, frame, request):
+        if not request.GetUrl().startswith('data://'):
+            return
+
+        self.res = ResourceHandler()
+        return self.res
+```
+
+``GetResourceHandler`` 方法返回一个 ``ResourceHandler`` 实例。这里，我们只处理使用了 ``data`` 协议的请求。普通的 HTTP 协议的请求，按默认处理就好了，不动它。
+
+**注意： self.red = ResourceHandler() 这句的意义在于显示地保持一个 ResourceHandler 实例的引用（否则这个实例在真正想用它时已经被 Python 给 GC 了？），这块应该是从静态的 C++ 绑定到动态的 Python 时，对于引用与释放的一个无奈之举了。**
+
+
+
+``ResourceHandler`` 的实现：
+
+```python
+class ResourceHandler(object):
+    def ProcessRequest(self, request, callback):
+        callback.Continue()
+        return True
+
+    def GetResponseHeaders(self, response, length, redirect):
+        print response, length, redirect
+
+    def ReadResponse(self, data, bytes_to_read, bytes_readed, callback):
+        print data, bytes_to_read, bytes_readed, callback
+
+    def CanGetCookie(self, cookie):
+        return True
+
+    def CanSetCookie(self, cookie):
+        return True
+
+    def Cancel(self):
+        pass
+```
+
+
+一共有 6 个方法 https://code.google.com/p/cefpython/wiki/ResourceHandler 。
+
+虽然是自定义，但是形式上，却按 HTTP 报文解析的方式规定好了的，就是一般的先处理头，再处理 *body* 的形式。
+
+*CEFPython* 因为是从 C++ 代码绑定而来，所以，这部分的实现，有一点很特别，就是使用 Python 中的 *list* 类型（因为 *list* 对象是“引用传递”），来处理 C++ 中的“地址”，比如上面的 ``length`` ， ``bytes_readed`` 这些，虽然只是一个数字，但都是用 *list* 来保存，赋值时也是为这个 *list* 的第一个成员赋值。（典型的“填坑”用法）
+
+假设这里，我们要响应一段自己设置的 HTML 文本（比如就是 ``RES = <h1>哈哈</h1>`` ），其实完全不会涉及报文的解析，我们就把对应的数据，填到相应的“坑”中去就可以了：
+
+```python
+def GetResponseHeaders(self, response, length, redirect):
+    length[0] = len('<h1>哈哈</h1>')
+    response.SetMimeType('text/html')
+```
+
+参照解析 HTTP 响应报文的一般方法， ``GetResponseHeaders`` 方法最重要的一点，就是获取接下来的 *body* 部分的字节长度（如果是未知长度，按 ``-1`` 处理）。把这个长度值填到 ``length[0]`` 中即可。
+
+另外，处理头的时候，可以处理 ``response`` 对象的相关属性 https://code.google.com/p/cefpython/wiki/Response 。比如这里，我们设置了 *MimeType* ，这样在渲染时就会按 HTML 页面处理了。
+
+下面是处理 *body* 部分：
+
+```python
+def ReadResponse(self, data, bytes_to_read, bytes_readed, callback):
+    data[0] = '<h1>ok</h1>'
+    bytes_readed[0] = bytes_to_read
+    return True
+```
+
+同样考虑 HTTP 响应报文的一般解析方法，从原始的连接中读取内容的行为与结果，是不一定的。所以通常我们会在这块做一个 ``while`` ，然后从连接中不断地尝试读取，直接已读取的 ``chunk`` 长度等于我们期望的长度。这个过程的调度， *CEF* 已经在内部封装好了，我们只需要在这里给到的 ``ReadResponse`` 方法实现上，控制它的几个参数即可：
+
+- ``data`` ，响应的 *body* 部分的内容。
+- ``bytes_to_read`` 还需要读取的字节数。
+- ``bytes_readed`` 已读取的字节数。
+- ``callback`` 控制方法。
+
+
+因为“读取”行为是不断尝试的，所以这个 ``ReadResponse`` 方法会被不断调用，直到 ``bytes_to_read`` 减至 ``0`` ，说明需要的内容已经读完。官网文档中的几句话，倒把这个“意会容易，说明难”的流程讲清楚了 https://code.google.com/p/cefpython/wiki/ResourceHandler ：
+
+> Read response data. If data is available immediately copy up to
+> bytesToRead (bytes_to_read) bytes into dataOut[0] (data[0]),
+> set bytesReadOut[0] (bytes_readed[0]) to the number of bytes copied,
+> and return true. To read the data at a later time
+> set bytesReadOut[0] (bytes_readed[0]) to 0, return true and
+> call callback.Continue() when the data is available.
+> To indicate response completion return false.
+
+
+我们这里自己需要响应的内容是固定的 ``<h1>ok</h1>`` ，所以几个数据直接就可以写死了：
+
+```python
+def ReadResponse(self, data, bytes_to_read, bytes_readed, callback):
+    data[0] = '<h1>ok</h1>'
+    bytes_readed[0] = bytes_to_read
+    return True
+```
+
+最终，当访问一个 ``data://xxxx`` 这样的地址时，你就可以在页面上看到两个大的 ``ok`` 字符，这个内容，就算是我们“直接创建的响应内容”了。
+
+总结一下完整地控制请求与响应要做的事：
+
+- ``br.SetClientHandler()`` 设置一个 ``ClientHandler`` 实例。
+- ``ClientHandler`` 实例的 ``OnBeforeResourceLoad`` 方法可以修改请求。
+- ``ClientHandler`` 实例的 ``GetResourceHandler`` 方法可以根据 ``request`` 的属性判断，选择性地返回一个 ``ResourceHandler`` 实例。
+- 如果 ``GetResourceHandler`` 返回了一个 ``ResourceHandler`` 实例，则这个实例在 ``ClientHandler`` 中需要被显示地保持引用。
+- ``ResourceHandler`` 实例通过 ``GetResponseHeaders`` 与 ``ReadResponse`` 方法完成内容获取。
+- ``GetResponseHeaders`` 中可以根据需要，设置 ``resposne`` 的各种属性。
+
+
+几个概念梳理一下：
+
+- ``br`` 是一个 ``Browser`` 实例。
+- ``ClientHandler`` 实例是用于控制“请求 + 响应”的一套实现（它又是由各种 ``xxxHandler`` 组成的）。
+- ``ClientHandler`` 中处理响应的流程部分，由专门的 ``ResourceHandler`` 实例完成（它由 ``ClientHandler`` 实例的一个方法返回得到）。
+- 在过程当中，会用到 ``request`` 对象和 ``response`` 对象。
+
+
+
+
+
+
+
+
+
+
+
