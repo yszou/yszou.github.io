@@ -291,7 +291,7 @@ class Handler(tornado.web.RequestHandler):
 
 上面的代码，单纯响应一段 HTML 内容。内容的原始字节是 gbk 编码的。经过实际试验，结论是：
 
-**对于 HTML 内容的渲染，编码上浏览器只认响应的 Content-Type 头。meta 标签的编码指定与 HTML 内容渲染无关。**
+**对于 HTML 内容的渲染，编码上浏览器只认响应的 Content-Type 头。meta 标签的编码指定与 HTML 内容渲染无关（关于后面这点我不太确定，因为在不设置 Content-Type 情况下，即使把 meta 设置成 GBK ，返回的 UTF16 的内容仍然能正常显示）。**
 
 
 ##原始的form提交##
