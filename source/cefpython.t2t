@@ -402,7 +402,7 @@ class ClientHandler(object):
 
 ``GetResourceHandler`` 方法返回一个 ``ResourceHandler`` 实例。这里，我们只处理使用了 ``data`` 协议的请求。普通的 HTTP 协议的请求，按默认处理就好了，不动它。
 
-**注意： self.red = ResourceHandler() 这句的意义在于显示地保持一个 ResourceHandler 实例的引用（否则这个实例在真正想用它时已经被 Python 给 GC 了？），这块应该是从静态的 C++ 绑定到动态的 Python 时，对于引用与释放的一个无奈之举了。**
+**注意： self.red = ResourceHandler() 这句的意义在于显式地保持一个 ResourceHandler 实例的引用（否则这个实例在真正想用它时已经被 Python 给 GC 了？），这块应该是从静态的 C++ 绑定到动态的 Python 时，对于引用与释放的一个无奈之举了。**
 
 
 
@@ -504,6 +504,142 @@ def ReadResponse(self, data, bytes_to_read, bytes_readed, callback):
 - ``ClientHandler`` 实例是用于控制“请求 + 响应”的一套实现（它又是由各种 ``xxxHandler`` 组成的）。
 - ``ClientHandler`` 中处理响应的流程部分，由专门的 ``ResourceHandler`` 实例完成（它由 ``ClientHandler`` 实例的一个方法返回得到）。
 - 在过程当中，会用到 ``request`` 对象和 ``response`` 对象。
+
+
+
+#请求流程的处理#
+
+就 HTTP 协议来说，从发送请求，到获取响应，中间还有一些细节的东西。一个例子就是，当你获取的响应头中的 *Content-Type* 不是一个适合在浏览器显示的类型，那么，应该弹出一个保存文件的提示框。所以，前面提到了 ``request`` 对象， ``response`` 对象，提到了就 *CEF* 的流程来说，是如何处理请求与响应的。但是，更深一层的 HTTP 协议的流程，如何去把握并没有介绍。
+
+当然，这部分的实现，可以说是跟 *CEF* 这个东西没有直接关系的，前面也说过了，按 *CEF* 的基本流程，你完全可以通过 ``urllib`` 拿到响应之后再作后续处理。不过， *CEF* 其实有提供相应的工具，来对 HTTP 的请求与响应的解析过程作更细的控制的。
+
+这里涉及到的对象有：
+
+- ``request`` 和 ``response`` ，不多说。 https://code.google.com/p/cefpython/wiki/Request , 
+- ``WebRequest`` 外部控制对象，接受 ``request`` 和 ``WebRequestClient`` 的输入。 https://code.google.com/p/cefpython/wiki/WebRequest
+- ``WebRequestClient`` 流程实现对象（里面实现一些回调需要用到的方法）。 https://code.google.com/p/cefpython/wiki/WebRequestClient
+
+
+先讲一下 ``request`` 对象。之前提它时，是在 *CEF* 的自己的流程中，会遇到它。这里，我们要凭空创造一个 ``request`` ，也是可以的：
+
+```python
+from cefpython3 import cefpython
+
+req = cefpython.Request.CreateRequest()
+req.SetUrl('http://www.zouyesheng.com')
+req.SetFlags(cefpython.Request.Flags['ReportLoadTiming'] |
+             cefpython.Request.Flags['ReportUploadProgress'])
+```
+
+
+通过对静态方法 ``cefpython.Request.CreateRequest()`` 的调用，我们可以得到一个 ``request`` 对象，然后，通过 ``Set*`` 方法去设置它的各种属性。之后，可以把它扔给 ``WebRequest`` 进行实际的请求了。
+
+```python
+wq = cefpython.WebRequest.Create(req, WebRequestClient())
+```
+
+**注意，这个 wq 也像之前的 ResourceHandler 实例一样，需要显式地保持一个引用。**
+
+这里的 ``WebRequestClient()`` 就是对一组请求状态的方法实现，需要的方法有：
+
+- ``OnUploadProgress(wq, current, total)``
+- ``OnDownloadProgress(wq, current, total)``
+- ``OnDownloadData(wq, data)``
+- ``OnRequestComplete(wq)``
+- ``GetAuthCredentials(is_proxy, host, port, realm, schema, callback)``
+
+
+上面的几个方法中，除了它的一个主要作用是可以监控状态之外， ``OnDownloadData`` 方法，还是一个处理响应内容的手段。实际上，如果你使用 ``WebRequest`` 来自己发出请求的话，那么在 ``OnDownloadData`` 中需要自己拼接多次响应的内容。
+
+``WebRequest`` 的使用看一个最简单的完整例子：
+
+```python
+# -*- coding: utf-8 -*-
+
+from cefpython3 import cefpython
+import wx
+
+
+class WebRequestClient(object):
+    count = 0
+    def OnUploadProgress(self, wq, current, total):
+        print wq, current, total
+
+    def OnDownloadProgress(self, wq, current, total):
+        print wq, current, total
+
+    def OnDownloadData(self, wq, data):
+        print wq, len(data)
+
+    def OnRequestComplete(self, wq):
+        print wq
+
+
+class MainFrame(wx.Frame):
+    timer = None
+
+    def __init__(self):
+        wx.Frame.__init__(self, parent=None, id=wx.ID_ANY, title='wx', size=(800,600))
+        menu = wx.Menu()
+
+        mainPanel = wx.Panel(self)
+        windowInfo = cefpython.WindowInfo()
+        windowInfo.SetAsChild(mainPanel.GetGtkWidget())
+        self.br = cefpython.CreateBrowserSync(windowInfo,
+                                              browserSettings={},
+                                              navigateUrl='file:///home/zys/temp/cef/demo.html')
+
+        self.timer = wx.Timer(self, 1)
+        self.timer.Start(10)
+        wx.EVT_TIMER(self, 1, lambda e: cefpython.MessageLoopWork())
+        self.Bind(wx.EVT_CLOSE, self.OnClose, self)
+
+
+    def OnClose(self, event):
+        self.br.ParentWindowWillClose()
+        event.Skip()
+
+
+class App(wx.App):
+
+    def OnInit(self):
+        frame = MainFrame()
+        frame.Show()
+
+
+        req = cefpython.Request.CreateRequest()
+        req.SetUrl('http://www.zouyesheng.com')
+        req.SetFlags(cefpython.Request.Flags['ReportLoadTiming'] |
+                     cefpython.Request.Flags['ReportUploadProgress'])
+
+        self.wq = cefpython.WebRequest.Create(req, WebRequestClient())
+
+        return True
+
+
+if __name__ == '__main__':
+    settings = {
+        "locales_dir_path": cefpython.GetModuleDirectory() + "/locales",
+        "browser_subprocess_path": cefpython.GetModuleDirectory() + "/subprocess",
+    }
+    cefpython.Initialize(settings)
+    app = App(False)
+    app.MainLoop()
+
+    del app
+    cefpython.Shutdown()
+```
+
+从上面的代码可以看到， ``WebRequest`` 是可以跟 *Browser* 完全没有关系的，处理好 ``WebReqest`` 的显式引用就好了。而 ``WebRequestClient`` 的实现则可以看到请求在每个阶段的状态（具体方法参数的含义见官方文档）。但话虽是这么说，如果仅仅是为了完成一个 HTTP 请求，那 ``urllib`` 也可以做到。 ``WebRequest`` 作为 *CEF* 提供的现成机制，目的应该还是跟 ``ClientHandler`` 配合使用，达到对一个“请求响应”流程的完全控制 + 状态监视。下一节专门考虑这个问题。
+
+
+#ClientHandler 和 WebRequest#
+
+
+
+
+
+
 
 
 
