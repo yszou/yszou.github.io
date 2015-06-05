@@ -2,7 +2,7 @@
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
-%!options(xhtml):
+%!options(xhtml): --google-analytics --disqus
 %%toc
 
 
@@ -381,7 +381,7 @@ class ClientHandler(object):
 
 “请求 + 响应”中，最重要的一部分，对于 HTTP 协议来说，就是发出请求，然后按 HTTP 协议解析响应的报文。这部分， *CEF* 中原本是按标准的 HTTP 协议实现好了的，它提供了 API ，允许自定义这部分的实现（简单说，你甚至可以自己用 ``urllib`` 来搞，不考虑线程与阻塞什么的话）。
 
-这部分的实现，分两部：
+实现上，分两部分：
 
 - ``RequestHandler`` 中的 ``GetResourceHandler`` 方法，要求返回一个 ``ResourceHandler`` 的实例。
 - ``ResourceHandler`` 的实现，完成了发出请求，解析报文等操作 https://code.google.com/p/cefpython/wiki/ResourceHandler。
