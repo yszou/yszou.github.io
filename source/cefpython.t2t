@@ -361,7 +361,9 @@ class ClientHandler(object):
 
 ``OnBeforeResourceLoad`` 方法中，可以随意修改 ``request`` 的属性， https://code.google.com/p/cefpython/wiki/Request 。
 
-注意一下， ``OnBeforeResourceLoad`` 对 ``request`` 的修改，是全局影响的，这样一改，相应的 JS, CSS 请求就全失效了。
+注意一下， ``OnBeforeResourceLoad`` 对 ``request`` 的修改，是全局影响的，像上面代码中的这样一改，相应的 JS, CSS 请求就全失效了。
+
+``OnBeforeResourceLoad`` 如果 ``return True`` ，则请求中断。
 
 
 ##修改响应##
@@ -633,12 +635,41 @@ if __name__ == '__main__':
 从上面的代码可以看到， ``WebRequest`` 是可以跟 *Browser* 完全没有关系的，处理好 ``WebReqest`` 的显式引用就好了。而 ``WebRequestClient`` 的实现则可以看到请求在每个阶段的状态（具体方法参数的含义见官方文档）。但话虽是这么说，如果仅仅是为了完成一个 HTTP 请求，那 ``urllib`` 也可以做到。 ``WebRequest`` 作为 *CEF* 提供的现成机制，目的应该还是跟 ``ClientHandler`` 配合使用，达到对一个“请求响应”流程的完全控制 + 状态监视。下一节专门考虑这个问题。
 
 
-#ClientHandler 和 WebRequest#
+#自定义请求的处理#
 
 
+``WebRequest`` 是 *CEF* 中提供的一套 HTTP 请求处理的实现。把自定义请求的处理整个流程拿出来看的话，大概是这样的：
 
 
+- GUI 的初始化阶段，创建 ``Browser`` 。
+- ``Browser`` 通过 ``SetClientHandler`` 方法设置一个 ``ClientHandler`` 的实例。
+- ``ClientHandler`` 中的方法，可以更改请求。
+- ``ClientHandler`` 的 ``GetResourceHandler`` 方法返回一个 ``ResourceHandler`` 实例。
+- ``ResourceHandler`` 负责处理请求，并得到响应。
+- ``ResourceHandler`` 中使用 ``WebRequest`` 处理请求。
+- ``WebRequest`` 的使用，就是定义了一套 ``WebRequestClient`` 接口， https://code.google.com/p/cefpython/wiki/WebRequestClient
+- 通过指定 ``Request`` 和 ``WebRequestClient`` 得到了 ``WebRequest`` 。 ``WebRequestClient`` 中是完成请求交互的细节，比如要如何去读够整个 HTTP 响应的数据。
 
+
+上面的概念可能有些多，一层套一层的。其实就是：
+
+```text
+Browser -> ClientHandler -> ResourceHandler -> WebRequest(WebRequestClient)
+```
+
+这个地方，不用 ``WebRequest`` 直接用 ``httplib`` 拿数据是可行的，考虑效率，可能需要用多线程等并发方式处理请求。
+
+但在我自己试的时候， *CEF* 总是会挂，不知道为什么。
+
+不管是用 ``WebRequest`` ，还是像 ``httplib`` 等其它方法，请求的处理与 *CEF* 的对接点，都在 ``ResourceHandler`` 上。准确地说，一般是：
+
+- ``__init__()`` 时创建相应的实例。
+- ``ProcessRequest()`` 发出请求。
+- ``GetResponseHeaders()`` 设置好响应头。
+- ``ReadResponse()`` 完成响应数据读取。
+
+
+这里说一句话，使用 ``WebRequestClient`` 这东西，想要完善地处理通用的 HTTP 请求是不可能的，它最大的问题是没有作一个 ``OnHeaderGet()`` 的回调，这样，在流程上与 HTTP 的交互流程是不匹配的，会很麻烦。同时， ``WebRequestClient`` 没有提供关闭连接的方法，这意味着你无法中断一个请求的处理。
 
 
 
@@ -663,6 +694,28 @@ class ClientHandler(object):
 ```
 
 把 ``ResourceHandler`` 的实例放到 ``self.res`` 中。
+
+
+##WebRequest的显示引用保留##
+
+跟上面的 ``ResourceHandler`` 一样， ``WebRequest`` 的实例也需要显示保留引用。
+
+```python
+class ResourceHandler(object):
+
+    def __init__(self, client_handler, id):
+        self.webrequest = None
+        self.webrequest_client = WebRequestClient(self)
+        self.header_callback = None
+
+    def ProcessRequest(self, request, callback):
+        request.SetFlags(cefpython.Request.Flags["AllowCachedCredentials"] |
+                         cefpython.Request.Flags["AllowCookies"])
+        self.header_callback = callback
+        self.webrequest = cefpython.WebRequest.Create(request, self.webrequest_client)
+        return True
+```
+
 
 
 ##CEFPython的正确关闭##
