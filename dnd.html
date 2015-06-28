@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>浏览器中的拖放API - YS.Zou</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+<body style=" margin: 0px; padding: 0px; background-color: #eff3fa; font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 1287px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; background-color: #E4D4BB; background-image: repeating-radial-gradient(circle, #E4D4BB, #E7DAC6 50% , #E7DAC6 100% ); background-size: 10px 10px; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">浏览器中的拖放API</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-06-28 17:44 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">概述</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">使用方法</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">其它细节，伴随图片</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">其它细节，目标效果</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">代码示例</a>
+  </li>
+  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">参考资料</a>
+  </li>
+  </ol>
+
+
+<a name="toc1"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 概述</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+新式浏览器中提供了一套处理拖放（ Drag and Drop）行为的机制，主要是通过事件触发来响应行为，相应的数据则在事件对象中传递。使用这套机制，可以很容易地实现节点间的拖放行为定义，以及，浏览与系统中的其它应用程序的交互（比如文件的拖放）。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+简单来说，这套机制中有如下的概念：
+</p>
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li><em style=" color: #d75100; font-style: normal; ">触发节点</em> ， “拖什么” 。
+</li>
+<li><em style=" color: #d75100; font-style: normal; ">目标节点</em> ， “拖到哪里” 。
+</li>
+<li><em style=" color: #d75100; font-style: normal; ">数据</em> ， 拖的是节点，但是承载的数据是什么。
+</li>
+</ul>
+
+<p style="margin: 15px auto; width: 800px;">
+这里，之所以把 <em style=" color: #d75100; font-style: normal; ">数据</em> 单独设计出来，是因为 <em style=" color: #d75100; font-style: normal; ">触发节点</em> 和 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 它们本身是分离的，对应的事件也是独立的，这就是说，当你在处理 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 的事件时，你是不能直接拿到 <em style=" color: #d75100; font-style: normal; ">触发节点</em> 的，但是显然，在流程上，在处理 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 时一般又是需要知道 “从何而来” 的答案，于是，解决办案就变成了使用事件对象来传递具体的数据属性了 -- <em style=" color: #d75100; font-style: normal; ">触发节点</em> 在对象属性中设置的值， <em style=" color: #d75100; font-style: normal; ">目标节点</em> 可以获取到。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+    eventObj.originalEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, <span style="color: #dd1144">&#39;I am source&#39;</span>);
+});
+
+$(<span style="color: #dd1144">&#39;#target&#39;</span>).on(<span style="color: #dd1144">&#39;dragenter&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+    <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> eventObj.originalEvent.dataTransfer.getData(<span style="color: #dd1144">&#39;text/plain&#39;</span>);
+    console.log(<span style="color: #dd1144">&#39;welcome, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> s);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+上面代码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">dataTransfer</code> 只在原生的事件对象中有，所以如果使用 <em style=" color: #d75100; font-style: normal; ">jQuery</em> 的话，要先从它封装的事件中取到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">originalEvent</code> ，再作操作。
+</p>
+
+<a name="toc2"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 使用方法</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+上面已经简单介绍了三个基本的概念，在使用这套机制时，要作的事，就是绑定事件，传递数据而已，从上到下按顺序，一般的流程如下：
+</p>
+
+<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<tr>
+<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">触发节点</th>
+<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">dataTransfer</th>
+<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">目标节点</th>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragstart</em> 事件</td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setData(type, value)</code></td>
+<td style=" padding: 3px 10px;"></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">drag</em> 事件</td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragenter</em> 事件</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragover</em> 事件 <strong style=" color: red; font-weight: normal; ">(1)</strong></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragleave</em> 事件</td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">drop</em> 事件 <strong style=" color: red; font-weight: normal; ">(2)</strong></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">getData(type)</code></td>
+<td style=" padding: 3px 10px;"></td>
+</tr>
+<tr>
+<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragend</em> 事件</td>
+<td style=" padding: 3px 10px;"></td>
+<td style=" padding: 3px 10px;"></td>
+</tr>
+</table>
+
+<p style="margin: 15px auto; width: 800px;">
+上面有两点需要说明一下：
+</p>
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li><strong style=" color: red; font-weight: normal; ">(1)</strong> ， 这里处理事件时，如果确定是符合自己期望的东西被拖过来了，则需要显式调用事件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">preventDefault()</code> 方法，否则后面的 <em style=" color: #d75100; font-style: normal; ">drop</em> 事件不会触发。
+</li>
+<li><strong style=" color: red; font-weight: normal; ">(2)</strong> ， 这里处理事件时，最后也要显式调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">preventDefault()</code> 方法，否则很可能触发浏览器对于拖放的默认行为，造成奇怪的结果。
+</li>
+</ul>
+
+<a name="toc3"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 其它细节，伴随图片</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+伴随鼠标拖行的图片效果，是可以自定义的。在 <em style=" color: #d75100; font-style: normal; ">firefox</em> 上，可以直接给一个 <em style=" color: #d75100; font-style: normal; ">canvas</em> 对象，但是 <em style=" color: #d75100; font-style: normal; ">chrome</em> 中不行。不过，我们总可以把 <em style=" color: #d75100; font-style: normal; ">canvas</em> 直接转换成 <em style=" color: #d75100; font-style: normal; ">image</em> ：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> canvas <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElementNS(<span style="color: #dd1144">&quot;http://www.w3.org/1999/xhtml&quot;</span>, <span style="color: #dd1144">&quot;canvas&quot;</span>);
+canvas.width <span style="color: #000000; font-weight: bold">=</span> canvas.height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">50</span>;
+
+<span style="color: #000000; font-weight: bold">var</span> ctx <span style="color: #000000; font-weight: bold">=</span> canvas.getContext(<span style="color: #dd1144">&quot;2d&quot;</span>);
+ctx.lineWidth <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">4</span>; ctx.moveTo(<span style="color: #009999">0</span>, <span style="color: #009999">0</span>); ctx.lineTo(<span style="color: #009999">50</span>, <span style="color: #009999">50</span>);
+ctx.moveTo(<span style="color: #009999">0</span>, <span style="color: #009999">50</span>); ctx.lineTo(<span style="color: #009999">50</span>, <span style="color: #009999">0</span>); ctx.stroke();
+
+<span style="color: #000000; font-weight: bold">var</span> img <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&quot;img&quot;</span>);
+img.src <span style="color: #000000; font-weight: bold">=</span> canvas.toDataURL();
+
+$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+    eventObj.originalEvent.dataTransfer.setDragImage(img, <span style="color: #009999">25</span>, <span style="color: #009999">25</span>);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc4"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 其它细节，目标效果</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+按照这套机制设计的初衷，对于“效果”，本身是有单独支持的，即，对于一个拖发行为，你可以定义它是 “复制”，“移动”，“创建联系” 这三个中的哪一个，从而，在目标节点上，光标的视觉效果会有所不同，比如对于 “复制” ，会有一个“加号”。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+但是，除了一个光标的样式，这东西好像没什么用：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+    eventObj.originalEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+});
+
+
+$(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: #dd1144">&#39;dragenter&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+    eventObj.originalEvent.dataTransfer.dropEffect <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc5"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 代码示例</h1>
+
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<span style="color: #000080">&lt;html&gt;</span>
+<span style="color: #000080">&lt;head&gt;</span>
+<span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
+<span style="color: #000080">&lt;title&gt;</span>拖放效果<span style="color: #000080">&lt;/title&gt;</span>
+<span style="color: #000080">&lt;/head&gt;</span>
+<span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;jquery-2.1.4.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+
+<span style="color: #000080">&lt;style </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/css&quot;</span><span style="color: #000080">&gt;</span>
+  <span style="color: #990000; font-weight: bold">#source</span> { <span style="color: #000000; font-weight: bold">width:</span> <span style="color: #009999">100px</span>; <span style="color: #000000; font-weight: bold">height:</span> <span style="color: #009999">100px</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">red</span>; }
+  <span style="color: #445588; font-weight: bold">.target</span> { <span style="color: #000000; font-weight: bold">width:</span> <span style="color: #009999">200px</span>; <span style="color: #000000; font-weight: bold">height:</span> <span style="color: #009999">100px</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">white</span>; <span style="color: #000000; font-weight: bold">border:</span> <span style="color: #009999">1px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #0086B3">black</span>; }
+<span style="color: #000080">&lt;/style&gt;</span>
+
+<span style="color: #000080">&lt;body&gt;</span>
+  <span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;source&quot;</span> <span style="color: #008080">draggable=</span><span style="color: #dd1144">&quot;true&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+  <span style="color: #000080">&lt;div</span> <span style="color: #008080">class=</span><span style="color: #dd1144">&quot;target&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+  <span style="color: #000080">&lt;div</span> <span style="color: #008080">class=</span><span style="color: #dd1144">&quot;target&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+
+
+  <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
+    $(<span style="color: #000000; font-weight: bold">function</span>(){
+    
+      <span style="color: #000000; font-weight: bold">var</span> canvas <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElementNS(<span style="color: #dd1144">&quot;http://www.w3.org/1999/xhtml&quot;</span>, <span style="color: #dd1144">&quot;canvas&quot;</span>);
+      canvas.width <span style="color: #000000; font-weight: bold">=</span> canvas.height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">50</span>;
+
+      <span style="color: #000000; font-weight: bold">var</span> ctx <span style="color: #000000; font-weight: bold">=</span> canvas.getContext(<span style="color: #dd1144">&quot;2d&quot;</span>);
+      ctx.lineWidth <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">4</span>; ctx.moveTo(<span style="color: #009999">0</span>, <span style="color: #009999">0</span>); ctx.lineTo(<span style="color: #009999">50</span>, <span style="color: #009999">50</span>);
+      ctx.moveTo(<span style="color: #009999">0</span>, <span style="color: #009999">50</span>); ctx.lineTo(<span style="color: #009999">50</span>, <span style="color: #009999">0</span>); ctx.stroke();
+
+      <span style="color: #000000; font-weight: bold">var</span> img <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&quot;img&quot;</span>);
+      img.src <span style="color: #000000; font-weight: bold">=</span> canvas.toDataURL();
+
+      $(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        eventObj.originalEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf());
+        eventObj.originalEvent.dataTransfer.setDragImage(img, <span style="color: #009999">25</span>, <span style="color: #009999">25</span>);
+        eventObj.originalEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+      });
+
+      $(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragend&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        console.log(<span style="color: #dd1144">&#39;end&#39;</span>);
+      });
+
+
+      $(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;drag&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        <span style="color: #999988; font-style: italic">//console.log(&#39;process&#39;);</span>
+      });
+
+      $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: #dd1144">&#39;dragenter&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        eventObj.originalEvent.dataTransfer.dropEffect <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+        console.log(<span style="color: #dd1144">&#39;enter&#39;</span>);
+      });
+
+      $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: #dd1144">&#39;dragleave&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        console.log(<span style="color: #dd1144">&#39;leave&#39;</span>);
+      });
+
+      $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: #dd1144">&#39;dragover&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        console.log(<span style="color: #dd1144">&#39;over&#39;</span>);
+        eventObj.preventDefault();
+      });
+
+      $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: #dd1144">&#39;drop&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+        <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> eventObj.originalEvent.dataTransfer.getData(<span style="color: #dd1144">&#39;text/plain&#39;</span>);
+        console.log(<span style="color: #dd1144">&#39;drop&#39;</span>);
+        console.log(s);
+        eventObj.preventDefault();
+        $(eventObj.target).text(s);
+      });
+
+    });
+  <span style="color: #000080">&lt;/script&gt;</span>
+
+<span style="color: #000080">&lt;/body&gt;</span>
+<span style="color: #000080">&lt;/html&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc6"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 参考资料</h1>
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations" style="color: #0184b7; text-decoration: none">https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations</a>
+</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Recommended_Drag_Types" style="color: #0184b7; text-decoration: none">https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Recommended_Drag_Types</a>
+</li>
+<li><a href="http://www.cnblogs.com/henllyee/archive/2012/02/08/html5_first.html" style="color: #0184b7; text-decoration: none">http://www.cnblogs.com/henllyee/archive/2012/02/08/html5_first.html</a>
+</li>
+</ul>
+
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'dnd';
+  var disqus_url = 'http://zouyesheng.com/dnd.html';
+  var disqus_title = '浏览器中的拖放API';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

@@ -1,0 +1,183 @@
+浏览器中的拖放API
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+#概述#
+
+
+新式浏览器中提供了一套处理拖放（ Drag and Drop）行为的机制，主要是通过事件触发来响应行为，相应的数据则在事件对象中传递。使用这套机制，可以很容易地实现节点间的拖放行为定义，以及，浏览与系统中的其它应用程序的交互（比如文件的拖放）。
+
+简单来说，这套机制中有如下的概念：
+
+- *触发节点* ， “拖什么” 。
+- *目标节点* ， “拖到哪里” 。
+- *数据* ， 拖的是节点，但是承载的数据是什么。
+
+
+这里，之所以把 *数据* 单独设计出来，是因为 *触发节点* 和 *目标节点* 它们本身是分离的，对应的事件也是独立的，这就是说，当你在处理 *目标节点* 的事件时，你是不能直接拿到 *触发节点* 的，但是显然，在流程上，在处理 *目标节点* 时一般又是需要知道 “从何而来” 的答案，于是，解决办案就变成了使用事件对象来传递具体的数据属性了 -- *触发节点* 在对象属性中设置的值， *目标节点* 可以获取到。
+
+```javascript
+$('#source').on('dragstart', function(eventObj){
+    eventObj.originalEvent.dataTransfer.setData('text/plain', 'I am source');
+});
+
+$('#target').on('dragenter', function(eventObj){
+    var s = eventObj.originalEvent.dataTransfer.getData('text/plain');
+    console.log('welcome, ' + s);
+});
+```
+
+上面代码中的 ``dataTransfer`` 只在原生的事件对象中有，所以如果使用 *jQuery* 的话，要先从它封装的事件中取到 ``originalEvent`` ，再作操作。
+
+
+#使用方法#
+
+
+上面已经简单介绍了三个基本的概念，在使用这套机制时，要作的事，就是绑定事件，传递数据而已，从上到下按顺序，一般的流程如下：
+
+||       触发节点       |          dataTransfer          |          目标节点          ||
+| *dragstart* 事件      |                                |                            |
+|                       | ``setData(type, value)``       |                            |
+| *drag* 事件           |                                |                            |
+|                       |                                | *dragenter* 事件           |
+|                       |                                | *dragover* 事件 **(1)**    |
+|                       |                                | *dragleave* 事件           |
+|                       |                                | *drop* 事件 **(2)**        |
+|                       | ``getData(type)``              |                            |
+| *dragend* 事件        |                                |                            |
+
+
+上面有两点需要说明一下：
+
+- **(1)** ， 这里处理事件时，如果确定是符合自己期望的东西被拖过来了，则需要显式调用事件的 ``preventDefault()`` 方法，否则后面的 *drop* 事件不会触发。
+- **(2)** ， 这里处理事件时，最后也要显式调用 ``preventDefault()`` 方法，否则很可能触发浏览器对于拖放的默认行为，造成奇怪的结果。
+
+
+#其它细节，伴随图片#
+
+伴随鼠标拖行的图片效果，是可以自定义的。在 *firefox* 上，可以直接给一个 *canvas* 对象，但是 *chrome* 中不行。不过，我们总可以把 *canvas* 直接转换成 *image* ：
+
+```javascript
+var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+canvas.width = canvas.height = 50;
+
+var ctx = canvas.getContext("2d");
+ctx.lineWidth = 4; ctx.moveTo(0, 0); ctx.lineTo(50, 50);
+ctx.moveTo(0, 50); ctx.lineTo(50, 0); ctx.stroke();
+
+var img = document.createElement("img");
+img.src = canvas.toDataURL();
+
+$('#source').on('dragstart', function(eventObj){
+    eventObj.originalEvent.dataTransfer.setDragImage(img, 25, 25);
+});
+```
+
+
+#其它细节，目标效果#
+
+按照这套机制设计的初衷，对于“效果”，本身是有单独支持的，即，对于一个拖发行为，你可以定义它是 “复制”，“移动”，“创建联系” 这三个中的哪一个，从而，在目标节点上，光标的视觉效果会有所不同，比如对于 “复制” ，会有一个“加号”。
+
+但是，除了一个光标的样式，这东西好像没什么用：
+
+```javascript
+$('#source').on('dragstart', function(eventObj){
+    eventObj.originalEvent.dataTransfer.effectAllowed = 'copy';
+});
+
+
+$('.target').on('dragenter', function(eventObj){
+    eventObj.originalEvent.dataTransfer.dropEffect = 'copy';
+});
+```
+
+#代码示例#
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>拖放效果</title>
+</head>
+<script type="text/javascript" src="jquery-2.1.4.js"></script>
+
+<style type="text/css">
+  #source { width: 100px; height: 100px; background-color: red; }
+  .target { width: 200px; height: 100px; background-color: white; border: 1px solid black; }
+</style>
+
+<body>
+  <div id="source" draggable="true"></div>
+  <div class="target"></div>
+  <div class="target"></div>
+
+
+  <script type="text/javascript">
+    $(function(){
+    
+      var canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+      canvas.width = canvas.height = 50;
+
+      var ctx = canvas.getContext("2d");
+      ctx.lineWidth = 4; ctx.moveTo(0, 0); ctx.lineTo(50, 50);
+      ctx.moveTo(0, 50); ctx.lineTo(50, 0); ctx.stroke();
+
+      var img = document.createElement("img");
+      img.src = canvas.toDataURL();
+
+      $('#source').on('dragstart', function(eventObj){
+        eventObj.originalEvent.dataTransfer.setData('text/plain', (new Date()).valueOf());
+        eventObj.originalEvent.dataTransfer.setDragImage(img, 25, 25);
+        eventObj.originalEvent.dataTransfer.effectAllowed = 'copy';
+      });
+
+      $('#source').on('dragend', function(eventObj){
+        console.log('end');
+      });
+
+
+      $('#source').on('drag', function(eventObj){
+        //console.log('process');
+      });
+
+      $('.target').on('dragenter', function(eventObj){
+        eventObj.originalEvent.dataTransfer.dropEffect = 'copy';
+        console.log('enter');
+      });
+
+      $('.target').on('dragleave', function(eventObj){
+        console.log('leave');
+      });
+
+      $('.target').on('dragover', function(eventObj){
+        console.log('over');
+        eventObj.preventDefault();
+      });
+
+      $('.target').on('drop', function(eventObj){
+        var s = eventObj.originalEvent.dataTransfer.getData('text/plain');
+        console.log('drop');
+        console.log(s);
+        eventObj.preventDefault();
+        $(eventObj.target).text(s);
+      });
+
+    });
+  </script>
+
+</body>
+</html>
+```
+
+#参考资料#
+
+- https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations
+- https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Recommended_Drag_Types
+- http://www.cnblogs.com/henllyee/archive/2012/02/08/html5_first.html
+
+
