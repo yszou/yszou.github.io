@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>使用生成器展平异步回调结构，JS篇 - YS.Zou</title>
+<meta name="generator" content="http://txt2tags.org" />
+<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+<body style=" margin: 0px; padding: 0px; background-color: #eff3fa; font-family: Arial,Helvetica,sans-serif; ">
+<div style=" width: 1287px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; background-color: #E4D4BB; background-image: repeating-radial-gradient(circle, #E4D4BB, #E7DAC6 50% , #E7DAC6 100% ); background-size: 10px 10px; ">
+
+<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">使用生成器展平异步回调结构，JS篇</h1>
+
+<div style=" float: right; font-size: 13px; color: #777; ">
+    <ul style=" text-align: right; ">
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-09-27 03:19 更新</li>
+        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+    </ul>
+</div>
+
+
+  <ol style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">前言</a>
+  </li>
+  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">期望的结果</a>
+  </li>
+  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">生成器的工作方式</a>
+  </li>
+  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">尝试处理异步结构</a>
+  </li>
+  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">更通用一点</a>
+  </li>
+  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">更有想像力一点</a>
+  </li>
+  <li><a href="#toc7" style="color: #0184b7; text-decoration: none">事件环境下的同步思维</a>
+  </li>
+  <li><a href="#toc8" style="color: #0184b7; text-decoration: none">最后的完整代码</a>
+  </li>
+  </ol>
+
+
+<a name="toc1"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 前言</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+2012 年的时候，我去详细了解过 Python 的 Tornado 框架中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 这套工具， <a href="http://www.zouyesheng.com/generator-for-async.html" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/generator-for-async.html</a> ，因为觉得它用于异步环境的编程中实在太方便了，而且，适用性上几乎没有成本，你的定义部分代码完全不需要因为这套工具而作任何改动，这套工具完全是“使用时”的一种可选形式。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+那时我想的就是，如果在遍地是 <em style=" color: #d75100; font-style: normal; ">callback</em> 的 Javascript 中也有这样的东西可用就好了。后来每每跟人谈论起 js 中的回调控制工具时，我都会提到老赵之前做的 <em style=" color: #d75100; font-style: normal; ">wind.js</em> <a href="https://github.com/JeffreyZhao/wind" style="color: #0184b7; text-decoration: none">https://github.com/JeffreyZhao/wind</a> ，这东西牛逼爆了。生成器是一个语法机制，在没有生成器的情况下， <em style=" color: #d75100; font-style: normal; ">wind.js</em> 自己作编译，实现了 CPS 变换的功能，我觉得这几乎是原有 js 语法规则基础上，解决异步回调的结构控制问题的极限了。（不过好像 js 社区更热衷于 Promise 这种程度的工具，真是不能理解）
+</p>
+<p style="margin: 15px auto; width: 800px;">
+后来 js 新的标准中，加入了“生成器 Generator”这个机制， Chrome 和 Firefox 目前也都支持了。前段时间看它时，发现跟 Python 中的生成器工作方式基本是一样的，只有“返回值”那块，js 是用一个对象包装了一下。于是，我就想，把 Tornado 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 这套工具在 js 中实现吧。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+Tornado 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> ，使用时有用到 Python 的另一个语法机制，“装饰器 Decorator”，但装饰器只是一个语法糖， js 中没有这个东西，不影响 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 的功能实现，只是写出来没那么好看而已。
+</p>
+
+<a name="toc2"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 期望的结果</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+Tornado 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 工具，它的作用简单来说，就是把一个回调结构，变成顺序结构。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+比如，一段异步代码是：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">callback</span>(response):
+    <span style="color: #000000; font-weight: bold">print</span> response
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url, cb):
+    fetch(url, cb)
+
+get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>, callback)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 可以写成：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url):
+    response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(fetch, url)
+    <span style="color: #000000; font-weight: bold">print</span> response
+
+get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+换到 js 中，用 jQuery 的 API ，大概期望的结果就是这个样子。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+原来的代码：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+    console.log(response);
+}
+
+<span style="color: #000000; font-weight: bold">var</span> get_http_response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(url, cb){
+    $.get(url, cb);    
+}
+
+get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>, callback);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+通过生成器工具，可以写成：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> get_http_response <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(url){
+    <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url);
+    console.log(res);
+});
+
+get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+结果就是，可以让你永远告别那无止尽的回调嵌套，考虑下面的代码：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> example <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_a);
+    <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_b);
+    <span style="color: #000000; font-weight: bold">var</span> res_c <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_c);
+    <span style="color: #000000; font-weight: bold">var</span> res_d <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_d);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+当然，还有其它功能，后面会介绍。
+</p>
+
+<a name="toc3"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 生成器的工作方式</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+先简单介绍一下， <em style=" color: #d75100; font-style: normal; ">生成器</em> 的语法。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>; i<span style="color: #000000; font-weight: bold">++</span>){
+    yield i;
+  }
+}
+
+obj <span style="color: #000000; font-weight: bold">=</span> gen()
+
+out_obj <span style="color: #000000; font-weight: bold">=</span> obj.next()
+console.log(out_obj.value) <span style="color: #999988; font-style: italic">//0</span>
+
+out_obj <span style="color: #000000; font-weight: bold">=</span> obj.next()
+console.log(out_obj.value) <span style="color: #999988; font-style: italic">//1</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li>通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">function*(){}</code> 的方式，声明定义的是一个“生成器”，不是一个“函数”。（不清楚为什么要特别加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">*</code> 来区分。Python 中是如果函数中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 就认为是“生成器”，不是“普通函数”）
+</li>
+<li>在生成器中，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 来“弹出”一个值。
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 调用的地方，会保留下来，下一次调用生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next()</code> 方法，会回到这个地方，继续往后执行。
+</li>
+</ul>
+
+<p style="margin: 15px auto; width: 800px;">
+可以看出，生成器提供了“保留现场”的能力。我们的代码执行到一个地方之后，跳出去干其它事，之后再回到原来的地方继续执行。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+要理解生成器，还有另外一个很重要的点，就是要明确， <strong style=" color: red; font-weight: normal; ">yield 是一个表达式，表达式是有计算返回值的</strong>。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 表达式的返回值，由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next()</code> 函数调用时的参数提供，换句话说， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next(123)</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">123</code> 参数，即是对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 表达式的返回值。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+前面的代码，只是写了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield i</code> ，并没有关心 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 的返回值，现在作一点修改：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
+  console.log(<span style="color: #dd1144">&#39;start&#39;</span>)
+  <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>; i<span style="color: #000000; font-weight: bold">++</span>){
+    <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> yield i;
+    console.log(<span style="color: #dd1144">&#39;yield value: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> r);
+  }
+}
+
+obj <span style="color: #000000; font-weight: bold">=</span> gen()
+
+out_obj <span style="color: #000000; font-weight: bold">=</span> obj.next(<span style="color: #dd1144">&#39;a&#39;</span>)
+console.log(out_obj.value)
+
+out_obj <span style="color: #000000; font-weight: bold">=</span> obj.next(<span style="color: #dd1144">&#39;b&#39;</span>)
+console.log(out_obj.value)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+最后看到的输出是：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">start
+0
+yield value: b
+1
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+解释一下：
+</p>
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">obj = gen()</code> ，得到一个生成器对象，这时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">function*</code> 中的内容还不会执行。
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out_obj = obj.next('a')</code> 生成器开始跑，直接遇到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 。 因为这时，生成器中还没有一个 “yield 点”，所以传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">'a'</code> 无处接收。
+</li>
+<li>碰到第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 1</code> ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">1</code> ，就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">obj.next('a')</code> 的返回对象的值，赋值给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out_obj</code> 。注意，此时，生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 点</code> 在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 1</code> 这里。
+</li>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">out_obj = obj.next('b')</code> ，先是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">obj.next('b')</code> 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">'b'</code> 推到生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 点</code> ，也就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 1</code> 的地方，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">'b'</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 1</code> 这个表达值的返回值。所以，能看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield value: b</code> 的输出。
+</li>
+<li>接着，生成器进入下一轮循环， 碰到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 2</code>  ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">obj.next('b')</code> 的返回值了。
+</li>
+</ul>
+
+<a name="toc4"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 尝试处理异步结构</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 是一个可以切换上下文的地方，所以，异步回调函数的传值，我们可以作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 表达式的返回值。比如：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){}
+async(callback)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+可以变成：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> response <span style="color: #000000; font-weight: bold">=</span> yield async
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+这里，需要做一个“生成器函数”，通过调度生成器对象，来完成对异步回调结果的传递。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
+
+<span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield async;
+  console.log(res);
+}
+
+gen <span style="color: #000000; font-weight: bold">=</span> run();
+func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+func(<span style="color: #000000; font-weight: bold">function</span>(response){
+  gen.next(response);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+上面是一个很简单的例子，它的意义在于，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 的定义中，我们确实通过一个顺序的结构，得到了一个原来需要异步回调才能得到的结果。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+我们不可能每次使用时，还去写后面那一段调度流程的代码，所以，下一步，我们就把调度部分封装起来。这部分原来就是 Python 中使用装饰器做的事， js 中我们定义一个函数即可。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
+
+<span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  gen <span style="color: #000000; font-weight: bold">=</span> generator();
+  func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+  
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    func(<span style="color: #000000; font-weight: bold">function</span>(response){
+      gen.next(response);
+    });
+  }
+
+}
+
+<span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield async;
+  console.log(res);
+});
+
+run();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+好像有点样子了。这里我们只是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield async</code> ，如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async</code> 本身可以支持参数的话，我们应该如何处理呢？
+</p>
+<p style="margin: 15px auto; width: 800px;">
+首先，直接地 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield async(123)</code> ，这种方式肯定是不可取的。这要求， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async(123)</code> 返回一个生成器。这样的话，就改变了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async</code> 函数原本的意义。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async</code> 是一个像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">$.get</code> 一样的函数，函数定义时，跟生成器完全没有关系。这一点，在开始时就强调过，我们的工具只是使用时的一种可选形式，跟相关的函数定义没有关系。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+所以，要实现对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async</code> 带参数的支持，我们还需要封装一层，专门用来处理函数参数，类似于：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, [<span style="color: #009999">123</span>, <span style="color: #009999">456</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+或者：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, <span style="color: #009999">123</span>, <span style="color: #009999">456</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+当然，这两种形式，无非只是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">call</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">apply</code> 的区别而已了。就以第二种形式为例吧，实现这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 很简单。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a, b, callback){ callback(<span style="color: #dd1144">&#39;a -&gt; &#39;</span> <span style="color: #000000; font-weight: bold">+</span> a <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; b -&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> b) }
+
+<span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  gen <span style="color: #000000; font-weight: bold">=</span> generator();
+  func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+  
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    func(<span style="color: #000000; font-weight: bold">function</span>(response){
+      gen.next(response);
+    });
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> Task <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> arguments[<span style="color: #009999">0</span>];
+  <span style="color: #000000; font-weight: bold">var</span> arg <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">Array</span>.prototype.slice.call(arguments, <span style="color: #009999">1</span>);
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(callback){
+    arg.push(callback);
+    func.apply(that, arg);
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, <span style="color: #dd1144">&#39;123&#39;</span>, <span style="color: #dd1144">&#39;abc&#39;</span>);
+  console.log(res);
+});
+
+run()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 的实现是一个典型的 Currying 化的应用，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 中把函数扒得只剩 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 参数，这样在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 中就可以简单地无差别处理了。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+如果对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Array.prototype.slice.call(arguments, 1)</code> 这行的使用不太明白，可以参见 <a href="http://www.zouyesheng.com/js-context.html#toc3" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/js-context.html#toc3</a> 。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+到这里，最开始的那个期望的目标，我们已经实现，现在我们可以这样使用：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  console.log(res);
+});
+
+run();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc5"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 更通用一点</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+虽然在前面已经实现了我们期望的功能，但是，它还不具有普遍的使用性。比如在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 中，连 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 多次都不支持。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+
+  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res_a);
+  console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res_b);
+
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+所以，我们需要改进调度部分的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 的实现。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+好吧，之前 Python 那篇，我也只谈到这里。因为之后的内容，就是 Tornado 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 这个工具的价值部分，否则前面的代码就只是玩具，而它的实现代码，当时一时半会儿我真看不懂。这次做 js 部分时，再次去翻 Tornado 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen.py</code> 的实现，嗯……，其实最后还是没有完全看懂，但是大概是明白了它做的事，而且，同样的事， Python 中是用类，子类，这种方式来实现的。换到 js 上，因为有完整的匿名函数和闭包的支持（Python 中的匿名函数想想都是泪），所以实现起来简单得多。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+回到多次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 的问题，它的实现，想起来其实也容易，无非就是对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">generator</code> 对象递归地多调用几次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next()</code> 方法而已。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+之前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 实现：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  gen <span style="color: #000000; font-weight: bold">=</span> generator();
+  func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+  
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    func(<span style="color: #000000; font-weight: bold">function</span>(response){
+      gen.next(response);
+    });
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+我们先顺手把它改成，生成器调用时本身支持参数的形式，即：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  console.log(name, res);
+});
+
+run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+只需要作一点小调整就可以了，改进后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 实现：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    gen <span style="color: #000000; font-weight: bold">=</span> generator.apply(that, arguments);
+    func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+    func(<span style="color: #000000; font-weight: bold">function</span>(response){
+      gen.next(response);
+    });
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+后面需要对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">gen</code> 的调度作进一步控制，所以，我们再单独抽象一层出来，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">engine</code> 改成：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    gen <span style="color: #000000; font-weight: bold">=</span> generator.apply(that, arguments);
+    <span style="color: #000000; font-weight: bold">if</span>(gen){
+        Runner(gen).run()
+    }
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+现在在代码上的问题，转换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Runner</code> 的实现了。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  
+  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
+    ... ...  
+  }
+  
+  <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> generator.next().value;
+    yielded_action(yielded)
+  }
+
+  <span style="color: #000000; font-weight: bold">return</span> { run <span style="color: #000000; font-weight: bold">:</span> run }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+大概的框架是这样。我们把每次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出来的东西，放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield_action</code> 中去处理。例如我们目前要解决的问题：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+
+  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res_a);
+  console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res_b);
+
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+每次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出来的都是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 里面的东西，是前面讲过的，通过 Currying 化处理之后，接收一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 参数的函数。我们只需要在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 函数中递归地处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next()</code> 就好了。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  
+  <span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+      <span style="color: #000000; font-weight: bold">var</span> y <span style="color: #000000; font-weight: bold">=</span> generator.next(response).value;
+      <span style="color: #000000; font-weight: bold">if</span>(y){
+        yielded_action(y);
+      }
+  }
+  
+  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
+    yielded(callback);
+  }
+  
+  <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> generator.next().value;
+    yielded_action(yielded)
+  }
+
+  <span style="color: #000000; font-weight: bold">return</span> { run <span style="color: #000000; font-weight: bold">:</span> run }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+因为生成器在结束时，或者提前 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">return</code> 时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">next()</code> 的调用会返回空值，所以加了一句 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">if(y)</code> 。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+这样，多次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 就没有问题了。
+</p>
+
+<a name="toc6"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 更有想像力一点</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+来继续打磨这个工具吧，前面已经实现了对多次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 的支持。在作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yielded_action</code> 时候，不知道大家有没有这样的感觉， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出去的东西，怎么处理，这个完全在我们的控制之中。之前是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出去了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> ，所以我们在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yielded_action</code> 作了对应地处理，同样地，如果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 出去一个数字，一个列表，我们仍然可以作对应的处理，只需要在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yielded_action</code> 中加入条件判断的相关逻辑即可。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+事实上， Tornado 中，是支持 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 一个列表的，这个列表的成员全是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 。其行为就是当所有的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> 都被回调之后，再把所有的回调结果作为一个列表返回。类似于：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield [Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>), Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>)];
+  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res[<span style="color: #009999">0</span>]);
+  console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res[<span style="color: #009999">1</span>]);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+而更通用的一个作法，是支持 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Callback</code> ，同时，对应地可以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Wait</code> ，这种通用的方式，可以打破“顺序”结构的限制，类似于：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  $.get(<span style="color: #dd1144">&#39;/&#39;</span>, (yield Callback(<span style="color: #dd1144">&#39;first&#39;</span>)) );
+
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res[<span style="color: #009999">1</span>]);
+
+  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, (yield Wait(<span style="color: #dd1144">&#39;first&#39;</span>)) );
+
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+在实现 js 中的工具时，我并不打算照搬 Tornado 中的形式。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+一方面是因为 Python 中有完善的“类”机制，可以很容易地直接判断某个值是不是指定类的实例，比如上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Callback</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Wait</code> 实例的判断对 Python 来说是无压力的。但是在 js 中，要实现类似的功能，不想大费周折的话，也许只有用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">new</code> 了，这个在 js 中我认为奇丑无比的一个东西。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+另一方面是，在我能想到的扩展使用方式中，我发现，其实简单地用“类型”，就可以解决大部分问题了。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+比如， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield Task</code> ，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yielded_action</code> 中得到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Task</code> ，其实就是一个函数。要支持列表，那么在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yielded_action</code> 中得到的就是一个列表。这些不同的形式，是仅仅在“类型”上就可以判断出来的。那么考虑还有哪些类型我们可以加以利用呢？
+</p>
+
+<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<li>字符串，可以用它来代替 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Callback('key')</code> ，这样，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 'key'</code> 就可以了。
+</li>
+<li>数字，可以给它一个专门的对应方式，比如“延迟执行”，于是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield 3000</code> 便可以起到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setTimeout()</code> 的作用。
+</li>
+</ul>
+
+<p style="margin: 15px auto; width: 800px;">
+根据刚才提到的对于类型的考虑，来重新组织一下之前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Runner</code> 部分的代码，以便之后的扩展：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+  
+  <span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+    <span style="color: #000000; font-weight: bold">var</span> y <span style="color: #000000; font-weight: bold">=</span> generator.next(response).value;
+    yielded_action(y);
+  }
+  
+  
+  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Function]&#39;</span>){
+        yielded(callback);
+    }
+  }
+  
+  <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> generator.next().value;
+    yielded_action(yielded)
+  }
+  <span style="color: #000000; font-weight: bold">return</span> { run <span style="color: #000000; font-weight: bold">:</span> run }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+上面代码中的类型判断， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Object.prototype.toString.call</code> 用了一点小技巧，不细说了。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+在此基础上，加入对数字的支持，当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">yield</code> 一个数字时，功能是延迟执行：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Function]&#39;</span>){
+        yielded(callback);
+    }
+
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Number]&#39;</span>){
+        setTimeout(callback, yielded);
+    }
+  }
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+现在我们可以这样玩了：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  console.log(<span style="color: #dd1144">&#39;a -&gt;&#39;</span>, res_a.slice(<span style="color: #009999">0</span>, <span style="color: #009999">10</span>));
+  yield <span style="color: #009999">2000</span>;
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  console.log(<span style="color: #dd1144">&#39;b -&gt;&#39;</span>, res_a.slice(<span style="color: #009999">0</span>, <span style="color: #009999">10</span>));
+});
+
+run();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+在获取到第一个响应之后，等 2 秒，再进行第二次请求处理。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+其它的实现这里就不细讲了，最后会给出代码。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+实现之后，可以这样写（ Node.js 代码）：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> http <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;http&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">var</span> fetch <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(url, callback){
+  http.request({
+    hostname<span style="color: #000000; font-weight: bold">:</span> url,
+    port<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">80</span>,
+    path<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/&#39;</span>,
+    method<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;GET&#39;</span>
+  }, <span style="color: #000000; font-weight: bold">function</span>(res){
+    res.setEncoding(<span style="color: #dd1144">&#39;utf8&#39;</span>);
+    res.on(<span style="color: #dd1144">&#39;data&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(chunk){
+      callback(chunk);
+    });
+  }).end();
+}
+
+<span style="color: #000000; font-weight: bold">var</span> timeout_fetch <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(url, sec, callback){
+  setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+    fetch(url, callback);
+  }, sec <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1000</span>);
+}
+
+
+engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
+  console.log(<span style="color: #dd1144">&#39;A&#39;</span>, res_a);
+
+  timeout_fetch(<span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>, yield <span style="color: #dd1144">&#39;x&#39;</span>);
+  yield <span style="color: #009999">1000</span>;
+  console.log(<span style="color: #dd1144">&#39;...&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
+  console.log(<span style="color: #dd1144">&#39;B&#39;</span>, res_b);
+
+  res <span style="color: #000000; font-weight: bold">=</span> yield Wait(<span style="color: #dd1144">&#39;x&#39;</span>);
+  console.log(<span style="color: #dd1144">&#39;x&#39;</span>);
+  console.log(res);
+
+  <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> yield [Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>),
+                 Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">2</span>)];
+
+  console.log(r);
+
+})();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<a name="toc7"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 事件环境下的同步思维</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+一般来说，事件，总是异步的，这点没错。即使大部分时候我们的思维都趋向于是同步的，但在事件处理时，我们都更习惯异步的思维方式，比如，当然按钮被点击之后做什么，总是会事先定义好。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+异步方式的特点是并行，同步方式的特点是顺序。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+所以，当我们在异步环境中，碰到“顺序”相关的场景时，换一种同步的思维与实现方式，问题可能就会变得简单许多，对于事件也是如此，只是，事件可能不像 AJAX 那样直接。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+考虑这样的场景，页面上有三个方块，我们要实现的逻辑是，用户只能按从左到右的顺序，依次点亮这些方块。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;a&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+<span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;b&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+<span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;c&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+样式：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">$(<span style="color: #000000; font-weight: bold">function</span>(){
+  $(<span style="color: #dd1144">&#39;div&#39;</span>).css({
+    width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>,
+    height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>,
+    border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid black&#39;</span>,
+    margin<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;10px&#39;</span>,
+    <span style="color: #000000; font-weight: bold">float:</span> <span style="color: #dd1144">&#39;left&#39;</span>
+  });
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+异步思维，可能是给三个 <em style=" color: #d75100; font-style: normal; ">div</em> 作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">click</code> 事件绑定，点击之后，在回调函数中去判断三个 <em style=" color: #d75100; font-style: normal; ">div</em> 目前的状态，以决定是否给它们填充颜色。一看到这个“判断状态”，就知道这肯定不是轻松的活。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+而同步的思维，就是，从左到右，处理完第一个 <em style=" color: #d75100; font-style: normal; ">div</em> 之后，再去处理第二个 <em style=" color: #d75100; font-style: normal; ">div</em> ，就是这么简单直接，不涉及任何状态。当然，实现这个，即使不用生成器，你自己去嵌套回调函数也是可以的。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+如果用生成器的话：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> yield Task($(<span style="color: #dd1144">&#39;#a&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#a&#39;</span>)));
+    $(<span style="color: #dd1144">&#39;#a&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
+    $(<span style="color: #dd1144">&#39;#a&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
+  
+    yield Task($(<span style="color: #dd1144">&#39;#b&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#b&#39;</span>)));
+    $(<span style="color: #dd1144">&#39;#b&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
+    $(<span style="color: #dd1144">&#39;#b&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
+  
+    yield Task($(<span style="color: #dd1144">&#39;#c&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#c&#39;</span>)));
+    $(<span style="color: #dd1144">&#39;#c&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
+    $(<span style="color: #dd1144">&#39;#c&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
+  })();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+( <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">$('#a').click.bind($('#a'))</code> 这里要显式绑定上下文，是因为 jQuery 在实现 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">click</code> 这些事件处理 API 时，用了动态上下文 <strong style=" color: red; font-weight: normal; ">this</strong> 的方式 )。
+</p>
+<p style="margin: 15px auto; width: 800px;">
+再简单一点：
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+    <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">in</span> {<span style="color: #dd1144">&#39;#a&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #dd1144">&#39;#b&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #dd1144">&#39;#c&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>}){
+      <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> yield Task($(query).click.bind($(query)));
+      $(query).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
+      $(query).off(<span style="color: #dd1144">&#39;click&#39;</span>);
+    }
+  })();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+<p style="margin: 15px auto; width: 800px;">
+才发现， js 中好像没有简单点的同步遍历列表的方法。
+</p>
+
+<a name="toc8"></a>
+<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">8. 最后的完整代码</h1>
+
+<p style="margin: 15px auto; width: 800px;">
+下面代码的所有能力，在之前的 Node.js 代码中都有展示了。
+</p>
+
+<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">function</span> Runner(gen){
+  <span style="color: #000000; font-weight: bold">var</span> key_response <span style="color: #000000; font-weight: bold">=</span> {};
+
+  <span style="color: #000000; font-weight: bold">function</span> yielded_action(yielded){
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Function]&#39;</span>){
+      <span style="color: #000000; font-weight: bold">var</span> context <span style="color: #000000; font-weight: bold">=</span> {
+        get_response_by_key<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(key, callback){
+          <span style="color: #000000; font-weight: bold">if</span>(key <span style="color: #000000; font-weight: bold">in</span> key_response){
+            <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> key_response[key];
+            <span style="color: #000000; font-weight: bold">delete</span> key_response[key];
+            callback(res);
+          } <span style="color: #000000; font-weight: bold">else</span> {
+            key_response[key] <span style="color: #000000; font-weight: bold">=</span> callback;
+          }
+        }
+      };
+      yielded.call(context, callback);
+      <span style="color: #000000; font-weight: bold">return</span>;
+    }
+
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Number]&#39;</span>){
+      setTimeout(callback, yielded);
+      <span style="color: #000000; font-weight: bold">return</span>;
+    }
+
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object String]&#39;</span>){
+      <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> gen.next(reg_callback(yielded)).value;
+      <span style="color: #000000; font-weight: bold">if</span>(yielded <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">undefined</span>){<span style="color: #000000; font-weight: bold">return</span>}
+      yielded_action(yielded);
+      <span style="color: #000000; font-weight: bold">return</span>;
+    }
+
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Array]&#39;</span>){
+      <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Array</span>(yielded.length);
+      <span style="color: #000000; font-weight: bold">var</span> count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+
+      <span style="color: #000000; font-weight: bold">var</span> cb <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(index){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+          res[index] <span style="color: #000000; font-weight: bold">=</span> response;
+          count<span style="color: #000000; font-weight: bold">++</span>;
+          <span style="color: #000000; font-weight: bold">if</span>(count <span style="color: #000000; font-weight: bold">==</span> yielded.length){
+            callback(res);
+          }
+        }
+      }
+
+      <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>, l <span style="color: #000000; font-weight: bold">=</span> yielded.length; i <span style="color: #000000; font-weight: bold">&lt;</span> l; i<span style="color: #000000; font-weight: bold">++</span>){ yielded[i](cb(i)) }
+      <span style="color: #000000; font-weight: bold">return</span>;
+    }
+  }
+
+  <span style="color: #000000; font-weight: bold">function</span> reg_callback(key){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+      <span style="color: #000000; font-weight: bold">if</span>(key <span style="color: #000000; font-weight: bold">in</span> key_response){
+        <span style="color: #000000; font-weight: bold">var</span> cb <span style="color: #000000; font-weight: bold">=</span> key_response[key];
+        <span style="color: #000000; font-weight: bold">delete</span> key_response[key];
+        cb(response);
+      } <span style="color: #000000; font-weight: bold">else</span> {
+        key_response[key] <span style="color: #000000; font-weight: bold">=</span> response;
+      }
+    }
+  }
+
+  <span style="color: #000000; font-weight: bold">function</span> callback(response){
+    <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> gen.next(response).value;
+    <span style="color: #000000; font-weight: bold">if</span>(yielded <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">undefined</span>){<span style="color: #000000; font-weight: bold">return</span>}
+    yielded_action(yielded);
+  }
+
+  <span style="color: #000000; font-weight: bold">function</span> run(){
+    <span style="color: #000000; font-weight: bold">var</span> yielded <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
+    yielded_action(yielded);
+  }
+
+  <span style="color: #000000; font-weight: bold">return</span> { run<span style="color: #000000; font-weight: bold">:</span> run }
+}
+
+
+
+
+<span style="color: #000000; font-weight: bold">function</span> engine(func){
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+  <span style="color: #000000; font-weight: bold">var</span> wrapper <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
+    gen <span style="color: #000000; font-weight: bold">=</span> func.apply(that, arguments)
+    <span style="color: #000000; font-weight: bold">if</span>(gen){
+      Runner(gen).run()
+    }
+  }
+
+  <span style="color: #000000; font-weight: bold">return</span> wrapper
+}
+
+
+<span style="color: #000000; font-weight: bold">function</span> Wait(key){
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(callback){
+    <span style="color: #000000; font-weight: bold">this</span>.get_response_by_key.call(that, key, callback);
+  }
+}
+
+
+<span style="color: #000000; font-weight: bold">function</span> Task(){
+  <span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> arguments[<span style="color: #009999">0</span>];
+  <span style="color: #000000; font-weight: bold">var</span> arg <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">Array</span>.prototype.slice.call(arguments, <span style="color: #009999">1</span>);
+  <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(callback){
+    arg.push(callback)
+    func.apply(that, arg);
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'js-generator';
+  var disqus_url = 'http://zouyesheng.com/js-generator.html';
+  var disqus_title = '使用生成器展平异步回调结构，JS篇';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

@@ -1,0 +1,761 @@
+使用生成器展平异步回调结构，JS篇
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%%toc
+
+
+#前言#
+
+2012 年的时候，我去详细了解过 Python 的 Tornado 框架中的 ``gen.py`` 这套工具， http://www.zouyesheng.com/generator-for-async.html ，因为觉得它用于异步环境的编程中实在太方便了，而且，适用性上几乎没有成本，你的定义部分代码完全不需要因为这套工具而作任何改动，这套工具完全是“使用时”的一种可选形式。
+
+那时我想的就是，如果在遍地是 *callback* 的 Javascript 中也有这样的东西可用就好了。后来每每跟人谈论起 js 中的回调控制工具时，我都会提到老赵之前做的 *wind.js* https://github.com/JeffreyZhao/wind ，这东西牛逼爆了。生成器是一个语法机制，在没有生成器的情况下， *wind.js* 自己作编译，实现了 CPS 变换的功能，我觉得这几乎是原有 js 语法规则基础上，解决异步回调的结构控制问题的极限了。（不过好像 js 社区更热衷于 Promise 这种程度的工具，真是不能理解）
+
+后来 js 新的标准中，加入了“生成器 Generator”这个机制， Chrome 和 Firefox 目前也都支持了。前段时间看它时，发现跟 Python 中的生成器工作方式基本是一样的，只有“返回值”那块，js 是用一个对象包装了一下。于是，我就想，把 Tornado 中的 ``gen.py`` 这套工具在 js 中实现吧。
+
+Tornado 的 ``gen.py`` ，使用时有用到 Python 的另一个语法机制，“装饰器 Decorator”，但装饰器只是一个语法糖， js 中没有这个东西，不影响 ``gen.py`` 的功能实现，只是写出来没那么好看而已。
+
+
+#期望的结果#
+
+Tornado 的 ``gen.py`` 工具，它的作用简单来说，就是把一个回调结构，变成顺序结构。
+
+比如，一段异步代码是：
+
+```python
+def callback(response):
+    print response
+
+def get_http_response(url, cb):
+    fetch(url, cb)
+
+get_http_response('http://www.zouyesheng.com', callback)
+```
+
+通过 ``gen.py`` 可以写成：
+
+```python
+@gen.engine
+def get_http_response(url):
+    response = yield gen.Task(fetch, url)
+    print response
+
+get_http_response('http://www.zouyesheng.com')
+```
+
+换到 js 中，用 jQuery 的 API ，大概期望的结果就是这个样子。
+
+原来的代码：
+
+```javascript
+var callback = function(response){
+    console.log(response);
+}
+
+var get_http_response = function(url, cb){
+    $.get(url, cb);    
+}
+
+get_http_response('http://www.zouyesheng.com', callback);
+```
+
+通过生成器工具，可以写成：
+
+```javascript
+var get_http_response = gen.engine(function*(url){
+    var res = yield gen.Task($.get, url);
+    console.log(res);
+});
+
+get_http_response('http://www.zouyesheng.com');
+```
+
+结果就是，可以让你永远告别那无止尽的回调嵌套，考虑下面的代码：
+
+```javascript
+var example = gen.engine(function*(){
+    var res_a = yield gen.Task($.get, url_a);
+    var res_b = yield gen.Task($.get, url_b);
+    var res_c = yield gen.Task($.get, url_c);
+    var res_d = yield gen.Task($.get, url_d);
+});
+```
+
+当然，还有其它功能，后面会介绍。
+
+
+#生成器的工作方式#
+
+先简单介绍一下， *生成器* 的语法。
+
+```javascript
+var gen = function*(){
+  for(var i = 0; i < 10; i++){
+    yield i;
+  }
+}
+
+obj = gen()
+
+out_obj = obj.next()
+console.log(out_obj.value) //0
+
+out_obj = obj.next()
+console.log(out_obj.value) //1
+```
+
+
+- 通过 ``function*(){}`` 的方式，声明定义的是一个“生成器”，不是一个“函数”。（不清楚为什么要特别加 ``*`` 来区分。Python 中是如果函数中有 ``yield`` 就认为是“生成器”，不是“普通函数”）
+- 在生成器中，通过 ``yield`` 来“弹出”一个值。
+- ``yield`` 调用的地方，会保留下来，下一次调用生成器的 ``next()`` 方法，会回到这个地方，继续往后执行。
+
+
+可以看出，生成器提供了“保留现场”的能力。我们的代码执行到一个地方之后，跳出去干其它事，之后再回到原来的地方继续执行。
+
+要理解生成器，还有另外一个很重要的点，就是要明确， **yield 是一个表达式，表达式是有计算返回值的**。 ``yield`` 表达式的返回值，由 ``next()`` 函数调用时的参数提供，换句话说， ``next(123)`` 中的 ``123`` 参数，即是对应的 ``yield`` 表达式的返回值。
+
+
+前面的代码，只是写了一个 ``yield i`` ，并没有关心 ``yield`` 的返回值，现在作一点修改：
+
+```javascript
+var gen = function*(){
+  console.log('start')
+  for(var i = 0; i < 10; i++){
+    var r = yield i;
+    console.log('yield value: ' + r);
+  }
+}
+
+obj = gen()
+
+out_obj = obj.next('a')
+console.log(out_obj.value)
+
+out_obj = obj.next('b')
+console.log(out_obj.value)
+```
+
+最后看到的输出是：
+
+```text
+start
+0
+yield value: b
+1
+```
+
+解释一下：
+
+- ``obj = gen()`` ，得到一个生成器对象，这时， ``function*`` 中的内容还不会执行。
+- ``out_obj = obj.next('a')`` 生成器开始跑，直接遇到 ``yield`` 。 因为这时，生成器中还没有一个 “yield 点”，所以传入的 ``'a'`` 无处接收。
+- 碰到第一个 ``yield 1`` ，这里的 ``1`` ，就是上面的 ``obj.next('a')`` 的返回对象的值，赋值给 ``out_obj`` 。注意，此时，生成器的 ``yield 点`` 在 ``yield 1`` 这里。
+- ``out_obj = obj.next('b')`` ，先是 ``obj.next('b')`` 把 ``'b'`` 推到生成器的 ``yield 点`` ，也就是上面的 ``yield 1`` 的地方，这里的 ``'b'`` 就是 ``yield 1`` 这个表达值的返回值。所以，能看到 ``yield value: b`` 的输出。
+- 接着，生成器进入下一轮循环， 碰到， ``yield 2``  ，这里的 ``2`` 就是 ``obj.next('b')`` 的返回值了。
+
+
+#尝试处理异步结构#
+
+``yield`` 是一个可以切换上下文的地方，所以，异步回调函数的传值，我们可以作为 ``yield`` 表达式的返回值。比如：
+
+```javascript
+var callback = function(response){}
+async(callback)
+```
+
+可以变成：
+
+```javascript
+var response = yield async
+```
+
+这里，需要做一个“生成器函数”，通过调度生成器对象，来完成对异步回调结果的传递。
+
+```javascript
+var async = function(callback){ callback('hello') }
+
+var run = function*(){
+  var res = yield async;
+  console.log(res);
+}
+
+gen = run();
+func = gen.next().value;
+func(function(response){
+  gen.next(response);
+});
+```
+
+上面是一个很简单的例子，它的意义在于，在 ``run`` 的定义中，我们确实通过一个顺序的结构，得到了一个原来需要异步回调才能得到的结果。
+
+我们不可能每次使用时，还去写后面那一段调度流程的代码，所以，下一步，我们就把调度部分封装起来。这部分原来就是 Python 中使用装饰器做的事， js 中我们定义一个函数即可。
+
+```javascript
+var async = function(callback){ callback('hello') }
+
+var engine = function(generator){
+  gen = generator();
+  func = gen.next().value;
+  
+  return function(){
+    func(function(response){
+      gen.next(response);
+    });
+  }
+
+}
+
+var run = engine(function*(){
+  var res = yield async;
+  console.log(res);
+});
+
+run();
+```
+
+好像有点样子了。这里我们只是 ``yield async`` ，如果 ``async`` 本身可以支持参数的话，我们应该如何处理呢？
+
+首先，直接地 ``yield async(123)`` ，这种方式肯定是不可取的。这要求， ``async(123)`` 返回一个生成器。这样的话，就改变了 ``async`` 函数原本的意义。 ``async`` 是一个像 ``$.get`` 一样的函数，函数定义时，跟生成器完全没有关系。这一点，在开始时就强调过，我们的工具只是使用时的一种可选形式，跟相关的函数定义没有关系。
+
+所以，要实现对 ``async`` 带参数的支持，我们还需要封装一层，专门用来处理函数参数，类似于：
+
+```javascript
+var res = yield Task(async, [123, 456]);
+```
+
+或者：
+
+```javascript
+var res = yield Task(async, 123, 456);
+```
+
+当然，这两种形式，无非只是 ``call`` 和 ``apply`` 的区别而已了。就以第二种形式为例吧，实现这个 ``Task`` 很简单。
+
+
+```javascript
+var async = function(a, b, callback){ callback('a -> ' + a + ' b ->' + b) }
+
+var engine = function(generator){
+  gen = generator();
+  func = gen.next().value;
+  
+  return function(){
+    func(function(response){
+      gen.next(response);
+    });
+  }
+}
+
+var Task = function(){
+  var func = arguments[0];
+  var arg = Array.prototype.slice.call(arguments, 1);
+  var that = this;
+  return function(callback){
+    arg.push(callback);
+    func.apply(that, arg);
+  }
+}
+
+var run = engine(function*(){
+  var res = yield Task(async, '123', 'abc');
+  console.log(res);
+});
+
+run()
+```
+
+这个 ``Task`` 的实现是一个典型的 Currying 化的应用，在 ``Task`` 中把函数扒得只剩 ``callback`` 参数，这样在 ``engine`` 中就可以简单地无差别处理了。
+
+如果对 ``Array.prototype.slice.call(arguments, 1)`` 这行的使用不太明白，可以参见 http://www.zouyesheng.com/js-context.html#toc3 。
+
+到这里，最开始的那个期望的目标，我们已经实现，现在我们可以这样使用：
+
+
+```javascript
+var run = engine(function*(){
+  var res = yield Task($.get, '/');
+  console.log(res);
+});
+
+run();
+```
+
+
+#更通用一点#
+
+虽然在前面已经实现了我们期望的功能，但是，它还不具有普遍的使用性。比如在 ``engine`` 中，连 ``yield`` 多次都不支持。
+
+```javascript
+var run = engine(function*(){
+  var res_a = yield Task($.get, '/');
+  var res_b = yield Task($.get, '/');
+
+  console.log('a -> ', res_a);
+  console.log('b -> ', res_b);
+
+});
+```
+
+所以，我们需要改进调度部分的 ``engine`` 的实现。
+
+好吧，之前 Python 那篇，我也只谈到这里。因为之后的内容，就是 Tornado 中的 ``gen.py`` 这个工具的价值部分，否则前面的代码就只是玩具，而它的实现代码，当时一时半会儿我真看不懂。这次做 js 部分时，再次去翻 Tornado 的 ``gen.py`` 的实现，嗯……，其实最后还是没有完全看懂，但是大概是明白了它做的事，而且，同样的事， Python 中是用类，子类，这种方式来实现的。换到 js 上，因为有完整的匿名函数和闭包的支持（Python 中的匿名函数想想都是泪），所以实现起来简单得多。
+
+回到多次 ``yield`` 的问题，它的实现，想起来其实也容易，无非就是对 ``generator`` 对象递归地多调用几次 ``next()`` 方法而已。
+
+之前的 ``engine`` 实现：
+
+```javascript
+var engine = function(generator){
+  gen = generator();
+  func = gen.next().value;
+  
+  return function(){
+    func(function(response){
+      gen.next(response);
+    });
+  }
+}
+```
+
+我们先顺手把它改成，生成器调用时本身支持参数的形式，即：
+
+```javascript
+var run = engine(function*(name){
+  var res = yield Task($.get, '/');
+  console.log(name, res);
+});
+
+run('ooooooooo');
+```
+
+只需要作一点小调整就可以了，改进后的 ``engine`` 实现：
+
+```javascript
+var engine = function(generator){
+  var that = this;
+  return function(){
+    gen = generator.apply(that, arguments);
+    func = gen.next().value;
+    func(function(response){
+      gen.next(response);
+    });
+  }
+}
+```
+
+后面需要对 ``gen`` 的调度作进一步控制，所以，我们再单独抽象一层出来，把 ``engine`` 改成：
+
+```javascript
+var engine = function(generator){
+  var that = this;
+  return function(){
+    gen = generator.apply(that, arguments);
+    if(gen){
+        Runner(gen).run()
+    }
+  }
+}
+```
+
+现在在代码上的问题，转换成 ``Runner`` 的实现了。
+
+
+```javascript
+var Runner = function(generator){
+  
+  var yielded_action = function(yielded){
+    ... ...  
+  }
+  
+  var run = function(){
+    var yielded = generator.next().value;
+    yielded_action(yielded)
+  }
+
+  return { run : run }
+}
+```
+
+大概的框架是这样。我们把每次 ``yield`` 出来的东西，放到 ``yield_action`` 中去处理。例如我们目前要解决的问题：
+
+```javascript
+var run = engine(function*(){
+  var res_a = yield Task($.get, '/');
+  var res_b = yield Task($.get, '/');
+
+  console.log('a -> ', res_a);
+  console.log('b -> ', res_b);
+
+});
+```
+
+每次 ``yield`` 出来的都是 ``Task`` 。 ``Task`` 里面的东西，是前面讲过的，通过 Currying 化处理之后，接收一个 ``callback`` 参数的函数。我们只需要在 ``callback`` 函数中递归地处理 ``next()`` 就好了。
+
+```javascript
+var Runner = function(generator){
+  
+  var callback = function(response){
+      var y = generator.next(response).value;
+      if(y){
+        yielded_action(y);
+      }
+  }
+  
+  var yielded_action = function(yielded){
+    yielded(callback);
+  }
+  
+  var run = function(){
+    var yielded = generator.next().value;
+    yielded_action(yielded)
+  }
+
+  return { run : run }
+}
+```
+
+因为生成器在结束时，或者提前 ``return`` 时， ``next()`` 的调用会返回空值，所以加了一句 ``if(y)`` 。
+
+这样，多次 ``yield`` 就没有问题了。
+
+
+#更有想像力一点#
+
+来继续打磨这个工具吧，前面已经实现了对多次 ``yield`` 的支持。在作 ``yielded_action`` 时候，不知道大家有没有这样的感觉， ``yield`` 出去的东西，怎么处理，这个完全在我们的控制之中。之前是 ``yield`` 出去了一个 ``Task`` ，所以我们在 ``yielded_action`` 作了对应地处理，同样地，如果是 ``yield`` 出去一个数字，一个列表，我们仍然可以作对应的处理，只需要在 ``yielded_action`` 中加入条件判断的相关逻辑即可。
+
+事实上， Tornado 中，是支持 ``yield`` 一个列表的，这个列表的成员全是 ``Task`` 。其行为就是当所有的 ``Task`` 都被回调之后，再把所有的回调结果作为一个列表返回。类似于：
+
+```javascript
+var run = engine(function*(){
+  var res = yield [Task($.get, '/'), Task($.get, '/')];
+  console.log('a -> ', res[0]);
+  console.log('b -> ', res[1]);
+});
+```
+
+而更通用的一个作法，是支持 ``yield`` 一个 ``Callback`` ，同时，对应地可以 ``yield`` 一个 ``Wait`` ，这种通用的方式，可以打破“顺序”结构的限制，类似于：
+
+```javascript
+var run = engine(function*(){
+  $.get('/', (yield Callback('first')) );
+
+  var res_b = yield Task($.get, '/');
+  console.log('b -> ', res[1]);
+
+  console.log('a -> ', (yield Wait('first')) );
+
+});
+```
+
+在实现 js 中的工具时，我并不打算照搬 Tornado 中的形式。
+
+一方面是因为 Python 中有完善的“类”机制，可以很容易地直接判断某个值是不是指定类的实例，比如上面的 ``Callback`` / ``Wait`` 实例的判断对 Python 来说是无压力的。但是在 js 中，要实现类似的功能，不想大费周折的话，也许只有用 ``new`` 了，这个在 js 中我认为奇丑无比的一个东西。
+
+另一方面是，在我能想到的扩展使用方式中，我发现，其实简单地用“类型”，就可以解决大部分问题了。
+
+比如， ``yield Task`` ，在 ``yielded_action`` 中得到的 ``Task`` ，其实就是一个函数。要支持列表，那么在 ``yielded_action`` 中得到的就是一个列表。这些不同的形式，是仅仅在“类型”上就可以判断出来的。那么考虑还有哪些类型我们可以加以利用呢？
+
+- 字符串，可以用它来代替 ``Callback('key')`` ，这样，只需要 ``yield 'key'`` 就可以了。
+- 数字，可以给它一个专门的对应方式，比如“延迟执行”，于是， ``yield 3000`` 便可以起到 ``setTimeout()`` 的作用。
+
+
+根据刚才提到的对于类型的考虑，来重新组织一下之前的 ``Runner`` 部分的代码，以便之后的扩展：
+
+```javascript
+var Runner = function(generator){
+  
+  var callback = function(response){
+    var y = generator.next(response).value;
+    yielded_action(y);
+  }
+  
+  
+  var yielded_action = function(yielded){
+    if(Object.prototype.toString.call(yielded) === '[object Function]'){
+        yielded(callback);
+    }
+  }
+  
+  var run = function(){
+    var yielded = generator.next().value;
+    yielded_action(yielded)
+  }
+  return { run : run }
+}
+```
+
+上面代码中的类型判断， ``Object.prototype.toString.call`` 用了一点小技巧，不细说了。
+
+在此基础上，加入对数字的支持，当 ``yield`` 一个数字时，功能是延迟执行：
+
+```javascript
+
+  var yielded_action = function(yielded){
+    if(Object.prototype.toString.call(yielded) === '[object Function]'){
+        yielded(callback);
+    }
+
+    if(Object.prototype.toString.call(yielded) === '[object Number]'){
+        setTimeout(callback, yielded);
+    }
+  }
+```
+
+现在我们可以这样玩了：
+
+```javascript
+var run = engine(function*(name){
+  var res_a = yield Task($.get, '/');
+  console.log('a ->', res_a.slice(0, 10));
+  yield 2000;
+  var res_b = yield Task($.get, '/');
+  console.log('b ->', res_a.slice(0, 10));
+});
+
+run();
+```
+
+在获取到第一个响应之后，等 2 秒，再进行第二次请求处理。
+
+其它的实现这里就不细讲了，最后会给出代码。
+
+实现之后，可以这样写（ Node.js 代码）：
+
+```javascript
+var http = require('http');
+
+var fetch = function(url, callback){
+  http.request({
+    hostname: url,
+    port: 80,
+    path: '/',
+    method: 'GET'
+  }, function(res){
+    res.setEncoding('utf8');
+    res.on('data', function(chunk){
+      callback(chunk);
+    });
+  }).end();
+}
+
+var timeout_fetch = function(url, sec, callback){
+  setTimeout(function(){
+    fetch(url, callback);
+  }, sec * 1000);
+}
+
+
+engine(function*(){
+
+  var res_a = yield Task(timeout_fetch, 's.zys.me', 1);
+  console.log('A', res_a);
+
+  timeout_fetch('s.zys.me', 1, yield 'x');
+  yield 1000;
+  console.log('...');
+  var res_b = yield Task(timeout_fetch, 's.zys.me', 1);
+  console.log('B', res_b);
+
+  res = yield Wait('x');
+  console.log('x');
+  console.log(res);
+
+  var r = yield [Task(timeout_fetch, 's.zys.me', 1),
+                 Task(timeout_fetch, 's.zys.me', 2)];
+
+  console.log(r);
+
+})();
+```
+
+
+#事件环境下的同步思维#
+
+
+一般来说，事件，总是异步的，这点没错。即使大部分时候我们的思维都趋向于是同步的，但在事件处理时，我们都更习惯异步的思维方式，比如，当然按钮被点击之后做什么，总是会事先定义好。
+
+异步方式的特点是并行，同步方式的特点是顺序。
+
+所以，当我们在异步环境中，碰到“顺序”相关的场景时，换一种同步的思维与实现方式，问题可能就会变得简单许多，对于事件也是如此，只是，事件可能不像 AJAX 那样直接。
+
+考虑这样的场景，页面上有三个方块，我们要实现的逻辑是，用户只能按从左到右的顺序，依次点亮这些方块。
+
+```html
+<div id="a"></div>
+<div id="b"></div>
+<div id="c"></div>
+```
+
+样式：
+
+```javascript
+$(function(){
+  $('div').css({
+    width: 100,
+    height: 100,
+    border: '1px solid black',
+    margin: '10px',
+    float: 'left'
+  });
+});
+```
+
+异步思维，可能是给三个 *div* 作 ``click`` 事件绑定，点击之后，在回调函数中去判断三个 *div* 目前的状态，以决定是否给它们填充颜色。一看到这个“判断状态”，就知道这肯定不是轻松的活。
+
+而同步的思维，就是，从左到右，处理完第一个 *div* 之后，再去处理第二个 *div* ，就是这么简单直接，不涉及任何状态。当然，实现这个，即使不用生成器，你自己去嵌套回调函数也是可以的。
+
+如果用生成器的话：
+
+```javascript
+  engine(function*(){
+    var event = yield Task($('#a').click.bind($('#a')));
+    $('#a').css('background-color', 'red');
+    $('#a').off('click');
+  
+    yield Task($('#b').click.bind($('#b')));
+    $('#b').css('background-color', 'red');
+    $('#b').off('click');
+  
+    yield Task($('#c').click.bind($('#c')));
+    $('#c').css('background-color', 'red');
+    $('#c').off('click');
+  })();
+```
+
+( ``$('#a').click.bind($('#a'))`` 这里要显式绑定上下文，是因为 jQuery 在实现 ``click`` 这些事件处理 API 时，用了动态上下文 **this** 的方式 )。
+
+再简单一点：
+
+```javascript
+  engine(function*(){
+    for(var query in {'#a': true, '#b': true, '#c': true}){
+      var event = yield Task($(query).click.bind($(query)));
+      $(query).css('background-color', 'red');
+      $(query).off('click');
+    }
+  })();
+```
+
+才发现， js 中好像没有简单点的同步遍历列表的方法。
+
+
+
+#最后的完整代码#
+
+下面代码的所有能力，在之前的 Node.js 代码中都有展示了。
+
+
+```javascript
+function Runner(gen){
+  var key_response = {};
+
+  function yielded_action(yielded){
+    if(Object.prototype.toString.call(yielded) === '[object Function]'){
+      var context = {
+        get_response_by_key: function(key, callback){
+          if(key in key_response){
+            var res = key_response[key];
+            delete key_response[key];
+            callback(res);
+          } else {
+            key_response[key] = callback;
+          }
+        }
+      };
+      yielded.call(context, callback);
+      return;
+    }
+
+    if(Object.prototype.toString.call(yielded) === '[object Number]'){
+      setTimeout(callback, yielded);
+      return;
+    }
+
+    if(Object.prototype.toString.call(yielded) === '[object String]'){
+      var yielded = gen.next(reg_callback(yielded)).value;
+      if(yielded === undefined){return}
+      yielded_action(yielded);
+      return;
+    }
+
+    if(Object.prototype.toString.call(yielded) === '[object Array]'){
+      var res = new Array(yielded.length);
+      var count = 0;
+
+      var cb = function(index){
+        return function(response){
+          res[index] = response;
+          count++;
+          if(count == yielded.length){
+            callback(res);
+          }
+        }
+      }
+
+      for(var i = 0, l = yielded.length; i < l; i++){ yielded[i](cb(i)) }
+      return;
+    }
+  }
+
+  function reg_callback(key){
+    return function(response){
+      if(key in key_response){
+        var cb = key_response[key];
+        delete key_response[key];
+        cb(response);
+      } else {
+        key_response[key] = response;
+      }
+    }
+  }
+
+  function callback(response){
+    var yielded = gen.next(response).value;
+    if(yielded === undefined){return}
+    yielded_action(yielded);
+  }
+
+  function run(){
+    var yielded = gen.next().value;
+    yielded_action(yielded);
+  }
+
+  return { run: run }
+}
+
+
+
+
+function engine(func){
+  var that = this;
+  var wrapper = function(){
+    gen = func.apply(that, arguments)
+    if(gen){
+      Runner(gen).run()
+    }
+  }
+
+  return wrapper
+}
+
+
+function Wait(key){
+  var that = this;
+  return function(callback){
+    this.get_response_by_key.call(that, key, callback);
+  }
+}
+
+
+function Task(){
+  var func = arguments[0];
+  var arg = Array.prototype.slice.call(arguments, 1);
+  var that = this;
+
+  return function(callback){
+    arg.push(callback)
+    func.apply(that, arg);
+  }
+}
+```
+
