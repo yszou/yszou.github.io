@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>浏览器中的拖放API - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>浏览器中的拖放API - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #eff3fa; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 1287px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; background-color: #E4D4BB; background-image: repeating-radial-gradient(circle, #E4D4BB, #E7DAC6 50% , #E7DAC6 100% ); background-size: 10px 10px; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">浏览器中的拖放API</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">浏览器中的拖放API</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-28 03:42 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-06-28 17:44 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
   <li><a href="#toc1" style="color: #0184b7; text-decoration: none">概述</a>
   </li>
   <li><a href="#toc2" style="color: #0184b7; text-decoration: none">使用方法</a>
@@ -34,31 +34,33 @@
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 概述</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 概述</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 新式浏览器中提供了一套处理拖放（ Drag and Drop）行为的机制，主要是通过事件触发来响应行为，相应的数据则在事件对象中传递。使用这套机制，可以很容易地实现节点间的拖放行为定义，以及，浏览与系统中的其它应用程序的交互（比如文件的拖放）。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 简单来说，这套机制中有如下的概念：
 </p>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li><em style=" color: #d75100; font-style: normal; ">触发节点</em> ， “拖什么” 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li><em style="color: #d75100; font-style: normal;">触发节点</em> ， “拖什么” 。
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">目标节点</em> ， “拖到哪里” 。
+<li><em style="color: #d75100; font-style: normal;">目标节点</em> ， “拖到哪里” 。
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">数据</em> ， 拖的是节点，但是承载的数据是什么。
+<li><em style="color: #d75100; font-style: normal;">数据</em> ， 拖的是节点，但是承载的数据是什么。
 </li>
 </ul>
 
-<p style="margin: 15px auto; width: 800px;">
-这里，之所以把 <em style=" color: #d75100; font-style: normal; ">数据</em> 单独设计出来，是因为 <em style=" color: #d75100; font-style: normal; ">触发节点</em> 和 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 它们本身是分离的，对应的事件也是独立的，这就是说，当你在处理 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 的事件时，你是不能直接拿到 <em style=" color: #d75100; font-style: normal; ">触发节点</em> 的，但是显然，在流程上，在处理 <em style=" color: #d75100; font-style: normal; ">目标节点</em> 时一般又是需要知道 “从何而来” 的答案，于是，解决办案就变成了使用事件对象来传递具体的数据属性了 -- <em style=" color: #d75100; font-style: normal; ">触发节点</em> 在对象属性中设置的值， <em style=" color: #d75100; font-style: normal; ">目标节点</em> 可以获取到。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，之所以把 <em style="color: #d75100; font-style: normal;">数据</em> 单独设计出来，是因为 <em style="color: #d75100; font-style: normal;">触发节点</em> 和 <em style="color: #d75100; font-style: normal;">目标节点</em> 它们本身是分离的，对应的事件也是独立的，这就是说，当你在处理 <em style="color: #d75100; font-style: normal;">目标节点</em> 的事件时，你是不能直接拿到 <em style="color: #d75100; font-style: normal;">触发节点</em> 的，但是显然，在流程上，在处理 <em style="color: #d75100; font-style: normal;">目标节点</em> 时一般又是需要知道 “从何而来” 的答案，于是，解决办案就变成了使用事件对象来传递具体的数据属性了 -- <em style="color: #d75100; font-style: normal;">触发节点</em> 在对象属性中设置的值， <em style="color: #d75100; font-style: normal;">目标节点</em> 可以获取到。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
     eventObj.originalEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, <span style="color: #dd1144">&#39;I am source&#39;</span>);
 });
 
@@ -68,90 +70,92 @@ $(<span style="color: #dd1144">&#39;#target&#39;</span>).on(<span style="color: 
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-上面代码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">dataTransfer</code> 只在原生的事件对象中有，所以如果使用 <em style=" color: #d75100; font-style: normal; ">jQuery</em> 的话，要先从它封装的事件中取到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">originalEvent</code> ，再作操作。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dataTransfer</code> 只在原生的事件对象中有，所以如果使用 <em style="color: #d75100; font-style: normal;">jQuery</em> 的话，要先从它封装的事件中取到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">originalEvent</code> ，再作操作。
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 使用方法</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 使用方法</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面已经简单介绍了三个基本的概念，在使用这套机制时，要作的事，就是绑定事件，传递数据而已，从上到下按顺序，一般的流程如下：
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">触发节点</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">dataTransfer</th>
-<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">目标节点</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">触发节点</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">dataTransfer</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">目标节点</th>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragstart</em> 事件</td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">dragstart</em> 事件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">setData(type, value)</code></td>
-<td style=" padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setData(type, value)</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">drag</em> 事件</td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">drag</em> 事件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragenter</em> 事件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">dragenter</em> 事件</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragover</em> 事件 <strong style=" color: red; font-weight: normal; ">(1)</strong></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">dragover</em> 事件 <strong style="color: red; font-weight: normal;">(1)</strong></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragleave</em> 事件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">dragleave</em> 事件</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">drop</em> 事件 <strong style=" color: red; font-weight: normal; ">(2)</strong></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">drop</em> 事件 <strong style="color: red; font-weight: normal;">(2)</strong></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">getData(type)</code></td>
-<td style=" padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getData(type)</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;"><em style=" color: #d75100; font-style: normal; ">dragend</em> 事件</td>
-<td style=" padding: 3px 10px;"></td>
-<td style=" padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">dragend</em> 事件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"></td>
 </tr>
 </table>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面有两点需要说明一下：
 </p>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li><strong style=" color: red; font-weight: normal; ">(1)</strong> ， 这里处理事件时，如果确定是符合自己期望的东西被拖过来了，则需要显式调用事件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">preventDefault()</code> 方法，否则后面的 <em style=" color: #d75100; font-style: normal; ">drop</em> 事件不会触发。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li><strong style="color: red; font-weight: normal;">(1)</strong> ， 这里处理事件时，如果确定是符合自己期望的东西被拖过来了，则需要显式调用事件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">preventDefault()</code> 方法，否则后面的 <em style="color: #d75100; font-style: normal;">drop</em> 事件不会触发。
 </li>
-<li><strong style=" color: red; font-weight: normal; ">(2)</strong> ， 这里处理事件时，最后也要显式调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">preventDefault()</code> 方法，否则很可能触发浏览器对于拖放的默认行为，造成奇怪的结果。
+<li><strong style="color: red; font-weight: normal;">(2)</strong> ， 这里处理事件时，最后也要显式调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">preventDefault()</code> 方法，否则很可能触发浏览器对于拖放的默认行为，造成奇怪的结果。
 </li>
 </ul>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 其它细节，伴随图片</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 其它细节，伴随图片</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-伴随鼠标拖行的图片效果，是可以自定义的。在 <em style=" color: #d75100; font-style: normal; ">firefox</em> 上，可以直接给一个 <em style=" color: #d75100; font-style: normal; ">canvas</em> 对象，但是 <em style=" color: #d75100; font-style: normal; ">chrome</em> 中不行。不过，我们总可以把 <em style=" color: #d75100; font-style: normal; ">canvas</em> 直接转换成 <em style=" color: #d75100; font-style: normal; ">image</em> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+伴随鼠标拖行的图片效果，是可以自定义的。在 <em style="color: #d75100; font-style: normal;">firefox</em> 上，可以直接给一个 <em style="color: #d75100; font-style: normal;">canvas</em> 对象，但是 <em style="color: #d75100; font-style: normal;">chrome</em> 中不行。不过，我们总可以把 <em style="color: #d75100; font-style: normal;">canvas</em> 直接转换成 <em style="color: #d75100; font-style: normal;">image</em> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">var</span> canvas <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElementNS(<span style="color: #dd1144">&quot;http://www.w3.org/1999/xhtml&quot;</span>, <span style="color: #dd1144">&quot;canvas&quot;</span>);
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> canvas <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElementNS(<span style="color: #dd1144">&quot;http://www.w3.org/1999/xhtml&quot;</span>, <span style="color: #dd1144">&quot;canvas&quot;</span>);
 canvas.width <span style="color: #000000; font-weight: bold">=</span> canvas.height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">50</span>;
 
 <span style="color: #000000; font-weight: bold">var</span> ctx <span style="color: #000000; font-weight: bold">=</span> canvas.getContext(<span style="color: #dd1144">&quot;2d&quot;</span>);
@@ -166,18 +170,20 @@ $(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: 
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 其它细节，目标效果</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 其它细节，目标效果</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 按照这套机制设计的初衷，对于“效果”，本身是有单独支持的，即，对于一个拖发行为，你可以定义它是 “复制”，“移动”，“创建联系” 这三个中的哪一个，从而，在目标节点上，光标的视觉效果会有所不同，比如对于 “复制” ，会有一个“加号”。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 但是，除了一个光标的样式，这东西好像没什么用：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(<span style="color: #dd1144">&#39;#source&#39;</span>).on(<span style="color: #dd1144">&#39;dragstart&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(eventObj){
     eventObj.originalEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
 });
 
@@ -187,12 +193,14 @@ $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: 
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 代码示例</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 代码示例</h1>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -268,11 +276,12 @@ $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: 
 <span style="color: #000080">&lt;/html&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 参考资料</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 参考资料</h1>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
 <li><a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations" style="color: #0184b7; text-decoration: none">https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_operations</a>
 </li>
 <li><a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Recommended_Drag_Types" style="color: #0184b7; text-decoration: none">https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Recommended_Drag_Types</a>
@@ -281,6 +290,110 @@ $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: 
 </li>
 </ul>
 
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if(!$('body.z > .content > .toc')){return}
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '150px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    create_toc();
+});
+</script>
+    
 
     <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
 <div id="disqus_thread" style="width: 800px; margin: auto; "></div>
@@ -314,7 +427,19 @@ $(<span style="color: #dd1144">&#39;.target&#39;</span>).on(<span style="color: 
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+<div style="position: absolute; right: 30px; top: 30px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoklEQVR4nN2XPY7bMBCFv7EFUB19
+A+oiu9o9Su5hwErsMocSnYvQN6A6ClD8Utgpgmy5UyQsp5iH+XlvHk38/dbdB0H496LZzPorX4fV
+bMLMbHBEM0nItluc40SQNr/aUK6koEqCKIWZY2ru/T2VcF+6z8/7x3vmz2/7L+t7/T74ou0gqmCa
+UtMBGDV5osnMYFmHeK6wmnWeWyJJypWEVZIkyW1L0MyphJlTCVkTj5568m2iAfByIPH6WXk/jupw
+Sb2pS8sOaDJfdmuiEVWUK4TsO7esLfEaJ5TrMQVp85sbusdzaa9xS404wVjx3JLrsg49y3Trx7oX
+So5z2zEqlHaNXQrfltXaj7ovrjtJ6sebMsQu9S+Hn373DUlbar/FknDHdW7ZzqW3enmocjPfa6q6
+L22sp6IslTZ66+S+ANBGbUA8e6JJkuYH37YkV6eAZiDc4wamLYXsqSVPz3VduhTuXHgccEensNjA
+KGWucLP3evH3tMvE+gY0HY7uaDl1D76F7FkbypJClkqz56XzY8DTc8lsCPOypZiro07af/yj+gXF
+IwUm6ra5HwAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
 &copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     

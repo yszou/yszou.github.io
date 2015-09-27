@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>SASS学习参考 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>SASS学习参考 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #eff3fa; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 1280px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; background-color: #E4D4BB; background-image: repeating-radial-gradient(circle, #E4D4BB, #E7DAC6 50% , #E7DAC6 100% ); background-size: 10px 10px; position: relative; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">SASS学习参考</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">SASS学习参考</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-27 10:48 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-09-27 10:48 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
   <li><a href="#toc1" style="color: #0184b7; text-decoration: none">SASS是什么</a>
   </li>
   <li><a href="#toc2" style="color: #0184b7; text-decoration: none">安装</a>
@@ -37,7 +37,7 @@
   <li><a href="#toc8" style="color: #0184b7; text-decoration: none">@mixin, 宏</a>
   </li>
   <li><a href="#toc9" style="color: #0184b7; text-decoration: none">@extend 续写</a>
-    <ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
     <li><a href="#toc10" style="color: #0184b7; text-decoration: none">9.1. 最简单情况</a>
     </li>
     <li><a href="#toc11" style="color: #0184b7; text-decoration: none">9.2. 复合规则</a>
@@ -58,194 +58,220 @@
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. SASS是什么</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. SASS是什么</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">SASS</em> 是 CSS 的一个预处理工具，简单来说，它通过自己的一套语法规则来写源码，然后通过编译器，得到 CSS 代码。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">SASS</em> 是 CSS 的一个预处理工具，简单来说，它通过自己的一套语法规则来写源码，然后通过编译器，得到 CSS 代码。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 为什么需要这东西呢？因为如果每天都要写很多的 CSS ，那么里面重复的内容会很多，同时，CSS 本身并没有相应的逻辑抽像工具，这就造成在项目中要对样式做有效的管理，似乎没有什么好办法了。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">SASS</em> 本身是来源于 Ruby 的一个项目，它目前的标准，应该是一个叫 <em style=" color: #d75100; font-style: normal; ">libSass</em> 的 C 语言库，有了这个 C 语言的实现之后，各种语言就可以很方便地 bind 过去了，从官网上的信息看，目前 C, Go, Java, Javascript, Lua, .NET, Node, Perl, PHP, Python, Ruby, Scala 这些语言上都有实现。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">SASS</em> 本身是来源于 Ruby 的一个项目，它目前的标准，应该是一个叫 <em style="color: #d75100; font-style: normal;">libSass</em> 的 C 语言库，有了这个 C 语言的实现之后，各种语言就可以很方便地 bind 过去了，从官网上的信息看，目前 C, Go, Java, Javascript, Lua, .NET, Node, Perl, PHP, Python, Ruby, Scala 这些语言上都有实现。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">SASS</em> 支持两种格式的源码写法，一种叫 SASS ，另一种叫 SCSS ，区别只是前者使用缩进，后者使用大括号。（我就不明白了，为什么有人喜欢大括号，你写了大括号不也要缩进么）
-</p>
-
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 安装</h1>
-
-<p style="margin: 15px auto; width: 800px;">
-这里，使用 Node 上的实现，叫 <strong style=" color: red; font-weight: normal; ">node-sass</strong> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">SASS</em> 支持两种格式的源码写法，一种叫 SASS ，另一种叫 SCSS ，区别只是前者使用缩进，后者使用大括号。（我就不明白了，为什么有人喜欢大括号，你写了大括号不也要缩进么）
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">sudo npm install -g node-sass
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，使用 Node 上的实现，叫 <strong style="color: red; font-weight: normal;">node-sass</strong> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo npm install -g node-sass
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-安装之后，除了相应的 node 模块，还会有一个命令行可执行程序，叫 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">node-sass</code> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装之后，除了相应的 node 模块，还会有一个命令行可执行程序，叫 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">node-sass</code> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">node-sass a.sass
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">node-sass a.sass
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">--output-style</code> 参数可以控制输出的 CSS 的格式，我喜欢用：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">--output-style</code> 参数可以控制输出的 CSS 的格式，我喜欢用：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">node-sass --output-style compact a.sass
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">node-sass --output-style compact a.sass
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这样输出的 CSS ，是一行一条。（以前喜欢这种形式，是因为一行一条的格式，可以方便地在编辑器中使用列编辑作批量修改）
 </p>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 变量, 赋值, 数据类型</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 变量, 赋值, 数据类型</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-SASS 中使用 <em style=" color: #d75100; font-style: normal; ">$</em> 开头来标识一个变量名，使用 <em style=" color: #d75100; font-style: normal; ">:</em> 完成赋值的操作：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+SASS 中使用 <em style="color: #d75100; font-style: normal;">$</em> 开头来标识一个变量名，使用 <em style="color: #d75100; font-style: normal;">:</em> 完成赋值的操作：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">123</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">123</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 数据类型有以下几种：
 </p>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">数字</em></dt><dd style="margin-left: 30px;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">123</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">1.2</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">12px</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">12%</code>, 这些是数字类型。比较特殊的一点，可能在于， SASS 把带有 CSS 单位的标识也作为数字处理，在后面的运算符行为时，单位部分也会一并处理。
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">数字</em></dt><dd style="">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">123</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1.2</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">12px</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">12%</code>, 这些是数字类型。比较特殊的一点，可能在于， SASS 把带有 CSS 单位的标识也作为数字处理，在后面的运算符行为时，单位部分也会一并处理。
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">字符串</em></dt><dd style="margin-left: 30px;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">abc</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">"abc"</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">'abc'</code> 。简单来说，单引号，双引号都可以，不要引号也可以。但是，因为 CSS 中大部分的描述都是不要引号的形式，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">color: red</code> ，而不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">color: 'red'</code> ，所以，在引号的处理上，要小心。
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">字符串</em></dt><dd style="">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">abc</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">"abc"</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'abc'</code> 。简单来说，单引号，双引号都可以，不要引号也可以。但是，因为 CSS 中大部分的描述都是不要引号的形式，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">color: red</code> ，而不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">color: 'red'</code> ，所以，在引号的处理上，要小心。
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">颜色</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">red</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">#abcd</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">rgb(123,255,67)</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">rgba(123, 255, 67, 0.5)</code> , CSS 中表示颜色的形式，在 SASS 中作为颜色类型处理。这里注意，第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">red</code> ，跟字符串的形式一样的。（我猜这类标识具有混合属性吧）
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">颜色</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">red</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">#abcd</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rgb(123,255,67)</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rgba(123, 255, 67, 0.5)</code> , CSS 中表示颜色的形式，在 SASS 中作为颜色类型处理。这里注意，第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">red</code> ，跟字符串的形式一样的。（我猜这类标识具有混合属性吧）
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">列表</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">10px 2px 0 0</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Helvtica, Arial, sans-serif</code> ，以空格，或者以逗号分割的数据形式，为列表。主要对应于 CSS 中的对应形式，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">margin: 10px 2px 0 0</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">font-family: Helvtica, Arial, sans-serif</code> 。 同时，列表这种类型，在处理函数的参数时也有用。
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">列表</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10px 2px 0 0</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Helvtica, Arial, sans-serif</code> ，以空格，或者以逗号分割的数据形式，为列表。主要对应于 CSS 中的对应形式，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">margin: 10px 2px 0 0</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">font-family: Helvtica, Arial, sans-serif</code> 。 同时，列表这种类型，在处理函数的参数时也有用。
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">映射</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">(k1: v1, k2: v2)</code> ，映射其实就是一个嵌套的列表，形如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">(k1 v1), (k2 v2)</code> ，主要用于迭代的一些控制结构中。
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">映射</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(k1: v1, k2: v2)</code> ，映射其实就是一个嵌套的列表，形如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(k1 v1), (k2 v2)</code> ，主要用于迭代的一些控制结构中。
 </dd>
 </dl>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 变量符号化</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 变量符号化</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里的“符号化”说法，意思就是“行内求值”。简单来说，就是把变量的值，在任何地方，转换为语法结构的一部分（因为按语法规则，“这里”是不能使用变量的）。举一个例子：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000080">cls</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000080">cls</span>
 
 <span style="color: #008080">.$a</span><span style="color: #000000; font-weight: bold">:</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这肯定是错误的。因为 “规则” / “选择器” 部分，是不允许使用变量的。但是你可以：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000080">cls</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000080">cls</span>
 
 <span style="color: #445588; font-weight: bold">.</span><span style="color: #dd1144">#{</span><span style="color: #008080">$a</span><span style="color: #dd1144">}</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这样，就是正确的了，编译出来是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 同时，还有：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>
 
 <span style="color: #445588; font-weight: bold">.cls</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">$a</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这样写，虽然编译没有问题，但是结果：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #dd1144">&#39;red&#39;</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #dd1144">&#39;red&#39;</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这是不对的。换成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>
 
 <span style="color: #445588; font-weight: bold">.cls</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">#{</span><span style="color: #008080">$a</span><span style="color: #dd1144">}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 就可以正确得到：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.cls</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-所以， <strong style=" color: red; font-weight: normal; ">#{}</strong> 的功能，算是非常有用且强大。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以， <strong style="color: red; font-weight: normal;">#{}</strong> 的功能，算是非常有用且强大。
 </p>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 嵌套规则与引用</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 嵌套规则与引用</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 CSS 简单来说，只有两部分内容，一是规则，或者说选择器。二是属性描述。DOM 本身是一个层级结构，所以我们在书写规则时，也是层级下降的方式，这样，如果直接写 CSS ，就不可避免地要写很多重复的前置规则，比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.content</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 SASS 最直观的一个功能，就是可以以一种嵌套的层级形式，来处理规则的书写：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.project</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.project</span>
     <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span>
         <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span>
             <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
@@ -253,15 +279,17 @@ SASS 最直观的一个功能，就是可以以一种嵌套的层级形式，来
             <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">blue</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这样不光可以少写很多代码，而且最重要的，是容易维护。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-这种嵌套的层级结构，有一个特别的功能，就是使用 <strong style=" color: red; font-weight: normal; ">&amp;</strong> 可以作为当前选择的引用，这个功能，一般用于伪类：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种嵌套的层级结构，有一个特别的功能，就是使用 <strong style="color: red; font-weight: normal;">&amp;</strong> 可以作为当前选择的引用，这个功能，一般用于伪类：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.project</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.project</span>
   <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span>
     <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span>
       <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
@@ -273,28 +301,32 @@ SASS 最直观的一个功能，就是可以以一种嵌套的层级形式，来
           <span style="color: #008080">text-decoration</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">none</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 编译得到：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">yellow</span>; }
 <span style="color: #445588; font-weight: bold">.project</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">a</span><span style="color: #3c5d5d; font-weight: bold">:hover</span> { <span style="color: #000000; font-weight: bold">text-decoration:</span> <span style="color: #000000; font-weight: bold">none</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 运算符, 逻辑判断, 控制结构</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 运算符, 逻辑判断, 控制结构</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 SASS 虽然不是完整的一门编程语言，但是，运算符和控制结构的概念还是有的。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-这里先说一下， <strong style=" color: red; font-weight: normal; ">SASS 中可以使用 @debug 作标准输出。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里先说一下， <strong style="color: red; font-weight: normal;">SASS 中可以使用 @debug 作标准输出。</strong>
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span>
 <span style="color: #008080">$b</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">20</span>
 <span style="color: #008080">$c</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">2</span><span style="color: #445588; font-weight: bold">px</span>
 <span style="color: #008080">$d</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>
@@ -305,71 +337,81 @@ SASS 虽然不是完整的一门编程语言，但是，运算符和控制结构
 <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$c</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$d</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$e</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$e2</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$e3</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 四则运算时，单位需要匹配，或者，你也可以在最后再处理单位。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-控制结构方面，目前有 <em style=" color: #d75100; font-style: normal; ">@for</em>, <em style=" color: #d75100; font-style: normal; ">@each</em>, <em style=" color: #d75100; font-style: normal; ">@while</em>, <em style=" color: #d75100; font-style: normal; ">@if</em> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+控制结构方面，目前有 <em style="color: #d75100; font-style: normal;">@for</em>, <em style="color: #d75100; font-style: normal;">@each</em>, <em style="color: #d75100; font-style: normal;">@while</em>, <em style="color: #d75100; font-style: normal;">@if</em> 。
 </p>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">@for</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">@for</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 单纯的数字范围的迭代：
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@for</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">from</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">through</span> <span style="color: #009999">10</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@for</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">from</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">through</span> <span style="color: #009999">10</span>
   <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #008080">$i</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">@each</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">@each</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 对列表的迭代：
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@each</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">i</span> <span style="color: #000080">in</span> <span style="color: #000080">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">3</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">4</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@each</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">i</span> <span style="color: #000080">in</span> <span style="color: #000080">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">3</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #000080">4</span>
   <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #008080">$i</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 支持多值匹配：
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@each</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">c</span> <span style="color: #000080">in</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">c</span><span style="color: #000000; font-weight: bold">),</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">red</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">blue</span><span style="color: #000000; font-weight: bold">)</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@each</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">c</span> <span style="color: #000080">in</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">c</span><span style="color: #000000; font-weight: bold">),</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">red</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000080">blue</span><span style="color: #000000; font-weight: bold">)</span>
   <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #008080">$a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$b</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$c</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">@while</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
+<dt style=""><em style="color: #d75100; font-style: normal;">@while</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>
 
 <span style="color: #000000; font-weight: bold">@while</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>
   <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #008080">$i</span>
   <span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
 </dd>
 </dl>
 
-<dl style="font-size: 15px; margin: auto; padding: 10px; width: 800px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">@if</em></dt><dd style="margin-left: 30px;">
-<p style="margin: 15px auto; width: 800px;"></p>
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">@if</em></dt><dd style="">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 这里随便把逻辑判断一起用了：
-<p style="margin: 15px auto; width: 800px;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>
 
 <span style="color: #000000; font-weight: bold">@while</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>
   <span style="color: #000000; font-weight: bold">@if</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>
@@ -386,92 +428,106 @@ SASS 虽然不是完整的一门编程语言，但是，运算符和控制结构
   <span style="color: #008080">$i</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">$i</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
 </dd>
 </dl>
 
-<a name="toc7"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 函数定义</h1>
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 函数定义</h1>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先说清楚这里的函数定义，传入参数，返回值，返回值。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">)</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #000000; font-weight: bold">)</span>
   <span style="color: #000000; font-weight: bold">@return</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span>
 
 <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #990000; font-weight: bold">add</span>(<span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">2</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 函数的参数，跟 Python 一样，可以有默认值，可以有关键词参数：
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 默认值：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #3c5d5d; font-weight: bold">:3</span><span style="color: #000000; font-weight: bold">)</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #3c5d5d; font-weight: bold">:3</span><span style="color: #000000; font-weight: bold">)</span>
   <span style="color: #000000; font-weight: bold">@return</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span>
 
 <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #990000; font-weight: bold">add</span>(<span style="color: #009999">1</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 关键词参数：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #3c5d5d; font-weight: bold">:2</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #3c5d5d; font-weight: bold">:3</span><span style="color: #000000; font-weight: bold">)</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@function</span> <span style="color: #000080">add</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span><span style="color: #3c5d5d; font-weight: bold">:2</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span><span style="color: #3c5d5d; font-weight: bold">:3</span><span style="color: #000000; font-weight: bold">)</span>
   <span style="color: #000000; font-weight: bold">@return</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">a</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000080">b</span>
 
 <span style="color: #000000; font-weight: bold">@debug</span> <span style="color: #990000; font-weight: bold">add</span>(<span style="color: #008080">$b</span><span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">1</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc8"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">8. @mixin, 宏</h1>
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. @mixin, 宏</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">Mixin</em> 是官方的叫的名字， <em style=" color: #d75100; font-style: normal; ">宏</em> 是我自己叫的，因为，这东西的行为就像“宏”一样，可以生成代码片段。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Mixin</em> 是官方的叫的名字， <em style="color: #d75100; font-style: normal;">宏</em> 是我自己叫的，因为，这东西的行为就像“宏”一样，可以生成代码片段。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">Mixin</em> 是 SASS 中地位很重要，还特别给它了一种简写形式。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Mixin</em> 是 SASS 中地位很重要，还特别给它了一种简写形式。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@mixin</span><span style="color: #990000; font-weight: bold"> em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@mixin</span><span style="color: #990000; font-weight: bold"> em</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.header.em</span>
   <span style="color: #000000; font-weight: bold">@include</span><span style="color: #3c5d5d; font-weight: bold"> em</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 简写形式：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=em</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.header.em</span>
   <span style="color: #3c5d5d; font-weight: bold">+em</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.em</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.em</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Mixin 也可以带参数：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=em-back</span>(<span style="color: #008080">$color</span><span style="color: #000000; font-weight: bold">:</span><span style="color: #0086B3">yellow</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$font-size</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">14</span><span style="color: #445588; font-weight: bold">px</span>)
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=em-back</span>(<span style="color: #008080">$color</span><span style="color: #000000; font-weight: bold">:</span><span style="color: #0086B3">yellow</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #008080">$font-size</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">14</span><span style="color: #445588; font-weight: bold">px</span>)
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
   <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">$color</span>
   <span style="color: #008080">font-size</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #008080">$font-size</span>
@@ -481,20 +537,24 @@ Mixin 也可以带参数：
   <span style="color: #3c5d5d; font-weight: bold">+em-back</span>(<span style="color: #008080">$font-size</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">20</span><span style="color: #445588; font-weight: bold">px</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span>; <span style="color: #000000; font-weight: bold">font-size:</span> <span style="color: #009999">20px</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span>; <span style="color: #000000; font-weight: bold">font-size:</span> <span style="color: #009999">20px</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 还可以直接传入代码块：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=em</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
   <span style="color: #000000; font-weight: bold">@content</span>
 
@@ -504,20 +564,24 @@ Mixin 也可以带参数：
     <span style="color: #008080">font-size</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">14</span><span style="color: #445588; font-weight: bold">px</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">font-size:</span> <span style="color: #009999">14px</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">font-size:</span> <span style="color: #009999">14px</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-注意， <em style=" color: #d75100; font-style: normal; ">Mixin</em> 的结果是代码块，所以，它不光可以返回属性块，还可以连带规则块一起处理：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意， <em style="color: #d75100; font-style: normal;">Mixin</em> 的结果是代码块，所以，它不光可以返回属性块，还可以连带规则块一起处理：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=em</span>
   <span style="color: #000080">span</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
@@ -525,20 +589,24 @@ Mixin 也可以带参数：
   <span style="color: #3c5d5d; font-weight: bold">+em</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> <span style="color: #000080">span</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> <span style="color: #000080">span</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-引用 <em style=" color: #d75100; font-style: normal; ">&amp;</em> 也可以照常使用：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+引用 <em style="color: #d75100; font-style: normal;">&amp;</em> 也可以照常使用：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=hover</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=hover</span>
   <span style="color: #000000; font-weight: bold">&amp;</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
     <span style="color: #000000; font-weight: bold">@content</span>
 
@@ -549,21 +617,25 @@ Mixin 也可以带参数：
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">white</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">white</span>; }
 <span style="color: #445588; font-weight: bold">.header.true</span><span style="color: #3c5d5d; font-weight: bold">:hover</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-配合 <em style=" color: #d75100; font-style: normal; ">@at-root</em> 和 <em style=" color: #d75100; font-style: normal; ">&amp;</em> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+配合 <em style="color: #d75100; font-style: normal;">@at-root</em> 和 <em style="color: #d75100; font-style: normal;">&amp;</em> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=hover</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=hover</span>
   <span style="color: #000000; font-weight: bold">@at-root</span>
     <span style="color: #000000; font-weight: bold">&amp;</span>
       <span style="color: #000000; font-weight: bold">@content</span>
@@ -575,21 +647,25 @@ Mixin 也可以带参数：
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">white</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">white</span>; }
 <span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">Mixin</em> 本身是可以嵌套的：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Mixin</em> 本身是可以嵌套的：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #990000; font-weight: bold">=em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">=em</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #990000; font-weight: bold">=hover</span>
@@ -601,30 +677,34 @@ Mixin 也可以带参数：
     <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">aqua</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">aqua</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.header.true</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">aqua</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc9"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">9. @extend 续写</h1>
+<a class="anchor" name="toc9"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. @extend 续写</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-前面说的 <em style=" color: #d75100; font-style: normal; ">@mixin</em> 是处理抽象的可复用代码，现在说的 <em style=" color: #d75100; font-style: normal; ">@extend</em> 是处理具体的已存在的可复用代码。其实两者的机制都是 Mixin ，这里说的 “续写” 是我自己叫的一个名字，因为我实在不想叫“继承”。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说的 <em style="color: #d75100; font-style: normal;">@mixin</em> 是处理抽象的可复用代码，现在说的 <em style="color: #d75100; font-style: normal;">@extend</em> 是处理具体的已存在的可复用代码。其实两者的机制都是 Mixin ，这里说的 “续写” 是我自己叫的一个名字，因为我实在不想叫“继承”。
 </p>
 
-<a name="toc10"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.1. 最简单情况</h2>
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.1. 最简单情况</h2>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">@extend</em> 的作用，是通过指定标识符，在当前块中引用对应的属性定义。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">@extend</em> 的作用，是通过指定标识符，在当前块中引用对应的属性定义。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.b</span>
@@ -632,47 +712,55 @@ Mixin 也可以带参数：
   <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">blue</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里，你也可以看成是生成了：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 或者：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-这里的行为，可以注意一点，用 <strong style=" color: red; font-weight: normal; ">@extend 的块自己本身一定还有一条定义</strong> ，这里的就是最前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.b</code> 有自己单独的一条。如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.b</code> 中没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">background-color</code> ，也可以看成是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.b</code> 会有两条相同的，仅有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">color</code> 的属性定义。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的行为，可以注意一点，用 <strong style="color: red; font-weight: normal;">@extend 的块自己本身一定还有一条定义</strong> ，这里的就是最前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.b</code> 有自己单独的一条。如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.b</code> 中没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">background-color</code> ，也可以看成是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.b</code> 会有两条相同的，仅有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">color</code> 的属性定义。
 </p>
 
-<a name="toc11"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.2. 复合规则</h2>
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.2. 复合规则</h2>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 当然，这是最简单的情况，复杂一点的：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.b</span>
@@ -680,24 +768,28 @@ Mixin 也可以带参数：
   <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">blue</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成的是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-这里的行为，可以总结为， <strong style=" color: red; font-weight: normal; "><em style=" color: #d75100; font-style: normal; ">@extend</em> 部分，不会更改原有的规则限制</strong>。这里就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.a</code> 有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.g</code> 这个限制，那么引用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.a</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.b</code> ，在引用部分，也有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.g</code> 的限制。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的行为，可以总结为， <strong style="color: red; font-weight: normal;"><em style="color: #d75100; font-style: normal;">@extend</em> 部分，不会更改原有的规则限制</strong>。这里就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.a</code> 有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.g</code> 这个限制，那么引用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.a</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.b</code> ，在引用部分，也有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.g</code> 的限制。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.a</code> 换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.g</code> 的话：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.a</code> 换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.g</code> 的话：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.b</span>
@@ -705,98 +797,116 @@ Mixin 也可以带参数：
   <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">blue</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 那么生成的就是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.a.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.a.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.b</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">blue</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-上面的例子，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.g.a</code> 换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.g .a</code> 结果相同。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的例子，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.g.a</code> 换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.g .a</code> 结果相同。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里的：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.a.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.a.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 也可以看成是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.b.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g.a</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.b.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc12"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.3. 伪类</h2>
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.3. 伪类</h2>
 
-<p style="margin: 15px auto; width: 800px;">
-伪类本身是一个限定，所以，如果碰到伪类的情况，就把它看成是一个普通类限定， <em style=" color: #d75100; font-style: normal; ">@extend</em> 就只是指定了一个复合条件而已。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+伪类本身是一个限定，所以，如果碰到伪类的情况，就把它看成是一个普通类限定， <em style="color: #d75100; font-style: normal;">@extend</em> 就只是指定了一个复合条件而已。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先看复合条件的情况：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.m</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.x.y</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.z.m</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.z.m</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 即：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.m.z</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.x.y.z</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.m.z</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 伪类同样：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.b</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #000080">img</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">:hover</code> 看成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.hover</code> 就好了：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">:hover</code> 看成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.hover</code> 就好了：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.user.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.user.b</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 
 <span style="color: #000080">-</span><span style="color: #000000; font-weight: bold">&gt;</span>
 
 <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.b.user</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 不过伪类一般会这么用吧：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.b</span>
@@ -804,48 +914,54 @@ Mixin 也可以带参数：
     <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #000080">img</span><span style="color: #3c5d5d; font-weight: bold">:hover</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.user.b</span><span style="color: #3c5d5d; font-weight: bold">:hover</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.user.b</span><span style="color: #3c5d5d; font-weight: bold">:hover</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 
 <span style="color: #000080">-</span><span style="color: #000000; font-weight: bold">&gt;</span>
 
 <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #000080">img</span><span style="color: #445588; font-weight: bold">.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.g</span> <span style="color: #445588; font-weight: bold">.b.user</span><span style="color: #3c5d5d; font-weight: bold">:hover</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc13"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.4. 序列规则下的使用</h2>
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.4. 序列规则下的使用</h2>
 
-<p style="margin: 15px auto; width: 800px;">
-前面的例子， <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的规则，本身都比较简单。最复杂的情况，就是 <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的规则是多重限定，并且 <em style=" color: #d75100; font-style: normal; ">@extend</em> 指定的条件是多重限定，同时，目标定义时，又有多重限定，最后，目标可能还有多个。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的例子， <em style="color: #d75100; font-style: normal;">@extend</em> 所在的规则，本身都比较简单。最复杂的情况，就是 <em style="color: #d75100; font-style: normal;">@extend</em> 所在的规则是多重限定，并且 <em style="color: #d75100; font-style: normal;">@extend</em> 指定的条件是多重限定，同时，目标定义时，又有多重限定，最后，目标可能还有多个。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-四个点， <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的块， <em style=" color: #d75100; font-style: normal; ">@extend</em> 本身， <em style=" color: #d75100; font-style: normal; ">@extend</em> 可能碰到的目标， <em style=" color: #d75100; font-style: normal; ">@extend</em> 可能碰到的多个目标。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+四个点， <em style="color: #d75100; font-style: normal;">@extend</em> 所在的块， <em style="color: #d75100; font-style: normal;">@extend</em> 本身， <em style="color: #d75100; font-style: normal;">@extend</em> 可能碰到的目标， <em style="color: #d75100; font-style: normal;">@extend</em> 可能碰到的多个目标。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-当然，现实情况不会这样，太复杂了 SASS 自己也搞不定。所以， SASS 中， <em style=" color: #d75100; font-style: normal; ">@extend</em> 本身的规则，是不允许有“序列条件”的。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，现实情况不会这样，太复杂了 SASS 自己也搞不定。所以， SASS 中， <em style="color: #d75100; font-style: normal;">@extend</em> 本身的规则，是不允许有“序列条件”的。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000080">a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000080">a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">a</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000080">a</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这种情况，不被允许。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">@extend</em> 本身简单了一点，但是情况还是有些伤脑筋：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">@extend</em> 本身简单了一点，但是情况还是有些伤脑筋：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.side</span> <span style="color: #445588; font-weight: bold">.m.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.side</span> <span style="color: #445588; font-weight: bold">.m.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span>
@@ -855,248 +971,381 @@ Mixin 也可以带参数：
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.m.a</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-当 <em style=" color: #d75100; font-style: normal; ">@extend</em> 的目标有多个时，我们一个一个来看就好了，先看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.x &gt; .side .m.a</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当 <em style="color: #d75100; font-style: normal;">@extend</em> 的目标有多个时，我们一个一个来看就好了，先看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.x &gt; .side .m.a</code> 。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-前面说过， <em style=" color: #d75100; font-style: normal; ">@extend</em> 不会改变原来的限定，所以， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.x &gt; .side</code> 这个条件是不会变的。但是，这里的情况有些不一样，因为， <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的块，本身还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.header .title</code> 的前置限定条件。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说过， <em style="color: #d75100; font-style: normal;">@extend</em> 不会改变原来的限定，所以， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.x &gt; .side</code> 这个条件是不会变的。但是，这里的情况有些不一样，因为， <em style="color: #d75100; font-style: normal;">@extend</em> 所在的块，本身还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.header .title</code> 的前置限定条件。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-那么现在的问题就是，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.header .title a</code> 中的这个 <strong style=" color: red; font-weight: normal; ">a</strong> ，它有两组前置限定条件了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那么现在的问题就是，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.header .title a</code> 中的这个 <strong style="color: red; font-weight: normal;">a</strong> ，它有两组前置限定条件了。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-这里的两组条件，其实跟前面是一回事。最开始的一条，就说了，别忘了在 <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的块本身，还会有一条定义生成。不同的是，这里 <em style=" color: #d75100; font-style: normal; ">@extend</em> 所在的块本身，会被附加限定条件。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的两组条件，其实跟前面是一回事。最开始的一条，就说了，别忘了在 <em style="color: #d75100; font-style: normal;">@extend</em> 所在的块本身，还会有一条定义生成。不同的是，这里 <em style="color: #d75100; font-style: normal;">@extend</em> 所在的块本身，会被附加限定条件。
 </p>
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 所以，单看：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.side</span> <span style="color: #445588; font-weight: bold">.m.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #445588; font-weight: bold">.side</span> <span style="color: #445588; font-weight: bold">.m.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">a</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.m.a</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li>第一步： <em style=" color: #d75100; font-style: normal; ">目标照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.x &gt; .side .m.a { color: red }</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li>第一步： <em style="color: #d75100; font-style: normal;">目标照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.x &gt; .side .m.a { color: red }</code> 。
 </li>
-<li>第二步： <em style=" color: #d75100; font-style: normal; ">自己照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.header .title .x &gt; .side a { color: red }</code> 。
+<li>第二步： <em style="color: #d75100; font-style: normal;">自己照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.header .title .x &gt; .side a { color: red }</code> 。
 </li>
-<li>第三步： <em style=" color: #d75100; font-style: normal; ">目标 -&gt; @extend</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.x &gt; .side .header .title a { color: red }</code> 。
+<li>第三步： <em style="color: #d75100; font-style: normal;">目标 -&gt; @extend</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.x &gt; .side .header .title a { color: red }</code> 。
 </li>
 </ul>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 换作最简单情况的话：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.em</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.em</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.side</span> <span style="color: #445588; font-weight: bold">.content</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.em</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li>第一步： <em style=" color: #d75100; font-style: normal; ">目标照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.em { color: red }</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li>第一步： <em style="color: #d75100; font-style: normal;">目标照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.em { color: red }</code> 。
 </li>
-<li>第二步： <em style=" color: #d75100; font-style: normal; ">自己照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.side .content { color: red }</code> 。
+<li>第二步： <em style="color: #d75100; font-style: normal;">自己照写</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.side .content { color: red }</code> 。
 </li>
-<li>第三步： <em style=" color: #d75100; font-style: normal; ">目标 -&gt; @extend</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.side .content { color: red }</code> 。
+<li>第三步： <em style="color: #d75100; font-style: normal;">目标 -&gt; @extend</em>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.side .content { color: red }</code> 。
 </li>
 </ul>
 
-<a name="toc14"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.5. 总结</h2>
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.5. 总结</h2>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 总结起来，对于：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">[</span><span style="color: #000080">PRE_A</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000080">TARGET_A</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">[</span><span style="color: #000080">PRE_A</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000080">TARGET_A</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #000000; font-weight: bold">[</span><span style="color: #000080">PRE_B</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000080">TARGET_B</span>
     <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #000080">TARGET_A</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 结果就是：
 </p>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_A] TARGET_A { color: red }</code>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_A] TARGET_A { color: red }</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">... TARGET_B { color: red }</code>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">... TARGET_B { color: red }</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">... TARGET_B { color: red }</code>
-<p style="margin: 15px auto; width: 800px;"></p>
-然后放 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_A] [PRE_B]</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_B] [PRE_A]</code> 两种情况，得到：
-<p style="margin: 15px auto; width: 800px;"></p>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">... TARGET_B { color: red }</code>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+然后放 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_A] [PRE_B]</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_B] [PRE_A]</code> 两种情况，得到：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_A] TARGET_A { color: red }</code>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_A] TARGET_A { color: red }</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_A] [PRE_B] TARGET_B { color: red }</code>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_A] [PRE_B] TARGET_B { color: red }</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">[PRE_B] [PRE_A] TARGET_B { color: red }</code>
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[PRE_B] [PRE_A] TARGET_B { color: red }</code>
 </li>
 </ul>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 看之前的第二个目标实例：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span>
   <span style="color: #008080">background-color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">yellow</span>
 
 <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">a</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.m.a</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 自然就是生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 补充上：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.m.a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.header</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">background-color:</span> <span style="color: #0086B3">yellow</span> }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc15"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.6. 抽象块</h2>
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 20px; margin: 30px auto;">9.6. 抽象块</h2>
 
-<p style="margin: 15px auto; width: 800px;">
-SASS 还真是把 <em style=" color: #d75100; font-style: normal; ">@extend</em> 搞得复杂哦。 SASS 中还有一种“抽象块”的概述，相对于“抽象类”去理解吧。就是，定义的规则块，只是用来被 <em style=" color: #d75100; font-style: normal; ">@extend</em> 的，它自己不会出现在最终的 CSS 中，这种块，使用 <em style=" color: #d75100; font-style: normal; ">%name</em> 结尾来标识：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+SASS 还真是把 <em style="color: #d75100; font-style: normal;">@extend</em> 搞得复杂哦。 SASS 中还有一种“抽象块”的概述，相对于“抽象类”去理解吧。就是，定义的规则块，只是用来被 <em style="color: #d75100; font-style: normal;">@extend</em> 的，它自己不会出现在最终的 CSS 中，这种块，使用 <em style="color: #d75100; font-style: normal;">%name</em> 结尾来标识：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span><span style="color: #a61717; background-color: #e3d2d2">%</span><span style="color: #000080">only</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span><span style="color: #a61717; background-color: #e3d2d2">%</span><span style="color: #000080">only</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
 
 <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #445588; font-weight: bold">.link</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #a61717; background-color: #e3d2d2">%</span><span style="color: #000080">only</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 结果就是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 补充：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 最后去掉不要的：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #445588; font-weight: bold">.title</span> <span style="color: #000080">div</span> <span style="color: #445588; font-weight: bold">.x</span> <span style="color: #445588; font-weight: bold">.y</span> <span style="color: #000080">a</span><span style="color: #445588; font-weight: bold">.link</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-抽象块最后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a.link</code> 的处理，跟普通 <em style=" color: #d75100; font-style: normal; ">@extend</em> 行为不一样，普通的 <em style=" color: #d75100; font-style: normal; ">@extend</em> 不会保留 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a</code> ，只有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.link</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+抽象块最后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.link</code> 的处理，跟普通 <em style="color: #d75100; font-style: normal;">@extend</em> 行为不一样，普通的 <em style="color: #d75100; font-style: normal;">@extend</em> 不会保留 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> ，只有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.link</code> 。
 </p>
 
-<a name="toc16"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">10. @import 引入其它文件</h1>
+<a class="anchor" name="toc16"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. @import 引入其它文件</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">@import</em> ，首先有原本的功能，即可以引入一段其它的 CSS 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">@import</em> ，首先有原本的功能，即可以引入一段其它的 CSS 。
 </p>
-<p style="margin: 15px auto; width: 800px;">
-同时， SASS 中的 <em style=" color: #d75100; font-style: normal; ">@import</em> 也可以引入自己的 SASS 文件，比如：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时， SASS 中的 <em style="color: #d75100; font-style: normal;">@import</em> 也可以引入自己的 SASS 文件，比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">@import</span> <span style="color: #dd1144">&quot;reset.sass&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">@import</span> <span style="color: #dd1144">&quot;reset.sass&quot;</span>
 
 <span style="color: #445588; font-weight: bold">.ok</span>
   <span style="color: #000000; font-weight: bold">@extend</span> <span style="color: #445588; font-weight: bold">.em</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">reset.sass</code> 中有定义 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.em { color: red; }</code> ，最后编译就可以得到：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reset.sass</code> 中有定义 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.em { color: red; }</code> ，最后编译就可以得到：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.em</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.ok</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.em</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">.ok</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">@import</em> 的其它使用形式还有：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">@import</em> 的其它使用形式还有：
 </p>
 
-<ul style="line-height: 1.6em; list-style-position: inside; padding: 0px; padding-left: 80px; margin: auto; width: 800px; ">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">@import "a", "b"</code> 引入多个文件
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">@import "a", "b"</code> 引入多个文件
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">@import "a" screen</code> 使用媒体查询
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">@import "a" screen</code> 使用媒体查询
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">@import url("http://fonts.googleapis.com/css?family=#{$family}")</code> 使用变量
+<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">@import url("http://fonts.googleapis.com/css?family=#{$family}")</code> 使用变量
 </li>
 </ul>
 
-<p style="margin: 15px auto; width: 800px;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">@import</code> 可以在规则中使用，它的行为类似单纯的宏替换，比如：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">@import</code> 可以在规则中使用，它的行为类似单纯的宏替换，比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a1</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a1</span>
   <span style="color: #000000; font-weight: bold">@import</span> <span style="color: #dd1144">&quot;a.sass&quot;</span> 
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc17"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">11. @media 媒体查询</h1>
+<a class="anchor" name="toc17"></a>
+<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. @media 媒体查询</h1>
 
-<p style="margin: 15px auto; width: 800px;">
-<em style=" color: #d75100; font-style: normal; ">@media</em> 的写法与其在 CSS 中是一样的，SASS 中， <em style=" color: #d75100; font-style: normal; ">@media</em> 的额外能力，就是你可以把它写在规则下面，编译的时候，会自动整理代码，把 <em style=" color: #d75100; font-style: normal; ">@media</em> 部分抽到最外面去：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">@media</em> 的写法与其在 CSS 中是一样的，SASS 中， <em style="color: #d75100; font-style: normal;">@media</em> 的额外能力，就是你可以把它写在规则下面，编译的时候，会自动整理代码，把 <em style="color: #d75100; font-style: normal;">@media</em> 部分抽到最外面去：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span>
   <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">red</span>
   <span style="color: #000000; font-weight: bold">@media</span> <span style="color: #000080">print</span>
     <span style="color: #008080">color</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">black</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px auto; width: 800px;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 会生成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">red</span>; }
 <span style="color: #000000; font-weight: bold">@media</span> <span style="color: #000080">print</span> { <span style="color: #445588; font-weight: bold">.a</span> { <span style="color: #000000; font-weight: bold">color:</span> <span style="color: #0086B3">black</span>; } }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if(!$('body.z > .content > .toc')){return}
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '150px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    create_toc();
+});
+</script>
+    
 
     <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
 <div id="disqus_thread" style="width: 800px; margin: auto; "></div>
@@ -1130,8 +1379,7 @@ SASS 还真是把 <em style=" color: #d75100; font-style: normal; ">@extend</em>
 </script>
     
 
-<div style="position: absolute; left: 30px; top: 30px;">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABu0lEQVR4nN2XMY7bMBBF39gGqFTU
+<div style="position: absolute; right: 30px; top: 30px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABu0lEQVR4nN2XMY7bMBBF39gGqFTU
 DeiLrOUcJIdIacDACtACe4xcRbRPsDcQTxCqkwDJP4U3VZzOLBKWU/zBH+LxD038eebNgyL8e9Vo
 ZhVjS8W4w8xsX7CbSSLWMF38gpOWct52MNYBE9jh4/sP4vFcfL4v9WqKScOTdR9XL2MbUL3uy3ZD
 UZKL+RymA1s5aQlTOW8yMwB8l0/72WxX0pskKebtMB0gSJKKeUO970SjNtxZsLwt121Dk1ebYk1S
@@ -1140,11 +1388,10 @@ D0pJupfgYt4OLmqBJlPOG7r5btDNd5qAoN53JQm4phb7mmZzvW8Th2fpPq4eOO3VA5UlqbJ8Ksvb
 uyqF3T0DxqZ+K+sNpmtamI9s75yX9OaXVOG7YTKZzZuxKAGSpN53cr1vg2JJAn7vXJyZmrRQ4bty
 3j53ria1VBdgYiyYAShmgrtxDhN+AXzRTQGAq3a4ftwF1/NecpIAvNRnaPLrUHaSG/AauGZSpXrd
 YyqYpp87l8wNXHyb5uOzdB8d+49/VL8AEpX3Hk+LwxwAAAAASUVORK5CYII=
-" title="本文二维码网址" />
-</div>
+" title="本文二维码网址" /></div>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
 &copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
