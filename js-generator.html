@@ -13,28 +13,28 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">使用生成器展平异步回调结构，JS篇</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-27 10:56 更新</span>
+                <span>2015-09-29 00:18 更新</span>
             </div>
         </div>
 
 <div class="toc">
 
   <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">前言</a>
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">前言</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">期望的结果</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">期望的结果</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">生成器的工作方式</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">生成器的工作方式</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">尝试处理异步结构</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">尝试处理异步结构</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">更通用一点</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">更通用一点</a>
   </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">更有想像力一点</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">更有想像力一点</a>
   </li>
-  <li><a href="#toc7" style="color: #0184b7; text-decoration: none">事件环境下的同步思维</a>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">事件环境下的同步思维</a>
   </li>
-  <li><a href="#toc8" style="color: #0184b7; text-decoration: none">最后的完整代码</a>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">最后的完整代码</a>
   </li>
   </ol>
 
@@ -174,11 +174,11 @@ console.log(out_obj.value) <span style="color: #999988; font-style: italic">//1<
 </div>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li>通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function*(){}</code> 的方式，声明定义的是一个“生成器”，不是一个“函数”。（不清楚为什么要特别加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> 来区分。Python 中是如果函数中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 就认为是“生成器”，不是“普通函数”）
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function*(){}</code> 的方式，声明定义的是一个“生成器”，不是一个“函数”。（不清楚为什么要特别加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> 来区分。Python 中是如果函数中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 就认为是“生成器”，不是“普通函数”）
 </li>
-<li>在生成器中，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 来“弹出”一个值。
+<li style="margin: 10px auto;">在生成器中，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 来“弹出”一个值。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 调用的地方，会保留下来，下一次调用生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 方法，会回到这个地方，继续往后执行。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 调用的地方，会保留下来，下一次调用生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 方法，会回到这个地方，继续往后执行。
 </li>
 </ul>
 
@@ -230,15 +230,15 @@ yield value: b
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj = gen()</code> ，得到一个生成器对象，这时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function*</code> 中的内容还不会执行。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj = gen()</code> ，得到一个生成器对象，这时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function*</code> 中的内容还不会执行。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj = obj.next('a')</code> 生成器开始跑，直接遇到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 。 因为这时，生成器中还没有一个 “yield 点”，所以传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'a'</code> 无处接收。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj = obj.next('a')</code> 生成器开始跑，直接遇到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield</code> 。 因为这时，生成器中还没有一个 “yield 点”，所以传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'a'</code> 无处接收。
 </li>
-<li>碰到第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> ，就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('a')</code> 的返回对象的值，赋值给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj</code> 。注意，此时，生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 点</code> 在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 这里。
+<li style="margin: 10px auto;">碰到第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> ，就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('a')</code> 的返回对象的值，赋值给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj</code> 。注意，此时，生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 点</code> 在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 这里。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj = obj.next('b')</code> ，先是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('b')</code> 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'b'</code> 推到生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 点</code> ，也就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 的地方，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'b'</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 这个表达值的返回值。所以，能看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield value: b</code> 的输出。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out_obj = obj.next('b')</code> ，先是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('b')</code> 把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'b'</code> 推到生成器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 点</code> ，也就是上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 的地方，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'b'</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 1</code> 这个表达值的返回值。所以，能看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield value: b</code> 的输出。
 </li>
-<li>接着，生成器进入下一轮循环， 碰到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 2</code>  ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('b')</code> 的返回值了。
+<li style="margin: 10px auto;">接着，生成器进入下一轮循环， 碰到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 2</code>  ，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">obj.next('b')</code> 的返回值了。
 </li>
 </ul>
 
@@ -631,9 +631,9 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li>字符串，可以用它来代替 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Callback('key')</code> ，这样，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 'key'</code> 就可以了。
+<li style="margin: 10px auto;">字符串，可以用它来代替 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Callback('key')</code> ，这样，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 'key'</code> 就可以了。
 </li>
-<li>数字，可以给它一个专门的对应方式，比如“延迟执行”，于是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 3000</code> 便可以起到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setTimeout()</code> 的作用。
+<li style="margin: 10px auto;">数字，可以给它一个专门的对应方式，比如“延迟执行”，于是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yield 3000</code> 便可以起到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setTimeout()</code> 的作用。
 </li>
 </ul>
 
@@ -988,6 +988,7 @@ body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom:
 body.z > .content > .toc a:hover { background-color: #ddd; }
 body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
 body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z ul > li, body.z ol > li  { text-indent: -1em; }
 </style>
     
 
@@ -1107,12 +1108,14 @@ $(function(){
     }
 
     function mobile_adjust(){
-        $('body.z > .content').css({ width: '100%' });
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
         $('#qr').hide();
         $('#disqus_thread').css({ width: '100%' });
         $('body.z').css({ letterSpacing: 0 });
-        $('body.z p').css({ lineHeight: '1.3em' });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z pre.code').css({ whiteSpace: 'pre-wrap' });
     }
+
 
     if(is_mobile()){
         mobile_meta();
