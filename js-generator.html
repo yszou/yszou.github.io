@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">使用生成器展平异步回调结构，JS篇</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-27 10:56 更新</span>
+                <span>2015-09-28 10:39 更新</span>
             </div>
         </div>
 
@@ -67,7 +67,7 @@ Tornado 的 <code style="margin: auto 3px; color: #228b22; font-family: monospac
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">callback</span>(response):
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">callback</span>(response):
     <span style="color: #000000; font-weight: bold">print</span> response
 
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url, cb):
@@ -83,7 +83,7 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url):
     response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(fetch, url)
     <span style="color: #000000; font-weight: bold">print</span> response
@@ -101,7 +101,7 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
     console.log(response);
 }
 
@@ -119,8 +119,8 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> get_http_response <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(url){
-    <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> get_http_response <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(url){
+    <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen.Task($.get, url);
     console.log(res);
 });
 
@@ -134,11 +134,11 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> example <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-    <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_a);
-    <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_b);
-    <span style="color: #000000; font-weight: bold">var</span> res_c <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_c);
-    <span style="color: #000000; font-weight: bold">var</span> res_d <span style="color: #000000; font-weight: bold">=</span> yield gen.Task($.get, url_d);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> example <span style="color: #000000; font-weight: bold">=</span> gen.engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen.Task($.get, url_a);
+    <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen.Task($.get, url_b);
+    <span style="color: #000000; font-weight: bold">var</span> res_c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen.Task($.get, url_c);
+    <span style="color: #000000; font-weight: bold">var</span> res_d <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen.Task($.get, url_d);
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -156,9 +156,9 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
   <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>; i<span style="color: #000000; font-weight: bold">++</span>){
-    yield i;
+    <span style="color: #000000; font-weight: bold">yield</span> i;
   }
 }
 
@@ -193,10 +193,10 @@ console.log(out_obj.value) <span style="color: #999988; font-style: italic">//1<
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> gen <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
   console.log(<span style="color: #dd1144">&#39;start&#39;</span>)
   <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">10</span>; i<span style="color: #000000; font-weight: bold">++</span>){
-    <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> yield i;
+    <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> i;
     console.log(<span style="color: #dd1144">&#39;yield value: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> r);
   }
 }
@@ -217,7 +217,7 @@ console.log(out_obj.value)
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">start
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">start
 0
 yield value: b
 1
@@ -250,7 +250,7 @@ yield value: b
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){}
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){}
 async(callback)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -261,7 +261,7 @@ async(callback)
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> response <span style="color: #000000; font-weight: bold">=</span> yield async
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> async
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -271,10 +271,10 @@ async(callback)
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
 
 <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield async;
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> async;
   console.log(res);
 }
 
@@ -295,7 +295,7 @@ func(<span style="color: #000000; font-weight: bold">function</span>(response){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(callback){ callback(<span style="color: #dd1144">&#39;hello&#39;</span>) }
 
 <span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   gen <span style="color: #000000; font-weight: bold">=</span> generator();
@@ -310,7 +310,7 @@ func(<span style="color: #000000; font-weight: bold">function</span>(response){
 }
 
 <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield async;
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> async;
   console.log(res);
 });
 
@@ -330,7 +330,7 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, [<span style="color: #009999">123</span>, <span style="color: #009999">456</span>]);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task(async, [<span style="color: #009999">123</span>, <span style="color: #009999">456</span>]);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -340,7 +340,7 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, <span style="color: #009999">123</span>, <span style="color: #009999">456</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task(async, <span style="color: #009999">123</span>, <span style="color: #009999">456</span>);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -350,7 +350,7 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a, b, callback){ callback(<span style="color: #dd1144">&#39;a -&gt; &#39;</span> <span style="color: #000000; font-weight: bold">+</span> a <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; b -&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> b) }
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> async <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a, b, callback){ callback(<span style="color: #dd1144">&#39;a -&gt; &#39;</span> <span style="color: #000000; font-weight: bold">+</span> a <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; b -&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> b) }
 
 <span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   gen <span style="color: #000000; font-weight: bold">=</span> generator();
@@ -374,7 +374,7 @@ run();
 }
 
 <span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task(async, <span style="color: #dd1144">&#39;123&#39;</span>, <span style="color: #dd1144">&#39;abc&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task(async, <span style="color: #dd1144">&#39;123&#39;</span>, <span style="color: #dd1144">&#39;abc&#39;</span>);
   console.log(res);
 });
 
@@ -394,8 +394,8 @@ run()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
   console.log(res);
 });
 
@@ -412,9 +412,9 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
-  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
 
   console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res_a);
   console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res_b);
@@ -438,7 +438,7 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   gen <span style="color: #000000; font-weight: bold">=</span> generator();
   func <span style="color: #000000; font-weight: bold">=</span> gen.next().value;
   
@@ -457,8 +457,8 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
   console.log(name, res);
 });
 
@@ -472,7 +472,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
   <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
     gen <span style="color: #000000; font-weight: bold">=</span> generator.apply(that, arguments);
@@ -491,7 +491,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   <span style="color: #000000; font-weight: bold">var</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
   <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(){
     gen <span style="color: #000000; font-weight: bold">=</span> generator.apply(that, arguments);
@@ -509,7 +509,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   
   <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
     ... ...  
@@ -531,9 +531,9 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
-  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
 
   console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res_a);
   console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res_b);
@@ -548,7 +548,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   
   <span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
       <span style="color: #000000; font-weight: bold">var</span> y <span style="color: #000000; font-weight: bold">=</span> generator.next(response).value;
@@ -590,8 +590,8 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> yield [Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>), Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>)];
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> [Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>), Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>)];
   console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, res[<span style="color: #009999">0</span>]);
   console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res[<span style="color: #009999">1</span>]);
 });
@@ -604,13 +604,13 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-  $.get(<span style="color: #dd1144">&#39;/&#39;</span>, (yield Callback(<span style="color: #dd1144">&#39;first&#39;</span>)) );
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+  $.get(<span style="color: #dd1144">&#39;/&#39;</span>, (<span style="color: #000000; font-weight: bold">yield</span> Callback(<span style="color: #dd1144">&#39;first&#39;</span>)) );
 
-  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
   console.log(<span style="color: #dd1144">&#39;b -&gt; &#39;</span>, res[<span style="color: #009999">1</span>]);
 
-  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, (yield Wait(<span style="color: #dd1144">&#39;first&#39;</span>)) );
+  console.log(<span style="color: #dd1144">&#39;a -&gt; &#39;</span>, (<span style="color: #000000; font-weight: bold">yield</span> Wait(<span style="color: #dd1144">&#39;first&#39;</span>)) );
 
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -642,7 +642,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> Runner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(generator){
   
   <span style="color: #000000; font-weight: bold">var</span> callback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(response){
     <span style="color: #000000; font-weight: bold">var</span> y <span style="color: #000000; font-weight: bold">=</span> generator.next(response).value;
@@ -674,7 +674,7 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  <span style="color: #000000; font-weight: bold">var</span> yielded_action <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(yielded){
     <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(yielded) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Function]&#39;</span>){
         yielded(callback);
     }
@@ -692,11 +692,11 @@ run(<span style="color: #dd1144">&#39;ooooooooo&#39;</span>);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
-  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> run <span style="color: #000000; font-weight: bold">=</span> engine(<span style="color: #000000; font-weight: bold">function*</span>(name){
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
   console.log(<span style="color: #dd1144">&#39;a -&gt;&#39;</span>, res_a.slice(<span style="color: #009999">0</span>, <span style="color: #009999">10</span>));
-  yield <span style="color: #009999">2000</span>;
-  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
+  <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #009999">2000</span>;
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($.get, <span style="color: #dd1144">&#39;/&#39;</span>);
   console.log(<span style="color: #dd1144">&#39;b -&gt;&#39;</span>, res_a.slice(<span style="color: #009999">0</span>, <span style="color: #009999">10</span>));
 });
 
@@ -716,7 +716,7 @@ run();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> http <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;http&#39;</span>);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> http <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;http&#39;</span>);
 
 <span style="color: #000000; font-weight: bold">var</span> fetch <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(url, callback){
   http.request({
@@ -741,20 +741,20 @@ run();
 
 engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 
-  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> yield Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
   console.log(<span style="color: #dd1144">&#39;A&#39;</span>, res_a);
 
-  timeout_fetch(<span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>, yield <span style="color: #dd1144">&#39;x&#39;</span>);
-  yield <span style="color: #009999">1000</span>;
+  timeout_fetch(<span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #dd1144">&#39;x&#39;</span>);
+  <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #009999">1000</span>;
   console.log(<span style="color: #dd1144">&#39;...&#39;</span>);
-  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> yield Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
+  <span style="color: #000000; font-weight: bold">var</span> res_b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>);
   console.log(<span style="color: #dd1144">&#39;B&#39;</span>, res_b);
 
-  res <span style="color: #000000; font-weight: bold">=</span> yield Wait(<span style="color: #dd1144">&#39;x&#39;</span>);
+  res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Wait(<span style="color: #dd1144">&#39;x&#39;</span>);
   console.log(<span style="color: #dd1144">&#39;x&#39;</span>);
   console.log(res);
 
-  <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> yield [Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>),
+  <span style="color: #000000; font-weight: bold">var</span> r <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> [Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">1</span>),
                  Task(timeout_fetch, <span style="color: #dd1144">&#39;s.zys.me&#39;</span>, <span style="color: #009999">2</span>)];
 
   console.log(r);
@@ -781,7 +781,7 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;a&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;a&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
 <span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;b&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
 <span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;c&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -793,7 +793,7 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(<span style="color: #000000; font-weight: bold">function</span>(){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(<span style="color: #000000; font-weight: bold">function</span>(){
   $(<span style="color: #dd1144">&#39;div&#39;</span>).css({
     width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>,
     height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>,
@@ -817,16 +817,16 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
-    <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> yield Task($(<span style="color: #dd1144">&#39;#a&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#a&#39;</span>)));
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+    <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($(<span style="color: #dd1144">&#39;#a&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#a&#39;</span>)));
     $(<span style="color: #dd1144">&#39;#a&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
     $(<span style="color: #dd1144">&#39;#a&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
   
-    yield Task($(<span style="color: #dd1144">&#39;#b&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#b&#39;</span>)));
+    <span style="color: #000000; font-weight: bold">yield</span> Task($(<span style="color: #dd1144">&#39;#b&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#b&#39;</span>)));
     $(<span style="color: #dd1144">&#39;#b&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
     $(<span style="color: #dd1144">&#39;#b&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
   
-    yield Task($(<span style="color: #dd1144">&#39;#c&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#c&#39;</span>)));
+    <span style="color: #000000; font-weight: bold">yield</span> Task($(<span style="color: #dd1144">&#39;#c&#39;</span>).click.bind($(<span style="color: #dd1144">&#39;#c&#39;</span>)));
     $(<span style="color: #dd1144">&#39;#c&#39;</span>).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
     $(<span style="color: #dd1144">&#39;#c&#39;</span>).off(<span style="color: #dd1144">&#39;click&#39;</span>);
   })();
@@ -842,9 +842,9 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  engine(<span style="color: #000000; font-weight: bold">function*</span>(){
     <span style="color: #000000; font-weight: bold">for</span>(<span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">in</span> {<span style="color: #dd1144">&#39;#a&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #dd1144">&#39;#b&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #dd1144">&#39;#c&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>}){
-      <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> yield Task($(query).click.bind($(query)));
+      <span style="color: #000000; font-weight: bold">var</span> event <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> Task($(query).click.bind($(query)));
       $(query).css(<span style="color: #dd1144">&#39;background-color&#39;</span>, <span style="color: #dd1144">&#39;red&#39;</span>);
       $(query).off(<span style="color: #dd1144">&#39;click&#39;</span>);
     }
@@ -865,7 +865,7 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> Runner(gen){
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> Runner(gen){
   <span style="color: #000000; font-weight: bold">var</span> key_response <span style="color: #000000; font-weight: bold">=</span> {};
 
   <span style="color: #000000; font-weight: bold">function</span> yielded_action(yielded){
@@ -1038,7 +1038,10 @@ $(function(){
     }
 
     function create_toc(){
-        if(!$('body.z > .content > .toc')){return}
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '150px');
+            return;
+        }
         if($('body.z > .content > .toc').height() < 50){return}
 
         //至少200空间
@@ -1072,13 +1075,51 @@ $(function(){
             padding: '10px',
             boxSizing: 'border-box',
             top: '50px',
-            right: content_left + 'px'
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
         });
 
         bind_scroll();
     }
 
-    create_toc();
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p').css({ lineHeight: '1.1em' });
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+    } else {
+        create_toc();
+    }
 });
 </script>
     
@@ -1115,7 +1156,7 @@ $(function(){
 </script>
     
 
-<div style="position: absolute; right: 30px; top: 30px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsklEQVR4nN2XMY6cQBBFXw1IkDU3
+<div id="qr" style="position: absolute; right: 30px; top: 30px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsklEQVR4nN2XMY6cQBBFXw1IkDU3
 aC5iWB9pQ0usl9XsPXwU07MXgRt0RwYJ5jsYO/I4mw7sCn/wS6+k31Vt4s/aTndE+PfUYGY1aVzs
 KZWYmbUZu5kkQgNc3E4l7fnYSkiNxwTVj+b5G+FpyD7fT83RbsWi+cG+99VLGpdVzdHm7YaCpCrE
 wQOFKmn3az42mRkAVYhf2s2szMkmSQqx0Ap4SVI2NjS5s+g13maKxSJftxNd2he9NXjgsOrwW750
