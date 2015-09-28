@@ -988,7 +988,8 @@ body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom:
 body.z > .content > .toc a:hover { background-color: #ddd; }
 body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
 body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
-body.z ul > li, body.z ol > li  { text-indent: -1em; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
 </style>
     
 
@@ -1114,7 +1115,12 @@ $(function(){
         $('body.z').css({ letterSpacing: 0 });
         $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
         $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
         $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
     }
 
 
@@ -1123,6 +1129,7 @@ $(function(){
         mobile_adjust();
     } else {
         create_toc();
+        normal_adjust();
     }
 });
 </script>
