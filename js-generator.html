@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">使用生成器展平异步回调结构，JS篇</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-29 23:37 更新</span>
+                <span>2015-09-30 00:14 更新</span>
             </div>
         </div>
 
@@ -1137,6 +1137,7 @@ $(function(){
                 height: $(window).width(),
                 boxSizing: 'border-box',
                 padding: '10px',
+                paddingBottom: '30px',
                 overflow: 'hidden'
             });
             var $wrapper = $('<div></div>').css({
@@ -1199,12 +1200,17 @@ $(function(){
             $wrapper.append($up);
             $wrapper.append($down);
 
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
             $close.on('touchstart', function(){
                 $close.css({ backgroundColor: '#0184b7' });
                 return false;
             });
             $close.on('touchend', function(){
 
+                $wrapper.off('touchend');
                 $close.off('touchstart');
                 $close.off('touchend');
                 $up.off('touchstart');
