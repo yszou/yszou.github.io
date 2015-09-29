@@ -1123,138 +1123,142 @@ $(function(){
         $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
     }
 
+    function code_view(){
 
-    $('pre').click(function(eventObj){
-        var $node = $($.clone(this));
-        $node.attr('style', '');
-        $node.css({
-            fontSize: '24px',
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word',
-            lineHeight: '1.5em',
-            width: $(window).height(),
-            height: $(window).width(),
-            boxSizing: 'border-box',
-            padding: '10px',
-            overflow: 'hidden'
-        });
-        var $wrapper = $('<div></div>').css({
-            position: 'fixed',
-            padding: 0,
-            margin: 0,
-            boxSizing: 'border-box',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            width: $(window).height(),
-            height: $(window).width(),
-            overflow: 'hidden',
-            top: ($(window).height() - $(window).width()) / 2,
-            left: ($(window).width() - $(window).height()) / 2,
-            transform: 'rotate(90deg)',
-            zIndex: 999999
-        });
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
 
-        var $close = $('<div>&times;</div>').css({
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            width: '100px',
-            height: '100px',
-            lineHeight: '80px',
-            fontSize: '80px',
-            textAlign: 'center',
-            backgroundColor: 'rgba(204, 204, 204, 0.5)'
-        });
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
 
-        var $up = $('<div>△</div>').css({
-            position: 'absolute',
-            right: 0,
-            bottom: '300px',
-            width: '100px',
-            height: '100px',
-            lineHeight: '50px',
-            fontSize: '50px',
-            textAlign: 'center',
-            backgroundColor: 'rgba(204, 204, 204, 0.5)',
-            userSelect: 'none',
-            '-webkit-user-select': 'none'
-        });
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
 
-        var $down = $('<div>▽</div>').css({
-            position: 'absolute',
-            right: 0,
-            bottom: '100px',
-            width: '100px',
-            height: '100px',
-            lineHeight: '150px',
-            fontSize: '50px',
-            textAlign: 'center',
-            backgroundColor: 'rgba(204, 204, 204, 0.5)',
-            userSelect: 'none',
-            '-webkit-user-select': 'none'
-        });
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
 
-        $wrapper.append($node);
-        $wrapper.append($close);
-        $wrapper.append($up);
-        $wrapper.append($down);
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
 
-        $close.on('touchstart', function(){
-            $close.css({ backgroundColor: '#0184b7' });
-            return false;
-        });
-        $close.on('touchend', function(){
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
 
-            $close.off('touchstart');
-            $close.off('touchend');
-            $up.off('touchstart');
-            $up.off('touchend');
-            $down.off('touchstart');
-            $down.off('touchend');
-            $wrapper.remove();
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
 
-            return false;
-        });
+                return false;
+            });
 
-        var up_timer = null;
-        $up.on('touchstart', function(eventObj){
-            var start = $node.scrollTop();
-            var dx = 0;
-            $up.css({ backgroundColor: '#0184b7' });
-            up_timer = setInterval(function(){
-                dx += 20;
-                $node.scrollTop(start - dx);
-            }, 25);
-            return false;
-        });
-        $up.on('touchend', function(eventObj){
-            if(up_timer){clearInterval(up_timer)};
-            $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
-            return false;
-        });
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
 
-        var down_timer = null;
-        $down.on('touchstart', function(eventObj){
-            var start = $node.scrollTop();
-            var dx = 0;
-            $down.css({ backgroundColor: '#0184b7' });
-            down_timer = setInterval(function(){
-                dx += 20;
-                $node.scrollTop(start + dx);
-            }, 25);
-            return false;
-        });
-        $down.on('touchend', function(eventObj){
-            if(down_timer){clearInterval(down_timer)};
-            $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
-            return false;
-        });
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
 
-        $(this).before($wrapper);
-    });
+            $(this).before($wrapper);
+        });
+    
+    }
 
     if(is_mobile()){
         mobile_meta();
         mobile_adjust();
+        code_view();
     } else {
         create_toc();
         normal_adjust();
