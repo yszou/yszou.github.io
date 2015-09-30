@@ -1,347 +1,671 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>SPF参考 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>SPF参考 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">SPF参考</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">SPF参考</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:04 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-08-05 23:49 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">SPF是什么</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">SPF是什么</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">SPF语法</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">SPF语法</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">Modifiers</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">Modifiers</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">前缀</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">前缀</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">Mechanisms</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">Mechanisms</a>
   </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">参考资料</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">参考资料</a>
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. SPF是什么</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. SPF是什么</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 SPF, Sender Policy Framework, 是一种用于确认邮件来源的手段.
 </p>
-<p style="margin: 15px 0;">
-SMTP 服务器之间进行交互时, 对于请求来源是无法直接确认的, 因为邮件交互是公开的行为, 就像你不能阻止有人往你的门缝里塞小卡片一样. 作为收信服务器, 你收到一个请求, 声称它来自于 <em style=" color: #d75100; font-style: normal; ">gmail.com</em>, 你如何能确认这个请求就是来源于 google 的服务器呢?
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+SMTP 服务器之间进行交互时, 对于请求来源是无法直接确认的, 因为邮件交互是公开的行为, 就像你不能阻止有人往你的门缝里塞小卡片一样. 作为收信服务器, 你收到一个请求, 声称它来自于 <em style="color: #d75100; font-style: normal;">gmail.com</em>, 你如何能确认这个请求就是来源于 google 的服务器呢?
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 于是, 对域名的确认, 自然解决方案就落在了域名的配置上. 比如你可以看看来源 IP 是否和域名的 A 记录一致, 或者和 MX 记录一致. 但是很显然, 这并不是一个好方法, 因为 A 记录和 MX 记录, 其本来的用途本来和发信服务就不相关. 简单来说, 一个域下的发信服务和收信服务在不同的服务器上完成太正常不过了.
 </p>
-<p style="margin: 15px 0;">
-所以, 在域名的 TXT 记录中, 就有了一个专门的 <em style=" color: #d75100; font-style: normal; ">SPF</em> 来完成上面所述的工作.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以, 在域名的 TXT 记录中, 就有了一个专门的 <em style="color: #d75100; font-style: normal;">SPF</em> 来完成上面所述的工作.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">gmail.com</em> 这个域名, 配置其对应的 <em style=" color: #d75100; font-style: normal; ">SPF</em> 规则, 来描述我的投信请求, 可能来源于哪些 IP 地址. 这个信息是可以通过公开的 DNS 服务查询到的. 那么收信服务器收到 <em style=" color: #d75100; font-style: normal; ">gmail.com</em> 的投信请求时, 就根据查询到的 <em style=" color: #d75100; font-style: normal; ">SPF</em> 规则来检查来源 IP .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">gmail.com</em> 这个域名, 配置其对应的 <em style="color: #d75100; font-style: normal;">SPF</em> 规则, 来描述我的投信请求, 可能来源于哪些 IP 地址. 这个信息是可以通过公开的 DNS 服务查询到的. 那么收信服务器收到 <em style="color: #d75100; font-style: normal;">gmail.com</em> 的投信请求时, 就根据查询到的 <em style="color: #d75100; font-style: normal;">SPF</em> 规则来检查来源 IP .
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">dig gmail.com -ttxt
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">dig gmail.com -ttxt
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 得到:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">;; ANSWER SECTION<span style="color: #000000; font-weight: bold">:</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">;; ANSWER SECTION<span style="color: #000000; font-weight: bold">:</span>
 gmail.com. <span style="color: #009999">300</span> IN TXT <span style="color: #dd1144">&quot;v=spf1 redirect=_spf.google.com&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 继续:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">dig _spf.google.com -ttxt
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">dig _spf.google.com -ttxt
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 得到:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">;; ANSWER SECTION<span style="color: #000000; font-weight: bold">:</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">;; ANSWER SECTION<span style="color: #000000; font-weight: bold">:</span>
 _spf.google.com. <span style="color: #009999">300</span> IN TXT <span style="color: #dd1144">&quot;v=spf1 include:_netblocks.google.com \</span>
                                     <span style="color: #990000; font-weight: bold">include:</span>_netblocks2.google.com <span style="color: #a61717; background-color: #e3d2d2">\</span>
                                     <span style="color: #990000; font-weight: bold">include:</span>_netblocks3.google.com <span style="color: #000000; font-weight: bold">~</span>all<span style="color: #dd1144">&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我们取一个看看:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">dig _netblocks.google.com -ttxt
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">dig _netblocks.google.com -ttxt
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 结果有:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">_netblocks.google.com. <span style="color: #009999">2158</span> IN TXT <span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ip4:64.233.160.0/19 \</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">_netblocks.google.com. <span style="color: #009999">2158</span> IN TXT <span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ip4:64.233.160.0/19 \</span>
                                            <span style="color: #990000; font-weight: bold">ip4:</span><span style="color: #009999">66.249.80.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">20</span> ip4<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">72.14.192.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">18</span> <span style="color: #a61717; background-color: #e3d2d2">\</span>
                                            <span style="color: #990000; font-weight: bold">ip4:</span><span style="color: #009999">209.85.128.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">17</span> ip4<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">66.102.0.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">20</span> <span style="color: #a61717; background-color: #e3d2d2">\</span>
                                            <span style="color: #990000; font-weight: bold">ip4:</span><span style="color: #009999">74.125.0.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">16</span> ip4<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">64.18.0.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">20</span> <span style="color: #a61717; background-color: #e3d2d2">\</span>
                                            <span style="color: #990000; font-weight: bold">ip4:</span><span style="color: #009999">207.126.144.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">20</span> ip4<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">173.194.0.0</span><span style="color: #000000; font-weight: bold">/</span><span style="color: #009999">16</span> <span style="color: #000000; font-weight: bold">~</span>all<span style="color: #dd1144">&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-根据这些规则所描述的 IP 段, 收信服务器就可以判断请求来源是不是 <em style=" color: #d75100; font-style: normal; ">gmail.com</em> 这个域. 或者说得准确点, 对于声称是 <em style=" color: #d75100; font-style: normal; ">gmail.com</em> 的请求来源, 根据它的来源 IP 的不同, 而应该采取什么样的处理策略, 是拒绝, 标记, 还是通过.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+根据这些规则所描述的 IP 段, 收信服务器就可以判断请求来源是不是 <em style="color: #d75100; font-style: normal;">gmail.com</em> 这个域. 或者说得准确点, 对于声称是 <em style="color: #d75100; font-style: normal;">gmail.com</em> 的请求来源, 根据它的来源 IP 的不同, 而应该采取什么样的处理策略, 是拒绝, 标记, 还是通过.
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. SPF语法</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. SPF语法</h1>
 
-<p style="margin: 15px 0;">
-从前面查询 <em style=" color: #d75100; font-style: normal; ">gmail.com</em> 的过程, 看几个例子:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从前面查询 <em style="color: #d75100; font-style: normal;">gmail.com</em> 的过程, 看几个例子:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 redirect=_spf.google.com&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 redirect=_spf.google.com&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 include:_netblocks.google.com ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-形式上, <em style=" color: #d75100; font-style: normal; ">SPF</em> 记录分成四个部分, 用 <em style=" color: #d75100; font-style: normal; ">双引号</em> 括起来.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+形式上, <em style="color: #d75100; font-style: normal;">SPF</em> 记录分成四个部分, 用 <em style="color: #d75100; font-style: normal;">双引号</em> 括起来.
 </p>
 
-<ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">v=spf1</code> .
+<ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">v=spf1</code> .
 </li>
-<li>可能出现的 <em style=" color: #d75100; font-style: normal; ">Modifiers</em> , 比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">redirect</code> .
+<li style="margin: 10px auto;">可能出现的 <em style="color: #d75100; font-style: normal;">Modifiers</em> , 比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">redirect</code> .
 </li>
-<li>一个或多个 <em style=" color: #d75100; font-style: normal; ">Mechanisms</em> , 比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">include</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ip4</code> .
+<li style="margin: 10px auto;">一个或多个 <em style="color: #d75100; font-style: normal;">Mechanisms</em> , 比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">include</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ip4</code> .
 </li>
-<li>最后用一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">all</code> 结尾.
+<li style="margin: 10px auto;">最后用一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">all</code> 结尾.
 </li>
 </ol>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 所有的规则, 从左往右开始匹配.
 </p>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. Modifiers</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. Modifiers</h1>
 
-<p style="margin: 15px 0;">
-SPF 记录中可以包括两种可选的 <em style=" color: #d75100; font-style: normal; ">Modifiers</em> , 其只能出现一次:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+SPF 记录中可以包括两种可选的 <em style="color: #d75100; font-style: normal;">Modifiers</em> , 其只能出现一次:
 </p>
 
-<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">redirect</em></dt><dd style="margin-left: 30px;">
-    用指定域名的 SPF 记录替换当前记录, 如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">redirect=_spf.google.com</code>
-<p style="margin: 15px 0;"></p>
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">redirect</em></dt><dd style="">
+    用指定域名的 SPF 记录替换当前记录, 如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">redirect=_spf.google.com</code>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">exp</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">exp</em></dt><dd style="">
     (没见用过)
 </dd>
 </dl>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 前缀</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 前缀</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">Mechanisms</em> 可以带 4 种前缀:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Mechanisms</em> 可以带 4 种前缀:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">+</code> Pass
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+</code> Pass
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-</code> Fail
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-</code> Fail
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">~</code> Soft Fail
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">~</code> Soft Fail
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">?</code> Neutral
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">?</code> Neutral
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-默认是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">+</code> Pass .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+默认是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+</code> Pass .
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 四种前缀表示对应规则匹配时, 建议的服务器处理策略:
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">结果</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">含义</th>
-<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">建议处理</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">结果</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">含义</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">建议处理</th>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">Pass</td>
-<td style=" padding: 3px 10px;">IP 合法</td>
-<td style=" padding: 3px 10px;">收信</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">Pass</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">IP 合法</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">收信</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">Fail</td>
-<td style=" padding: 3px 10px;">IP 非法</td>
-<td style=" padding: 3px 10px;">退信</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">Fail</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">IP 非法</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">退信</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">Soft Fail</td>
-<td style=" padding: 3px 10px;">IP 非法</td>
-<td style=" padding: 3px 10px;">收信, 但标记</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">Soft Fail</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">IP 非法</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">收信, 但标记</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">Neutral</td>
-<td style=" padding: 3px 10px;">不清楚</td>
-<td style=" padding: 3px 10px;">收信</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">Neutral</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">不清楚</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">收信</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">None</td>
-<td style=" padding: 3px 10px;">无 SPF 记录</td>
-<td style=" padding: 3px 10px;">收信</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">None</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">无 SPF 记录</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">收信</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">PermError</td>
-<td style=" padding: 3px 10px;">严重错误(SPF 格式错误)</td>
-<td style=" padding: 3px 10px;">无规定</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">PermError</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">严重错误(SPF 格式错误)</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">无规定</td>
 </tr>
 <tr>
-<td style=" padding: 3px 10px;">TempError</td>
-<td style=" padding: 3px 10px;">临时错误(DNS 查询失败)</td>
-<td style=" padding: 3px 10px;">随便</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">TempError</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">临时错误(DNS 查询失败)</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">随便</td>
 </tr>
 </table>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. Mechanisms</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. Mechanisms</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">mechanisms</em> 有下面这些:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">mechanisms</em> 有下面这些:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><em style=" color: #d75100; font-style: normal; ">all</em> , 所有 IP , 一般放在最后.
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">all</em> , 所有 IP , 一般放在最后.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">ip4</em> , 指定 ipv4 的地址段.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ip4</em> , 指定 ipv4 的地址段.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">ip6</em> , 指定 ipv6 的地址段.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ip6</em> , 指定 ipv6 的地址段.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">a</em> , 指定域名的 A 记录.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">a</em> , 指定域名的 A 记录.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">mx</em> , 指定域名的 MX 记录.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">mx</em> , 指定域名的 MX 记录.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">include</em> , 引入指定域名的 SPF 记录.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">include</em> , 引入指定域名的 SPF 记录.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">exists</em> , 检查指定域名的 A 记录.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">exists</em> , 检查指定域名的 A 记录.
 </li>
-<li><em style=" color: #d75100; font-style: normal; ">ptr</em> , 指定域名的反查记录.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ptr</em> , 指定域名的反查记录.
 </li>
 </ul>
 
-<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">all</em> 一般放最后, 定义未匹配时的处理.</dt><dd style="margin-left: 30px;">
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">all</em> 一般放最后, 定义未匹配时的处理.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ip4</em> 指定一个 IPv4 地址, 或地址段.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ip4</em> 指定一个 IPv4 地址, 或地址段.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0 ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0 ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 ip4:216.239.32.0/19 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ip6</em> 指定一个 IPv6 地址, 或地址段.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ip6</em> 指定一个 IPv6 地址, 或地址段.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 ip6:2001:4860:4000:: ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 ip6:2001:4860:4000:: ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 ip6:2001:4860:4000::/36 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">a</em> 指定一个域名(或默认本域名)的 A 记录, 可以添加段范围.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">a</em> 指定一个域名(或默认本域名)的 A 记录, 可以添加段范围.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 a ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 a ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 a:mail.google.com ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 a/12 ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 a:mail.google.com/18 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">mx</em> 指定一个域名(或默认本域名)的 MX 记录, 可以添加段范围.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">mx</em> 指定一个域名(或默认本域名)的 MX 记录, 可以添加段范围.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 mx ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 mx ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 mx:mail.google.com ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 mx/12 ~all&quot;</span>
 <span style="color: #dd1144">&quot;v=spf1 mx:mail.google.com/18 ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">include</em> 引入指定域名的 SPF 记录.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">include</em> 引入指定域名的 SPF 记录.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 include:mail.google.com ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 include:mail.google.com ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">exists</em> 检查指定域名的 A 记录, 有结果则为命中.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">exists</em> 检查指定域名的 A 记录, 有结果则为命中.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 exists:google.com ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 exists:google.com ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ptr</em> 反查指定域名的 IP 地址.</dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ptr</em> 反查指定域名的 IP 地址.</dt><dd style="">
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #dd1144">&quot;v=spf1 ptr:google.com ~all&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #dd1144">&quot;v=spf1 ptr:google.com ~all&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
 </dd>
 </dl>
 
-<p style="margin: 15px 0;">
-多个 <em style=" color: #d75100; font-style: normal; ">mechanisms</em> 规则以空格分开, 比如上面的某个规则和最后的 <em style=" color: #d75100; font-style: normal; ">all</em>.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多个 <em style="color: #d75100; font-style: normal;">mechanisms</em> 规则以空格分开, 比如上面的某个规则和最后的 <em style="color: #d75100; font-style: normal;">all</em>.
 </p>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 参考资料</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 参考资料</h1>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>作者: Renfei Song , 来自: <a href="http://www.renfei.org/blog/introduction-to-spf.html" style="color: #0184b7; text-decoration: none">http://www.renfei.org/blog/introduction-to-spf.html</a>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">作者: Renfei Song , 来自: <a href="http://www.renfei.org/blog/introduction-to-spf.html" style="color: #0184b7; text-decoration: none">http://www.renfei.org/blog/introduction-to-spf.html</a>
 </li>
 </ul>
 
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'spf';
@@ -372,8 +696,20 @@ SPF 记录中可以包括两种可选的 <em style=" color: #d75100; font-style:
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABl0lEQVR4nN2XQYrjMBBFX8UBZafc
+QD5JPNdqcHcMGehjjZy+iH0DeWeD4z+LhNl0lqmBmVqJv/ifr9KvQia+17J7AsK/hqIMhL600BQS
+QJr91HpJYbuf1hSk1U9tB5PVXDkLpg566/7C/d5qe09heDnvM9S0J1zKrfZVe/RNpRpmwL1vMjOu
+vDWxLy2L2d7P255GABNMB6oVcEw3ylQKfYEZqkGZ1jVvpdLclBZOAObZN5Sj7rNSGy1YqeSZbn6O
+ypyFFdCvtNSOCZCkkGlT2Kg0nzh7euvt3aaPuGep1I2xl3l7w0o1aANC9t0BOa5Iuuj+HBtdPG/S
+yudgP6al5jR1I9dX8T4tbYC2KNGUFsk3AV/q0uEKIzpWgzXH1tObpEGZagiZFqm4JkC25wCPyWV2
+fBHv05IkKUdJvdak7JwAIEhS2GKXQo6OCfizuyH0WpN6yVWtcB+R2uIK4LwDgC9147Ljc1DmzW9O
+PlDZ0sQ8dWk5l1fyfkejBqwwzlZuNUphcFSTmUEMWj5iN4b8Kt5nZf/xj+o38WYLFmwj91AAAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

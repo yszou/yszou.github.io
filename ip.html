@@ -1,494 +1,788 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>IP地址概念 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>IP地址概念 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">IP地址概念</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">IP地址概念</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:04 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-08-03 16:54 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">基本概念</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">网地址和主机地址</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">IP地址的分类</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">3.1. A类地址</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">3.2. B类地址</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">3.3. C类地址</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">3.4. D类和E类</a>
+    </li>
     </ul>
-</div>
-
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">基本概念</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">网地址和主机地址</a>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">网段表示方法</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">IP地址的分类</a>
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li><a href="#toc4" style="color: #0184b7; text-decoration: none">3.1. A类地址</a>
-    </li>
-    <li><a href="#toc5" style="color: #0184b7; text-decoration: none">3.2. B类地址</a>
-    </li>
-    <li><a href="#toc6" style="color: #0184b7; text-decoration: none">3.3. C类地址</a>
-    </li>
-    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">3.4. D类和E类</a>
-    </li>
-    </ul>
-  </li>
-  <li><a href="#toc8" style="color: #0184b7; text-decoration: none">网段表示方法</a>
-  </li>
-  <li><a href="#toc9" style="color: #0184b7; text-decoration: none">私有地址</a>
+  <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">私有地址</a>
   </li>
   </ol>
 
-<p style="margin: 15px 0;">
-目前只考虑 <em style=" color: #d75100; font-style: normal; ">IPv4</em> 的情况.
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+目前只考虑 <em style="color: #d75100; font-style: normal;">IPv4</em> 的情况.
 </p>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 基本概念</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 基本概念</h1>
 
-<p style="margin: 15px 0;">
-IP 地址是一个 4 字节(32 位)的数据, 通常按每字节分成 4 段, 表示成类似于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code> 的格式, 写成 16 进制是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">C0.A8.00.01</code> , 二进制是: <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">11000000.10101000.00000000.00000001</code>  .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+IP 地址是一个 4 字节(32 位)的数据, 通常按每字节分成 4 段, 表示成类似于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code> 的格式, 写成 16 进制是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">C0.A8.00.01</code> , 二进制是: <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">11000000.10101000.00000000.00000001</code>  .
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">第一节</td>
-<td align="center" style=" padding: 3px 10px;">第二节</td>
-<td align="center" style=" padding: 3px 10px;">第三节</td>
-<td align="center" style=" padding: 3px 10px;">第四节</td>
-<td align="center" style=" padding: 3px 10px;">写出来</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第二节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第三节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第四节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">写出来</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">10 进制</td>
-<td align="center" style=" padding: 3px 10px;">192</td>
-<td align="center" style=" padding: 3px 10px;">168</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">192</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">168</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">16 进制</td>
-<td align="center" style=" padding: 3px 10px;">C0</td>
-<td align="center" style=" padding: 3px 10px;">A8</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">C0.A8.00.01</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">C0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">A8</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">C0.A8.00.01</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">2 进制</td>
-<td align="center" style=" padding: 3px 10px;">11000000</td>
-<td align="center" style=" padding: 3px 10px;">10101000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000001</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10101000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-在这些地址当中, 全为 1 的为 <em style=" color: #d75100; font-style: normal; ">广播地址</em> , 用于向所在网络的所有主机发送报文.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这些地址当中, 全为 1 的为 <em style="color: #d75100; font-style: normal;">广播地址</em> , 用于向所在网络的所有主机发送报文.
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">第一节</td>
-<td align="center" style=" padding: 3px 10px;">第二节</td>
-<td align="center" style=" padding: 3px 10px;">第三节</td>
-<td align="center" style=" padding: 3px 10px;">第四节</td>
-<td align="center" style=" padding: 3px 10px;">写出来</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第二节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第三节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第四节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">写出来</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">10 进制</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">255.255.255.255</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255.255.255.255</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">16 进制</td>
-<td align="center" style=" padding: 3px 10px;">FF</td>
-<td align="center" style=" padding: 3px 10px;">FF</td>
-<td align="center" style=" padding: 3px 10px;">FF</td>
-<td align="center" style=" padding: 3px 10px;">FF</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">FF.FF.FF.FF</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">FF</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">FF</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">FF</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">FF</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">FF.FF.FF.FF</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">2 进制</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-全为 0 的为 <em style=" color: #d75100; font-style: normal; ">本网络地址</em> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+全为 0 的为 <em style="color: #d75100; font-style: normal;">本网络地址</em> .
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">第一节</td>
-<td align="center" style=" padding: 3px 10px;">第二节</td>
-<td align="center" style=" padding: 3px 10px;">第三节</td>
-<td align="center" style=" padding: 3px 10px;">第四节</td>
-<td align="center" style=" padding: 3px 10px;">写出来</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第二节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第三节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第四节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">写出来</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">10 进制</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0.0.0.0</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.0.0.0</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">16 进制</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">00.00.00.00</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">00.00.00.00</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">2 进制</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-第一节为 <strong style=" color: red; font-weight: normal; ">127</strong> 的为 <em style=" color: #d75100; font-style: normal; ">回送地址</em> , 其中的主机地址, 表示主机自己(无网络传输).
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第一节为 <strong style="color: red; font-weight: normal;">127</strong> 的为 <em style="color: #d75100; font-style: normal;">回送地址</em> , 其中的主机地址, 表示主机自己(无网络传输).
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">第一节</td>
-<td align="center" style=" padding: 3px 10px;">第二节</td>
-<td align="center" style=" padding: 3px 10px;">第三节</td>
-<td align="center" style=" padding: 3px 10px;">第四节</td>
-<td align="center" style=" padding: 3px 10px;">写出来</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第二节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第三节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第四节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">写出来</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">10 进制</td>
-<td align="center" style=" padding: 3px 10px;">127</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">127.0.0.1</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">127</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">127.0.0.1</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">16 进制</td>
-<td align="center" style=" padding: 3px 10px;">7F</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">00</td>
-<td align="center" style=" padding: 3px 10px;">01</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">7F.00.00.01</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">7F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">01</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">7F.00.00.01</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">2 进制</td>
-<td align="center" style=" padding: 3px 10px;">01111111</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000001</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">01111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">127.0.0.0</code> 是表示的网地址, 不是主机地址.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">127.0.0.0</code> 是表示的网地址, 不是主机地址.
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 网地址和主机地址</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 网地址和主机地址</h1>
 
-<p style="margin: 15px 0;">
-IP 地址当中, 有一层逻辑的划分, 就是 <em style=" color: #d75100; font-style: normal; ">网地址</em> 和 <em style=" color: #d75100; font-style: normal; ">主机地址</em> . 前面一部分 N 位表示一个网, 后面剩下的表示网中的一台主机.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+IP 地址当中, 有一层逻辑的划分, 就是 <em style="color: #d75100; font-style: normal;">网地址</em> 和 <em style="color: #d75100; font-style: normal;">主机地址</em> . 前面一部分 N 位表示一个网, 后面剩下的表示网中的一台主机.
 </p>
-<p style="margin: 15px 0;">
-比如: <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code> , 如果你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192</code> 看成是网地址, 那么剩下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">168.0.1</code> 就是主机地址. 你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168</code> 规定是网地址, 那么剩下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0.1</code> 就是主机地址. 这个划分是人为定的规则, 表示这个规则的, 是 <em style=" color: #d75100; font-style: normal; ">子网掩码</em> , 用以标示出 <em style=" color: #d75100; font-style: normal; ">网地址</em> . 比如如果你是前两节为子网, 对应的子网掩码就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">255.255.0.0</code> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如: <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code> , 如果你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192</code> 看成是网地址, 那么剩下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">168.0.1</code> 就是主机地址. 你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168</code> 规定是网地址, 那么剩下的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.1</code> 就是主机地址. 这个划分是人为定的规则, 表示这个规则的, 是 <em style="color: #d75100; font-style: normal;">子网掩码</em> , 用以标示出 <em style="color: #d75100; font-style: normal;">网地址</em> . 比如如果你是前两节为子网, 对应的子网掩码就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255.255.0.0</code> .
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">第一节</td>
-<td align="center" style=" padding: 3px 10px;">第二节</td>
-<td align="center" style=" padding: 3px 10px;">第三节</td>
-<td align="center" style=" padding: 3px 10px;">第四节</td>
-<td align="center" style=" padding: 3px 10px;">写出来</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第二节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第三节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第四节</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">写出来</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">IP 10 进制</td>
-<td align="center" style=" padding: 3px 10px;">192</td>
-<td align="center" style=" padding: 3px 10px;">168</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">IP 10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">192</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">168</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">IP 2 进制</td>
-<td align="center" style=" padding: 3px 10px;">11000000</td>
-<td align="center" style=" padding: 3px 10px;">10101000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000001</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">IP 2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">10101000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">掩码 10 进制</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;">255</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">255.255.0.0</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">掩码 10 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">255</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255.255.0.0</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">掩码 2 进制</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">掩码 2 进制</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">IP &amp; 掩码</td>
-<td align="center" style=" padding: 3px 10px;">11000000</td>
-<td align="right" style=" padding: 3px 10px;">10101000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.0</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">IP &amp; 掩码</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11000000</td>
+<td align="right" style="border: 1px solid gray; padding: 3px 10px;">10101000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.0</code></td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">IP &amp; 掩码</code> 得到的就是网地址. <strong style=" color: red; font-weight: normal; ">网段 IP 的第一个地址是网地址</strong> , <strong style=" color: red; font-weight: normal; ">网段 IP 的最后一个地址是广播地址</strong> , 这两个地址是特殊的, 不分配给主机.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">IP &amp; 掩码</code> 得到的就是网地址. <strong style="color: red; font-weight: normal;">网段 IP 的第一个地址是网地址</strong> , <strong style="color: red; font-weight: normal;">网段 IP 的最后一个地址是广播地址</strong> , 这两个地址是特殊的, 不分配给主机.
 </p>
-<p style="margin: 15px 0;">
-对于 IP , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code> , 如果掩码是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">255.255.0.0</code> , 则它对应的网地址是 <strong style=" color: red; font-weight: normal; ">192.168</strong>.<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0.0</code> , 此网的广播地址是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.255.255</code> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于 IP , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code> , 如果掩码是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255.255.0.0</code> , 则它对应的网地址是 <strong style="color: red; font-weight: normal;">192.168</strong>.<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.0</code> , 此网的广播地址是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.255.255</code> .
 </p>
-<p style="margin: 15px 0;">
-对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code> , 如果掩码是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">255.255.255.0</code> , 则它对应的网地址是 <strong style=" color: red; font-weight: normal; ">192.168.0</strong>.<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0</code> , 此网的广播地址是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.255</code> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code> , 如果掩码是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255.255.255.0</code> , 则它对应的网地址是 <strong style="color: red; font-weight: normal;">192.168.0</strong>.<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> , 此网的广播地址是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.255</code> .
 </p>
-<p style="margin: 15px 0;">
-把一个 IP 中的哪部分定义成网地址, 哪部分定义成主机地址, 有一个影响, 就是在 IP 地址中所能表示的 <em style=" color: #d75100; font-style: normal; ">网数量</em> 和 <em style=" color: #d75100; font-style: normal; ">主机数量</em> 是不同的. 直观地不考虑一些特殊地址的情况下, IP 一共只有 32 位, 你用 8 位表示网, 那剩下的 24 位表示主机. 这种情况下, 网数量最大是 <strong style=" color: red; font-weight: normal; ">511</strong> ( <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 9-1</code> ) , 主机数量最大有 <strong style=" color: red; font-weight: normal; ">33554431</strong> ( <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 25 - 1</code> ) .
-</p>
-
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. IP地址的分类</h1>
-
-<p style="margin: 15px 0;">
-前面讲了 <em style=" color: #d75100; font-style: normal; ">网地址</em> 和 <em style=" color: #d75100; font-style: normal; ">主机地址</em> 的概念, 按 <em style=" color: #d75100; font-style: normal; ">网地址</em> 所占位数的不同, IP 地址整个被分成了 A, B, C, D, E 五类. D, E 类特殊, 我们主机会被分配到的地址是 A, B, C 类中的一种.
-</p>
-<p style="margin: 15px 0;">
-每类地址在其 <em style=" color: #d75100; font-style: normal; ">网地址</em> 部分都有额外格式规定, 以显示地表明这是哪一类的地址. 否则就会出现前面我们对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.1</code> 这个地址的看法问题, <em style=" color: #d75100; font-style: normal; ">网地址</em> 占几位是我们自己定的.
-</p>
-<p style="margin: 15px 0;">
-一共有 5 类地址, 直观地, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 2 = 4</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 3 = 8</code>, 我们使用三位地址就可以区分它们了, 000, 001, 010, 011, 100. 但是这种平均分的方式, 对于 A 类地址这种, 消耗太大, 它一共网地址就只有 8 位可用, 标示就占去了 3 位, 肯定尴尬啊. 于是就用上了 <em style=" color: #d75100; font-style: normal; ">进位两分</em> 的方式.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把一个 IP 中的哪部分定义成网地址, 哪部分定义成主机地址, 有一个影响, 就是在 IP 地址中所能表示的 <em style="color: #d75100; font-style: normal;">网数量</em> 和 <em style="color: #d75100; font-style: normal;">主机数量</em> 是不同的. 直观地不考虑一些特殊地址的情况下, IP 一共只有 32 位, 你用 8 位表示网, 那剩下的 24 位表示主机. 这种情况下, 网数量最大是 <strong style="color: red; font-weight: normal;">511</strong> ( <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 9-1</code> ) , 主机数量最大有 <strong style="color: red; font-weight: normal;">33554431</strong> ( <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 25 - 1</code> ) .
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. IP地址的分类</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面讲了 <em style="color: #d75100; font-style: normal;">网地址</em> 和 <em style="color: #d75100; font-style: normal;">主机地址</em> 的概念, 按 <em style="color: #d75100; font-style: normal;">网地址</em> 所占位数的不同, IP 地址整个被分成了 A, B, C, D, E 五类. D, E 类特殊, 我们主机会被分配到的地址是 A, B, C 类中的一种.
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+每类地址在其 <em style="color: #d75100; font-style: normal;">网地址</em> 部分都有额外格式规定, 以显示地表明这是哪一类的地址. 否则就会出现前面我们对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.1</code> 这个地址的看法问题, <em style="color: #d75100; font-style: normal;">网地址</em> 占几位是我们自己定的.
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一共有 5 类地址, 直观地, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 2 = 4</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 3 = 8</code>, 我们使用三位地址就可以区分它们了, 000, 001, 010, 011, 100. 但是这种平均分的方式, 对于 A 类地址这种, 消耗太大, 它一共网地址就只有 8 位可用, 标示就占去了 3 位, 肯定尴尬啊. 于是就用上了 <em style="color: #d75100; font-style: normal;">进位两分</em> 的方式.
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">种类</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第一位</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第二位</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第三位</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第四位</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">种类</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第一位</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第二位</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第三位</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第四位</th>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">A</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">A</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">B</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">B</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">C</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
-<td align="center" style=" padding: 3px 10px;">-</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">C</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">-</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">D</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">D</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">0</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">E</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
-<td align="center" style=" padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">E</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">1</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这种分法不是最有效率的, E 类要 4 位才能区分. 但是却是对短的网地址分类更有利, A 类只占用了一位网地址空间.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 每类 IP 对网地址的表示定义.
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">分类</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">网地址位数</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">主机地址位数</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">十进制</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">二进制</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">分类</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">网地址位数</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">主机地址位数</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">十进制</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">二进制</th>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">A</td>
-<td align="center" style=" padding: 3px 10px;">8</td>
-<td align="center" style=" padding: 3px 10px;">24</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">10</strong>.10.0.1</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">00001010</strong>.00001010.00000000.00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">A</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">8</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">24</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">10</strong>.10.0.1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">00001010</strong>.00001010.00000000.00000001</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">B</td>
-<td align="center" style=" padding: 3px 10px;">16</td>
-<td align="center" style=" padding: 3px 10px;">16</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">172.16</strong>.0.1</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">10101100.00010000</strong>.00000000.00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">B</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">16</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">172.16</strong>.0.1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">10101100.00010000</strong>.00000000.00000001</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">C</td>
-<td align="center" style=" padding: 3px 10px;">24</td>
-<td align="center" style=" padding: 3px 10px;">8</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">192.168.0</strong>.1</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">11000000.10101000.00000000</strong>.00000001</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">C</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">24</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">8</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">192.168.0</strong>.1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">11000000.10101000.00000000</strong>.00000001</td>
 </tr>
 </table>
 
-<a name="toc4"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">3.1. A类地址</h2>
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. A类地址</h2>
 
-<p style="margin: 15px 0;">
-A 类地址使用 8 位空间表示网地址, 24 位表示主机地址. 网地址以 <em style=" color: #d75100; font-style: normal; ">0</em> 起始作为标示. 剩下能用来网地址有 7 位空间. 所以 A 类地址的网数总数量上能有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 7 = 128</code> 个.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+A 类地址使用 8 位空间表示网地址, 24 位表示主机地址. 网地址以 <em style="color: #d75100; font-style: normal;">0</em> 起始作为标示. 剩下能用来网地址有 7 位空间. 所以 A 类地址的网数总数量上能有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 7 = 128</code> 个.
 </p>
-<p style="margin: 15px 0;">
-A 类地址的 128 个网中, 有两个是特殊的, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0.0.0.0</code> 的 <em style=" color: #d75100; font-style: normal; ">0</em> 网, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">127.0.0.1</code> 的 <em style=" color: #d75100; font-style: normal; ">127</em> 网. 所以实际可用的 A 类地址中, 有 126 个网.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+A 类地址的 128 个网中, 有两个是特殊的, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.0.0.0</code> 的 <em style="color: #d75100; font-style: normal;">0</em> 网, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">127.0.0.1</code> 的 <em style="color: #d75100; font-style: normal;">127</em> 网. 所以实际可用的 A 类地址中, 有 126 个网.
 </p>
-<p style="margin: 15px 0;">
-A 类地址有 24 位的主机地址空间, 单网下的主机数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 24 = 16777216</code> 个, 除去第一个表示网本身的地址, 和最后一个用于广播的地址, 可用的主机地址有 16777214 个.
-</p>
-
-<a name="toc5"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">3.2. B类地址</h2>
-
-<p style="margin: 15px 0;">
-B 类地址使用 16 位的网地址, 16 位的主机地址. 网地址以 <em style=" color: #d75100; font-style: normal; ">10</em> 起始作为标示. 剩下 14 位的网地址空间. B 类地址的网的总数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 14 = 16384</code> 个. 主机空间 16 位, 则单网的主机数量最多有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 16 - 2 = 65534</code> 个.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+A 类地址有 24 位的主机地址空间, 单网下的主机数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 24 = 16777216</code> 个, 除去第一个表示网本身的地址, 和最后一个用于广播的地址, 可用的主机地址有 16777214 个.
 </p>
 
-<a name="toc6"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">3.3. C类地址</h2>
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. B类地址</h2>
 
-<p style="margin: 15px 0;">
-C 类地址使用 24 位网地址, 8 位的主机地址. 网地址以 <em style=" color: #d75100; font-style: normal; ">110</em> 起始作为标示. 剩下 21 位网地址空间. C 类地址的网的总数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 21 = 2097152</code> 个. 主机空间 8 位, 单网主机数量 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">2 ^ 8 - 2 = 254</code> 个.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+B 类地址使用 16 位的网地址, 16 位的主机地址. 网地址以 <em style="color: #d75100; font-style: normal;">10</em> 起始作为标示. 剩下 14 位的网地址空间. B 类地址的网的总数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 14 = 16384</code> 个. 主机空间 16 位, 则单网的主机数量最多有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 16 - 2 = 65534</code> 个.
 </p>
 
-<a name="toc7"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">3.4. D类和E类</h2>
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. C类地址</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+C 类地址使用 24 位网地址, 8 位的主机地址. 网地址以 <em style="color: #d75100; font-style: normal;">110</em> 起始作为标示. 剩下 21 位网地址空间. C 类地址的网的总数量有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 21 = 2097152</code> 个. 主机空间 8 位, 单网主机数量 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 ^ 8 - 2 = 254</code> 个.
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. D类和E类</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 D 类地址用于多点广播, 用于一次寻址一组主机.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 E 类地址目前保留.
 </p>
 
-<a name="toc8"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 网段表示方法</h1>
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 网段表示方法</h1>
 
-<p style="margin: 15px 0;">
-有时我们需要表示一段的 IP , 直观地, 可能会想到的形式是, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.*</code> , 表示的网段是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.0 ~ 192.168.0.255</code> . 但是这种在十进制形式上表示的做法, 和 IP 的数据本质是有一些不匹配的. IP 的数据是 32 位二进制位, 我们只是为了方便可以写成 4 节十进制的形式. 但是在实际使用中, 我们自己规划的网络环境下, 网地址的位数不一定就是 8 的整数倍. 如果我们希望表示的 IP 段是, 前 6 位是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">011111</code> , 后 26 位随意, 那按前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">*</code> 的形式就无能为力了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有时我们需要表示一段的 IP , 直观地, 可能会想到的形式是, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.*</code> , 表示的网段是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.0 ~ 192.168.0.255</code> . 但是这种在十进制形式上表示的做法, 和 IP 的数据本质是有一些不匹配的. IP 的数据是 32 位二进制位, 我们只是为了方便可以写成 4 节十进制的形式. 但是在实际使用中, 我们自己规划的网络环境下, 网地址的位数不一定就是 8 的整数倍. 如果我们希望表示的 IP 段是, 前 6 位是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">011111</code> , 后 26 位随意, 那按前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> 的形式就无能为力了.
 </p>
-<p style="margin: 15px 0;">
-于是, 我们使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">124.0.0.0/6</code> 的形式来表示 "固定前 6 位". 这种情况通常是前 6 位作为网地址(和 IP 是哪类没关系).
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+于是, 我们使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">124.0.0.0/6</code> 的形式来表示 "固定前 6 位". 这种情况通常是前 6 位作为网地址(和 IP 是哪类没关系).
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">-</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第一节</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第二节</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第三节</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">第四节</th>
-<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">写出来</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">-</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第一节</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第二节</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第三节</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">第四节</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">写出来</th>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">第一个地址</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">011111</strong>00</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;">00000000</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">124.0.0.0</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">第一个地址</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">011111</strong>00</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00000000</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">124.0.0.0</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">最后一个地址</td>
-<td align="center" style=" padding: 3px 10px;"><strong style=" color: red; font-weight: normal; ">011111</strong>11</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;">11111111</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">127.255.255.255</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">最后一个地址</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><strong style="color: red; font-weight: normal;">011111</strong>11</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">11111111</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">127.255.255.255</code></td>
 </tr>
 </table>
 
-<a name="toc9"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 私有地址</h1>
+<a class="anchor" name="toc9"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 私有地址</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 IP 地址是有限的, 而且每个设备很多时候都是需要一个 IP 地址的. 但是, 并不是所有设备都需要接入互联网. 为了规范 IP 地址的使用, 使那些私网自己分配的 IP 地址不和那些互联网公网 IP 地址冲突, 在 IP 地址的协议上, 每类 IP 中都预留了一段地址供私网自己使用, 这些地址不进行公开的分配.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这三段地址是:
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">类型</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">网段</th>
-<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">范围</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">类型</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">网段</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">范围</th>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">A</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">10.0.0.0/8</code></td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">10.0.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">10.255.255.255</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">A</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10.0.0.0/8</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10.0.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10.255.255.255</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">B</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">172.16.255.255/12</code></td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">172.16.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">172.31.255.255</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">B</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">172.16.255.255/12</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">172.16.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">172.31.255.255</code></td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">C</td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.0/16</code></td>
-<td align="center" style=" padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">192.168.255.255</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">C</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.0/16</code></td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.0.0</code> ~ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">192.168.255.255</code></td>
 </tr>
 </table>
 
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'ip';
@@ -519,8 +813,20 @@ IP 地址是有限的, 而且每个设备很多时候都是需要一个 IP 地�
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABkUlEQVR4nN2XPY7bMBCFv1kZoDv5
+BtRJpFwrgADJUO61ZPYi8g3ojgJkvRTebjedp0im4yvm4c0/TXy17e0bEP49NJvZOV9ge7tbZ2bW
+ObKZJIYC577dCdLuqvhuHb+5GtxnyDa7x1eXRrrGsL7Y71/Q+3xjKI/Olw1lSeFo9xgOiEHaY/XT
+JjPj4zbDRxnZzE6e2iRJR7us4aB5vty0oUSjkKU1JJpVidEvkkiaqX0rVQDMN2/5QjxbgXPPCNzD
+6tgBPU1W4mpYAb3HzW9yIRViSO0iHTSqPZNvlRBrT7NKWtYgzd5VQs8YQwJCAle2MknSTjXtsQ5a
+PCOpAvTtojqUkWrObNqpg3Zq3+5IpfFky9LKoDlWK9OKc03qGb89KjE+0+jGdkKXRjbw67b9AAwm
+9x2Q2p2QnwJdOyABQQV0tPNzqjhOZZMETMLKSLXy8JyTuXzeB8AI4NgBn2i2E5jCqsRPz+sVANOS
+9W5z3KbySr9f0VYrQLSpPDoUXbepzAzuWwdwC+lVfr8z+49/VH8A1XkNo0r9j7sAAAAASUVORK5C
+YII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

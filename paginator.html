@@ -1,279 +1,315 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>做分页器时的一点感触 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>做分页器时的一点感触 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">做分页器时的一点感触</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">做分页器时的一点感触</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:07 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-04-03 01:34 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">问题的由来</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">问题的由来</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">自然的, 麻烦的思路</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">自然的, 麻烦的思路</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">换个角度入手</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">换个角度入手</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">为何会有如此大的区别</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">为何会有如此大的区别</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">AngularJS的代码例子</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">AngularJS的代码例子</a>
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 问题的由来</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 问题的由来</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 前段时间要做一个分页器, 大概是下面这个样子:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 只要有一点相关经验的人都知道, 这个看似简单的东西, 实现起来其实是很麻烦的. 原因在于, 你面对的"总页数和当前页的关系", 不一定是上面这种"理想情况". 比如:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共只有 3 页:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 4 页:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 4
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 4
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 6 页:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 4 5 6
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 4 5 6
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 7 页(当前页是第 6 页):
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 5 [6] 7
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 5 [6] 7
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 7 页(当前页是第 4 页):
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 [4] 5 6 7
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 [4] 5 6 7
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 14 页, 当前页是 13 页(最开始的例子, 当前页是第 8 页):
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 12 [13] 14
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 12 [13] 14
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面几个简单的例子, 足以说明问题, 这玩意儿真的很麻烦, 如果你用传统的方法去做.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 回到理想情况的例子:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这个分页器的显示规则, 大概可以描述成 " <em style=" color: #d75100; font-style: normal; ">显示前 3 页, 显示后 3 页, 以及当前页的前后 1 页</em> " .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个分页器的显示规则, 大概可以描述成 " <em style="color: #d75100; font-style: normal;">显示前 3 页, 显示后 3 页, 以及当前页的前后 1 页</em> " .
 </p>
-<p style="margin: 15px 0;">
-或者, 可以扩展为 " <em style=" color: #d75100; font-style: normal; ">显示前 L 页, 显示后 R 页, 以及当前页的前后 M 页</em> " .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+或者, 可以扩展为 " <em style="color: #d75100; font-style: normal;">显示前 L 页, 显示后 R 页, 以及当前页的前后 M 页</em> " .
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 自然的, 麻烦的思路</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 自然的, 麻烦的思路</h1>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 要实现这个东西, 可能大部分人(包括我)一来的想法, 就是通过总页数与当前页的条件, 去计算 左 / 中 / 右 三部分的结果. 整个计算过程穷举所有可能的情况, 即处理所有的状态.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这样做不能说不行, 因为市面上的好多分页器大概也是这样干的吧. 理论上可行, 但是实践中, 这样做的话成本太大了. 通过前面的例子也看到的, 面对的各种状态情况, 可以说非常非常复杂. 即使做出来了, 后续的维护, 需求变更的响应, 这些仍然需要继续以很大的成本去投入它, 稍有不慎, 出了问题要想定位到问题都困难吧, 在一堆涉及各种状态的代码中.
 </p>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 换个角度入手</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 换个角度入手</h1>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 7 [8] 9 ... 12 13 14
 
   L   PRE    M    POST   R
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 理想情况下的结果, 其实也是一个"完备"的结果. 我们从这个形式着手, 细致地分析一下我们面对的到底是什么东西.
 </p>
-<p style="margin: 15px 0;">
-可以看到, 完整的结果, 一共是由 5 部分构成的, <em style=" color: #d75100; font-style: normal; ">L , PRE , M  , POST , R</em> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到, 完整的结果, 一共是由 5 部分构成的, <em style="color: #d75100; font-style: normal;">L , PRE , M  , POST , R</em> .
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 但是在一些"特殊"情况下, 这 5 部分不是全都出现的, 比如, 一共有 7 页(当前页是第 6 页):
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 5 [6] 7
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 5 [6] 7
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这时, 结果中只有 <em style=" color: #d75100; font-style: normal; ">L , PRE, R(M)</em> 这几部分(最后即可以看成是 <em style=" color: #d75100; font-style: normal; ">M</em> , 也可以看成是 <em style=" color: #d75100; font-style: normal; ">R</em> ).
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这时, 结果中只有 <em style="color: #d75100; font-style: normal;">L , PRE, R(M)</em> 这几部分(最后即可以看成是 <em style="color: #d75100; font-style: normal;">M</em> , 也可以看成是 <em style="color: #d75100; font-style: normal;">R</em> ).
 </p>
-<p style="margin: 15px 0;">
-传统的思路, 我们会去想, 通过计算, 算出  <em style=" color: #d75100; font-style: normal; ">L , PRE , M , POST , R</em> 这 5 部分的结果(包括它们是否应该存在), 但是, 这样很难.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+传统的思路, 我们会去想, 通过计算, 算出  <em style="color: #d75100; font-style: normal;">L , PRE , M , POST , R</em> 这 5 部分的结果(包括它们是否应该存在), 但是, 这样很难.
 </p>
-<p style="margin: 15px 0;">
-要得到结果, 我们还有另外一种选择, 那就是首先, <strong style=" color: red; font-weight: normal; ">我们忽略状态, 根据具体的规则, 先计算出结果</strong>.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要得到结果, 我们还有另外一种选择, 那就是首先, <strong style="color: red; font-weight: normal;">我们忽略状态, 根据具体的规则, 先计算出结果</strong>.
 </p>
-<p style="margin: 15px 0;">
-规则是我们之前提到的: " <em style=" color: #d75100; font-style: normal; ">显示前 3 页, 显示后 3 页, 以及当前页的前后 1 页</em> " . 假设现在共有 S 页, 当前页是第 P 页, 那么结果就是:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+规则是我们之前提到的: " <em style="color: #d75100; font-style: normal;">显示前 3 页, 显示后 3 页, 以及当前页的前后 1 页</em> " . 假设现在共有 S 页, 当前页是第 P 页, 那么结果就是:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">L = [1, 2, 3]
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">L = [1, 2, 3]
 PRE = True
 M = [P - 1, P, P + 1]
 POST = True
 R = [S - 2 , S - 1 , S]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 那么我们就可以得到:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... P-1 [P] P+1 ... S-2 S-1 S
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... P-1 [P] P+1 ... S-2 S-1 S
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-毫无疑问, 上面的计算与结果都没有任何问题, 那我们拿一个"特殊"的实例来看看结果是什么, 就用前面的"一共有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">S = 7</code> 页, 当前是第 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">P = 6</code> 页":
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+毫无疑问, 上面的计算与结果都没有任何问题, 那我们拿一个"特殊"的实例来看看结果是什么, 就用前面的"一共有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">S = 7</code> 页, 当前是第 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">P = 6</code> 页":
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 5 [6] 7 ... 5 [6] 7
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 5 [6] 7 ... 5 [6] 7
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 剩下的事情, 就是去修辞这个看起来不太对的结果了, 这部分其实很容易(但是容易遗漏).
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M[0] - L[-1] &gt;= 2</code> 时, <em style=" color: #d75100; font-style: normal; ">PRE</em> 才显示出来.
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M[0] - L[-1] &gt;= 2</code> 时, <em style="color: #d75100; font-style: normal;">PRE</em> 才显示出来.
 </li>
-<li>当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">R[0] - L[-1] &gt;= 2</code> 时, <em style=" color: #d75100; font-style: normal; ">POST</em> 才显示出来.
+<li style="margin: 10px auto;">当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">R[0] - L[-1] &gt;= 2</code> 时, <em style="color: #d75100; font-style: normal;">POST</em> 才显示出来.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M</code> 中只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">L[-1]</code> 大的.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M</code> 中只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">L[-1]</code> 大的.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">R</code> 中只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M[-1]</code> 大的.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">R</code> 中只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M[-1]</code> 大的.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">R</code> 中, 都只显示不比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">S</code> 大的.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">R</code> 中, 都只显示不比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">S</code> 大的.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">R</code> 中, 都只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0</code> 大的(这点在计算 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">M</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">R</code> 时就随便做了).
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">R</code> 中, 都只显示比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 大的(这点在计算 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">L</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">R</code> 时就随便做了).
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面简单的几条规则, 就可以把不太对的结果, 修饰成(括号中的内容不会显示):
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 3 ... 5 [6] 7 (...) (5 [6] 7)
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 3 ... 5 [6] 7 (...) (5 [6] 7)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 来看看更多的例子:
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">S=1, P=1</code>:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">S=1, P=1</code>:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">[1] 2 3 ... 0 [1] 2 ... -1 0 1
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[1] 2 3 ... 0 [1] 2 ... -1 0 1
 
 --&gt;
 
 [1] (2 3) (...) (0 [1] 2) (...) (-1 0 1)   
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">S=4, P=3</code>:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">S=4, P=3</code>:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">1 2 [3] ... 2 [3] 4 .. 2 [3] 4
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 2 [3] ... 2 [3] 4 .. 2 [3] 4
 
 --&gt;
 
 1 2 [3] (...) (2 [3]) 4 (...) (2 [3] 4)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 "修饰" 这部分, 实践中在一些框架的模板部分, 都可以直接做了.
 </p>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 为何会有如此大的区别</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 为何会有如此大的区别</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 换个角度去考虑之后, 一个原本麻烦的问题, 被轻松解决了. 之后我一直在想, 怎么会有如此大的区别呢?
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我们实现的东西是一样的, 这就是说, 不管是传统的方法, 还是"变计算为应对"的方法, 它们的"描述能力"应该是一样的. 传统方法是在主动穷举所有的可能, 而后者则是在被动应对具体的可能.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 当你在穷举所有可能的状态时, 不同类型的状态之间, 还有着相互的影响, 于是, 相互的作用大大放大了你面对的信息量. 这也许就是为什么我们会觉得非常麻烦的原因所在.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 而当变成被动的应对这种方式时, 不同类型的状态之间, 相互的影响就不存在了(因为我们仅仅是信息的接收者, 没有创造信息, 也没有影响信息), 我们面对的只是独立的种种情况. 这种时候信息量就大大减少, 只需要简单地就每一种情况作出响应即可.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我知道上面的话很抽象, 其实我本身现在也无法对这种奇妙的区别作出一种具体的描述. 但要类比的话, 这个小小的分页器的实现, 以及大到系统架构的设计, 我觉得都跟绘画是一样的 -- 从大到小, 从抽象到具体, 从整体到局部 -- 如果一开始就从细节着力, 除非你已经胸有成竹, 否则连基本的正确比例都把握不了吧.
 </p>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. AngularJS的代码例子</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. AngularJS的代码例子</h1>
 
-<p style="margin: 15px 0;">
-最后, 附上使用 <em style=" color: #d75100; font-style: normal; ">AngularJS</em> 实现的上面说的分页器的简单代码:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后, 附上使用 <em style="color: #d75100; font-style: normal;">AngularJS</em> 实现的上面说的分页器的简单代码:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">scope.L_COUNT <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>;
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">scope.L_COUNT <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>;
 scope.M_OFFSET <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
 scope.R_COUNT <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>;
 
@@ -300,12 +336,14 @@ scope.R_COUNT <span style="color: #000000; font-weight: bold">=</span> <span sty
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 模板部分:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;div&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div&gt;</span>
   <span style="color: #000080">&lt;div</span> <span style="color: #008080">ng-show=</span><span style="color: #dd1144">&quot;sum_page &gt; 1&quot;</span><span style="color: #000080">&gt;</span>
     <span style="color: #000080">&lt;div</span> <span style="color: #008080">ng-repeat=</span><span style="color: #dd1144">&quot;o in left&quot;</span>
          <span style="color: #008080">ng-show=</span><span style="color: #dd1144">&quot;o &lt;= sum_page&quot;</span> <span style="color: #008080">ng-click=</span><span style="color: #dd1144">&quot;goto(o)&quot;</span>
@@ -328,10 +366,304 @@ scope.R_COUNT <span style="color: #000000; font-weight: bold">=</span> <span sty
 <span style="color: #000080">&lt;/div&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'paginator';
@@ -362,7 +694,19 @@ scope.R_COUNT <span style="color: #000000; font-weight: bold">=</span> <span sty
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABuUlEQVR4nN2XMW7cMBBFH3cX4Hbj
+G1AXseQu50lpwMHKkO+Rq4jyCXID6QZURwFc/RRxqqy7ZYBkyl/84R/+4Qyd+DO2ww0Q/jUUjYDf
+rUCXjgIIud4ZnCTe01vIkxW8VKoqXl2DXA+PD68N0fXV69tynC0umu/Mext9V1nW7uHa1M2GoiQ/
+2jDnlqO8VGq6RM453LJ1NqTnZnPuVFObJGm0EjRCkCRV04ZGG0SXLrOXJFw61swmDbNiOkpRBb9b
+xXtDMR3lRy6zonr8TkVtJ1o2l7+IBVbpPN2H93NtF/moQgagtb5mJXcrQUogqQ9SutR0yc5LACvB
+RxXoUsUZ8MuTuUsvZCBotKGetgNyW3eezM82Wr/Q3ov3E9ROS27XEnCLdHbpuamW7cR7un63vLJk
+1muzdj++1tTWAhk7sbkwzBbTnXhvo9Pqo3vi2llMr247rJqrzwBAo/VBsWYHHIjOubNLcO6Wwhkb
+6mn72LkeHyBPQGbt676TBL/bILACWMVp+oFOa7/4nbfgR97+woYHuHSZM+tWr7sPYJqZrA9r5741
+OPmaLvm9czmwftme7sV7K9x//KP6CbWDDZ7dast2AAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
 &copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     

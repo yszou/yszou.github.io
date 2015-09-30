@@ -1,103 +1,383 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>proc进程信息字段解释 - 进出自由,我的分享</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
-<meta name="keywords" content="proc进程信息字段解释,Yesheng Zou,YS.Zou,邹业盛,AceFantasy"/>
-<meta name="description" content="proc进程信息字段解释,Yesheng Zou,YS.Zou,邹业盛,AceFantasy的个人网站" />
+    <meta charset="UTF-8" />
+    <title>proc进程信息字段解释 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
-<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">proc进程信息字段解释</h1>
-
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-11-11 18:28 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
-
-
-  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">内存相关</a>
-  </li>
-  </ol>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">proc进程信息字段解释</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:13 更新</span>
+            </div>
+        </div>
 
 
-<a id="toc1" name="toc1"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 内存相关</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 内存相关</h1>
 
-<dl style="font-size: small; margin: 10px auto; padding: 10px; border-bottom: 1px dashed gray; border-top: 1px dashed gray;">
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmPeak</dt><dd style="margin-left: 30px;">
+<dl style="">
+<dt style="">VmPeak</dt><dd style="">
 前进程运行过程中占用内存的峰值
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmSize</dt><dd style="margin-left: 30px;">
+<dt style="">VmSize</dt><dd style="">
 虚拟内存大小。整个进程使用虚拟内存大小，是VmLib, VmExe, VmData, 和 VmStk的总和。
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmLck</dt><dd style="margin-left: 30px;">
+<dt style="">VmLck</dt><dd style="">
 进程已经锁住的物理内存的大小
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmHWM</dt><dd style="margin-left: 30px;">
+<dt style="">VmHWM</dt><dd style="">
 得到分配到物理内存的峰值
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmRSS</dt><dd style="margin-left: 30px;">
+<dt style="">VmRSS</dt><dd style="">
 虚拟内存驻留集合大小。这是驻留在物理内存的一部分。它没有交换到硬盘。它包括代码，数据和栈。
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmData</dt><dd style="margin-left: 30px;">
+<dt style="">VmData</dt><dd style="">
 程序数据段的大小（所占虚拟内存的大小），堆使用的虚拟内存。
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmStk</dt><dd style="margin-left: 30px;">
+<dt style="">VmStk</dt><dd style="">
 任务在用户态的栈的大小，栈使用的虚拟内存
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmExe</dt><dd style="margin-left: 30px;">
+<dt style="">VmExe</dt><dd style="">
 程序所拥有的可执行虚拟内存的大小，代码段，不包括任务使用的库
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmLib</dt><dd style="margin-left: 30px;">
+<dt style="">VmLib</dt><dd style="">
 被映像到任务的虚拟内存空间的库的大小
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmPTE</dt><dd style="margin-left: 30px;">
+<dt style="">VmPTE</dt><dd style="">
 占用的页表的大小
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">VmSwap</dt><dd style="margin-left: 30px;">
+<dt style="">VmSwap</dt><dd style="">
 进程占用Swap的大小
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="border-left: 4px solid rgb(215, 81, 0); padding-left: 5px; margin: 5px auto;">Threads</dt><dd style="margin-left: 30px;">
+<dt style="">Threads</dt><dd style="">
 表示当前进程组有的线程数
 </dd>
 </dl>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 参考:
 </p>
 
-<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><a href="http://my.oschina.net/aiguozhe/blog/125477" style="color: #0184b7; text-decoration: none">http://my.oschina.net/aiguozhe/blog/125477</a>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><a href="http://my.oschina.net/aiguozhe/blog/125477" style="color: #0184b7; text-decoration: none">http://my.oschina.net/aiguozhe/blog/125477</a>
 </li>
-<li><a href="http://blog.csdn.net/superqa/article/details/6817539" style="color: #0184b7; text-decoration: none">http://blog.csdn.net/superqa/article/details/6817539</a>
+<li style="margin: 10px auto;"><a href="http://blog.csdn.net/superqa/article/details/6817539" style="color: #0184b7; text-decoration: none">http://blog.csdn.net/superqa/article/details/6817539</a>
 </li>
 </ul>
 
 
-<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
     
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'proc-status';
@@ -111,32 +391,6 @@
   })();
 </script>
 <noscript>评论功能需要javascript的支持</noscript>
-    
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    TeX: {
-      extensions: ["color.js"]
-    },
-    styles: {
-        '.MathJax': {
-            'color': '#6D3333',
-        }
-    },
-    tex2jax: {
-        inlineMath: [ ['$','$'], ]
-      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
-      , processEscapes: true
-      , processEnvironments: true
-      , preview: "TeX"
-      , skipTags: ["script","noscript","style","textarea","pre","code"]
-      , ignoreClass: "tex2jax_ignore"
-      , processClass: "tex2jax_process"
-    }});
-</script>
-<script type="text/javascript"
-  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
-</script>
     
 
 <script type="text/javascript">
@@ -154,8 +408,21 @@
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABrUlEQVR4nN2XTW7bMBCFv4kFUF1R
+N6AvEis9VgE3VhID3fRQon0R6QAFqB0FqH5dtChQNN1lCrSz4OIt3oCcn/do4vdY714B4d9Ds5m1
+F54M2YCZ2d4xm0lCtsElDgRp87sbyoUUVKAeohRGjqm6v+9pCs9L8/a8v8QP/vywG9paPu99s91B
+1IRpmFEH9Bo8s8nMYFl7rgVWs8azSyRJuZC+H5Lk1iVo5DSFkZNqrwFMg2dP9uVpX4GZ3JE4vBXv
+62juTlNramgPQJX5TrdeJo1RkgqE7Fy3uKVwi0OqVo4pSJvrLlkG6rUcaZWaeX1YHCfgDtOAPS7D
+XK3shJJj3RrUfZlr25HCuKxW392YHNXU5oaYy2laH2OT2vvuq5++IZXdJElTtQLhBp5dktPatywN
+3HdQzVdNVY6pmiR6aaq9/7zRa0i11wbEF89skqQxblQrxyRnp5DNrD0AHIDWfNXUJHEt5xSeY0NV
+90a8f0AX23Nvyi0w2/vyafobnnb52EFV98HTvQJwLeeEFQi5nH31TQpj1FT7ApXoOG8/PZftucQt
+xVwc96T9xz+qb00gACASHElSAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

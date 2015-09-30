@@ -1,90 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>使用 CEFPython 打造自己的浏览器视图 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>使用 CEFPython 打造自己的浏览器视图 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">使用 CEFPython 打造自己的浏览器视图</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">使用 CEFPython 打造自己的浏览器视图</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 14:54 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-06-06 02:18 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">CEFPython是什么东西</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">一个简单的例子</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">扩展浏览器视图的API</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">Python主动调用JS</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">事件模拟</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">请求的交互流程控制</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 基本的流程与处理方式</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 修改请求</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. 修改响应</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">6.4. 创建响应</a>
+    </li>
     </ul>
-</div>
-
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">CEFPython是什么东西</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">一个简单的例子</a>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">请求流程的处理</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">扩展浏览器视图的API</a>
+  <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">自定义请求的处理</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">Python主动调用JS</a>
-  </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">事件模拟</a>
-  </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">请求的交互流程控制</a>
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 基本的流程与处理方式</a>
+  <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">正确处理引用与释放资源</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">9.1. ResourceHandler的显示引用保留</a>
     </li>
-    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 修改请求</a>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">9.2. WebRequest的显示引用保留</a>
     </li>
-    <li><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. 修改响应</a>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">9.3. CEFPython的正确关闭</a>
     </li>
-    <li><a href="#toc10" style="color: #0184b7; text-decoration: none">6.4. 创建响应</a>
-    </li>
-    </ul>
-  </li>
-  <li><a href="#toc11" style="color: #0184b7; text-decoration: none">请求流程的处理</a>
-  </li>
-  <li><a href="#toc12" style="color: #0184b7; text-decoration: none">自定义请求的处理</a>
-  </li>
-  <li><a href="#toc13" style="color: #0184b7; text-decoration: none">正确处理引用与释放资源</a>
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li><a href="#toc14" style="color: #0184b7; text-decoration: none">9.1. ResourceHandler的显示引用保留</a>
-    </li>
-    <li><a href="#toc15" style="color: #0184b7; text-decoration: none">9.2. WebRequest的显示引用保留</a>
-    </li>
-    <li><a href="#toc16" style="color: #0184b7; text-decoration: none">9.3. CEFPython的正确关闭</a>
-    </li>
-    <li><a href="#toc17" style="color: #0184b7; text-decoration: none">9.4. Browser对象的正确结束</a>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">9.4. Browser对象的正确结束</a>
     </li>
     </ul>
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. CEFPython是什么东西</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. CEFPython是什么东西</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">CEFPython</em> 是 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的 <em style=" color: #d75100; font-style: normal; ">Python</em> 绑定实现。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">CEFPython</em> 是 <em style="color: #d75100; font-style: normal;">CEF</em> 的 <em style="color: #d75100; font-style: normal;">Python</em> 绑定实现。
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">CEF</em> <a href="https://bitbucket.org/chromiumembedded/cef" style="color: #0184b7; text-decoration: none">https://bitbucket.org/chromiumembedded/cef</a> ，是 <em style=" color: #d75100; font-style: normal; ">Chromium</em> 的一套嵌入式实现。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">CEF</em> <a href="https://bitbucket.org/chromiumembedded/cef" style="color: #0184b7; text-decoration: none">https://bitbucket.org/chromiumembedded/cef</a> ，是 <em style="color: #d75100; font-style: normal;">Chromium</em> 的一套嵌入式实现。
 </p>
-<p style="margin: 15px 0;">
-简单来说， <em style=" color: #d75100; font-style: normal; ">CEF</em> 实现了浏览器外在的简单功能，可以直接渲染一个全功能的页面。它包含了页面布局渲染的引擎，也包含了执行 JS 的引擎（V8）。但是它不管一个完整浏览器还需要的其它功能，比如标签页，比如下载管理等等。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说， <em style="color: #d75100; font-style: normal;">CEF</em> 实现了浏览器外在的简单功能，可以直接渲染一个全功能的页面。它包含了页面布局渲染的引擎，也包含了执行 JS 的引擎（V8）。但是它不管一个完整浏览器还需要的其它功能，比如标签页，比如下载管理等等。
 </p>
-<p style="margin: 15px 0;">
-使用 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> ，就可以很容易地把一个浏览器视图做到 <em style=" color: #d75100; font-style: normal; ">GUI</em> 的环境当中，比如 <em style=" color: #d75100; font-style: normal; ">wxPython</em> 。这样最直接的作用，就是可以使用标准的 Web 技术，比如 HTML , JS 来完成桌面客户端的一些功能。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <em style="color: #d75100; font-style: normal;">CEFPython</em> ，就可以很容易地把一个浏览器视图做到 <em style="color: #d75100; font-style: normal;">GUI</em> 的环境当中，比如 <em style="color: #d75100; font-style: normal;">wxPython</em> 。这样最直接的作用，就是可以使用标准的 Web 技术，比如 HTML , JS 来完成桌面客户端的一些功能。
 </p>
-<p style="margin: 15px 0;">
-当然，仅仅这样是不够的，因为浏览器环境中，它自己本身是缺少一些系统级的功能的，比如文件系统的访问，比如数据的持久化存储。用 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> ，你可以非常容易地添加这个浏览器视图的 API ，这样通过 JS 实现与 Python 代码的互相调用，你想干什么都可以了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，仅仅这样是不够的，因为浏览器环境中，它自己本身是缺少一些系统级的功能的，比如文件系统的访问，比如数据的持久化存储。用 <em style="color: #d75100; font-style: normal;">CEFPython</em> ，你可以非常容易地添加这个浏览器视图的 API ，这样通过 JS 实现与 Python 代码的互相调用，你想干什么都可以了。
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 一个简单的例子</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 一个简单的例子</h1>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">cefpython3</span> <span style="color: #000000; font-weight: bold">import</span> cefpython
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">wx</span>
@@ -120,43 +122,47 @@
     app<span style="color: #000000; font-weight: bold">.</span>MainLoop()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-执行上面的代码，你会看到一个 <em style=" color: #d75100; font-style: normal; ">wx</em> 创建的窗口中，显示了一个 HTML 页面。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+执行上面的代码，你会看到一个 <em style="color: #d75100; font-style: normal;">wx</em> 创建的窗口中，显示了一个 HTML 页面。
 </p>
-<p style="margin: 15px 0;">
-一个最简单的使用 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 的流程大概要做的事有：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个最简单的使用 <em style="color: #d75100; font-style: normal;">CEFPython</em> 的流程大概要做的事有：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>获取组件， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">windowInfo = cefpython.WindowInfo()</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">获取组件， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">windowInfo = cefpython.WindowInfo()</code> 。
 </li>
-<li>嵌入对应的适配环境中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">windowInfo.SetAsChild(mainPanel.GetGtkWidget())</code> 。
+<li style="margin: 10px auto;">嵌入对应的适配环境中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">windowInfo.SetAsChild(mainPanel.GetGtkWidget())</code> 。
 </li>
-<li>初始化浏览器环境， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">cefpython.CreateBrowserSync(windowInfo, browserSettings, navigateUrl)</code> 。
+<li style="margin: 10px auto;">初始化浏览器环境， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cefpython.CreateBrowserSync(windowInfo, browserSettings, navigateUrl)</code> 。
 </li>
-<li>处理事件刷新， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">wx.EVT_TIMER(self, 1, lambda e: cefpython.MessageLoopWork())</code> 。
+<li style="margin: 10px auto;">处理事件刷新， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wx.EVT_TIMER(self, 1, lambda e: cefpython.MessageLoopWork())</code> 。
 </li>
 </ul>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 扩展浏览器视图的API</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 扩展浏览器视图的API</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的代码，创建的浏览器环境算是一个标准的环境，对于：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">br <span style="color: #000000; font-weight: bold">=</span> cefpython<span style="color: #000000; font-weight: bold">.</span>CreateBrowserSync(windowInfo,
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">br <span style="color: #000000; font-weight: bold">=</span> cefpython<span style="color: #000000; font-weight: bold">.</span>CreateBrowserSync(windowInfo,
                                  browserSettings<span style="color: #000000; font-weight: bold">=</span>{},
                                  navigateUrl<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-得到的这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br</code> ，我们可以添加额外的，可供 JS 使用的其它 API 。比如：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+得到的这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br</code> ，我们可以添加额外的，可供 JS 使用的其它 API 。比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MainFrame</span>(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MainFrame</span>(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>):
         wx<span style="color: #000000; font-weight: bold">.</span>Frame<span style="color: #000000; font-weight: bold">.</span>__init__(<span style="color: #999999">self</span>, parent<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">None</span>, <span style="color: #0086B3">id</span><span style="color: #000000; font-weight: bold">=</span>wx<span style="color: #000000; font-weight: bold">.</span>ID_ANY, title<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;wx&#39;</span>, size<span style="color: #000000; font-weight: bold">=</span>(<span style="color: #009999">800</span>,<span style="color: #009999">600</span>))
         mainPanel <span style="color: #000000; font-weight: bold">=</span> wx<span style="color: #000000; font-weight: bold">.</span>Panel(<span style="color: #999999">self</span>)
@@ -176,12 +182,14 @@
         <span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;I am in Python&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-其中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">demo.html</code> 的内容为：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.html</code> 的内容为：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -200,15 +208,17 @@
 <span style="color: #000080">&lt;/html&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面 js 中的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">py_func()</code> 的实现是由 Python 完成的（你能在终端中看到输出的一段字符串），而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">other.a</code> 这个数据，也是在 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 中人为添加的。这一切都非常简单。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面 js 中的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">py_func()</code> 的实现是由 Python 完成的（你能在终端中看到输出的一段字符串），而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">other.a</code> 这个数据，也是在 <em style="color: #d75100; font-style: normal;">CEFPython</em> 中人为添加的。这一切都非常简单。
 </p>
-<p style="margin: 15px 0;">
-不过，这样直接添加全局的函数或者数据，会让前端变得混乱。 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 也提供了添加对象的方法, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.SetObject()</code>：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过，这样直接添加全局的函数或者数据，会让前端变得混乱。 <em style="color: #d75100; font-style: normal;">CEFPython</em> 也提供了添加对象的方法, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.SetObject()</code>：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Ext</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Ext</span>(<span style="color: #0086B3">object</span>):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_info</span>(<span style="color: #999999">self</span>, callback):
         callback<span style="color: #000000; font-weight: bold">.</span>Call(<span style="color: #dd1144">&#39;123&#39;</span>);
 
@@ -231,15 +241,17 @@
         br<span style="color: #000000; font-weight: bold">.</span>SetJavascriptBindings(js)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">SetObject</code> 可以把 Python 的一个实例添加到 js 中作为一个对象（但是目前它有一个限制，就是只处理实例对象中的方法，不处理属性）。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetObject</code> 可以把 Python 的一个实例添加到 js 中作为一个对象（但是目前它有一个限制，就是只处理实例对象中的方法，不处理属性）。
 </p>
-<p style="margin: 15px 0;">
-对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">demo.html</code> 我们可以这样：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.html</code> 我们可以这样：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -261,30 +273,32 @@
 <span style="color: #000080">&lt;/html&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-虽然 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 中还有其它的一些功能，文档在 <a href="https://code.google.com/p/cefpython/wiki/API" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/API</a> ，但我觉得，一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">SetObject</code> 已经解决了 Python 和 JS 之间互相传递消息的所有问题：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然 <em style="color: #d75100; font-style: normal;">CEFPython</em> 中还有其它的一些功能，文档在 <a href="https://code.google.com/p/cefpython/wiki/API" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/API</a> ，但我觉得，一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetObject</code> 已经解决了 Python 和 JS 之间互相传递消息的所有问题：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>JS -&gt; Python ， 调用， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Ext.action('我在JS中')</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">JS -&gt; Python ， 调用， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Ext.action('我在JS中')</code> 。
 </li>
-<li>Python -&gt; JS ， 回调， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Ext.get_info(function(data){alert(data)})</code> 。
+<li style="margin: 10px auto;">Python -&gt; JS ， 回调， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Ext.get_info(function(data){alert(data)})</code> 。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 从这部分也可以看出，不同环境的相互传递消息，还是异步的方式。而且后面也可以看到，“主动控制”中执行的 JS ，也是异步执行的。
 </p>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. Python主动调用JS</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. Python主动调用JS</h1>
 
-<p style="margin: 15px 0;">
-前面讲的是扩展，从 Python 方面来看，这算是一个被动的形式。对于 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> ，Python 这边是可以主动控制，调度浏览器视图的。下面以两个菜单按钮执行 JS 逻辑为例说明一下，先在 <em style=" color: #d75100; font-style: normal; ">Frame</em> 上添加菜单栏：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面讲的是扩展，从 Python 方面来看，这算是一个被动的形式。对于 <em style="color: #d75100; font-style: normal;">CEFPython</em> ，Python 这边是可以主动控制，调度浏览器视图的。下面以两个菜单按钮执行 JS 逻辑为例说明一下，先在 <em style="color: #d75100; font-style: normal;">Frame</em> 上添加菜单栏：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">clss MainFrame(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">clss MainFrame(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>):
         wx<span style="color: #000000; font-weight: bold">.</span>Frame<span style="color: #000000; font-weight: bold">.</span>__init__(<span style="color: #999999">self</span>, parent<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">None</span>, <span style="color: #0086B3">id</span><span style="color: #000000; font-weight: bold">=</span>wx<span style="color: #000000; font-weight: bold">.</span>ID_ANY, title<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;wx&#39;</span>, size<span style="color: #000000; font-weight: bold">=</span>(<span style="color: #009999">800</span>,<span style="color: #009999">600</span>))
         menu <span style="color: #000000; font-weight: bold">=</span> wx<span style="color: #000000; font-weight: bold">.</span>Menu()
@@ -299,12 +313,14 @@
     <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000000; font-weight: bold">...</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这里把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">act_a</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">act_b</code> 两个菜单按钮的按键行为绑定到两个对应的实例方法上了，这两个方法：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">act_a</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">act_b</code> 两个菜单按钮的按键行为绑定到两个对应的实例方法上了，这两个方法：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_a</span>(<span style="color: #999999">self</span>, event):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_a</span>(<span style="color: #999999">self</span>, event):
     <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>br<span style="color: #000000; font-weight: bold">.</span>GetMainFrame()<span style="color: #000000; font-weight: bold">.</span>ExecuteFunction(<span style="color: #dd1144">&#39;Ext.action&#39;</span>, <span style="color: #dd1144">&#39;xx&#39;</span>)
     <span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;async&#39;</span>
 
@@ -312,25 +328,27 @@
     <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>br<span style="color: #000000; font-weight: bold">.</span>GetMainFrame()<span style="color: #000000; font-weight: bold">.</span>ExecuteJavascript(<span style="color: #dd1144">&#39;alert(&quot;Python&quot;)&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面代码是两种执行 JS 逻辑的方法。第一种是直接以名字调用指定的 JS 函数，可以带参数。第二种是给定 JS 语句直接执行。两种对 JS 的执行方法，都是异步的。（所以实践中你会先看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">async</code> 的输出。）
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码是两种执行 JS 逻辑的方法。第一种是直接以名字调用指定的 JS 函数，可以带参数。第二种是给定 JS 语句直接执行。两种对 JS 的执行方法，都是异步的。（所以实践中你会先看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">async</code> 的输出。）
 </p>
-<p style="margin: 15px 0;">
-这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ExecuteFunction</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ExecuteJavascript</code> 是在 <em style=" color: #d75100; font-style: normal; ">Frame</em> 对象上的（新版本的 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 好像在 <em style=" color: #d75100; font-style: normal; ">Browser</em> 上也添加了两个方法了）。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ExecuteFunction</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ExecuteJavascript</code> 是在 <em style="color: #d75100; font-style: normal;">Frame</em> 对象上的（新版本的 <em style="color: #d75100; font-style: normal;">CEFPython</em> 好像在 <em style="color: #d75100; font-style: normal;">Browser</em> 上也添加了两个方法了）。
 </p>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 事件模拟</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 事件模拟</h1>
 
-<p style="margin: 15px 0;">
-浏览器中的各种事件，其实 JS 也可以处理，不过我在 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 的文档中看到了比较“暴力”的一个 API，<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">SendMouseClickEvent</code> ，它直接是指定坐标给一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Click</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+浏览器中的各种事件，其实 JS 也可以处理，不过我在 <em style="color: #d75100; font-style: normal;">CEFPython</em> 的文档中看到了比较“暴力”的一个 API，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SendMouseClickEvent</code> ，它直接是指定坐标给一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Click</code> 。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先修改一个 HTML 文件：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -351,86 +369,96 @@
 <span style="color: #000080">&lt;/html&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-代码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Ext.log()</code> 是我自己加的，因为这个环境中没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">console</code> 用嘛，就把信息打到终端查看就好了，实现上是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Ext</code> 中加一个方法：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+代码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Ext.log()</code> 是我自己加的，因为这个环境中没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console</code> 用嘛，就把信息打到终端查看就好了，实现上是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Ext</code> 中加一个方法：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">log</span>(<span style="color: #999999">self</span>, <span style="color: #000000; font-weight: bold">*</span>args):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">log</span>(<span style="color: #999999">self</span>, <span style="color: #000000; font-weight: bold">*</span>args):
     <span style="color: #000000; font-weight: bold">print</span> args
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面的 HTML 中，有一个链接，经过实际测试，它的位置在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">39, 93</code> ，我们把之前的菜单按钮的处理改成：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的 HTML 中，有一个链接，经过实际测试，它的位置在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">39, 93</code> ，我们把之前的菜单按钮的处理改成：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_a</span>(<span style="color: #999999">self</span>, event):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_a</span>(<span style="color: #999999">self</span>, event):
     <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>br<span style="color: #000000; font-weight: bold">.</span>SendMouseClickEvent(<span style="color: #009999">39</span>, <span style="color: #009999">93</span>, cefpython<span style="color: #000000; font-weight: bold">.</span>MOUSEBUTTON_LEFT, <span style="color: #999999">False</span>, <span style="color: #009999">1</span>)
     <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>br<span style="color: #000000; font-weight: bold">.</span>SendMouseClickEvent(<span style="color: #009999">39</span>, <span style="color: #009999">93</span>, cefpython<span style="color: #000000; font-weight: bold">.</span>MOUSEBUTTON_LEFT, <span style="color: #999999">True</span>, <span style="color: #009999">1</span>)
     <span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;async&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-之所以是两次调用，是因为我们需要的其实是， <strong style=" color: red; font-weight: normal; ">鼠标按下，又松开</strong> ，简单说就是我们要的是 <em style=" color: #d75100; font-style: normal; ">release</em> ，不是 <em style=" color: #d75100; font-style: normal; ">down</em> 也不是 <em style=" color: #d75100; font-style: normal; ">up</em> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+之所以是两次调用，是因为我们需要的其实是， <strong style="color: red; font-weight: normal;">鼠标按下，又松开</strong> ，简单说就是我们要的是 <em style="color: #d75100; font-style: normal;">release</em> ，不是 <em style="color: #d75100; font-style: normal;">down</em> 也不是 <em style="color: #d75100; font-style: normal;">up</em> 。
 </p>
-<p style="margin: 15px 0;">
-好了，现在去选中菜单项点击，就可以看到终端中的坐标信息，以及页面加载新的 <em style=" color: #d75100; font-style: normal; ">demo2.html</em> 了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好了，现在去选中菜单项点击，就可以看到终端中的坐标信息，以及页面加载新的 <em style="color: #d75100; font-style: normal;">demo2.html</em> 了。
 </p>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 请求的交互流程控制</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 请求的交互流程控制</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这部分是比较麻烦一点的地方了。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 用一个嵌入的浏览器视图，前面说的扩展浏览器 API 部分，只是站在前端角度看到的“很有用”的一部分。而如果站在全局的系统角度，一个嵌入式的浏览器视图，它更多的威力，是来自对请求与响应的控制。
 </p>
-<p style="margin: 15px 0;">
-我之前在找， <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 有没有办法，直接往视图中渲染一段指定的 HTML 内容，结果是，好像不能（也许是 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 没有封装相应的“原生”层面的 API）。就是说，在流程上，这个环境始终是 Web 式的，请求 + 响应。所以，实现“直接渲染指定的 HTML 内容”的方式，也就变成了如何自己创造一个“响应”的问题。考虑“请求 + 响应”的流程，这个问题就是，如何额外定义另一套，兼容 Web 方式的，“请求 + 响应”流程。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我之前在找， <em style="color: #d75100; font-style: normal;">CEFPython</em> 有没有办法，直接往视图中渲染一段指定的 HTML 内容，结果是，好像不能（也许是 <em style="color: #d75100; font-style: normal;">CEFPython</em> 没有封装相应的“原生”层面的 API）。就是说，在流程上，这个环境始终是 Web 式的，请求 + 响应。所以，实现“直接渲染指定的 HTML 内容”的方式，也就变成了如何自己创造一个“响应”的问题。考虑“请求 + 响应”的流程，这个问题就是，如何额外定义另一套，兼容 Web 方式的，“请求 + 响应”流程。
 </p>
-<p style="margin: 15px 0;">
-这样，这个问题就很明了，也很简单了。它的做法，我们都见过，比如 <em style=" color: #d75100; font-style: normal; ">Chrome</em> 中的“配置”，其实就是内置的 Web 页面。 <em style=" color: #d75100; font-style: normal; ">Firefox</em> 的“配置项”，也是内置的 Web 页面。这些 Web 页面的地址，都是使用的 <strong style=" color: red; font-weight: normal; ">自定义协议</strong> 的方式处理的。于是，我就想，我可以在 HTML 中加一个访问链接，它形如：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，这个问题就很明了，也很简单了。它的做法，我们都见过，比如 <em style="color: #d75100; font-style: normal;">Chrome</em> 中的“配置”，其实就是内置的 Web 页面。 <em style="color: #d75100; font-style: normal;">Firefox</em> 的“配置项”，也是内置的 Web 页面。这些 Web 页面的地址，都是使用的 <strong style="color: red; font-weight: normal;">自定义协议</strong> 的方式处理的。于是，我就想，我可以在 HTML 中加一个访问链接，它形如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">cef://some-data
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">cef://some-data
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-自定义的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">cef</code> 协议。不过实际操作中发现这样不行，要做自定义协议，需要显式地自己去定义扩展（否则标准的处理流程会中断，你无法正常响应这个请求），而且不幸的是， <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 中并没有封装相应的 API 。后来发现 <em style=" color: #d75100; font-style: normal; ">CEF</em> 自己默认的协议中： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">HTTP, HTTPS, FILE, FTP, ABOUT, DATA</code> ，有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">DATA</code> ，暂且就把它用来自己扩展使用吧。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+自定义的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cef</code> 协议。不过实际操作中发现这样不行，要做自定义协议，需要显式地自己去定义扩展（否则标准的处理流程会中断，你无法正常响应这个请求），而且不幸的是， <em style="color: #d75100; font-style: normal;">CEFPython</em> 中并没有封装相应的 API 。后来发现 <em style="color: #d75100; font-style: normal;">CEF</em> 自己默认的协议中： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HTTP, HTTPS, FILE, FTP, ABOUT, DATA</code> ，有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DATA</code> ，暂且就把它用来自己扩展使用吧。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 那么在 HTML 页面，我可以写一个地址：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">data://some-data
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">data://some-data
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这样，整个 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的“请求 + 响应”流程完全不受影响。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，整个 <em style="color: #d75100; font-style: normal;">CEF</em> 的“请求 + 响应”流程完全不受影响。
 </p>
 
-<a name="toc7"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.1. 基本的流程与处理方式</h2>
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 基本的流程与处理方式</h2>
 
-<p style="margin: 15px 0;">
-这里的流程，指的就是“请求 + 响应”。在 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 中，你可以通过调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.SetClientHandler()</code> 方法，来自己完全指定一套流程处理的实现。或者，仅仅使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.SetClientCallback()</code> 来指定具体的事件回调函数。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的流程，指的就是“请求 + 响应”。在 <em style="color: #d75100; font-style: normal;">CEFPython</em> 中，你可以通过调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.SetClientHandler()</code> 方法，来自己完全指定一套流程处理的实现。或者，仅仅使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.SetClientCallback()</code> 来指定具体的事件回调函数。
 </p>
-<p style="margin: 15px 0;">
-在整个流程中， <em style=" color: #d75100; font-style: normal; ">CEF</em> 在扩展上的实现，是类似于“事件注册”的 Hook 方式。如果需要自定义，那么自己做一个对象，里面实现相应的方法即可。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在整个流程中， <em style="color: #d75100; font-style: normal;">CEF</em> 在扩展上的实现，是类似于“事件注册”的 Hook 方式。如果需要自定义，那么自己做一个对象，里面实现相应的方法即可。
 </p>
-<p style="margin: 15px 0;">
-注意一下，这里说的“事件点”，其实只有一套，但是在 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的概念中，它又把这些事件点“分组”了，对应到文点中不同的 <em style=" color: #d75100; font-style: normal; ">Handler</em> ，比如 <em style=" color: #d75100; font-style: normal; ">RequestHandler</em> ， <em style=" color: #d75100; font-style: normal; ">LoadHandler</em> ， <em style=" color: #d75100; font-style: normal; ">KeyboarHandler</em> 等，都是这些事件的分组。而总的你需要实现的 <em style=" color: #d75100; font-style: normal; ">ClientHandler</em> ，是可选地，需要去实现这些不同的“分组”中的方法的。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意一下，这里说的“事件点”，其实只有一套，但是在 <em style="color: #d75100; font-style: normal;">CEF</em> 的概念中，它又把这些事件点“分组”了，对应到文点中不同的 <em style="color: #d75100; font-style: normal;">Handler</em> ，比如 <em style="color: #d75100; font-style: normal;">RequestHandler</em> ， <em style="color: #d75100; font-style: normal;">LoadHandler</em> ， <em style="color: #d75100; font-style: normal;">KeyboarHandler</em> 等，都是这些事件的分组。而总的你需要实现的 <em style="color: #d75100; font-style: normal;">ClientHandler</em> ，是可选地，需要去实现这些不同的“分组”中的方法的。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MyClientHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MyClientHandler</span>(<span style="color: #0086B3">object</span>):
 
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">OnBeforeResourceLoad</span>(<span style="color: #999999">self</span>, <span style="color: #000000; font-weight: bold">*</span>args):
         <span style="color: #dd1144">&#39;来自RequestHandler的要求&#39;</span>
@@ -445,42 +473,46 @@
         <span style="color: #000000; font-weight: bold">pass</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这些内容虽然有点多（ <a href="https://code.google.com/p/cefpython/wiki/API" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/API</a> 中的 <em style=" color: #d75100; font-style: normal; ">Client handlers</em> 部分），但是我们单纯考虑“请求 + 响应”的话，只需要处理两个方法就可以了（其实是三个的）。因为我们面对的场景，只需要考虑三点：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这些内容虽然有点多（ <a href="https://code.google.com/p/cefpython/wiki/API" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/API</a> 中的 <em style="color: #d75100; font-style: normal;">Client handlers</em> 部分），但是我们单纯考虑“请求 + 响应”的话，只需要处理两个方法就可以了（其实是三个的）。因为我们面对的场景，只需要考虑三点：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>如何修改请求。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">如何修改请求。
 </li>
-<li>如何修改响应。
+<li style="margin: 10px auto;">如何修改响应。
 </li>
-<li>如何创建响应。
+<li style="margin: 10px auto;">如何创建响应。
 </li>
 </ul>
 
-<a name="toc8"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.2. 修改请求</h2>
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 修改请求</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 修改请求指的是，当你在流程中“截取”到请求时，在这个请求正式“发出”之前，修改它的相关属性。
 </p>
-<p style="margin: 15px 0;">
-比如一个请求本来是到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">file:///home/zys/temp/cef/demo.html</code> ，你把它的 URL 改到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">http://www.zouyesheng.com</code> 了（MB，这个时候我的 <a href="http://www.zouyesheng.com" style="color: #0184b7; text-decoration: none">www.zouyesheng.com</a> 好像被墙了）。这部分的实现很容易。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如一个请求本来是到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">file:///home/zys/temp/cef/demo.html</code> ，你把它的 URL 改到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://www.zouyesheng.com</code> 了（MB，这个时候我的 <a href="http://www.zouyesheng.com" style="color: #0184b7; text-decoration: none">www.zouyesheng.com</a> 好像被墙了）。这部分的实现很容易。
 </p>
-<p style="margin: 15px 0;">
-先修改一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br</code> ，注册一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 给它：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先修改一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br</code> ，注册一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 给它：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">br<span style="color: #000000; font-weight: bold">.</span>SetClientHandler(ClientHandler())
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">br<span style="color: #000000; font-weight: bold">.</span>SetClientHandler(ClientHandler())
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-然后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 这个类的实现，只需要做一个方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">RequestHandler</code> <a href="https://code.google.com/p/cefpython/wiki/RequestHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/RequestHandler</a> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnBeforeResourceLoad</code> 方法：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 这个类的实现，只需要做一个方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">RequestHandler</code> <a href="https://code.google.com/p/cefpython/wiki/RequestHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/RequestHandler</a> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnBeforeResourceLoad</code> 方法：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">OnBeforeResourceLoad</span>(<span style="color: #999999">self</span>, br, frame, request):
         <span style="color: #000000; font-weight: bold">if</span> request<span style="color: #000000; font-weight: bold">.</span>GetUrl()<span style="color: #000000; font-weight: bold">.</span>endswith(<span style="color: #dd1144">&#39;www.zouyesheng.com&#39;</span>):
             <span style="color: #000000; font-weight: bold">return</span>
@@ -489,58 +521,60 @@
             <span style="color: #000000; font-weight: bold">return</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnBeforeResourceLoad</code> 方法中，可以随意修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 的属性， <a href="https://code.google.com/p/cefpython/wiki/Request" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Request</a> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnBeforeResourceLoad</code> 方法中，可以随意修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 的属性， <a href="https://code.google.com/p/cefpython/wiki/Request" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Request</a> 。
 </p>
-<p style="margin: 15px 0;">
-注意一下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnBeforeResourceLoad</code> 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 的修改，是全局影响的，像上面代码中的这样一改，相应的 JS, CSS 请求就全失效了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意一下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnBeforeResourceLoad</code> 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 的修改，是全局影响的，像上面代码中的这样一改，相应的 JS, CSS 请求就全失效了。
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnBeforeResourceLoad</code> 如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">return True</code> ，则请求中断。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnBeforeResourceLoad</code> 如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">return True</code> ，则请求中断。
 </p>
 
-<a name="toc9"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.3. 修改响应</h2>
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. 修改响应</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 修改响应是指，当请求完成，获取到响应内容之后，在这些内容被渲染前，修改内容。比如你想把页面上的广告内容全部删除。
 </p>
-<p style="margin: 15px 0;">
-像前面的“修改请求”一样，本来是实现一个方法就可以搞定的事，但不幸的是， <em style=" color: #d75100; font-style: normal; ">CEF</em> 中还没有实现这个唯一的 API  <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnResourceResponse</code> ，文档中的说法是，这个 API 你可以自己搞定……
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+像前面的“修改请求”一样，本来是实现一个方法就可以搞定的事，但不幸的是， <em style="color: #d75100; font-style: normal;">CEF</em> 中还没有实现这个唯一的 API  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnResourceResponse</code> ，文档中的说法是，这个 API 你可以自己搞定……
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 自己搞定的意思，就是后面讲的，自己创建需要的，任意的响应。
 </p>
 
-<a name="toc10"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.4. 创建响应</h2>
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.4. 创建响应</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这部分，算是一个完整的流程控制了。“创建”，即指的是无中生有，不像前面的，只是“修改”层面的动作了（因为直接的“修改响应”的缺失，在这里只实现“修改响应”也是可以的）。
 </p>
-<p style="margin: 15px 0;">
-“请求 + 响应”中，最重要的一部分，对于 HTTP 协议来说，就是发出请求，然后按 HTTP 协议解析响应的报文。这部分， <em style=" color: #d75100; font-style: normal; ">CEF</em> 中原本是按标准的 HTTP 协议实现好了的，它提供了 API ，允许自定义这部分的实现（简单说，你甚至可以自己用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">urllib</code> 来搞，不考虑线程与阻塞什么的话）。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“请求 + 响应”中，最重要的一部分，对于 HTTP 协议来说，就是发出请求，然后按 HTTP 协议解析响应的报文。这部分， <em style="color: #d75100; font-style: normal;">CEF</em> 中原本是按标准的 HTTP 协议实现好了的，它提供了 API ，允许自定义这部分的实现（简单说，你甚至可以自己用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">urllib</code> 来搞，不考虑线程与阻塞什么的话）。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 实现上，分两部分：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">RequestHandler</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 方法，要求返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 的实例。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">RequestHandler</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 方法，要求返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 的实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 的实现，完成了发出请求，解析报文等操作 <a href="https://code.google.com/p/cefpython/wiki/ResourceHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/ResourceHandler</a>。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 的实现，完成了发出请求，解析报文等操作 <a href="https://code.google.com/p/cefpython/wiki/ResourceHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/ResourceHandler</a>。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-所以，我们要做的，就是做一个自己的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 。 它和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 有些不同，虽然都不是继承已有的类，但 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 只需要实现用得到的方法即可，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 中的所有被要求的方法，必须实现。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，我们要做的，就是做一个自己的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 。 它和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 有些不同，虽然都不是继承已有的类，但 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 只需要实现用得到的方法即可，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 中的所有被要求的方法，必须实现。
 </p>
-<p style="margin: 15px 0;">
-先处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> （前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.SetClientHandler()</code> 一样的）：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> （前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.SetClientHandler()</code> 一样的）：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">GetResourceHandler</span>(<span style="color: #999999">self</span>, br, frame, request):
         <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> request<span style="color: #000000; font-weight: bold">.</span>GetUrl()<span style="color: #000000; font-weight: bold">.</span>startswith(<span style="color: #dd1144">&#39;data://&#39;</span>):
             <span style="color: #000000; font-weight: bold">return</span>
@@ -549,18 +583,20 @@
         <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>res
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 方法返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例。这里，我们只处理使用了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">data</code> 协议的请求。普通的 HTTP 协议的请求，按默认处理就好了，不动它。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 方法返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例。这里，我们只处理使用了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data</code> 协议的请求。普通的 HTTP 协议的请求，按默认处理就好了，不动它。
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">注意： self.red = ResourceHandler() 这句的意义在于显式地保持一个 ResourceHandler 实例的引用（否则这个实例在真正想用它时已经被 Python 给 GC 了？），这块应该是从静态的 C++ 绑定到动态的 Python 时，对于引用与释放的一个无奈之举了。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">注意： self.red = ResourceHandler() 这句的意义在于显式地保持一个 ResourceHandler 实例的引用（否则这个实例在真正想用它时已经被 Python 给 GC 了？），这块应该是从静态的 C++ 绑定到动态的 Python 时，对于引用与释放的一个无奈之举了。</strong>
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 的实现：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 的实现：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ResourceHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ResourceHandler</span>(<span style="color: #0086B3">object</span>):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">ProcessRequest</span>(<span style="color: #999999">self</span>, request, callback):
         callback<span style="color: #000000; font-weight: bold">.</span>Continue()
         <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">True</span>
@@ -581,62 +617,67 @@
         <span style="color: #000000; font-weight: bold">pass</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一共有 6 个方法 <a href="https://code.google.com/p/cefpython/wiki/ResourceHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/ResourceHandler</a> 。
 </p>
-<p style="margin: 15px 0;">
-虽然是自定义，但是形式上，却按 HTTP 报文解析的方式规定好了的，就是一般的先处理头，再处理 <em style=" color: #d75100; font-style: normal; ">body</em> 的形式。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然是自定义，但是形式上，却按 HTTP 报文解析的方式规定好了的，就是一般的先处理头，再处理 <em style="color: #d75100; font-style: normal;">body</em> 的形式。
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">CEFPython</em> 因为是从 C++ 代码绑定而来，所以，这部分的实现，有一点很特别，就是使用 Python 中的 <em style=" color: #d75100; font-style: normal; ">list</em> 类型（因为 <em style=" color: #d75100; font-style: normal; ">list</em> 对象是“引用传递”），来处理 C++ 中的“地址”，比如上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">length</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bytes_readed</code> 这些，虽然只是一个数字，但都是用 <em style=" color: #d75100; font-style: normal; ">list</em> 来保存，赋值时也是为这个 <em style=" color: #d75100; font-style: normal; ">list</em> 的第一个成员赋值。（典型的“填坑”用法）
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">CEFPython</em> 因为是从 C++ 代码绑定而来，所以，这部分的实现，有一点很特别，就是使用 Python 中的 <em style="color: #d75100; font-style: normal;">list</em> 类型（因为 <em style="color: #d75100; font-style: normal;">list</em> 对象是“引用传递”），来处理 C++ 中的“地址”，比如上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">length</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bytes_readed</code> 这些，虽然只是一个数字，但都是用 <em style="color: #d75100; font-style: normal;">list</em> 来保存，赋值时也是为这个 <em style="color: #d75100; font-style: normal;">list</em> 的第一个成员赋值。（典型的“填坑”用法）
 </p>
-<p style="margin: 15px 0;">
-假设这里，我们要响应一段自己设置的 HTML 文本（比如就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">RES = &lt;h1&gt;哈哈&lt;/h1&gt;</code> ），其实完全不会涉及报文的解析，我们就把对应的数据，填到相应的“坑”中去就可以了：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设这里，我们要响应一段自己设置的 HTML 文本（比如就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">RES = &lt;h1&gt;哈哈&lt;/h1&gt;</code> ），其实完全不会涉及报文的解析，我们就把对应的数据，填到相应的“坑”中去就可以了：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">GetResponseHeaders</span>(<span style="color: #999999">self</span>, response, length, redirect):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">GetResponseHeaders</span>(<span style="color: #999999">self</span>, response, length, redirect):
     length[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">len</span>(<span style="color: #dd1144">&#39;&lt;h1&gt;哈哈&lt;/h1&gt;&#39;</span>)
     response<span style="color: #000000; font-weight: bold">.</span>SetMimeType(<span style="color: #dd1144">&#39;text/html&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-参照解析 HTTP 响应报文的一般方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResponseHeaders</code> 方法最重要的一点，就是获取接下来的 <em style=" color: #d75100; font-style: normal; ">body</em> 部分的字节长度（如果是未知长度，按 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-1</code> 处理）。把这个长度值填到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">length[0]</code> 中即可。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+参照解析 HTTP 响应报文的一般方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResponseHeaders</code> 方法最重要的一点，就是获取接下来的 <em style="color: #d75100; font-style: normal;">body</em> 部分的字节长度（如果是未知长度，按 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-1</code> 处理）。把这个长度值填到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">length[0]</code> 中即可。
 </p>
-<p style="margin: 15px 0;">
-另外，处理头的时候，可以处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">response</code> 对象的相关属性 <a href="https://code.google.com/p/cefpython/wiki/Response" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Response</a> 。比如这里，我们设置了 <em style=" color: #d75100; font-style: normal; ">MimeType</em> ，这样在渲染时就会按 HTML 页面处理了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外，处理头的时候，可以处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 对象的相关属性 <a href="https://code.google.com/p/cefpython/wiki/Response" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Response</a> 。比如这里，我们设置了 <em style="color: #d75100; font-style: normal;">MimeType</em> ，这样在渲染时就会按 HTML 页面处理了。
 </p>
-<p style="margin: 15px 0;">
-下面是处理 <em style=" color: #d75100; font-style: normal; ">body</em> 部分：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面是处理 <em style="color: #d75100; font-style: normal;">body</em> 部分：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">ReadResponse</span>(<span style="color: #999999">self</span>, data, bytes_to_read, bytes_readed, callback):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">ReadResponse</span>(<span style="color: #999999">self</span>, data, bytes_to_read, bytes_readed, callback):
     data[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&lt;h1&gt;ok&lt;/h1&gt;&#39;</span>
     bytes_readed[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> bytes_to_read
     <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">True</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-同样考虑 HTTP 响应报文的一般解析方法，从原始的连接中读取内容的行为与结果，是不一定的。所以通常我们会在这块做一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">while</code> ，然后从连接中不断地尝试读取，直接已读取的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">chunk</code> 长度等于我们期望的长度。这个过程的调度， <em style=" color: #d75100; font-style: normal; ">CEF</em> 已经在内部封装好了，我们只需要在这里给到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ReadResponse</code> 方法实现上，控制它的几个参数即可：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同样考虑 HTTP 响应报文的一般解析方法，从原始的连接中读取内容的行为与结果，是不一定的。所以通常我们会在这块做一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">while</code> ，然后从连接中不断地尝试读取，直接已读取的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">chunk</code> 长度等于我们期望的长度。这个过程的调度， <em style="color: #d75100; font-style: normal;">CEF</em> 已经在内部封装好了，我们只需要在这里给到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReadResponse</code> 方法实现上，控制它的几个参数即可：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">data</code> ，响应的 <em style=" color: #d75100; font-style: normal; ">body</em> 部分的内容。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data</code> ，响应的 <em style="color: #d75100; font-style: normal;">body</em> 部分的内容。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bytes_to_read</code> 还需要读取的字节数。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bytes_to_read</code> 还需要读取的字节数。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bytes_readed</code> 已读取的字节数。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bytes_readed</code> 已读取的字节数。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">callback</code> 控制方法。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback</code> 控制方法。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-因为“读取”行为是不断尝试的，所以这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ReadResponse</code> 方法会被不断调用，直到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bytes_to_read</code> 减至 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0</code> ，说明需要的内容已经读完。官网文档中的几句话，倒把这个“意会容易，说明难”的流程讲清楚了 <a href="https://code.google.com/p/cefpython/wiki/ResourceHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/ResourceHandler</a> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为“读取”行为是不断尝试的，所以这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReadResponse</code> 方法会被不断调用，直到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bytes_to_read</code> 减至 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> ，说明需要的内容已经读完。官网文档中的几句话，倒把这个“意会容易，说明难”的流程讲清楚了 <a href="https://code.google.com/p/cefpython/wiki/ResourceHandler" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/ResourceHandler</a> ：
 </p>
-<pre style="margin: 5px 50px; padding: 0px 5px; border-left: 5px solid #999; line-height: 1.6em; color: gray;">
+<pre class="quote" style="white-space: pre-wrap; border: 1px dashed gray; padding: 20px; font-family: 'microsoft yahei','wenquanyi micro hei',simhei,tahoma,sans-serif;">
  Read response data. If data is available immediately copy up to
  bytesToRead (bytes_to_read) bytes into dataOut[0] (data[0]),
  set bytesReadOut[0] (bytes_readed[0]) to the number of bytes copied,
@@ -645,81 +686,84 @@
  call callback.Continue() when the data is available.
  To indicate response completion return false.
 </pre>
-<p style="margin: 15px 0;">
-我们这里自己需要响应的内容是固定的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">&lt;h1&gt;ok&lt;/h1&gt;</code> ，所以几个数据直接就可以写死了：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们这里自己需要响应的内容是固定的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;h1&gt;ok&lt;/h1&gt;</code> ，所以几个数据直接就可以写死了：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">ReadResponse</span>(<span style="color: #999999">self</span>, data, bytes_to_read, bytes_readed, callback):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">ReadResponse</span>(<span style="color: #999999">self</span>, data, bytes_to_read, bytes_readed, callback):
     data[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&lt;h1&gt;ok&lt;/h1&gt;&#39;</span>
     bytes_readed[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> bytes_to_read
     <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">True</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-最终，当访问一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">data://xxxx</code> 这样的地址时，你就可以在页面上看到两个大的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ok</code> 字符，这个内容，就算是我们“直接创建的响应内容”了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最终，当访问一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data://xxxx</code> 这样的地址时，你就可以在页面上看到两个大的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ok</code> 字符，这个内容，就算是我们“直接创建的响应内容”了。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 总结一下完整地控制请求与响应要做的事：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.SetClientHandler()</code> 设置一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 实例。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.SetClientHandler()</code> 设置一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnBeforeResourceLoad</code> 方法可以修改请求。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnBeforeResourceLoad</code> 方法可以修改请求。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 方法可以根据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 的属性判断，选择性地返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 方法可以根据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 的属性判断，选择性地返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例。
 </li>
-<li>如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 返回了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例，则这个实例在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 中需要被显示地保持引用。
+<li style="margin: 10px auto;">如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 返回了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例，则这个实例在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 中需要被显示地保持引用。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResponseHeaders</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ReadResponse</code> 方法完成内容获取。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResponseHeaders</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReadResponse</code> 方法完成内容获取。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResponseHeaders</code> 中可以根据需要，设置 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">resposne</code> 的各种属性。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResponseHeaders</code> 中可以根据需要，设置 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">resposne</code> 的各种属性。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 几个概念梳理一下：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br</code> 是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Browser</code> 实例。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br</code> 是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Browser</code> 实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 实例是用于控制“请求 + 响应”的一套实现（它又是由各种 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xxxHandler</code> 组成的）。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 实例是用于控制“请求 + 响应”的一套实现（它又是由各种 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xxxHandler</code> 组成的）。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 中处理响应的流程部分，由专门的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例完成（它由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 实例的一个方法返回得到）。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 中处理响应的流程部分，由专门的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例完成（它由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 实例的一个方法返回得到）。
 </li>
-<li>在过程当中，会用到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 对象和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">response</code> 对象。
+<li style="margin: 10px auto;">在过程当中，会用到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 对象和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 对象。
 </li>
 </ul>
 
-<a name="toc11"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 请求流程的处理</h1>
+<a class="anchor" name="toc11"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 请求流程的处理</h1>
 
-<p style="margin: 15px 0;">
-就 HTTP 协议来说，从发送请求，到获取响应，中间还有一些细节的东西。一个例子就是，当你获取的响应头中的 <em style=" color: #d75100; font-style: normal; ">Content-Type</em> 不是一个适合在浏览器显示的类型，那么，应该弹出一个保存文件的提示框。所以，前面提到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 对象， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">response</code> 对象，提到了就 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的流程来说，是如何处理请求与响应的。但是，更深一层的 HTTP 协议的流程，如何去把握并没有介绍。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就 HTTP 协议来说，从发送请求，到获取响应，中间还有一些细节的东西。一个例子就是，当你获取的响应头中的 <em style="color: #d75100; font-style: normal;">Content-Type</em> 不是一个适合在浏览器显示的类型，那么，应该弹出一个保存文件的提示框。所以，前面提到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 对象， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 对象，提到了就 <em style="color: #d75100; font-style: normal;">CEF</em> 的流程来说，是如何处理请求与响应的。但是，更深一层的 HTTP 协议的流程，如何去把握并没有介绍。
 </p>
-<p style="margin: 15px 0;">
-当然，这部分的实现，可以说是跟 <em style=" color: #d75100; font-style: normal; ">CEF</em> 这个东西没有直接关系的，前面也说过了，按 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的基本流程，你完全可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">urllib</code> 拿到响应之后再作后续处理。不过， <em style=" color: #d75100; font-style: normal; ">CEF</em> 其实有提供相应的工具，来对 HTTP 的请求与响应的解析过程作更细的控制的。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，这部分的实现，可以说是跟 <em style="color: #d75100; font-style: normal;">CEF</em> 这个东西没有直接关系的，前面也说过了，按 <em style="color: #d75100; font-style: normal;">CEF</em> 的基本流程，你完全可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">urllib</code> 拿到响应之后再作后续处理。不过， <em style="color: #d75100; font-style: normal;">CEF</em> 其实有提供相应的工具，来对 HTTP 的请求与响应的解析过程作更细的控制的。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里涉及到的对象有：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">response</code> ，不多说。 <a href="https://code.google.com/p/cefpython/wiki/Request" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Request</a> , 
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> ，不多说。 <a href="https://code.google.com/p/cefpython/wiki/Request" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/Request</a> , 
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 外部控制对象，接受 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 的输入。 <a href="https://code.google.com/p/cefpython/wiki/WebRequest" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequest</a>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 外部控制对象，接受 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 的输入。 <a href="https://code.google.com/p/cefpython/wiki/WebRequest" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequest</a>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 流程实现对象（里面实现一些回调需要用到的方法）。 <a href="https://code.google.com/p/cefpython/wiki/WebRequestClient" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequestClient</a>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 流程实现对象（里面实现一些回调需要用到的方法）。 <a href="https://code.google.com/p/cefpython/wiki/WebRequestClient" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequestClient</a>
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-先讲一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 对象。之前提它时，是在 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的自己的流程中，会遇到它。这里，我们要凭空创造一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> ，也是可以的：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先讲一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 对象。之前提它时，是在 <em style="color: #d75100; font-style: normal;">CEF</em> 的自己的流程中，会遇到它。这里，我们要凭空创造一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> ，也是可以的：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">cefpython3</span> <span style="color: #000000; font-weight: bold">import</span> cefpython
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">cefpython3</span> <span style="color: #000000; font-weight: bold">import</span> cefpython
 
 req <span style="color: #000000; font-weight: bold">=</span> cefpython<span style="color: #000000; font-weight: bold">.</span>Request<span style="color: #000000; font-weight: bold">.</span>CreateRequest()
 req<span style="color: #000000; font-weight: bold">.</span>SetUrl(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>)
@@ -727,43 +771,47 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
              cefpython<span style="color: #000000; font-weight: bold">.</span>Request<span style="color: #000000; font-weight: bold">.</span>Flags[<span style="color: #dd1144">&#39;ReportUploadProgress&#39;</span>])
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-通过对静态方法 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">cefpython.Request.CreateRequest()</code> 的调用，我们可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">request</code> 对象，然后，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Set*</code> 方法去设置它的各种属性。之后，可以把它扔给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 进行实际的请求了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过对静态方法 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cefpython.Request.CreateRequest()</code> 的调用，我们可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 对象，然后，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Set*</code> 方法去设置它的各种属性。之后，可以把它扔给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 进行实际的请求了。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">wq <span style="color: #000000; font-weight: bold">=</span> cefpython<span style="color: #000000; font-weight: bold">.</span>WebRequest<span style="color: #000000; font-weight: bold">.</span>Create(req, WebRequestClient())
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">wq <span style="color: #000000; font-weight: bold">=</span> cefpython<span style="color: #000000; font-weight: bold">.</span>WebRequest<span style="color: #000000; font-weight: bold">.</span>Create(req, WebRequestClient())
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">注意，这个 wq 也像之前的 ResourceHandler 实例一样，需要显式地保持一个引用。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">注意，这个 wq 也像之前的 ResourceHandler 实例一样，需要显式地保持一个引用。</strong>
 </p>
-<p style="margin: 15px 0;">
-这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient()</code> 就是对一组请求状态的方法实现，需要的方法有：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient()</code> 就是对一组请求状态的方法实现，需要的方法有：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnUploadProgress(wq, current, total)</code>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnUploadProgress(wq, current, total)</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnDownloadProgress(wq, current, total)</code>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnDownloadProgress(wq, current, total)</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnDownloadData(wq, data)</code>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnDownloadData(wq, data)</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnRequestComplete(wq)</code>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnRequestComplete(wq)</code>
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetAuthCredentials(is_proxy, host, port, realm, schema, callback)</code>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetAuthCredentials(is_proxy, host, port, realm, schema, callback)</code>
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-上面的几个方法中，除了它的一个主要作用是可以监控状态之外， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnDownloadData</code> 方法，还是一个处理响应内容的手段。实际上，如果你使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 来自己发出请求的话，那么在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnDownloadData</code> 中需要自己拼接多次响应的内容。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的几个方法中，除了它的一个主要作用是可以监控状态之外， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnDownloadData</code> 方法，还是一个处理响应内容的手段。实际上，如果你使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 来自己发出请求的话，那么在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnDownloadData</code> 中需要自己拼接多次响应的内容。
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 的使用看一个最简单的完整例子：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 的使用看一个最简单的完整例子：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">cefpython3</span> <span style="color: #000000; font-weight: bold">import</span> cefpython
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">wx</span>
@@ -839,85 +887,89 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
     cefpython<span style="color: #000000; font-weight: bold">.</span>Shutdown()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-从上面的代码可以看到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 是可以跟 <em style=" color: #d75100; font-style: normal; ">Browser</em> 完全没有关系的，处理好 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebReqest</code> 的显式引用就好了。而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 的实现则可以看到请求在每个阶段的状态（具体方法参数的含义见官方文档）。但话虽是这么说，如果仅仅是为了完成一个 HTTP 请求，那 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">urllib</code> 也可以做到。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 作为 <em style=" color: #d75100; font-style: normal; ">CEF</em> 提供的现成机制，目的应该还是跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 配合使用，达到对一个“请求响应”流程的完全控制 + 状态监视。下一节专门考虑这个问题。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从上面的代码可以看到， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 是可以跟 <em style="color: #d75100; font-style: normal;">Browser</em> 完全没有关系的，处理好 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebReqest</code> 的显式引用就好了。而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 的实现则可以看到请求在每个阶段的状态（具体方法参数的含义见官方文档）。但话虽是这么说，如果仅仅是为了完成一个 HTTP 请求，那 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">urllib</code> 也可以做到。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 作为 <em style="color: #d75100; font-style: normal;">CEF</em> 提供的现成机制，目的应该还是跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 配合使用，达到对一个“请求响应”流程的完全控制 + 状态监视。下一节专门考虑这个问题。
 </p>
 
-<a name="toc12"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">8. 自定义请求的处理</h1>
+<a class="anchor" name="toc12"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 自定义请求的处理</h1>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 是 <em style=" color: #d75100; font-style: normal; ">CEF</em> 中提供的一套 HTTP 请求处理的实现。把自定义请求的处理整个流程拿出来看的话，大概是这样的：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 是 <em style="color: #d75100; font-style: normal;">CEF</em> 中提供的一套 HTTP 请求处理的实现。把自定义请求的处理整个流程拿出来看的话，大概是这样的：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>GUI 的初始化阶段，创建 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Browser</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">GUI 的初始化阶段，创建 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Browser</code> 。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Browser</code> 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">SetClientHandler</code> 方法设置一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 的实例。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Browser</code> 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetClientHandler</code> 方法设置一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 的实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 中的方法，可以更改请求。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 中的方法，可以更改请求。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 方法返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 实例。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 方法返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 负责处理请求，并得到响应。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 负责处理请求，并得到响应。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 处理请求。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 处理请求。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 的使用，就是定义了一套 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 接口， <a href="https://code.google.com/p/cefpython/wiki/WebRequestClient" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequestClient</a>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 的使用，就是定义了一套 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 接口， <a href="https://code.google.com/p/cefpython/wiki/WebRequestClient" style="color: #0184b7; text-decoration: none">https://code.google.com/p/cefpython/wiki/WebRequestClient</a>
 </li>
-<li>通过指定 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 得到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 中是完成请求交互的细节，比如要如何去读够整个 HTTP 响应的数据。
+<li style="margin: 10px auto;">通过指定 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Request</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 得到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 中是完成请求交互的细节，比如要如何去读够整个 HTTP 响应的数据。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的概念可能有些多，一层套一层的。其实就是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">Browser -&gt; ClientHandler -&gt; ResourceHandler -&gt; WebRequest(WebRequestClient)
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">Browser -&gt; ClientHandler -&gt; ResourceHandler -&gt; WebRequest(WebRequestClient)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这个地方，不用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 直接用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">httplib</code> 拿数据是可行的，考虑效率，可能需要用多线程等并发方式处理请求。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个地方，不用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 直接用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">httplib</code> 拿数据是可行的，考虑效率，可能需要用多线程等并发方式处理请求。
 </p>
-<p style="margin: 15px 0;">
-但在我自己试的时候， <em style=" color: #d75100; font-style: normal; ">CEF</em> 总是会挂，不知道为什么。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但在我自己试的时候， <em style="color: #d75100; font-style: normal;">CEF</em> 总是会挂，不知道为什么。
 </p>
-<p style="margin: 15px 0;">
-不管是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> ，还是像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">httplib</code> 等其它方法，请求的处理与 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的对接点，都在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 上。准确地说，一般是：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不管是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> ，还是像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">httplib</code> 等其它方法，请求的处理与 <em style="color: #d75100; font-style: normal;">CEF</em> 的对接点，都在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 上。准确地说，一般是：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">__init__()</code> 时创建相应的实例。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__init__()</code> 时创建相应的实例。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ProcessRequest()</code> 发出请求。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ProcessRequest()</code> 发出请求。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResponseHeaders()</code> 设置好响应头。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResponseHeaders()</code> 设置好响应头。
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ReadResponse()</code> 完成响应数据读取。
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReadResponse()</code> 完成响应数据读取。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-这里说一句话，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 这东西，想要完善地处理通用的 HTTP 请求是不可能的，它最大的问题是没有作一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">OnHeaderGet()</code> 的回调，这样，在流程上与 HTTP 的交互流程是不匹配的，会很麻烦。同时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequestClient</code> 没有提供关闭连接的方法，这意味着你无法中断一个请求的处理。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里说一句话，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 这东西，想要完善地处理通用的 HTTP 请求是不可能的，它最大的问题是没有作一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OnHeaderGet()</code> 的回调，这样，在流程上与 HTTP 的交互流程是不匹配的，会很麻烦。同时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequestClient</code> 没有提供关闭连接的方法，这意味着你无法中断一个请求的处理。
 </p>
 
-<a name="toc13"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">9. 正确处理引用与释放资源</h1>
+<a class="anchor" name="toc13"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. 正确处理引用与释放资源</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">CEFPython</em> 是对 C++ 的 <em style=" color: #d75100; font-style: normal; ">CEF</em> 的绑定，所有在一些地方，资源的引用与释放，没有办法自动地做到那么彻底，这种情况下，就需要人为地处理掉。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">CEFPython</em> 是对 C++ 的 <em style="color: #d75100; font-style: normal;">CEF</em> 的绑定，所有在一些地方，资源的引用与释放，没有办法自动地做到那么彻底，这种情况下，就需要人为地处理掉。
 </p>
 
-<a name="toc14"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.1. ResourceHandler的显示引用保留</h2>
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.1. ResourceHandler的显示引用保留</h2>
 
-<p style="margin: 15px 0;">
-这个问题之前就提过了。在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ClientHandler</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">GetResourceHandler</code> 方法中，返回的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 需要显示地保留它的引用。比如之前的代码：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个问题之前就提过了。在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ClientHandler</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetResourceHandler</code> 方法中，返回的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 需要显示地保留它的引用。比如之前的代码：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ClientHandler</span>(<span style="color: #0086B3">object</span>):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">GetResourceHandler</span>(<span style="color: #999999">self</span>, br, frame, request):
         <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> request<span style="color: #000000; font-weight: bold">.</span>GetUrl()<span style="color: #000000; font-weight: bold">.</span>startswith(<span style="color: #dd1144">&#39;data://&#39;</span>):
             <span style="color: #000000; font-weight: bold">return</span>
@@ -926,19 +978,21 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
         <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>res
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 的实例放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">self.res</code> 中。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 的实例放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">self.res</code> 中。
 </p>
 
-<a name="toc15"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.2. WebRequest的显示引用保留</h2>
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.2. WebRequest的显示引用保留</h2>
 
-<p style="margin: 15px 0;">
-跟上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ResourceHandler</code> 一样， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">WebRequest</code> 的实例也需要显示保留引用。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+跟上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ResourceHandler</code> 一样， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebRequest</code> 的实例也需要显示保留引用。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ResourceHandler</span>(<span style="color: #0086B3">object</span>):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">ResourceHandler</span>(<span style="color: #0086B3">object</span>):
 
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, client_handler, <span style="color: #0086B3">id</span>):
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>webrequest <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">None</span>
@@ -953,15 +1007,17 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
         <span style="color: #000000; font-weight: bold">return</span> <span style="color: #999999">True</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc16"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.3. CEFPython的正确关闭</h2>
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.3. CEFPython的正确关闭</h2>
 
-<p style="margin: 15px 0;">
-官方示例代码中的做法，在结束掉 <em style=" color: #d75100; font-style: normal; ">wx</em> 的 <em style=" color: #d75100; font-style: normal; ">Application</em> 实例之后，先清除 <em style=" color: #d75100; font-style: normal; ">app</em> 的引用，然后调用 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 的关闭方法。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+官方示例代码中的做法，在结束掉 <em style="color: #d75100; font-style: normal;">wx</em> 的 <em style="color: #d75100; font-style: normal;">Application</em> 实例之后，先清除 <em style="color: #d75100; font-style: normal;">app</em> 的引用，然后调用 <em style="color: #d75100; font-style: normal;">CEFPython</em> 的关闭方法。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
     settings <span style="color: #000000; font-weight: bold">=</span> {
         <span style="color: #dd1144">&quot;locales_dir_path&quot;</span>: cefpython<span style="color: #000000; font-weight: bold">.</span>GetModuleDirectory() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;/locales&quot;</span>,
         <span style="color: #dd1144">&quot;browser_subprocess_path&quot;</span>: cefpython<span style="color: #000000; font-weight: bold">.</span>GetModuleDirectory() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;/subprocess&quot;</span>,
@@ -974,15 +1030,17 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
     cefpython<span style="color: #000000; font-weight: bold">.</span>Shutdown()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc17"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">9.4. Browser对象的正确结束</h2>
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.4. Browser对象的正确结束</h2>
 
-<p style="margin: 15px 0;">
-官方示例代码中的做法，因为涉及多个 <em style=" color: #d75100; font-style: normal; ">Browser</em> 实例的调度，在父窗口要关闭时，需要通知出去。 <em style=" color: #d75100; font-style: normal; ">CEFPython</em> 在 <em style=" color: #d75100; font-style: normal; ">Browser</em> 对象中提供了一个现成的方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">br.ParentWindowWillClose</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+官方示例代码中的做法，因为涉及多个 <em style="color: #d75100; font-style: normal;">Browser</em> 实例的调度，在父窗口要关闭时，需要通知出去。 <em style="color: #d75100; font-style: normal;">CEFPython</em> 在 <em style="color: #d75100; font-style: normal;">Browser</em> 对象中提供了一个现成的方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">br.ParentWindowWillClose</code> 。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MainFrame</span>(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MainFrame</span>(wx<span style="color: #000000; font-weight: bold">.</span>Frame):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>):
         <span style="color: #000000; font-weight: bold">...</span> <span style="color: #000000; font-weight: bold">...</span>
 
@@ -1000,13 +1058,307 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
         event<span style="color: #000000; font-weight: bold">.</span>Skip()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面的代码，处理在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">MainFrame</code> 关闭时，总去处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ParentWindowWillClose</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码，处理在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MainFrame</code> 关闭时，总去处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParentWindowWillClose</code> 。
 </p>
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'cefpython';
@@ -1037,7 +1389,19 @@ req<span style="color: #000000; font-weight: bold">.</span>SetFlags(cefpython<sp
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABpElEQVR4nN1XO67bMBCcNQ3QHXUD
+6iKRcq0HOE9M5IOJ8kWoG5AdBfBpUthdnM5bJKyIKWY5+6cQf5799AIE/jUUXADYwzVgzIYA4Kve
+G4Qk7vnm6+oaLNlUFRfpQQnAt+5njyhB3b8DTHJxY3oz72v0zraVsfvqda2BkaRd3JzqAENLNs0s
+oYhAtn10c/7od5GzpjaS5OKa5wF4kqSaNnBxMzHmKT1qQbLRtMYMXyUbMrLBHk4xbmAkkz0wJUYG
+2AOK2s6gXG9ciQ0o5GV9D+/ftTXYyIYKABhc0PQk85Tq48bgyTyp5iQMAVy9jWzAmBVnAHi4OdWR
+DXUAPBc3a2o7YGgj54TBBfDQtcZ8fXQQG0n1Prk6G0U6bJXyoy9jd9OcOI9olTP2T5jkYn4T72t0
+LQEXyV+jixTZT4VJewZEBnBxwTNqVsAJUUQu7ICL5CsucLOetufONQAonyWgogTVPpnhLbMhBtcA
+OMVp+kSjD5tdcPN2gWoFAADGDOCep1RR9l5754rZsA6ueUYqdq7nzsXuQ+wvYNu/v4v31ZH/+Ef1
+GwptH/KLxbtEAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
 &copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     

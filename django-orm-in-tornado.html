@@ -1,170 +1,485 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>在Tornado中使用Django的ORM的注意事项 - 进出自由,我的分享</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
-<meta name="keywords" content="在Tornado中使用Django的ORM的注意事项,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
-<meta name="description" content="在Tornado中使用Django的ORM的注意事项,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
-<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    <meta charset="UTF-8" />
+    <title>在Tornado中使用Django的ORM的注意事项 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">在Tornado中使用Django的ORM的注意事项</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">在Tornado中使用Django的ORM的注意事项</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:10 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">2012-12-16 02:44 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">如何在Django外使用它的ORM</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">如何在Django外使用它的ORM</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">Django环境和Tornado的不同之处</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">Django环境和Tornado的不同之处</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">Tornado中要做的事</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">Tornado中要做的事</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">2012-7-15更新</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">2012-7-15更新</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">2012-8-15更新</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">2012-8-15更新</a>
   </li>
   </ol>
 
+</div>
 
-<a id="toc1" name="toc1"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 如何在Django外使用它的ORM</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 如何在Django外使用它的ORM</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Django 的 ORM 虽然功能和性能都不怎么样，但重在简单方便，更重要的是，已经熟悉使用它了。
 </p>
-<p style="margin: 15px 0;">
-要在 Django 外使用它的 ORM ，最简单的办法，就是设置一个 <i style=" color: #d75100; font-style: normal; ">DJANGO_SETTINGS_MODULE</i> 的环境变量就可以了：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要在 Django 外使用它的 ORM ，最简单的办法，就是设置一个 <em style="color: #d75100; font-style: normal;">DJANGO_SETTINGS_MODULE</em> 的环境变量就可以了：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  import os
-  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">import os
+os.environ[<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>DJANGO_SETTINGS_MODULE<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>settings<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<p style="margin: 15px 0;">
-当然，如果你要是喜欢折腾，也可以从 <i style=" color: #d75100; font-style: normal; ">django.conf</i> 中把 <i style=" color: #d75100; font-style: normal; ">settings</i> 引入，然后使用 <i style=" color: #d75100; font-style: normal; ">configure</i> 方法去配置它的 <i style=" color: #d75100; font-style: normal; ">DATABASES</i>。
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，如果你要是喜欢折腾，也可以从 <em style="color: #d75100; font-style: normal;">django.conf</em> 中把 <em style="color: #d75100; font-style: normal;">settings</em> 引入，然后使用 <em style="color: #d75100; font-style: normal;">configure</em> 方法去配置它的 <em style="color: #d75100; font-style: normal;">DATABASES</em>。
 </p>
 
-<a id="toc2" name="toc2"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. Django环境和Tornado的不同之处</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. Django环境和Tornado的不同之处</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 能正确使用 Django 的 API 不代表就万事大吉，它的 ORM 是给自己量身订做的，换到另外一个环境中去，适配的问题只能我们自己解决。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Django 是传统的 Web 运行方式，一个请求过来，就开一个新的“进程/线程”去处理它，在数据库的连接处理上：
 </p>
 
-<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
-<li>在需要进行数据库操作时，才去处理与数据库的连接。
+<ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在需要进行数据库操作时，才去处理与数据库的连接。
 </li>
-<li>因为是传统的 Web 运行方式，所以，每个请求都会使用单独的数据库连接。
+<li style="margin: 10px auto;">因为是传统的 Web 运行方式，所以，每个请求都会使用单独的数据库连接。
 </li>
-<li>连接一旦创建，那么直到当前请求结束，此连接才会关闭。此请求中的接下来的数据库操作会共用连接。
+<li style="margin: 10px auto;">连接一旦创建，那么直到当前请求结束，此连接才会关闭。此请求中的接下来的数据库操作会共用连接。
 </li>
-<li>每次数据库操作时，都会去获取一次 cursor ，此时，会判断连接的可用性。所以，不用担心所谓的“8小时问题”，对于 MySQL 来说，它使用 ping() 方法判断连接的可用性。
+<li style="margin: 10px auto;">每次数据库操作时，都会去获取一次 cursor ，此时，会判断连接的可用性。所以，不用担心所谓的“8小时问题”，对于 MySQL 来说，它使用 ping() 方法判断连接的可用性。
 </li>
-<li>请求处理完时， Django 会确保连接关闭。
+<li style="margin: 10px auto;">请求处理完时， Django 会确保连接关闭。
 </li>
 </ol>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 搞清楚 Django 对数据库连接的处理方式，就好办了。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Tornado 的运行方式是单进程的，同时， Tornado 中的 请求 显然与 Django 中的 请求 不是一个东西，那么 Django 的 ORM 机制，不会知道 Tornado 中一个请求什么时候结束。而 Tornado 又是单进程方式，所以，如果你什么都不做，那么结果就是， Tornado 打开一个与数据库的连接，永远不关闭，请求之间也共用这个连接。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 看到这里，可以看到，在 Tornado 中要做一个连接池是多少简单的事，当然，除非和数据库的交互支持异步调用的方式，否则永远只能使用一个数据库连接，没连接池什么事。
 </p>
 
-<a id="toc3" name="toc3"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. Tornado中要做的事</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. Tornado中要做的事</h1>
 
-<p style="margin: 15px 0;">
-如果你什么也不做，初看起来，数据库工作得很好， Tornado 自己的数据库封装中面临的“8小时问题”对 Django 的 ORM 来说是不存的，因为它每次获取 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">cursor</code> 时都会判断连接的可用性。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你什么也不做，初看起来，数据库工作得很好， Tornado 自己的数据库封装中面临的“8小时问题”对 Django 的 ORM 来说是不存的，因为它每次获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cursor</code> 时都会判断连接的可用性。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 不过你需要解决的另外一个问题是事务提交。
 </p>
-<p style="margin: 15px 0;">
-Tornado 在自己的 MySQL 封装中，使用了 <i style=" color: #d75100; font-style: normal; ">connect.autocommit(True)</i>，而 Django 的 ORM 默认是没有打开 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">autocommit</code> 的。所以，你会看到的一个现象就是，对于 InnoDB 引擎， Tornado 跑起来之后，另外一个客户端对数据库的修改（比如添加了一个记录），在 Tornado 之中是不可见的。你要么打开 autocommit ，要么手动 commit ，我觉得手动 commit 比较好，在每次请求结束时：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Tornado 在自己的 MySQL 封装中，使用了 <em style="color: #d75100; font-style: normal;">connect.autocommit(True)</em>，而 Django 的 ORM 默认是没有打开 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">autocommit</code> 的。所以，你会看到的一个现象就是，对于 InnoDB 引擎， Tornado 跑起来之后，另外一个客户端对数据库的修改（比如添加了一个记录），在 Tornado 之中是不可见的。你要么打开 autocommit ，要么手动 commit ，我觉得手动 commit 比较好，在每次请求结束时：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import os
-  
-  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-  from django.db import connections
-  
-  class BaseHandler(tornado.web.RequestHandler):
-      def finish(self, *args, **kargs):
-          [c.connection and c.connection.commit() for c in connections.all()]
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;">
-另外要注意的一点是，在 Tornado 中最好不要使用 Django 的 <i style=" color: #d75100; font-style: normal; ">@transaction.commit_on_success</i> 这类全局性的东西，除非你真的清楚它对整个处理流程有怎样的影响。
+import os
+
+os.environ[<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>DJANGO_SETTINGS_MODULE<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>settings<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+from django.db import connections
+
+class BaseHandler(tornado.web.RequestHandler)<span style="color: #000000; font-weight: bold">:</span>
+    def finish(self, <span style="color: #000000; font-weight: bold">*</span>args, <span style="color: #000000; font-weight: bold">**</span>kargs)<span style="color: #000000; font-weight: bold">:</span>
+        [c.connection and c.connection.commit() <span style="color: #000000; font-weight: bold">for</span> c in connections.all()]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外要注意的一点是，在 Tornado 中最好不要使用 Django 的 <em style="color: #d75100; font-style: normal;">@transaction.commit_on_success</em> 这类全局性的东西，除非你真的清楚它对整个处理流程有怎样的影响。
 </p>
 
-<a id="toc4" name="toc4"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 2012-7-15更新</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 2012-7-15更新</h1>
 
-<p style="margin: 15px 0;">
-在 <i style=" color: #d75100; font-style: normal; ">finish()</i> 中直接 <i style=" color: #d75100; font-style: normal; ">commit()</i> 有一个问题——虽然 Django 自己在执行数据库操作时会确保数据库的连接已经成功建立，但是，在调用 <i style=" color: #d75100; font-style: normal; ">finish()</i> 之前可能根本就没有任何的数据库操作。这时直接使用 <i style=" color: #d75100; font-style: normal; ">commit()</i> 时可能连接已经失效了（但是连接它还存在，即不为 None），于是就会抛出异常。当然，如果之前没有任何的数据库操作， <i style=" color: #d75100; font-style: normal; ">commit()</i> 本身也是不需要的。我们应该把代码作一些修改：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <em style="color: #d75100; font-style: normal;">finish()</em> 中直接 <em style="color: #d75100; font-style: normal;">commit()</em> 有一个问题——虽然 Django 自己在执行数据库操作时会确保数据库的连接已经成功建立，但是，在调用 <em style="color: #d75100; font-style: normal;">finish()</em> 之前可能根本就没有任何的数据库操作。这时直接使用 <em style="color: #d75100; font-style: normal;">commit()</em> 时可能连接已经失效了（但是连接它还存在，即不为 None），于是就会抛出异常。当然，如果之前没有任何的数据库操作， <em style="color: #d75100; font-style: normal;">commit()</em> 本身也是不需要的。我们应该把代码作一些修改：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import os
-  
-  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-  from django.db import connections
-  
-  class BaseHandler(tornado.web.RequestHandler):
-      def finish(self, *args, **kargs):
-          for c in connections.all():
-              try:
-                  c._commit()
-              except:
-                  pass
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<a id="toc5" name="toc5"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">5. 2012-8-15更新</h1>
+import os
 
-<p style="margin: 15px 0;">
+os.environ[<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>DJANGO_SETTINGS_MODULE<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>settings<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+from django.db import connections
+
+class BaseHandler(tornado.web.RequestHandler)<span style="color: #000000; font-weight: bold">:</span>
+    def finish(self, <span style="color: #000000; font-weight: bold">*</span>args, <span style="color: #000000; font-weight: bold">**</span>kargs)<span style="color: #000000; font-weight: bold">:</span>
+        <span style="color: #000000; font-weight: bold">for</span> c in connections.all()<span style="color: #000000; font-weight: bold">:</span>
+            <span style="color: #990000; font-weight: bold">try:</span>
+                c._commit()
+            <span style="color: #990000; font-weight: bold">except:</span>
+                pass
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 2012-8-15更新</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 对于 InnoDB 而言， Select 这类读操作也是受事务隔离影响的（参考：<a href="http://www.cnblogs.com/shiyangxt/archive/2009/02/11/1388519.html" style="color: #0184b7; text-decoration: none">http://www.cnblogs.com/shiyangxt/archive/2009/02/11/1388519.html</a>）。简单说，另外的事务已经 commit 的数据，对处于旧事务中的 Select 也是不可见的。
 </p>
-<p style="margin: 15px 0;">
-这里有一个很大的影响，就是前面我们在 <i style=" color: #d75100; font-style: normal; ">finish()</i> 中确保执行了 <i style=" color: #d75100; font-style: normal; ">commit()</i>，通常情况下，一个新的请求过来，是处于一个全新的事务当中。但是，如果在 Tornado 当中有一些 callback ，在新请求过来之前就访问了数据库，即打开了一个新的事务，而这些内部的 callback 又不会去调用 <i style=" color: #d75100; font-style: normal; ">finish()</i> 。于是，新的请求就可能处于一个‘旧’的事务当中，这时做 Select 就可能找不到一些数据。所以，为了确保新的请求处于新的事务当中，以保证 Select 操作的正确，我们在 <i style=" color: #d75100; font-style: normal; ">initialize()</i> 也需要做一遍 <i style=" color: #d75100; font-style: normal; ">commit()</i>：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里有一个很大的影响，就是前面我们在 <em style="color: #d75100; font-style: normal;">finish()</em> 中确保执行了 <em style="color: #d75100; font-style: normal;">commit()</em>，通常情况下，一个新的请求过来，是处于一个全新的事务当中。但是，如果在 Tornado 当中有一些 callback ，在新请求过来之前就访问了数据库，即打开了一个新的事务，而这些内部的 callback 又不会去调用 <em style="color: #d75100; font-style: normal;">finish()</em> 。于是，新的请求就可能处于一个‘旧’的事务当中，这时做 Select 就可能找不到一些数据。所以，为了确保新的请求处于新的事务当中，以保证 Select 操作的正确，我们在 <em style="color: #d75100; font-style: normal;">initialize()</em> 也需要做一遍 <em style="color: #d75100; font-style: normal;">commit()</em>：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  def initialize(self):
-      for c in connections.all():
-          try:
-              c._commit()
-          except:
-              pass
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">def initialize(self)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #000000; font-weight: bold">for</span> c in connections.all()<span style="color: #000000; font-weight: bold">:</span>
+        <span style="color: #990000; font-weight: bold">try:</span>
+            c._commit()
+        <span style="color: #990000; font-weight: bold">except:</span>
+            pass
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<p style="margin: 15px 0;">
-这样我们也只能保证“请求”的事务是新的。对于其它非请求时的数据库访问，比如写的一些定时器类的功能，在查库之前，也需要做一遍 <i style=" color: #d75100; font-style: normal; ">commit()</i> 以保证从数据库取出来的数据是有效的。
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样我们也只能保证“请求”的事务是新的。对于其它非请求时的数据库访问，比如写的一些定时器类的功能，在查库之前，也需要做一遍 <em style="color: #d75100; font-style: normal;">commit()</em> 以保证从数据库取出来的数据是有效的。
 </p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'django-orm-in-tornado';
+  var disqus_url = 'http://zouyesheng.com/django-orm-in-tornado.html';
+  var disqus_title = '在Tornado中使用Django的ORM的注意事项';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
 
 <script type="text/javascript">
 
@@ -181,21 +496,21 @@ Tornado 在自己的 MySQL 封装中，使用了 <i style=" color: #d75100; font
 </script>
     
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-  var disqus_shortname = 'zys';
-  var disqus_identifier = 'django-orm-in-tornado';
-  var disqus_url = 'http://zouyesheng.com/django-orm-in-tornado.html';
-  var disqus_title = '在Tornado中使用Django的ORM的注意事项';
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABpElEQVR4nN2XMY7bMBBF31gL0B11
+A+okVq4VwIvVQr5XROci9A2oTgZo/RTeLi53ioQdfzHDz5n/hzTx97ofXoDwr6FoAcJOV7DaCSBt
+fmcwSVzjlDjFRpCaK+PVBqxC+NV/DmSb3O/3tL4P2E3lm+O+RnOay936x+CbDWVJYeGjcKJTkJpn
+l8jMsPoYw1x/DnezN09ukqSFTmGBJEly44aWOIuxngmShNXOM9seW5LUkrIaYY+OdXvDbnMxOANc
+gDU0R5+8xvdB0tvtyCpx/a64L5dUOzFq+tqf4uSpAOLdNpmKpCkp31RcFTAXRs16GvJYHWcAympJ
+e2wAJC1x9lSA1MA0pe0UJ7T7Ztvjs2RPV/H2yd/1wvG6tgQ8hnXsL54T58Rj3NRfQH1XYq7fFPc1
+el1V7AfcrKufdj+szgqQtMSWlDUlZU8FHMhmdrTaFWSNI3H25JYlBdWP8lRe9pw4X28u9Y8B9dxs
+TO+DJ7dKCktsKexxSmGJjrP7Cx3r5bZdV5WN1ZHbAaIKuT8DPAZMwbNLFiDkp082NpOjT9p//KP6
+A9HzH7AKltMKAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
 
-  (function() {
-   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-  })();
-</script>
-<noscript>评论功能需要javascript的支持</noscript>
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
 </div></body></html>

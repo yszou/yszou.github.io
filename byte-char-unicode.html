@@ -1,322 +1,342 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>字节，字符，Unicode及Web编码 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>字节，字符，Unicode及Web编码 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">字节，字符，Unicode及Web编码</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">字节，字符，Unicode及Web编码</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:07 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2015-05-19 17:32 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">字节</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">字符</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">从字符到字节的编码</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">Unicode是什么</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">关于Python代码的简单说明</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">Web相关的编码问题</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 一个简单的 HTTP Server</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 页面上涉及编码标识的地方</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. 单纯的HTML页面渲染</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">6.4. 原始的form提交</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">6.5. encodeURIComponent的编码问题</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">6.6. js加载时的编码</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">6.7. 加载js后又使用XHR加载其它编码资源</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">6.8. XHR提交数据时的编码</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">6.9. 再看form的原始提交</a>
+    </li>
     </ul>
-</div>
-
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">字节</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">字符</a>
-  </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">从字符到字节的编码</a>
-  </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">Unicode是什么</a>
-  </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">关于Python代码的简单说明</a>
-  </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">Web相关的编码问题</a>
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 一个简单的 HTTP Server</a>
-    </li>
-    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 页面上涉及编码标识的地方</a>
-    </li>
-    <li><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. 单纯的HTML页面渲染</a>
-    </li>
-    <li><a href="#toc10" style="color: #0184b7; text-decoration: none">6.4. 原始的form提交</a>
-    </li>
-    <li><a href="#toc11" style="color: #0184b7; text-decoration: none">6.5. encodeURIComponent的编码问题</a>
-    </li>
-    <li><a href="#toc12" style="color: #0184b7; text-decoration: none">6.6. js加载时的编码</a>
-    </li>
-    <li><a href="#toc13" style="color: #0184b7; text-decoration: none">6.7. 加载js后又使用XHR加载其它编码资源</a>
-    </li>
-    <li><a href="#toc14" style="color: #0184b7; text-decoration: none">6.8. XHR提交数据时的编码</a>
-    </li>
-    <li><a href="#toc15" style="color: #0184b7; text-decoration: none">6.9. 再看form的原始提交</a>
-    </li>
-    </ul>
-  </li>
-  <li><a href="#toc16" style="color: #0184b7; text-decoration: none">总结</a>
+  <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">总结</a>
   </li>
   </ol>
 
+</div>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 字节</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 字节</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 字节是一个具体的概念，它表示的就是实实在在的数据，这里之所以从它开始说起，是因为在与计算机相关的数据描述中，它是基本单位（与比特位是等价的）。8 位二进制的比特位为 1 个字节，比如：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">0010 1101
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">0010 1101
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 方便些写成 16 进制：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">2D
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">2D
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里需要强调的是，字节本身是不具有任何意义的东西。它仅仅是数据，或者，也可以说，它仅仅是数字。就像你看到一堆单纯的数字，比如“1 4334 332 2129 98 212”，没有任何意义。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 所以，自然地，原始的字节数据，需要在特定的上下文环境中，以特定的方式去解读它，才有意义。
 </p>
-<p style="margin: 15px 0;">
-比如上面的一个字节数据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">0010 1101</code> ，我们可以说，它表示了 8 个灯泡的开关状态，也可以说，它表示的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">45</code> 这个整数。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如上面的一个字节数据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0010 1101</code> ，我们可以说，它表示了 8 个灯泡的开关状态，也可以说，它表示的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">45</code> 这个整数。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 （反过来多说一点，要表示 8 个灯泡的开关状态，或者要表示 45 这个整数，也不是只有“一个字节”这样的形式）
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 字符</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 字符</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 字符就是一个“汉字”，一个“字母”，是有具体意义的信息。从信息的层面来说，一串字符，跟一段声音，一块图片，没有本质的区别。这篇文章就是由一个一个的字符构成的。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在先简单地考虑一个问题，一个一个的字符，如何使用字节，表示出来？
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 （我想到这里，字节与字符的概念，应该是区分得很明显了吧）
 </p>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 从字符到字节的编码</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 从字符到字节的编码</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">编码</em> 这个概念，其实不太好定义，可大可小。广义地来说，协议，流程，这些都是一种编码。狭义地讲， <em style=" color: #d75100; font-style: normal; ">ASCII</em> 这种具体的概念是一种编码。后面不会强调说的 <em style=" color: #d75100; font-style: normal; ">编码</em> 到底是指什么，了解内容就好。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">编码</em> 这个概念，其实不太好定义，可大可小。广义地来说，协议，流程，这些都是一种编码。狭义地讲， <em style="color: #d75100; font-style: normal;">ASCII</em> 这种具体的概念是一种编码。后面不会强调说的 <em style="color: #d75100; font-style: normal;">编码</em> 到底是指什么，了解内容就好。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 字符是需要展现的信息，字节是唯一的载体。那么使用字节去表示字符，就需要去“定义上下文”，或者说，就需要去约定一套方法。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 如果我们约定的方法是：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>以数字对应英文字母， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">40 -&gt; a</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">41 -&gt; b</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">42 -&gt; c</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">43 -&gt; d</code> ...
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">以数字对应英文字母， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">40 -&gt; a</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">41 -&gt; b</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">42 -&gt; c</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">43 -&gt; d</code> ...
 </li>
-<li>每个数字，以直接的二进制形式，保存在 <em style=" color: #d75100; font-style: normal; ">一个字节</em> 中。
+<li style="margin: 10px auto;">每个数字，以直接的二进制形式，保存在 <em style="color: #d75100; font-style: normal;">一个字节</em> 中。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-假设要处理的字符序列是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bcda</code> ，它对应的数字就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">41 42 43 40</code> ，对应的二进制是：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设要处理的字符序列是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bcda</code> ，它对应的数字就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">41 42 43 40</code> ，对应的二进制是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">0010 1001  -&gt;  41  -&gt;  0x29  -&gt;  b
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">0010 1001  -&gt;  41  -&gt;  0x29  -&gt;  b
 0010 1010  -&gt;  42  -&gt;  0x2A  -&gt;  c
 0010 1011  -&gt;  43  -&gt;  0x2B  -&gt;  d
 0010 1000  -&gt;  40  -&gt;  0x28  -&gt;  a
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">40 -&gt; a</code> ，是我们自己的规定，我们以此，把字符转成了字节，并且以相同的规定，面对字节时，可以知道它们表示的 <em style=" color: #d75100; font-style: normal; ">字符信息</em> 。比如你从任何地址，读取了 4 字节数据，它们是：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">40 -&gt; a</code> ，是我们自己的规定，我们以此，把字符转成了字节，并且以相同的规定，面对字节时，可以知道它们表示的 <em style="color: #d75100; font-style: normal;">字符信息</em> 。比如你从任何地址，读取了 4 字节数据，它们是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">29 2A 2B 28
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">29 2A 2B 28
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-那么你就可以知道这 4 个字节表示的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bcda</code> 这 4 个字母。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那么你就可以知道这 4 个字节表示的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bcda</code> 这 4 个字母。
 </p>
-<p style="margin: 15px 0;">
-其实一开始，事情就是这么简单的。大家约定一套规则，解决如何用字节来表示字符的问题，这套简单的规则就是 <em style=" color: #d75100; font-style: normal; ">ASCII</em> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实一开始，事情就是这么简单的。大家约定一套规则，解决如何用字节来表示字符的问题，这套简单的规则就是 <em style="color: #d75100; font-style: normal;">ASCII</em> 。
 </p>
-<p style="margin: 15px 0;">
-根据 <em style=" color: #d75100; font-style: normal; ">ASCII</em> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">bcda</code> 这 4 个字母，对应的字节分别是：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+根据 <em style="color: #d75100; font-style: normal;">ASCII</em> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bcda</code> 这 4 个字母，对应的字节分别是：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">0x62  -&gt;  0110 0010  -&gt;  b
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">0x62  -&gt;  0110 0010  -&gt;  b
 0x63  -&gt;  0110 0011  -&gt;  c
 0x64  -&gt;  0110 0100  -&gt;  d
 0x61  -&gt;  0110 0001  -&gt;  a
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">ASCII</em> 算是“过时”但是仍能正常工作（因为新标准会兼容它）的东西，所以，可以很容易直接验证它：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ASCII</em> 算是“过时”但是仍能正常工作（因为新标准会兼容它）的东西，所以，可以很容易直接验证它：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #0086B3">echo</span> -n <span style="color: #dd1144">&#39;bcda&#39;</span> &gt; a.bin
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #0086B3">echo</span> -n <span style="color: #dd1144">&#39;bcda&#39;</span> &gt; a.bin
 vim -b a.bin
 <span style="color: #000000; font-weight: bold">(</span>%!xxd<span style="color: #000000; font-weight: bold">)</span>
 <span style="color: #000000; font-weight: bold">(</span>二进制编辑之后， %!xxd -r<span style="color: #000000; font-weight: bold">)</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. Unicode是什么</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. Unicode是什么</h1>
 
-<p style="margin: 15px 0;">
-讲 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 之后，再看看 <em style=" color: #d75100; font-style: normal; ">ASCII</em> ，其实它里面包含了两部分的内容。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+讲 <em style="color: #d75100; font-style: normal;">Unicode</em> 之后，再看看 <em style="color: #d75100; font-style: normal;">ASCII</em> ，其实它里面包含了两部分的内容。
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>字符与“码”的对应关系。即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a -&gt; 0x61</code> 的这套“码表”。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">字符与“码”的对应关系。即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a -&gt; 0x61</code> 的这套“码表”。
 </li>
-<li>“码”在字节序中又怎么表示。即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a -&gt; 91 -&gt; 0110 0001</code> 。这点上，可以说有一些“巧合”， <em style=" color: #d75100; font-style: normal; ">ASCII</em> 中的内容，只需要一个字节就可以保存，那简单地按整数的二进制形式存成字节序就好了。
-</li>
-</ul>
-
-<p style="margin: 15px 0;">
-当然，我想当初 <em style=" color: #d75100; font-style: normal; ">ASCII</em> 在设计之时，也并没有刻意地分别考虑这两部分，因为通常情况下，码表中的内码与字节的最终编码，是可以简单地对应起来，不需要单独地去再设计一套额外的编码机制，完全可以为了字节编码的方便，再去反着设定特定的“内码”，这种情况即使在有四字节情况的 <em style=" color: #d75100; font-style: normal; ">GB18030</em> 中，也是如此。
-</p>
-<p style="margin: 15px 0;">
-但是在 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 中，情况就不是这样了，当然，不排除有一些历史原因在里面。 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 是要处理这个星球上的所有字符，所以，它的“码表”直接就上四字节了（你可以理解成 <em style=" color: #d75100; font-style: normal; ">Unicdoe</em> 在设计这张“码表”时根本就没想过字节编码方面的事），这样简单啊。在字节编码上要一一对应也行，反正就是一个字符占四个字节。
-</p>
-<p style="margin: 15px 0;">
-于是，对于纯英文来说，以前一个字符占一个字节，现在需要用四个字节来存，空间浪费比较严重，很多人纠结了……，简单的一一对应的编码方式不好用， <em style=" color: #d75100; font-style: normal; ">Unicode</em> 的标准又不能返回去重造，那么，就单独来考虑字节编码的事吧。
-</p>
-<p style="margin: 15px 0;">
-（我不知道 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 把内码和编码方式分开，是刻意设计还是历史自然演变，也许今天的它是折衷的一个结果。但是，把码表独立抽象出来，编码方式再单独设计，这种做法很漂亮，我个人是这样认为的。）
-</p>
-<p style="margin: 15px 0;">
-所以，我们说 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 是标准，这里面是有两层含义的。
-</p>
-
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><em style=" color: #d75100; font-style: normal; ">Unicode</em> 定义了一张超级大的“码表”，它包含了世界上的所有文字，这张“码表”，是标准。字符在这张表中的标识，可以叫做 <strong style=" color: red; font-weight: normal; ">内码</strong>。这个星球上的所有语言，构成这些语言的每一个字符，都可以在这张码表中查到对应的唯一内码。
-</li>
-<li><em style=" color: #d75100; font-style: normal; ">Unicode</em> 定义了 <em style=" color: #d75100; font-style: normal; ">一些</em> 具体的编码方式，描述了从内码到字节的转换规则。比如 <em style=" color: #d75100; font-style: normal; ">UTF-8</em>， <em style=" color: #d75100; font-style: normal; ">UCS-4</em> 。
+<li style="margin: 10px auto;">“码”在字节序中又怎么表示。即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a -&gt; 91 -&gt; 0110 0001</code> 。这点上，可以说有一些“巧合”， <em style="color: #d75100; font-style: normal;">ASCII</em> 中的内容，只需要一个字节就可以保存，那简单地按整数的二进制形式存成字节序就好了。
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-总结一下，字符，在不同的标准下，其实都首先有一个“内码”的，然后再通过具体的编码方式，变成字节的形式。只是除了 <em style=" color: #d75100; font-style: normal; ">Unicode</em> ，其它的像 <em style=" color: #d75100; font-style: normal; ">GB18030</em> 这些标准，它的“内码”和“编码方式”是一一对应的。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，我想当初 <em style="color: #d75100; font-style: normal;">ASCII</em> 在设计之时，也并没有刻意地分别考虑这两部分，因为通常情况下，码表中的内码与字节的最终编码，是可以简单地对应起来，不需要单独地去再设计一套额外的编码机制，完全可以为了字节编码的方便，再去反着设定特定的“内码”，这种情况即使在有四字节情况的 <em style="color: #d75100; font-style: normal;">GB18030</em> 中，也是如此。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是在 <em style="color: #d75100; font-style: normal;">Unicode</em> 中，情况就不是这样了，当然，不排除有一些历史原因在里面。 <em style="color: #d75100; font-style: normal;">Unicode</em> 是要处理这个星球上的所有字符，所以，它的“码表”直接就上四字节了（你可以理解成 <em style="color: #d75100; font-style: normal;">Unicdoe</em> 在设计这张“码表”时根本就没想过字节编码方面的事），这样简单啊。在字节编码上要一一对应也行，反正就是一个字符占四个字节。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+于是，对于纯英文来说，以前一个字符占一个字节，现在需要用四个字节来存，空间浪费比较严重，很多人纠结了……，简单的一一对应的编码方式不好用， <em style="color: #d75100; font-style: normal;">Unicode</em> 的标准又不能返回去重造，那么，就单独来考虑字节编码的事吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（我不知道 <em style="color: #d75100; font-style: normal;">Unicode</em> 把内码和编码方式分开，是刻意设计还是历史自然演变，也许今天的它是折衷的一个结果。但是，把码表独立抽象出来，编码方式再单独设计，这种做法很漂亮，我个人是这样认为的。）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，我们说 <em style="color: #d75100; font-style: normal;">Unicode</em> 是标准，这里面是有两层含义的。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Unicode</em> 定义了一张超级大的“码表”，它包含了世界上的所有文字，这张“码表”，是标准。字符在这张表中的标识，可以叫做 <strong style="color: red; font-weight: normal;">内码</strong>。这个星球上的所有语言，构成这些语言的每一个字符，都可以在这张码表中查到对应的唯一内码。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Unicode</em> 定义了 <em style="color: #d75100; font-style: normal;">一些</em> 具体的编码方式，描述了从内码到字节的转换规则。比如 <em style="color: #d75100; font-style: normal;">UTF-8</em>， <em style="color: #d75100; font-style: normal;">UCS-4</em> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+总结一下，字符，在不同的标准下，其实都首先有一个“内码”的，然后再通过具体的编码方式，变成字节的形式。只是除了 <em style="color: #d75100; font-style: normal;">Unicode</em> ，其它的像 <em style="color: #d75100; font-style: normal;">GB18030</em> 这些标准，它的“内码”和“编码方式”是一一对应的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 举个例子：
 </p>
 
-<table border="1" cellpadding="4" style=" border: 1px solid; border-collapse: collapse; margin: 20px auto; line-height: 1.4em; ">
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
 <tr>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">字符</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">Unicode内码</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">UTF-8 编码后的字节</th>
-<th style=" font-weight: bold; text-align: center; padding: 3px 10px;">UTF-32BE 编码后的字节</th>
-<th colspan="2" style=" font-weight: bold; text-align: center; padding: 3px 10px;">GB18030内码(字节)</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">字符</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Unicode内码</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">UTF-8 编码后的字节</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">UTF-32BE 编码后的字节</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">GB18030内码(字节)</th>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">蠟</td>
-<td align="center" style=" padding: 3px 10px;">88 1F</td>
-<td align="center" style=" padding: 3px 10px;">E8 A0 9F</td>
-<td align="center" style=" padding: 3px 10px;">00 00 88 1F</td>
-<td align="center" style=" padding: 3px 10px;">CF 9E</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">蠟</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">88 1F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">E8 A0 9F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00 00 88 1F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">CF 9E</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">筆</td>
-<td align="center" style=" padding: 3px 10px;">7B 46</td>
-<td align="center" style=" padding: 3px 10px;">E7 AD 86</td>
-<td align="center" style=" padding: 3px 10px;">00 00 7B 46</td>
-<td align="center" style=" padding: 3px 10px;">B9 50</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">筆</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">7B 46</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">E7 AD 86</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00 00 7B 46</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">B9 50</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">小</td>
-<td align="center" style=" padding: 3px 10px;">5C 0F</td>
-<td align="center" style=" padding: 3px 10px;">E5 B0 8F</td>
-<td align="center" style=" padding: 3px 10px;">00 00 5C 0F</td>
-<td align="center" style=" padding: 3px 10px;">D0 A1</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">小</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">5C 0F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">E5 B0 8F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00 00 5C 0F</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">D0 A1</td>
 </tr>
 <tr>
-<td align="center" style=" padding: 3px 10px;">新</td>
-<td align="center" style=" padding: 3px 10px;">65 B0</td>
-<td align="center" style=" padding: 3px 10px;">E6 96 B0</td>
-<td align="center" style=" padding: 3px 10px;">00 00 65 B0</td>
-<td align="center" style=" padding: 3px 10px;">D0 C2</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">新</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">65 B0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">E6 96 B0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">00 00 65 B0</td>
+<td align="center" style="border: 1px solid gray; padding: 3px 10px;">D0 C2</td>
 </tr>
 </table>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">Unicode</em> 的意义，是让各种不同的系统，在处理和字符相关的场景时，有了一种统一参照（内码）。所以，一般在系统的流程中，从入口获取的是字节数据，然后解码，得到字符信息。出口时，再把字符消息编码成字节。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Unicode</em> 的意义，是让各种不同的系统，在处理和字符相关的场景时，有了一种统一参照（内码）。所以，一般在系统的流程中，从入口获取的是字节数据，然后解码，得到字符信息。出口时，再把字符消息编码成字节。
 </p>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 关于Python代码的简单说明</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 关于Python代码的简单说明</h1>
 
-<p style="margin: 15px 0;">
-后面的代码示例，使用的是 <strong style=" color: red; font-weight: normal; ">Python 2.x</strong> 版本。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后面的代码示例，使用的是 <strong style="color: red; font-weight: normal;">Python 2.x</strong> 版本。
 </p>
-<p style="margin: 15px 0;">
-在 Python 2.x 版本中，有两个对象可以用来对应 <em style=" color: #d75100; font-style: normal; ">字节</em> 和 <em style=" color: #d75100; font-style: normal; ">字符</em> 这两个概念。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 Python 2.x 版本中，有两个对象可以用来对应 <em style="color: #d75100; font-style: normal;">字节</em> 和 <em style="color: #d75100; font-style: normal;">字符</em> 这两个概念。
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">str</code> 对象，对应 <em style=" color: #d75100; font-style: normal; ">字节</em> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">str</code> 对象，对应 <em style="color: #d75100; font-style: normal;">字节</em> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;一些文本内容&#39;</span>
 s2 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;\xef\xff\x09\x21&#39;</span>
 s3 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;\xefa&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">s1</code> 输入的是一些文字，实际保存时就是原始的字节形式（源文件中存的什么字节，它就是什么字节。比如你的源文件是 <em style=" color: #d75100; font-style: normal; ">UTF-8</em> ，那这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">s1</code> 就是一串 <em style=" color: #d75100; font-style: normal; ">UTF-8</em> 编码的字符中）。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s1</code> 输入的是一些文字，实际保存时就是原始的字节形式（源文件中存的什么字节，它就是什么字节。比如你的源文件是 <em style="color: #d75100; font-style: normal;">UTF-8</em> ，那这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s1</code> 就是一串 <em style="color: #d75100; font-style: normal;">UTF-8</em> 编码的字符中）。
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">s2</code> 就是直观的字节形式了，每个字节以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">\x</code> 开头。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s2</code> 就是直观的字节形式了，每个字节以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\x</code> 开头。
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">s3</code> 也是直观的字节形式，不同的是， <em style=" color: #d75100; font-style: normal; ">ASCII</em> 范围内的字节，会转成对应的字符显示出来。（但是你输入时仍然可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">\x</code> 的形式）
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s3</code> 也是直观的字节形式，不同的是， <em style="color: #d75100; font-style: normal;">ASCII</em> 范围内的字节，会转成对应的字符显示出来。（但是你输入时仍然可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\x</code> 的形式）
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">unicode</code> 对象，对应 <em style=" color: #d75100; font-style: normal; ">字符</em> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">unicode</code> 对象，对应 <em style="color: #d75100; font-style: normal;">字符</em> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 u1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;一些文本内容&#39;</span>
 u2 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;\u4e00\u4e9b\u6587\u672c\u5185\u5bb9&#39;</span>
 u3 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;\U0001f419&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">u1</code> 中保存的，就是抽象的字符信息了，直接打印出来，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">u2</code> 中的那个样子，会显示每个字符的 <em style=" color: #d75100; font-style: normal; ">Unicode</em> 码。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">u3</code> 是四字节码的表示方式（高位的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">000</code> 不能省）。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">u1</code> 中保存的，就是抽象的字符信息了，直接打印出来，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">u2</code> 中的那个样子，会显示每个字符的 <em style="color: #d75100; font-style: normal;">Unicode</em> 码。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">u3</code> 是四字节码的表示方式（高位的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">000</code> 不能省）。
 </p>
-<p style="margin: 15px 0;">
-不管是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">str</code> 还是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">unicode</code> ，被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">print</code> 时，都会自动转换成当前标准输出的对应字符显示（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">unicode</code> 会被自动编码），要看“原始”的消息，可以把对象放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">list</code> 中再 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">print</code> ：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不管是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">str</code> 还是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">unicode</code> ，被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">print</code> 时，都会自动转换成当前标准输出的对应字符显示（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">unicode</code> 会被自动编码），要看“原始”的消息，可以把对象放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">list</code> 中再 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">print</code> ：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;一些文本内容&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;一些文本内容&#39;</span>
 <span style="color: #000000; font-weight: bold">print</span> [s1]
 
 u1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;一些文本内容&#39;</span>
 <span style="color: #000000; font-weight: bold">print</span> [u1]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">unicode</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">str</code> 之间的转换，就是字符到字节的， <em style=" color: #d75100; font-style: normal; ">编码</em> 及 <em style=" color: #d75100; font-style: normal; ">解码</em> 过程。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">unicode</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">str</code> 之间的转换，就是字符到字节的， <em style="color: #d75100; font-style: normal;">编码</em> 及 <em style="color: #d75100; font-style: normal;">解码</em> 过程。
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;一些文本内容&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;一些文本内容&#39;</span>
 s1<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;utf8&#39;</span>) <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">u&#39;一些文本内容&#39;</span>
 
 u1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;一些文本内容&#39;</span>
@@ -328,21 +348,23 @@ u1<span style="color: #000000; font-weight: bold">.</span>encode(<span style="co
 <span style="color: #dd1144">u&#39;一些文内容&#39;</span><span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;gb18030&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;gb18030&#39;</span>) <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">u&#39;一些文本内容&#39;</span><span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;utf8&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. Web相关的编码问题</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. Web相关的编码问题</h1>
 
-<a name="toc7"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.1. 一个简单的 HTTP Server</h2>
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 一个简单的 HTTP Server</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 接下来，就是去挨个看看跟 Web 相关的种种编码问题了。为此，我们需要先做一个简单的 HTTP 应用服务器，以便可以清楚地了解到报文交互的一些细节。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里使用 Python 的 Tornado 框架实现一个简单的应用服务。代码如下：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.web</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.httpserver</span>
@@ -377,64 +399,66 @@ u1<span style="color: #000000; font-weight: bold">.</span>encode(<span style="co
     main()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面代码的细节就不说了，实现上注意三点即可：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>获取请求的头信息。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">获取请求的头信息。
 </li>
-<li>获取请求参数的原始字节信息（特别是 POST 方法的 <em style=" color: #d75100; font-style: normal; ">body</em> 部分的原始字节）。
+<li style="margin: 10px auto;">获取请求参数的原始字节信息（特别是 POST 方法的 <em style="color: #d75100; font-style: normal;">body</em> 部分的原始字节）。
 </li>
-<li>写回连接时的字节内容自己控制。
+<li style="margin: 10px auto;">写回连接时的字节内容自己控制。
 </li>
 </ul>
 
-<a name="toc8"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.2. 页面上涉及编码标识的地方</h2>
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 页面上涉及编码标识的地方</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在进行实际的相关试验前，先试着列一下页面中与编码标识有关的几个地方：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>请求响应头中的 <em style=" color: #d75100; font-style: normal; ">Content-Type</em> 。比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Content-Type: text/html; charset=utf-8</code> 。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">请求响应头中的 <em style="color: #d75100; font-style: normal;">Content-Type</em> 。比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Content-Type: text/html; charset=utf-8</code> 。
 </li>
-<li>HTML 中的相关 <em style=" color: #d75100; font-style: normal; ">meta</em> 标签，比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">&lt;meta charset="utf-8" /&gt;</code> 。
+<li style="margin: 10px auto;">HTML 中的相关 <em style="color: #d75100; font-style: normal;">meta</em> 标签，比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;meta charset="utf-8" /&gt;</code> 。
 </li>
-<li>HTML 中的 <em style=" color: #d75100; font-style: normal; ">javascript</em> 标签，比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">&lt;script src="abc.js" charset="utf-8"&gt;&lt;/script&gt;</code>
+<li style="margin: 10px auto;">HTML 中的 <em style="color: #d75100; font-style: normal;">javascript</em> 标签，比如： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;script src="abc.js" charset="utf-8"&gt;&lt;/script&gt;</code>
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 然后，再考虑会被编码影响的几个地方：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>页面的渲染，主要是 HTML 部分。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">页面的渲染，主要是 HTML 部分。
 </li>
-<li>数据的获取与处理，比如 js 中通过 ajax 获取数据。
+<li style="margin: 10px auto;">数据的获取与处理，比如 js 中通过 ajax 获取数据。
 </li>
-<li>用户输入内容的编码，比如 <em style=" color: #d75100; font-style: normal; ">input</em> ， <em style=" color: #d75100; font-style: normal; ">textarea</em> 这些获取用户输入的东西。
+<li style="margin: 10px auto;">用户输入内容的编码，比如 <em style="color: #d75100; font-style: normal;">input</em> ， <em style="color: #d75100; font-style: normal;">textarea</em> 这些获取用户输入的东西。
 </li>
-<li>数据的原始 form 提交。
+<li style="margin: 10px auto;">数据的原始 form 提交。
 </li>
-<li>数据的 ajax 提交。
+<li style="margin: 10px auto;">数据的 ajax 提交。
 </li>
-<li>...
+<li style="margin: 10px auto;">...
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 简单来说，就是获取与提交两个方面，所有涉及交互的地方，都会有编码问题。后面会尽量实际确认每种场景对于编码的处理到底是以一个什么方式来做的。
 </p>
 
-<a name="toc9"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.3. 单纯的HTML页面渲染</h2>
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. 单纯的HTML页面渲染</h2>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -450,19 +474,21 @@ u1<span style="color: #000000; font-weight: bold">.</span>encode(<span style="co
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(s)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的代码，单纯响应一段 HTML 内容。内容的原始字节是 gbk 编码的。经过实际试验，结论是：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">对于 HTML 内容的渲染，编码上浏览器只认响应的 Content-Type 头。meta 标签的编码指定与 HTML 内容渲染无关（关于后面这点我不太确定，因为在不设置 Content-Type 情况下，即使把 meta 设置成 GBK ，返回的 UTF16 的内容仍然能正常显示）。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">对于 HTML 内容的渲染，编码上浏览器只认响应的 Content-Type 头。meta 标签的编码指定与 HTML 内容渲染无关（关于后面这点我不太确定，因为在不设置 Content-Type 情况下，即使把 meta 设置成 GBK ，返回的 UTF16 的内容仍然能正常显示）。</strong>
 </p>
 
-<a name="toc10"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.4. 原始的form提交</h2>
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.4. 原始的form提交</h2>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -485,21 +511,23 @@ u1<span style="color: #000000; font-weight: bold">.</span>encode(<span style="co
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>redirect(<span style="color: #dd1144">&#39;/&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的代码，会使用 HTML 传统的方式提交表单。经过操作，结论是：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">HTML 中的传统表单提交，内容的编码是和页面编码保持一致的。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">HTML 中的传统表单提交，内容的编码是和页面编码保持一致的。</strong>
 </p>
-<p style="margin: 15px 0;">
-简单来说，如果页面编码（参见前一节）是 gbk ，那么你在 input 中输入了“中文”两个字，那么最后提交出去的内容是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a=%D6%D0%CE%C4</code> 。而如果是 utf-8 编码，那么提交出去的内容就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">a=%E4%B8%AD%E6%96%87</code> 。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说，如果页面编码（参见前一节）是 gbk ，那么你在 input 中输入了“中文”两个字，那么最后提交出去的内容是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a=%D6%D0%CE%C4</code> 。而如果是 utf-8 编码，那么提交出去的内容就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a=%E4%B8%AD%E6%96%87</code> 。
 </p>
-<p style="margin: 15px 0;">
-Python 中要解百分号的这种 <em style=" color: #d75100; font-style: normal; ">URLEncode</em> ，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">urllib</code> 模块中的方法处理：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Python 中要解百分号的这种 <em style="color: #d75100; font-style: normal;">URLEncode</em> ，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">urllib</code> 模块中的方法处理：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">&gt;&gt;&gt;</span> <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&gt;&gt;&gt;</span> <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
 <span style="color: #000000; font-weight: bold">&gt;&gt;&gt;</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;%D6%D0%CE%C4&#39;</span>
 <span style="color: #000000; font-weight: bold">&gt;&gt;&gt;</span> <span style="color: #000000; font-weight: bold">print</span> [urllib<span style="color: #000000; font-weight: bold">.</span>unquote(s)<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;gbk&#39;</span>)]
 [<span style="color: #dd1144">u&#39;\u4e2d\u6587&#39;</span>]
@@ -509,25 +537,27 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
 [<span style="color: #dd1144">u&#39;\u4e2d\u6587&#39;</span>]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-注意，这里说的 form 的直接提交，只针对需要编码的内容，像 <em style=" color: #d75100; font-style: normal; ">multipart/form-data</em> 这种本来就不涉及编码的，原来是什么字节提交时还是什么字节。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意，这里说的 form 的直接提交，只针对需要编码的内容，像 <em style="color: #d75100; font-style: normal;">multipart/form-data</em> 这种本来就不涉及编码的，原来是什么字节提交时还是什么字节。
 </p>
 
-<a name="toc11"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.5. encodeURIComponent的编码问题</h2>
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.5. encodeURIComponent的编码问题</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在后面的和 js 有关的编码当中，要确定在浏览器环境中的 js 里的“字节和字符”问题，真不太好办，js 这块基本上是空白。
 </p>
-<p style="margin: 15px 0;">
-不过好在浏览器有一组和 <em style=" color: #d75100; font-style: normal; ">URLEncode</em> 相关的函数，可以得到那种百分号的编码形式，这样，就可以看到“字节形式”了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过好在浏览器有一组和 <em style="color: #d75100; font-style: normal;">URLEncode</em> 相关的函数，可以得到那种百分号的编码形式，这样，就可以看到“字节形式”了。
 </p>
-<p style="margin: 15px 0;">
-最开始我们已经确认过 HTML 页面自己的渲染时编码问题，在此基础之上，加入 js ，并使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">encodeURIComponent</code> 看看结果如何：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最开始我们已经确认过 HTML 页面自己的渲染时编码问题，在此基础之上，加入 js ，并使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encodeURIComponent</code> 看看结果如何：
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -564,19 +594,21 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>redirect(<span style="color: #dd1144">&#39;/&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 操作的结论是：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">encodeURIComponent 总是以字符的 UTF-8 编码的字节来进行 URL 编码。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">encodeURIComponent 总是以字符的 UTF-8 编码的字节来进行 URL 编码。</strong>
 </p>
 
-<a name="toc12"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.6. js加载时的编码</h2>
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.6. js加载时的编码</h2>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -608,22 +640,24 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(s)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面的代码，有两个地方涉及到了编码的指定，一是 js 响应本身的 <em style=" color: #d75100; font-style: normal; ">Content-Type</em> 头，二是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">script</code> 标签的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">charset</code> 属性。结论是：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码，有两个地方涉及到了编码的指定，一是 js 响应本身的 <em style="color: #d75100; font-style: normal;">Content-Type</em> 头，二是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">script</code> 标签的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">charset</code> 属性。结论是：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">js加载时的编码按以下优先级处理：1. 响应的 Content-Type 头；2. script 标签的 charset 属性；3. 页面编码。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">js加载时的编码按以下优先级处理：1. 响应的 Content-Type 头；2. script 标签的 charset 属性；3. 页面编码。</strong>
 </p>
-<p style="margin: 15px 0;">
-这里多说一点， <em style=" color: #d75100; font-style: normal; ">firebug</em> 中对于响应内容的显示（查看某个请求的响应内容），固定按 utf-8 编码处理。 chrome 的调试工具能正确处理各种编码，只要指定正确。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里多说一点， <em style="color: #d75100; font-style: normal;">firebug</em> 中对于响应内容的显示（查看某个请求的响应内容），固定按 utf-8 编码处理。 chrome 的调试工具能正确处理各种编码，只要指定正确。
 </p>
 
-<a name="toc13"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.7. 加载js后又使用XHR加载其它编码资源</h2>
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.7. 加载js后又使用XHR加载其它编码资源</h2>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -658,22 +692,24 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(s)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上的代码，是在一个 <em style=" color: #d75100; font-style: normal; ">gbk</em> 编码的内容中，加载了 <em style=" color: #d75100; font-style: normal; ">Shift_JIS</em> 编码的 js 文件，js 文件中又通过 XHR 获取了 <em style=" color: #d75100; font-style: normal; ">big5</em> 编码的内容，并把响应内容添加到原来的 <em style=" color: #d75100; font-style: normal; ">gbk</em> 编码的页面中。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上的代码，是在一个 <em style="color: #d75100; font-style: normal;">gbk</em> 编码的内容中，加载了 <em style="color: #d75100; font-style: normal;">Shift_JIS</em> 编码的 js 文件，js 文件中又通过 XHR 获取了 <em style="color: #d75100; font-style: normal;">big5</em> 编码的内容，并把响应内容添加到原来的 <em style="color: #d75100; font-style: normal;">gbk</em> 编码的页面中。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 结论：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">XHR 获取的内容的编码，由响应中的 Content-Type 头指定，如果未指定，按 UTF-8 处理。</strong>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">XHR 获取的内容的编码，由响应中的 Content-Type 头指定，如果未指定，按 UTF-8 处理。</strong>
 </p>
 
-<a name="toc14"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.8. XHR提交数据时的编码</h2>
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.8. XHR提交数据时的编码</h2>
 
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -709,25 +745,27 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(s)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-上面的代码中，虽然 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xhr.send()</code> 那里是 <em style=" color: #d75100; font-style: normal; ">Shift_JIS</em> 编码，但是实际执行时，浏览器提交的内容却是 <em style=" color: #d75100; font-style: normal; ">UTF-8</em> 编码的。结论：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码中，虽然 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xhr.send()</code> 那里是 <em style="color: #d75100; font-style: normal;">Shift_JIS</em> 编码，但是实际执行时，浏览器提交的内容却是 <em style="color: #d75100; font-style: normal;">UTF-8</em> 编码的。结论：
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">XHR提交的内容总是 UTF-8 编码的原始字节。</strong>
-</p>
-
-<a name="toc15"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">6.9. 再看form的原始提交</h2>
-
-<p style="margin: 15px 0;">
-从前面几部分的内容来看，对于提交数据，不管是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">encodeURIComponent</code> 自己作编码，或者是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xhr.send()</code> 直接提交未编码内容，浏览器都是统一按 UTF-8 处理的。但是，对于直接的 form 原始提交方法，浏览器却是按页面编码来的，这相当尴尬。
-</p>
-<p style="margin: 15px 0;">
-然后我去翻文档，看 form 标签支持的属性，果然，有一个 <strong style=" color: red; font-weight: normal; ">accept-charset</strong> ，这东西我以前还从来没有用过（因为真用不着，我 UTF-8 一条路走到黑），这个属性可以指定 form 提交的数据使用何种编码。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">XHR提交的内容总是 UTF-8 编码的原始字节。</strong>
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.9. 再看form的原始提交</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从前面几部分的内容来看，对于提交数据，不管是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encodeURIComponent</code> 自己作编码，或者是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xhr.send()</code> 直接提交未编码内容，浏览器都是统一按 UTF-8 处理的。但是，对于直接的 form 原始提交方法，浏览器却是按页面编码来的，这相当尴尬。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后我去翻文档，看 form 标签支持的属性，果然，有一个 <strong style="color: red; font-weight: normal;">accept-charset</strong> ，这东西我以前还从来没有用过（因为真用不着，我 UTF-8 一条路走到黑），这个属性可以指定 form 提交的数据使用何种编码。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Handler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
         s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;&#39;&#39;&lt;!DOCTYPE html&gt;</span>
 <span style="color: #dd1144">        &lt;html&gt;</span>
@@ -750,29 +788,323 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
         <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>redirect(<span style="color: #dd1144">&#39;/&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc16"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 总结</h1>
+<a class="anchor" name="toc16"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 总结</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先说明一下，这篇文章所有的内容，及相关代码，仅限于反映了 PC 上的现代浏览器的表现。移动端和 IE 我不知道是什么样的结果。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 需要搞明白的东西，前面应该已经都讲清楚了，所以，在一个大系统中，不同的项目使用了不同的编码，这不是什么问题哈，但是需要：
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>响应时，总是设置正确的 <em style=" color: #d75100; font-style: normal; ">Content-Type</em> ，包括编码。
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">响应时，总是设置正确的 <em style="color: #d75100; font-style: normal;">Content-Type</em> ，包括编码。
 </li>
-<li>服务器端处理请求时，总是以 <em style=" color: #d75100; font-style: normal; ">UTF-8</em> 编码对待提交内容。
+<li style="margin: 10px auto;">服务器端处理请求时，总是以 <em style="color: #d75100; font-style: normal;">UTF-8</em> 编码对待提交内容。
 </li>
-<li>如果要直接提交表单，不使用 ajax 方式，则在 form 标签中，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">accept-charset</code> 属性指定编码为 <em style=" color: #d75100; font-style: normal; ">UTF-8</em> 。
+<li style="margin: 10px auto;">如果要直接提交表单，不使用 ajax 方式，则在 form 标签中，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">accept-charset</code> 属性指定编码为 <em style="color: #d75100; font-style: normal;">UTF-8</em> 。
 </li>
 </ul>
 
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'byte-char-unicode';
@@ -803,7 +1135,19 @@ Python 中要解百分号的这种 <em style=" color: #d75100; font-style: norma
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABn0lEQVR4nN2XMY7jMAxFH8cBlE65
+gXwSO9cawIto4bnXWJiL2DdQOhtw/LfY2WpThsUuSxb8+J8i+WXi79jeniTh38sWMzvr8mi36/2E
+mVnriGaS+KofnIk7QdpdGd+tRZYJn5efLcWyu74dzYwtml9c93n2Sztbf3m0vmioSApTHLV2NArS
+nlY/bjIzbNnaONb3djM7eXKTJE1xT5ogSZLcuKEpjqKvA0GSsNp4oh3c5tVqIxXthCO69s10Ij4u
+73aGD+AeZse+HZDWXjtrX28KE65KqjbClNEE0MXsqSTxh+nT9kSvnFQWeSpZajMH1WZW0Q59xY8b
+kjI6ADpImuLo17c3iknWKKeVmBe6V9V9GjriOOuIOYUiOe9JVJShizs6GNLq+iaRKmiKOYUpSkFy
+RSt1SEAzh6IMVm+u0y39XpEqlaTiOQF/PJdlgIEzcfSb7m/P1dHMdgVW7tnVKVRSkDIrcQd8Lw4A
+xfYUpvsphYnGd0+SgiopHFHSxOB7AzRTLsOyvfFoMTle02/PRTylcMCyXV9V91nYf/yj+gWDlA3v
+a9qGuwAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
 &copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     

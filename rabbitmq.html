@@ -13,58 +13,58 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">RabbitMQ 使用参考</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-28 03:44 更新</span>
+                <span>2015-09-28 03:45 更新</span>
             </div>
         </div>
 
 <div class="toc">
 
   <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">安装</a>
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">安装</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">基本概念</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">基本概念</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">基本形式</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">基本形式</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">持久化</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">持久化</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">调度策略</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">调度策略</a>
     <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-    <li><a href="#toc6" style="color: #0184b7; text-decoration: none">5.1. fanout</a>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">5.1. fanout</a>
     </li>
-    <li><a href="#toc7" style="color: #0184b7; text-decoration: none">5.2. direct</a>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">5.2. direct</a>
     </li>
-    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">5.3. topic</a>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">5.3. topic</a>
     </li>
-    <li><a href="#toc9" style="color: #0184b7; text-decoration: none">5.4. headers</a>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">5.4. headers</a>
     </li>
     </ul>
   </li>
-  <li><a href="#toc10" style="color: #0184b7; text-decoration: none">分配策略</a>
+  <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">分配策略</a>
   </li>
-  <li><a href="#toc11" style="color: #0184b7; text-decoration: none">状态反馈</a>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">状态反馈</a>
     <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-    <li><a href="#toc12" style="color: #0184b7; text-decoration: none">7.1. 信息发布的确认</a>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">7.1. 信息发布的确认</a>
     </li>
-    <li><a href="#toc13" style="color: #0184b7; text-decoration: none">7.2. 消息提取的确认</a>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">7.2. 消息提取的确认</a>
     </li>
     </ul>
   </li>
-  <li><a href="#toc14" style="color: #0184b7; text-decoration: none">示例: 多消费者, 并行处理</a>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">示例: 多消费者, 并行处理</a>
   </li>
-  <li><a href="#toc15" style="color: #0184b7; text-decoration: none">示例: 一条消息多种处理, 临时队列</a>
+  <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">示例: 一条消息多种处理, 临时队列</a>
   </li>
-  <li><a href="#toc16" style="color: #0184b7; text-decoration: none">示例: 发布订阅, 多种形式的实现</a>
+  <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">示例: 发布订阅, 多种形式的实现</a>
   </li>
-  <li><a href="#toc17" style="color: #0184b7; text-decoration: none">示例: 远程调用, 信息流方向与角色转换</a>
+  <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">示例: 远程调用, 信息流方向与角色转换</a>
   </li>
-  <li><a href="#toc18" style="color: #0184b7; text-decoration: none">消息的BasicProperties</a>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none">消息的BasicProperties</a>
   </li>
-  <li><a href="#toc19" style="color: #0184b7; text-decoration: none">pika在Tornado中的使用</a>
+  <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none">pika在Tornado中的使用</a>
     <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-    <li><a href="#toc20" style="color: #0184b7; text-decoration: none">13.1. Producing</a>
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none">13.1. Producing</a>
     </li>
-    <li><a href="#toc21" style="color: #0184b7; text-decoration: none">13.2. Consuming</a>
+    <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none">13.2. Consuming</a>
     </li>
     </ul>
   </li>
@@ -73,7 +73,7 @@
 </div>
 
 <a class="anchor" name="toc1"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 安装</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 安装</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 从网站 <a href="http://www.rabbitmq.com/install-generic-unix.html" style="color: #0184b7; text-decoration: none">http://www.rabbitmq.com/install-generic-unix.html</a> 下载到二进制源码, 进入 <em style="color: #d75100; font-style: normal;">sbin</em> 目录, 直接运行 server 即可.
@@ -83,7 +83,7 @@
 </p>
 
 <a class="anchor" name="toc2"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 基本概念</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 基本概念</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">RabbitMQ</em> , 是一个使用 <em style="color: #d75100; font-style: normal;">erlang</em> 编写的 <em style="color: #d75100; font-style: normal;">AMQP</em> (高级消息队列协议) 的服务实现. 简单来说, 就是一个功能强大的消息队列服务.
@@ -137,7 +137,7 @@ RabbitMQ 在这个基本概念之上, 多做了一层抽象, 在 <em style="colo
 </p>
 
 <a class="anchor" name="toc3"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 基本形式</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 基本形式</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 当服务启在 5672 端口之后, 我们就可以开始使用 <em style="color: #d75100; font-style: normal;">RabbitMQ</em> 了.
@@ -153,7 +153,7 @@ RabbitMQ 在这个基本概念之上, 多做了一层抽象, 在 <em style="colo
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -172,17 +172,17 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li>获取连接.
+<li style="margin: 10px auto;">获取连接.
 </li>
-<li>从连接上获取一个 <em style="color: #d75100; font-style: normal;">channel</em> , 类似于数据库访问在连接上获取一个 <em style="color: #d75100; font-style: normal;">cursor</em> .
+<li style="margin: 10px auto;">从连接上获取一个 <em style="color: #d75100; font-style: normal;">channel</em> , 类似于数据库访问在连接上获取一个 <em style="color: #d75100; font-style: normal;">cursor</em> .
 </li>
-<li>声明一个 <em style="color: #d75100; font-style: normal;">exchange</em> . (只会创建一次)
+<li style="margin: 10px auto;">声明一个 <em style="color: #d75100; font-style: normal;">exchange</em> . (只会创建一次)
 </li>
-<li>声明一个 <em style="color: #d75100; font-style: normal;">queue</em> . (只会创建一次)
+<li style="margin: 10px auto;">声明一个 <em style="color: #d75100; font-style: normal;">queue</em> . (只会创建一次)
 </li>
-<li>把 <em style="color: #d75100; font-style: normal;">queue</em> 绑定到 <em style="color: #d75100; font-style: normal;">exchange</em> 上.
+<li style="margin: 10px auto;">把 <em style="color: #d75100; font-style: normal;">queue</em> 绑定到 <em style="color: #d75100; font-style: normal;">exchange</em> 上.
 </li>
-<li>向指定的 <em style="color: #d75100; font-style: normal;">exchange</em> 发送一条消息.
+<li style="margin: 10px auto;">向指定的 <em style="color: #d75100; font-style: normal;">exchange</em> 发送一条消息.
 </li>
 </ul>
 
@@ -191,7 +191,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>./rabbitmqctl list_queues
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>./rabbitmqctl list_queues
 Listing queues ...
 hello    3
 ...done.
@@ -204,7 +204,7 @@ hello    3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -235,15 +235,15 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li>获取连接.
+<li style="margin: 10px auto;">获取连接.
 </li>
-<li>从连接上拿到 <em style="color: #d75100; font-style: normal;">channel</em> .
+<li style="margin: 10px auto;">从连接上拿到 <em style="color: #d75100; font-style: normal;">channel</em> .
 </li>
-<li>声明需要的 <em style="color: #d75100; font-style: normal;">queue</em> .
+<li style="margin: 10px auto;">声明需要的 <em style="color: #d75100; font-style: normal;">queue</em> .
 </li>
-<li>定义一个从指定 <em style="color: #d75100; font-style: normal;">queue</em> 获取消息的回调处理.
+<li style="margin: 10px auto;">定义一个从指定 <em style="color: #d75100; font-style: normal;">queue</em> 获取消息的回调处理.
 </li>
-<li>开始接收消息.
+<li style="margin: 10px auto;">开始接收消息.
 </li>
 </ul>
 
@@ -261,13 +261,13 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><em style="color: #d75100; font-style: normal;">持久化</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">持久化</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">调度策略</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">调度策略</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">分配策略</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">分配策略</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">状态反馈</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">状态反馈</em>
 </li>
 </ul>
 
@@ -276,14 +276,14 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <a class="anchor" name="toc4"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 持久化</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 持久化</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 考虑这样的场景, 当消息被暂存到队列后, 在没有被提取的情况下, RabbitMQ 服务停掉了怎么办.
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -302,7 +302,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span> ./rabbitmqctl list_queues
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span> ./rabbitmqctl list_queues
 Listing queues ...
 hello    1
 ...done.
@@ -337,7 +337,7 @@ first    fanout
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>, <span style="color: #0086B3">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;fanout&#39;</span>, durable<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>, <span style="color: #0086B3">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;fanout&#39;</span>, durable<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
 channel<span style="color: #000000; font-weight: bold">.</span>queue_declare(queue<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hello&#39;</span>, durable<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -348,7 +348,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>queue_declare(que
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>,
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>,
                       routing_key<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;&#39;</span>,
                       body<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;Hello World!&#39;</span>,
                       properties<span style="color: #000000; font-weight: bold">=</span>pika<span style="color: #000000; font-weight: bold">.</span>BasicProperties(
@@ -369,14 +369,14 @@ channel<span style="color: #000000; font-weight: bold">.</span>queue_declare(que
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>queue_delete(queue<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hello&#39;</span>)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>queue_delete(queue<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hello&#39;</span>)
 channel<span style="color: #000000; font-weight: bold">.</span>exchange_delete(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <a class="anchor" name="toc5"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 调度策略</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 调度策略</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我们考虑交换器 <em style="color: #d75100; font-style: normal;">Exchange</em> 和队列 <em style="color: #d75100; font-style: normal;">Queue</em> 的关系. <em style="color: #d75100; font-style: normal;">Exchange</em> 在得到消息后会依据规则把消息投到一个或多个队列当中.
@@ -389,13 +389,13 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_delete(e
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><em style="color: #d75100; font-style: normal;">fanout</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">fanout</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">direct</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">direct</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">topic</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">topic</em>
 </li>
-<li><em style="color: #d75100; font-style: normal;">headers</em>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">headers</em>
 </li>
 </ul>
 
@@ -404,14 +404,14 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_delete(e
 </p>
 
 <a class="anchor" name="toc6"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">5.1. fanout</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. fanout</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 故名思义, <em style="color: #d75100; font-style: normal;">fanout</em> 类型的交换器, 其行为是把消息转发给所有绑定的队列上, 就是一个"广播"行为.
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -438,14 +438,14 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <a class="anchor" name="toc7"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">5.2. direct</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. direct</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">direct</em> 类型的行为是"先匹配, 再投送". 即在绑定时设定一个 <em style="color: #d75100; font-style: normal;">routing_key</em> , 消息的 <em style="color: #d75100; font-style: normal;">routing_key</em> 匹配时, 才会被交换器投送到绑定的队列中去.
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -474,16 +474,16 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <a class="anchor" name="toc8"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">5.3. topic</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">5.3. topic</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">topic</em> 和 <em style="color: #d75100; font-style: normal;">direct</em> 类似, 只是匹配上支持了"模式", 在"点分"的 <em style="color: #d75100; font-style: normal;">routing_key</em> 形式中, 可以使用两个通配符:
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> 表示一个词.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> 表示一个词.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">#</code> 表示零个或多个词.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">#</code> 表示零个或多个词.
 </li>
 </ul>
 
@@ -492,7 +492,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -525,7 +525,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <a class="anchor" name="toc9"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">5.4. headers</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">5.4. headers</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">headers</em> 也是根据规则匹配, 相较于 <em style="color: #d75100; font-style: normal;">direct</em> 和 <em style="color: #d75100; font-style: normal;">topic</em> 固定地使用 <em style="color: #d75100; font-style: normal;">routing_key</em> , <em style="color: #d75100; font-style: normal;">headers</em> 则是一个自定义匹配规则的类型.
@@ -535,7 +535,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -571,9 +571,9 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">all</code> , 全部匹配.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">all</code> , 全部匹配.
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">any</code> , 只匹配一个.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">any</code> , 只匹配一个.
 </li>
 </ul>
 
@@ -588,7 +588,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <a class="anchor" name="toc10"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 分配策略</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 分配策略</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 调度策略是影响 <em style="color: #d75100; font-style: normal;">Exchange</em> 是不是要把消息给 <em style="color: #d75100; font-style: normal;">Queue</em> , 而分配策略影响队列如何把消息给 <em style="color: #d75100; font-style: normal;">Consuming</em> .
@@ -604,7 +604,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exc
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -629,7 +629,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>queue_bind(exchan
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -662,7 +662,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -691,7 +691,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <a class="anchor" name="toc11"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 状态反馈</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 状态反馈</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">状态反馈</em> 的功能目的是为了确认行为的结果. 比如, 当你向 <em style="color: #d75100; font-style: normal;">Exchange</em> 提交一个消息时, 这个消息是否提交成功, 是否送达到了队列中. 当你从队列中提取消息之后, <em style="color: #d75100; font-style: normal;">RabbitMQ</em> 的 Server 如何处理, 因为在提取消息之后, <em style="color: #d75100; font-style: normal;">Consuming</em> 可能判断消息有问题, 可能在处理的过程中出现了异常.
@@ -701,14 +701,14 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <a class="anchor" name="toc12"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">7.1. 信息发布的确认</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">7.1. 信息发布的确认</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 回看一下之前的一段代码:
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>, routing_key<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;&#39;</span>, body<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;Hello World!&#39;</span>)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>basic_publish(exchange<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;first&#39;</span>, routing_key<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;&#39;</span>, body<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;Hello World!&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -718,11 +718,11 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">exchange</code> 的名字写错了.
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">exchange</code> 的名字写错了.
 </li>
-<li><em style="color: #d75100; font-style: normal;">exchange</em> 得到消息后, 发现没有对应的 <em style="color: #d75100; font-style: normal;">queue</em> 可以投送.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">exchange</em> 得到消息后, 发现没有对应的 <em style="color: #d75100; font-style: normal;">queue</em> 可以投送.
 </li>
-<li>投送到 <em style="color: #d75100; font-style: normal;">queue</em> 后当前没有消费者来提取它.
+<li style="margin: 10px auto;">投送到 <em style="color: #d75100; font-style: normal;">queue</em> 后当前没有消费者来提取它.
 </li>
 </ul>
 
@@ -740,7 +740,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>confirm_delivery()
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>confirm_delivery()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -750,7 +750,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
 connection <span style="color: #000000; font-weight: bold">=</span> pika<span style="color: #000000; font-weight: bold">.</span>BlockingConnection(pika<span style="color: #000000; font-weight: bold">.</span>ConnectionParameters(<span style="color: #dd1144">&#39;localhost&#39;</span>))
 channel <span style="color: #000000; font-weight: bold">=</span> connection<span style="color: #000000; font-weight: bold">.</span>channel()
@@ -780,7 +780,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <a class="anchor" name="toc13"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">7.2. 消息提取的确认</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">7.2. 消息提取的确认</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在未关闭消息的 <em style="color: #d75100; font-style: normal;">ack</em> 机制的情况下, 当消息被 <em style="color: #d75100; font-style: normal;">Consuming</em> 从队列中提取后, 在未明确获取确认信息之前, 队列中的消息是不会被删除的. 这样, 流程上就变成, 当消息被提取之后, 队列中的这条消息处于"等待确认"的状态. 如果 <em style="color: #d75100; font-style: normal;">Consuming</em> 反馈"成功"给队列, 则消息可以安全地被删除了. 如果反馈"拒绝"给队列, 则消息可能还需要再次被其它 <em style="color: #d75100; font-style: normal;">Consuming</em> 提取.
@@ -790,7 +790,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -813,7 +813,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>queue_bind(exchan
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -833,7 +833,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -852,7 +852,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_reject(deli
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -874,7 +874,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_nack(delive
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -891,7 +891,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_nack(delive
 </p>
 
 <a class="anchor" name="toc14"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 示例: 多消费者, 并行处理</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 示例: 多消费者, 并行处理</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这可能是最常遇到的一种场景了. 消息产生之后堆到队列里, 有多个消费者的 <em style="color: #d75100; font-style: normal;">worker</em> 来共同处理这些消息, 以并行的方式提高处理效率.
@@ -904,7 +904,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>basic_nack(delive
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -927,7 +927,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>queue_bind(exchan
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -953,7 +953,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <a class="anchor" name="toc15"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. 示例: 一条消息多种处理, 临时队列</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. 示例: 一条消息多种处理, 临时队列</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">fanout</em> 典型的广播模式就是我们这里考虑的场景, 其它的还有像"发布/订阅"的模式也是这种. 就是一条消息, 最终会有多个消费者得到它(前面说的多消费者并行处理的场景, 是一条消息, 只会给到一个消费者).
@@ -966,7 +966,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">r <span style="color: #000000; font-weight: bold">=</span> channel<span style="color: #000000; font-weight: bold">.</span>queue_declare()
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">r <span style="color: #000000; font-weight: bold">=</span> channel<span style="color: #000000; font-weight: bold">.</span>queue_declare()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -979,7 +979,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">r <span style="color: #000000; font-weight: bold">=</span> channel<span style="color: #000000; font-weight: bold">.</span>queue_declare(exclusive<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">r <span style="color: #000000; font-weight: bold">=</span> channel<span style="color: #000000; font-weight: bold">.</span>queue_declare(exclusive<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -992,7 +992,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1023,7 +1023,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1039,7 +1039,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(
 </div>
 
 <a class="anchor" name="toc16"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 示例: 发布订阅, 多种形式的实现</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 示例: 发布订阅, 多种形式的实现</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 "发布/订阅"的模式, 在前面已经提过. 简单地使用临时队列就可以实现.
@@ -1061,7 +1061,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(
 </p>
 
 <a class="anchor" name="toc17"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. 示例: 远程调用, 信息流方向与角色转换</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. 示例: 远程调用, 信息流方向与角色转换</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 队列系统有一个很本质的东西, 就是信息流的方向是单一的. 信息总是被放进 <em style="color: #d75100; font-style: normal;">queue</em> 后, 再被取出.
@@ -1071,7 +1071,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">                  +------------------+   
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">                  +------------------+   
       +----------&gt;|     queue A      |------------+
       |           +------------------+            |
       |                                           v
@@ -1094,7 +1094,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>exchange_declare(
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1125,7 +1125,7 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1161,7 +1161,7 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1195,7 +1195,7 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1244,7 +1244,7 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1271,7 +1271,7 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">uuid</span>
@@ -1302,45 +1302,45 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </div>
 
 <a class="anchor" name="toc18"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">12. 消息的BasicProperties</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">12. 消息的BasicProperties</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在 <em style="color: #d75100; font-style: normal;">AMQP</em> 协议中, 为消息预定了 14 个属性, 有些在前面我们已经用到过了, 有些则本来就很少用到:
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li><em style="color: #d75100; font-style: normal;">content_type</em> 标明消息的类型.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">content_type</em> 标明消息的类型.
 </li>
-<li><em style="color: #d75100; font-style: normal;">content_encoding</em> 标明消息的编码.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">content_encoding</em> 标明消息的编码.
 </li>
-<li><em style="color: #d75100; font-style: normal;">headers</em> 可扩展的信息对.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">headers</em> 可扩展的信息对.
 </li>
-<li><em style="color: #d75100; font-style: normal;">delivery_mode</em> 为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 时表示该消息需要被持久化支持.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">delivery_mode</em> 为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 时表示该消息需要被持久化支持.
 </li>
-<li><em style="color: #d75100; font-style: normal;">priority</em> 该消息的权重.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">priority</em> 该消息的权重.
 </li>
-<li><em style="color: #d75100; font-style: normal;">correlation_id</em> 用于"请求"与"响应"之间的匹配.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">correlation_id</em> 用于"请求"与"响应"之间的匹配.
 </li>
-<li><em style="color: #d75100; font-style: normal;">reply_to</em> "响应"的目标队列.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">reply_to</em> "响应"的目标队列.
 </li>
-<li><em style="color: #d75100; font-style: normal;">expiration</em> 有效期.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">expiration</em> 有效期.
 </li>
-<li><em style="color: #d75100; font-style: normal;">message_id</em> 消息的ID.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">message_id</em> 消息的ID.
 </li>
-<li><em style="color: #d75100; font-style: normal;">timestamp</em> 一个时间戳.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">timestamp</em> 一个时间戳.
 </li>
-<li><em style="color: #d75100; font-style: normal;">type</em> 消息的类型.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">type</em> 消息的类型.
 </li>
-<li><em style="color: #d75100; font-style: normal;">user_id</em> 用户的ID.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">user_id</em> 用户的ID.
 </li>
-<li><em style="color: #d75100; font-style: normal;">app_id</em> 应用的ID.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">app_id</em> 应用的ID.
 </li>
-<li><em style="color: #d75100; font-style: normal;">cluster_id</em> 服务集群ID.
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">cluster_id</em> 服务集群ID.
 </li>
 </ul>
 
 <a class="anchor" name="toc19"></a>
-<h1 style="font-size: 22px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">13. pika在Tornado中的使用</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">13. pika在Tornado中的使用</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 前面的介绍中, 我们都使用的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">BlockingConnection</code> , 是一个同步阻塞的交互模型. <em style="color: #d75100; font-style: normal;">pika</em> 的代码本身在组织时, 其实是以异步的方式来架构的, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">BlockingConnection</code> 不过是一个特殊的封装而已.
@@ -1350,14 +1350,14 @@ ch<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <a class="anchor" name="toc20"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">13.1. Producing</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">13.1. Producing</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先看同步的代码:
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1380,21 +1380,21 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li>获取连接.
+<li style="margin: 10px auto;">获取连接.
 </li>
-<li>从连接上获取 <em style="color: #d75100; font-style: normal;">channel</em> .
+<li style="margin: 10px auto;">从连接上获取 <em style="color: #d75100; font-style: normal;">channel</em> .
 </li>
-<li>声明 <em style="color: #d75100; font-style: normal;">exchange</em> .
+<li style="margin: 10px auto;">声明 <em style="color: #d75100; font-style: normal;">exchange</em> .
 </li>
-<li>声明 <em style="color: #d75100; font-style: normal;">queue</em> .
+<li style="margin: 10px auto;">声明 <em style="color: #d75100; font-style: normal;">queue</em> .
 </li>
-<li>绑定 <em style="color: #d75100; font-style: normal;">exchange</em> 和 <em style="color: #d75100; font-style: normal;">queue</em> .
+<li style="margin: 10px auto;">绑定 <em style="color: #d75100; font-style: normal;">exchange</em> 和 <em style="color: #d75100; font-style: normal;">queue</em> .
 </li>
-<li>打开 <em style="color: #d75100; font-style: normal;">confirm mode</em> .
+<li style="margin: 10px auto;">打开 <em style="color: #d75100; font-style: normal;">confirm mode</em> .
 </li>
-<li>发出消息.
+<li style="margin: 10px auto;">发出消息.
 </li>
-<li>确认结果.
+<li style="margin: 10px auto;">确认结果.
 </li>
 </ul>
 
@@ -1403,7 +1403,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.gen</span>
@@ -1451,7 +1451,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>confirm_delivery(callback<span style="color: #000000; font-weight: bold">=</span>on_confirm, nowait<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>confirm_delivery(callback<span style="color: #000000; font-weight: bold">=</span>on_confirm, nowait<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1464,7 +1464,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>add_on_return_callback(on_publish)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>add_on_return_callback(on_publish)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1477,7 +1477,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">312
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">312
 &lt;METHOD([&#39;channel_number=1&#39;, &#39;frame_type=1&#39;, &quot;method=&lt;Basic.Ack([&#39;delivery_tag=1&#39;, &#39;multiple=False&#39;])&gt;&quot;])&gt;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -1491,7 +1491,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>add_on_return_callback(on_publish)
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">channel<span style="color: #000000; font-weight: bold">.</span>add_on_return_callback(on_publish)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1519,7 +1519,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </dl>
 
 <a class="anchor" name="toc21"></a>
-<h2 style="font-size: 20px; margin: 30px auto;">13.2. Consuming</h2>
+<h2 style="font-size: 18px; margin: 30px auto;">13.2. Consuming</h2>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <em style="color: #d75100; font-style: normal;">Consuming</em> 部分在异步环境上比 <em style="color: #d75100; font-style: normal;">Producing</em> 部分还简单一点. 最大的不同, 可能在于异步环境下需要自己控制对消息的提取(提取之后再次监听, 而不像同步环境下一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">while</code>).
@@ -1529,7 +1529,7 @@ r <span style="color: #000000; font-weight: bold">=</span> channel<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 
@@ -1557,7 +1557,7 @@ channel<span style="color: #000000; font-weight: bold">.</span>start_consuming()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 10px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">pika</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.gen</span>
@@ -1601,6 +1601,8 @@ body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom:
 body.z > .content > .toc a:hover { background-color: #ddd; }
 body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
 body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
 </style>
     
 
@@ -1651,14 +1653,17 @@ $(function(){
     }
 
     function create_toc(){
-        if(!$('body.z > .content > .toc')){return}
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
         if($('body.z > .content > .toc').height() < 50){return}
 
         //至少200空间
         var space = ($(window).width() - $('body.z > .content').outerWidth());
         if( space < 200 ){return}
 
-        $('body.z > .content > .header').css('min-height', '150px');
+        $('body.z > .content > .header').css('min-height', '200px');
 
         var toc_width = (space > 400 ? 400 : space);
         var content_left = (space - toc_width - 20) / 2;
@@ -1693,7 +1698,191 @@ $(function(){
         bind_scroll();
     }
 
-    create_toc();
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
 });
 </script>
     
@@ -1730,7 +1919,7 @@ $(function(){
 </script>
     
 
-<div style="position: absolute; right: 30px; top: 30px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABkElEQVR4nN2XQW4bMQxFHx0D8k5z
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABkElEQVR4nN2XQW4bMQxFHx0D8k5z
 A/ki9eRaAQxYRg30WB0lF5m5gbKTAWV+F9Ns0izDAi134oIE+f8nKRN/2n33iRP+PW8xs0Ox/YIs
 Y2Z2dMxmkjDldCBmgtT9akOlksIaNUOUwsQ5Nef+Wr0eOb3uvzru595nSKHUp6N7tqgZWQcNwKjs
 mU1mhlXgpcLdbO/JEknSFCWskiRJjiwplpcDXI+aYl5sx9VPb2iNmtuoTjvFnBiVPRXwsmTiT8vb

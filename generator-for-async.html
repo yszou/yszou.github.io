@@ -1,318 +1,645 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>使用生成器展平异步回调结构 - 进出自由,我的分享</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
-<meta name="keywords" content="使用生成器展平异步回调结构,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
-<meta name="description" content="使用生成器展平异步回调结构,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
-<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+    <meta charset="UTF-8" />
+    <title>使用生成器展平异步回调结构 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">使用生成器展平异步回调结构</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">使用生成器展平异步回调结构</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:15 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">2012-12-15 18:16 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid #0078b5; padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">关于异步回调</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">关于异步回调</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">什么是生成器</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">什么是生成器</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">把生成器应用于异步回调</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">把生成器应用于异步回调</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">后话</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">后话</a>
   </li>
   </ol>
 
+</div>
 
-<a id="toc1" name="toc1"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">1. 关于异步回调</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 关于异步回调</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 异步机制，从某个角度，可以看成是——使用非阻塞的流程，以注册回调函数的形式进行业务处理。传统机制，是顺序执行代码，如果某个函数很长时间不返回，那么下面的代码就得不到执行，这就比较浪费时间。然后，对于这种问题的解决，一般有两种办法。一是以线程或进程的方式，跑多个实例，这样来把等待的消耗降低。二是就让函数尽快返回，需要等待的资源得到后再使用另外的函数去处理它。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 比如下面的代码：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  response = fetch('http://zouyesheng.com')
-  s = 1 + 1
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">response <span style="color: #000000; font-weight: bold">=</span> fetch(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>http<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//zouyesheng.com&#39;)</span>
+s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>
+print response
+print s
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+去获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">zouyesheng.com</code> 的内容可能需要花费几秒钟的时间，而这几秒钟，在“同步机制”下，你只能等待，连下面的 1+1 都做不了，这显然是一个悲剧。我们利用这等待的时间，除了做下面的 1+1 ，还可以做好多的事。异步结构就是这样的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">def show(response)<span style="color: #000000; font-weight: bold">:</span>
   print response
-  print s
-</pre>
 
-<p style="margin: 15px 0;">
-去获取 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">zouyesheng.com</code> 的内容可能需要花费几秒钟的时间，而这几秒钟，在“同步机制”下，你只能等待，连下面的 1+1 都做不了，这显然是一个悲剧。我们利用这等待的时间，除了做下面的 1+1 ，还可以做好多的事。异步结构就是这样的：
+async_fetch(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>http<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//zouyesheng.com&#39;, callback=show)</span>
+s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>
+print s
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">async_fetch</em> 只是预先注册一个回调函数，它不需要等待获取到实际的内容就马上返回了，然后代码继续执行去做 1+1 。而当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">zouyesheng.com</code> 的资源获取到的时间，之前注册的 <em style="color: #d75100; font-style: normal;">show</em> 函数就会被执行。这样，等待的时间就用来做其它事了，没有时间上的浪费。
 </p>
-
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  def show(response):
-    print response
-  
-  async_fetch('http://zouyesheng.com', callback=show)
-  s = 1+1
-  print s
-</pre>
-
-<p style="margin: 15px 0;">
-<i style=" color: #d75100; font-style: normal; ">async_fetch</i> 只是预先注册一个回调函数，它不需要等待获取到实际的内容就马上返回了，然后代码继续执行去做 1+1 。而当 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">zouyesheng.com</code> 的资源获取到的时间，之前注册的 <i style=" color: #d75100; font-style: normal; ">show</i> 函数就会被执行。这样，等待的时间就用来做其它事了，没有时间上的浪费。
-</p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这看起来不错。但是，这种异步结构，写代码的方式和思考问题的方式都和以前不太一样了。这本来问题不大，但是，如果是多重的异步回调，那代码组织起来就麻烦了。一层套一层，维护起来很麻烦。写过 twisted 和 node.js 的人应该知道其中痛苦。
 </p>
-<p style="margin: 15px 0;">
-一个好消息是， gevent 的出现解救了广大的 pythoner ，它让我们看到异步可以写得不异步。坏消息是我现在用的是 Tornado ，并且很喜欢用它。所以， Tornado 中如果多套几层回调函数一样的苦不堪言。于是，出现了 <i style=" color: #d75100; font-style: normal; ">tornado.gen</i> 这个东西，它使用 <i style=" color: #d75100; font-style: normal; ">yield</i> ，即生成器来把一个异步结构变得像传统的同步结构一样，引一个官方网站的例子就是，原来你是这样的：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个好消息是， gevent 的出现解救了广大的 pythoner ，它让我们看到异步可以写得不异步。坏消息是我现在用的是 Tornado ，并且很喜欢用它。所以， Tornado 中如果多套几层回调函数一样的苦不堪言。于是，出现了 <em style="color: #d75100; font-style: normal;">tornado.gen</em> 这个东西，它使用 <em style="color: #d75100; font-style: normal;">yield</em> ，即生成器来把一个异步结构变得像传统的同步结构一样，引一个官方网站的例子就是，原来你是这样的：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  class AsyncHandler(RequestHandler):
-      @asynchronous
-      def get(self):
-          http_client = AsyncHTTPClient()
-          http_client.fetch("http://example.com",
-                            callback=self.on_fetch)
-  
-      def on_fetch(self, response):
-          do_something_with_response(response)
-          self.render("template.html")
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">class AsyncHandler(RequestHandler)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #a61717; background-color: #e3d2d2">@</span>asynchronous
+    def get(self)<span style="color: #000000; font-weight: bold">:</span>
+        http_client <span style="color: #000000; font-weight: bold">=</span> AsyncHTTPClient()
+        http_client.fetch(<span style="color: #dd1144">&quot;http://example.com&quot;</span>,
+                          callback<span style="color: #000000; font-weight: bold">=</span>self.on_fetch)
 
-<p style="margin: 15px 0;">
+    def on_fetch(self, response)<span style="color: #000000; font-weight: bold">:</span>
+        do_something_with_response(response)
+        self.render(<span style="color: #dd1144">&quot;template.html&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在你可以写成这样：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  class GenAsyncHandler(RequestHandler):
-      @asynchronous
-      @gen.engine
-      def get(self):
-          http_client = AsyncHTTPClient()
-          response = yield gen.Task(http_client.fetch, "http://example.com")
-          do_something_with_response(response)
-          self.render("template.html")
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">class GenAsyncHandler(RequestHandler)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #a61717; background-color: #e3d2d2">@</span>asynchronous
+    <span style="color: #a61717; background-color: #e3d2d2">@</span>gen.engine
+    def get(self)<span style="color: #000000; font-weight: bold">:</span>
+        http_client <span style="color: #000000; font-weight: bold">=</span> AsyncHTTPClient()
+        response <span style="color: #000000; font-weight: bold">=</span> yield gen.Task(http_client.fetch, <span style="color: #dd1144">&quot;http://example.com&quot;</span>)
+        do_something_with_response(response)
+        self.render(<span style="color: #dd1144">&quot;template.html&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<p style="margin: 15px 0;">
-好吧，其实早先我想把此文写成《tornado.gen详解》，但是后来发现， <i style=" color: #d75100; font-style: normal; ">gen.py</i> 的代码一时半会我好像比较不容易看懂，但是使用生成器作用于异步回调的原理我算是明白了，就把标题改成现在的了:)
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好吧，其实早先我想把此文写成《tornado.gen详解》，但是后来发现， <em style="color: #d75100; font-style: normal;">gen.py</em> 的代码一时半会我好像比较不容易看懂，但是使用生成器作用于异步回调的原理我算是明白了，就把标题改成现在的了:)
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 另外， node.js 现在好像没有“生成器”这种机制，我只是觉得它有点太需要了。我对 node.js 并不熟悉。
 </p>
 
-<a id="toc2" name="toc2"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">2. 什么是生成器</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 什么是生成器</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在 Python 中，生成器，即 Generator ，是一种 type ，是一种对象。但是，从运行机制上来看，我把它理解成这样的一种机制——在函数体当中，你可以在指定的位置跳出此函数，然后在未来的某个时间，可以返回到函数中的这个位置继续执行——即是一种保留性的中断。比如下面的代码：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  def fun():
-    print 1+1
-    yield None
-    print 2+2
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">def fun()<span style="color: #000000; font-weight: bold">:</span>
+  print <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>
+  yield None
+  print <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<p style="margin: 15px 0;">
-<i style=" color: #d75100; font-style: normal; ">fun()</i>这个函数执行之后，可以不执行完，在执行了 <i style=" color: #d75100; font-style: normal; ">print 1+1</i> 之后，我去做其它事，然后等一会再回来接着执行 <i style=" color: #d75100; font-style: normal; ">print 2+2</i> 。如下面的代码：。
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">fun()</em>这个函数执行之后，可以不执行完，在执行了 <em style="color: #d75100; font-style: normal;">print 1+1</em> 之后，我去做其它事，然后等一会再回来接着执行 <em style="color: #d75100; font-style: normal;">print 2+2</em> 。如下面的代码：。
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  gen = fun()
-  gen.next()
-  print 'haha'
-  gen.next()
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">gen <span style="color: #000000; font-weight: bold">=</span> fun()
+gen.next()
+print <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>haha<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+gen.next()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<p style="margin: 15px 0;">
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 简单来说，生成器就是这样的。
 </p>
-<p style="margin: 15px 0;">
-在 Python 中，如果一个函数当中有 <i style=" color: #d75100; font-style: normal; ">yield</i> 这个关键词，那么当函数被调用时，将不会返回函数的执行结果，而是返回一个 Generaotr 的实例。这个实例有它自己的一些方法。接下来我们还需要了解生成器工作的一些细节。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 Python 中，如果一个函数当中有 <em style="color: #d75100; font-style: normal;">yield</em> 这个关键词，那么当函数被调用时，将不会返回函数的执行结果，而是返回一个 Generaotr 的实例。这个实例有它自己的一些方法。接下来我们还需要了解生成器工作的一些细节。
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import pdb
-  S = ['EMPTY']
-  
-  def gen(): #[1]
-      for i in ['a', 'b']:
-          print i
-      for i in range(10):
-          S[0] = yield i #[2] [4]
-          print str(S[0])
-  
-  g = gen() #[a]
-  pdb.set_trace()
-  print g.next() #[b]
-  pdb.set_trace()
-  print g.send('ok') #[c]
-  pdb.set_trace()
-  print g.next() #[d]
-  
-  1 2 3 4 a b c d 
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;">
+import pdb
+S <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>EMPTY<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>]
+
+def gen()<span style="color: #000000; font-weight: bold">:</span> <span style="color: #a61717; background-color: #e3d2d2">#</span>[<span style="color: #009999">1</span>]
+    <span style="color: #000000; font-weight: bold">for</span> i in [<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>]<span style="color: #000000; font-weight: bold">:</span>
+        print i
+    <span style="color: #000000; font-weight: bold">for</span> i in range(<span style="color: #009999">10</span>)<span style="color: #000000; font-weight: bold">:</span>
+        S[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">=</span> yield i <span style="color: #a61717; background-color: #e3d2d2">#</span>[<span style="color: #009999">2</span>] [<span style="color: #009999">4</span>]
+        print str(S[<span style="color: #009999">0</span>])
+
+g <span style="color: #000000; font-weight: bold">=</span> gen() <span style="color: #a61717; background-color: #e3d2d2">#</span>[a]
+pdb.set_trace()
+print g.next() <span style="color: #a61717; background-color: #e3d2d2">#</span>[b]
+pdb.set_trace()
+print g.send(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>ok<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>) <span style="color: #a61717; background-color: #e3d2d2">#</span>[c]
+pdb.set_trace()
+print g.next() <span style="color: #a61717; background-color: #e3d2d2">#</span>[d]
+
+<span style="color: #009999">1</span> <span style="color: #009999">2</span> <span style="color: #009999">3</span> <span style="color: #009999">4</span> a b c d 
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我们使用 pdb 加断点，来观察程序运行中一些变量的值变化，以了解生成器工作的具体方式。
 </p>
 
-<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
-<li><b style=" color: red; font-weight: normal; ">[a]</b>执行时， <i style=" color: #d75100; font-style: normal; ">g</i> 得到了一个生成器对象。这时，函数的执行点位于 <b style=" color: red; font-weight: normal; ">[1]</b> 的位置。
+<ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><strong style="color: red; font-weight: normal;">[a]</strong>执行时， <em style="color: #d75100; font-style: normal;">g</em> 得到了一个生成器对象。这时，函数的执行点位于 <strong style="color: red; font-weight: normal;">[1]</strong> 的位置。
 </li>
-<li><b style=" color: red; font-weight: normal; ">[b]</b>执行时，跑函数，直到碰到一个 <i style=" color: #d75100; font-style: normal; ">yield</i> ，即执行点跑到了 <b style=" color: red; font-weight: normal; ">[2]</b>。注意，这时 <i style=" color: #d75100; font-style: normal; ">S[0]</i> 还没有被赋值。因为 <i style=" color: #d75100; font-style: normal; ">S[0]</i> 应该是 <i style=" color: #d75100; font-style: normal; ">yield i</i> 的返回值，而此时， <i style=" color: #d75100; font-style: normal; ">yield 1</i> 这个表达式只是被执行了，还没有返回。此时，因为 <i style=" color: #d75100; font-style: normal; ">yield</i> ，“弹出i”后(即 <i style=" color: #d75100; font-style: normal; ">next()</i> 或 <i style=" color: #d75100; font-style: normal; ">send()</i> 函数返回的是i)，函数执行被中断。
+<li style="margin: 10px auto;"><strong style="color: red; font-weight: normal;">[b]</strong>执行时，跑函数，直到碰到一个 <em style="color: #d75100; font-style: normal;">yield</em> ，即执行点跑到了 <strong style="color: red; font-weight: normal;">[2]</strong>。注意，这时 <em style="color: #d75100; font-style: normal;">S[0]</em> 还没有被赋值。因为 <em style="color: #d75100; font-style: normal;">S[0]</em> 应该是 <em style="color: #d75100; font-style: normal;">yield i</em> 的返回值，而此时， <em style="color: #d75100; font-style: normal;">yield 1</em> 这个表达式只是被执行了，还没有返回。此时，因为 <em style="color: #d75100; font-style: normal;">yield</em> ，“弹出i”后(即 <em style="color: #d75100; font-style: normal;">next()</em> 或 <em style="color: #d75100; font-style: normal;">send()</em> 函数返回的是i)，函数执行被中断。
 </li>
-<li><b style=" color: red; font-weight: normal; ">[c]</b>执行时， <i style=" color: #d75100; font-style: normal; ">send('ok')</i> 即是传递 'ok' 给 <b style=" color: red; font-weight: normal; ">[2]</b> 处的 <i style=" color: #d75100; font-style: normal; ">yield i</i> ，这个 'ok' 就是 <i style=" color: #d75100; font-style: normal; ">yield i</i> 这个表达式的返回值( <i style=" color: #d75100; font-style: normal; ">next()</i> 实际上就是 <i style=" color: #d75100; font-style: normal; ">send(None)</i> )。此时 <i style=" color: #d75100; font-style: normal; ">S[0]</i> 被赋值 'ok' 。函数继续往下执行，直到碰到 <i style=" color: #d75100; font-style: normal; ">yield</i> 。此时执行点位于 <b style=" color: red; font-weight: normal; ">[4]</b>。
+<li style="margin: 10px auto;"><strong style="color: red; font-weight: normal;">[c]</strong>执行时， <em style="color: #d75100; font-style: normal;">send('ok')</em> 即是传递 'ok' 给 <strong style="color: red; font-weight: normal;">[2]</strong> 处的 <em style="color: #d75100; font-style: normal;">yield i</em> ，这个 'ok' 就是 <em style="color: #d75100; font-style: normal;">yield i</em> 这个表达式的返回值( <em style="color: #d75100; font-style: normal;">next()</em> 实际上就是 <em style="color: #d75100; font-style: normal;">send(None)</em> )。此时 <em style="color: #d75100; font-style: normal;">S[0]</em> 被赋值 'ok' 。函数继续往下执行，直到碰到 <em style="color: #d75100; font-style: normal;">yield</em> 。此时执行点位于 <strong style="color: red; font-weight: normal;">[4]</strong>。
 </li>
-<li><b style=" color: red; font-weight: normal; ">[d]</b>执行时，因为是 <i style=" color: #d75100; font-style: normal; ">next()</i> 调用，这时 <i style=" color: #d75100; font-style: normal; ">yield i</i> 返回值就是 None 了，于是 <i style=" color: #d75100; font-style: normal; ">S[0]</i> 被赋值为 <i style=" color: #d75100; font-style: normal; ">None</i> 。函数继续执行，直到碰到 <i style=" color: #d75100; font-style: normal; ">yield</i> ，或函数执行完都没有碰到 <i style=" color: #d75100; font-style: normal; ">yield</i> ，而引发一个 <i style=" color: #d75100; font-style: normal; ">StopIteration</i> 异常。
+<li style="margin: 10px auto;"><strong style="color: red; font-weight: normal;">[d]</strong>执行时，因为是 <em style="color: #d75100; font-style: normal;">next()</em> 调用，这时 <em style="color: #d75100; font-style: normal;">yield i</em> 返回值就是 None 了，于是 <em style="color: #d75100; font-style: normal;">S[0]</em> 被赋值为 <em style="color: #d75100; font-style: normal;">None</em> 。函数继续执行，直到碰到 <em style="color: #d75100; font-style: normal;">yield</em> ，或函数执行完都没有碰到 <em style="color: #d75100; font-style: normal;">yield</em> ，而引发一个 <em style="color: #d75100; font-style: normal;">StopIteration</em> 异常。
 </li>
 </ol>
 
-<a id="toc3" name="toc3"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">3. 把生成器应用于异步回调</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 把生成器应用于异步回调</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 搞清楚生成器的工作方式之后，考虑把它用于异步回调当中：
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import tornado.ioloop
-  from tornado.httpclient import AsyncHTTPClient
-  
-  def callback(response):
-      print response.body
-  
-  def fetch():
-      response = yield AsyncHTTPClient().fetch('http://zouyesheng.com', callback)
-      print response
-  
-  gen = fetch()
-  gen.next()
-  try:
-      gen.send('res')
-  except StopIteration:
-      pass
-  
-  tornado.ioloop.IOLoop.instance().start()
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;">
+import tornado.ioloop
+from tornado.httpclient import AsyncHTTPClient
+
+def callback(response)<span style="color: #000000; font-weight: bold">:</span>
+    print response.body
+
+def fetch()<span style="color: #000000; font-weight: bold">:</span>
+    response <span style="color: #000000; font-weight: bold">=</span> yield AsyncHTTPClient().fetch(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>http<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//zouyesheng.com&#39;, callback)</span>
+    print response
+
+gen <span style="color: #000000; font-weight: bold">=</span> fetch()
+gen.next()
+<span style="color: #990000; font-weight: bold">try:</span>
+    gen.send(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>res<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>)
+except StopIteration<span style="color: #000000; font-weight: bold">:</span>
+    pass
+
+tornado.ioloop.IOLoop.instance().start()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的代码很简单：
 </p>
 
-<ol style="line-height: 1.4em; padding: 0px; padding-left: 20px;">
-<li>第一个 <i style=" color: #d75100; font-style: normal; ">next()</i> 被调用时， <i style=" color: #d75100; font-style: normal; ">fetch()</i> 函数就被调用了，但是 <i style=" color: #d75100; font-style: normal; ">response</i> 没有得到 <i style=" color: #d75100; font-style: normal; ">yield</i> 的返回。这时的 <i style=" color: #d75100; font-style: normal; ">callback</i> 不定时会被调用。
+<ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">第一个 <em style="color: #d75100; font-style: normal;">next()</em> 被调用时， <em style="color: #d75100; font-style: normal;">fetch()</em> 函数就被调用了，但是 <em style="color: #d75100; font-style: normal;">response</em> 没有得到 <em style="color: #d75100; font-style: normal;">yield</em> 的返回。这时的 <em style="color: #d75100; font-style: normal;">callback</em> 不定时会被调用。
 </li>
-<li>调用 <i style=" color: #d75100; font-style: normal; ">send('res')</i> 时， <i style=" color: #d75100; font-style: normal; ">response</i> 被赋值成 <code style=" margin: auto 3px; color: #228b22; font-family: "dejavu sans mono", "courier new", monospace; ">'res'</code> ，函数向下执行完。因为没有 <i style=" color: #d75100; font-style: normal; ">yield</i> ，触发一个 <i style=" color: #d75100; font-style: normal; ">StopIteration</i> 异常。
-<p style="margin: 15px 0;"></p>
-其实看到这样，就很容易想到，要想异步变同步，那只需要在回调函数 <i style=" color: #d75100; font-style: normal; ">callback</i> 中去处理生成器的 <i style=" color: #d75100; font-style: normal; ">send()</i> 调用就可以了。
-<p style="margin: 15px 0;"></p>
-但是，这样会碰到另外一个问题。传递 <i style=" color: #d75100; font-style: normal; ">callback</i> 时，生成器都还不存在，那又如何能在 <i style=" color: #d75100; font-style: normal; ">callback</i> 中处理生成器呢。所以，我们需要改变一下我们的流程，一个快速实现如下：
-<p style="margin: 15px 0;"></p>
+<li style="margin: 10px auto;">调用 <em style="color: #d75100; font-style: normal;">send('res')</em> 时， <em style="color: #d75100; font-style: normal;">response</em> 被赋值成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'res'</code> ，函数向下执行完。因为没有 <em style="color: #d75100; font-style: normal;">yield</em> ，触发一个 <em style="color: #d75100; font-style: normal;">StopIteration</em> 异常。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+其实看到这样，就很容易想到，要想异步变同步，那只需要在回调函数 <em style="color: #d75100; font-style: normal;">callback</em> 中去处理生成器的 <em style="color: #d75100; font-style: normal;">send()</em> 调用就可以了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+但是，这样会碰到另外一个问题。传递 <em style="color: #d75100; font-style: normal;">callback</em> 时，生成器都还不存在，那又如何能在 <em style="color: #d75100; font-style: normal;">callback</em> 中处理生成器呢。所以，我们需要改变一下我们的流程，一个快速实现如下：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import tornado.ioloop
-  from tornado.httpclient import AsyncHTTPClient
-  import functools
-  
-  def fetch():
-      response = yield functools.partial(AsyncHTTPClient().fetch, 'http://sohu.com')
-      print response
-  
-  gen = fetch()
-  f = gen.next()
-  
-  def callback(response):
-      try:
-          gen.send(response)
-      except StopIteration:
-          pass
-  
-  f(callback)
-  print 'here'
-  
-  tornado.ioloop.IOLoop.instance().start()
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;"></p>
-在上面的代码中，我们 <i style=" color: #d75100; font-style: normal; ">yield</i> 出来的是一个函数，在生成器和 <i style=" color: #d75100; font-style: normal; ">callback</i> 都准备好了之后，我们再调用这个函数。这样，在 <i style=" color: #d75100; font-style: normal; ">callback</i> 中处理生成器，调用 <i style=" color: #d75100; font-style: normal; ">send()</i> 方法就没有问题了。因为 <i style=" color: #d75100; font-style: normal; ">send()</i> 方法的调用，原函数中的 <i style=" color: #d75100; font-style: normal; ">response</i> 获取到赋值，函数继续执行。这就是一切，在 <i style=" color: #d75100; font-style: normal; ">fetch()</i> 中，代码看起来就像是同步结构一样。
-<p style="margin: 15px 0;"></p>
+import tornado.ioloop
+from tornado.httpclient import AsyncHTTPClient
+import functools
+
+def fetch()<span style="color: #000000; font-weight: bold">:</span>
+    response <span style="color: #000000; font-weight: bold">=</span> yield functools.partial(AsyncHTTPClient().fetch, <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>http<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//sohu.com&#39;)</span>
+    print response
+
+gen <span style="color: #000000; font-weight: bold">=</span> fetch()
+f <span style="color: #000000; font-weight: bold">=</span> gen.next()
+
+def callback(response)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #990000; font-weight: bold">try:</span>
+        gen.send(response)
+    except StopIteration<span style="color: #000000; font-weight: bold">:</span>
+        pass
+
+f(callback)
+print <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>here<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+
+tornado.ioloop.IOLoop.instance().start()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+在上面的代码中，我们 <em style="color: #d75100; font-style: normal;">yield</em> 出来的是一个函数，在生成器和 <em style="color: #d75100; font-style: normal;">callback</em> 都准备好了之后，我们再调用这个函数。这样，在 <em style="color: #d75100; font-style: normal;">callback</em> 中处理生成器，调用 <em style="color: #d75100; font-style: normal;">send()</em> 方法就没有问题了。因为 <em style="color: #d75100; font-style: normal;">send()</em> 方法的调用，原函数中的 <em style="color: #d75100; font-style: normal;">response</em> 获取到赋值，函数继续执行。这就是一切，在 <em style="color: #d75100; font-style: normal;">fetch()</em> 中，代码看起来就像是同步结构一样。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 在正式使用中，我们可以使用一些语法糖把代码装饰得更好看：
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  import tornado.ioloop
-  from tornado.httpclient import AsyncHTTPClient
-  import functools
-  
-  def task(func, url):
-      return functools.partial(func, url)
-  
-  def callback(gen, response):
-      try:
-          gen.send(response)
-      except StopIteration:
-          pass
-  
-  def sync(func):
-      def wrapper():
-          gen = func()
-          f = gen.next()
-          f(functools.partial(callback, gen))
-      return wrapper
-  
-  @sync
-  def fetch():
-      response = yield task(AsyncHTTPClient().fetch, 'http://sohu.com')
-      print '1'
-      print response
-      print '2'
-  
-  fetch()
-  print '3'
-  
-  tornado.ioloop.IOLoop.instance().start()
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;"></p>
-这里的 <i style=" color: #d75100; font-style: normal; ">fetch()</i> 看起来就像是那么一回事了吧 :)
+import tornado.ioloop
+from tornado.httpclient import AsyncHTTPClient
+import functools
+
+def task(func, url)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #000000; font-weight: bold">return</span> functools.partial(func, url)
+
+def callback(gen, response)<span style="color: #000000; font-weight: bold">:</span>
+    <span style="color: #990000; font-weight: bold">try:</span>
+        gen.send(response)
+    except StopIteration<span style="color: #000000; font-weight: bold">:</span>
+        pass
+
+def sync(func)<span style="color: #000000; font-weight: bold">:</span>
+    def wrapper()<span style="color: #000000; font-weight: bold">:</span>
+        gen <span style="color: #000000; font-weight: bold">=</span> func()
+        f <span style="color: #000000; font-weight: bold">=</span> gen.next()
+        f(functools.partial(callback, gen))
+    <span style="color: #000000; font-weight: bold">return</span> wrapper
+
+<span style="color: #a61717; background-color: #e3d2d2">@</span>sync
+def fetch()<span style="color: #000000; font-weight: bold">:</span>
+    response <span style="color: #000000; font-weight: bold">=</span> yield task(AsyncHTTPClient().fetch, <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>http<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//sohu.com&#39;)</span>
+    print <span style="color: #dd1144">&#39;1&#39;</span>
+    print response
+    print <span style="color: #dd1144">&#39;2&#39;</span>
+
+fetch()
+print <span style="color: #dd1144">&#39;3&#39;</span>
+
+tornado.ioloop.IOLoop.instance().start()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+这里的 <em style="color: #d75100; font-style: normal;">fetch()</em> 看起来就像是那么一回事了吧 :)
 </li>
 </ol>
 
-<a id="toc4" name="toc4"></a>
-<h1 style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #69ab01; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">4. 后话</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 后话</h1>
 
-<p style="margin: 15px 0;">
-这里只是简单介绍了把生成器用于异步回调结构，以改变代码组织形式的原理，吧。当然，实际使用中，要处理的问题复杂得多，比如在函数中有多个 <i style=" color: #d75100; font-style: normal; ">yield</i> 的情况，还在考虑运行时的上下文环境，等。所以 <i style=" color: #d75100; font-style: normal; ">tornado.gen</i> 我还不太看得明白。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里只是简单介绍了把生成器用于异步回调结构，以改变代码组织形式的原理，吧。当然，实际使用中，要处理的问题复杂得多，比如在函数中有多个 <em style="color: #d75100; font-style: normal;">yield</em> 的情况，还在考虑运行时的上下文环境，等。所以 <em style="color: #d75100; font-style: normal;">tornado.gen</em> 我还不太看得明白。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 不过，在这里也让我们看到了，生成器除了可以用于省内存的“惰性求值”外，还有很多可以发挥的地方。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这种生成器的方案，本质上是给异步执行的回调函数开辟了另外一个空间，然后在那个空间中再回到“当前空间”。在离开当前空间的时间段内，使用生成器的机制实际了“阻塞”函数流程的处理。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 如果你需要在函数中并发执行一些异步制作，那这套机制就不适用了。但是总归在很多时候，可以写舒服点的代码了吧。
 </p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'generator-for-async';
+  var disqus_url = 'http://zouyesheng.com/generator-for-async.html';
+  var disqus_title = '使用生成器展平异步回调结构';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
 
 <script type="text/javascript">
 
@@ -329,21 +656,20 @@
 </script>
     
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-  var disqus_shortname = 'zys';
-  var disqus_identifier = 'generator-for-async';
-  var disqus_url = 'http://zouyesheng.com/generator-for-async.html';
-  var disqus_title = '使用生成器展平异步回调结构';
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABjElEQVR4nN2XQY4iMQxFnymksAs3
+CCeBudZIkSgJDlahL1J1g7ADKeT3gh5ppEa9wouZLL2w83/+tx0T38999SII/1oUTUDo5MShDgJI
+N787mCQ+FArERpCaJ7ZSSWFikHocU5jIntgA2JPZ2KL5zXlfRz+05n7YPna+1VCRFKbY0m3PoCA1
+TyZlZtgyEk/19+5utvZk8iDpprQGbc9I0uzpt3gSh5oJkoTVQW5MIlWQaiYUNUKPvu+2Pc4bbUnA
+GbgGPybXXKLthB7nwFXaXN6T98c+WfTH2Ps4+jGJOkep1IykMUn16KmSTgbTmEJRg0N1nAFoIqNS
+hxkgaYonT2xTbGCVpCmOqPtW68ANnlJx7pOo1OMcOjk9je2sSWlMN2JLwFFBcqy24nJty8YqSygy
+u6+url1Zkp50TnFMKt4O+FsgochVk0VS6AyzVLM7tlJJQTWjHhvgO3EAuAAbq+cUJgZPlXxhIz31
+4r1PRs2U1Baz7WOHyXGafu1ccE7qsNx/vSvvq2P/8Y/qE3IxHeCdpCysAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
 
-  (function() {
-   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-  })();
-</script>
-<noscript>评论功能需要javascript的支持</noscript>
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
 </div></body></html>

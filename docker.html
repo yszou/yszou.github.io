@@ -1,220 +1,250 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>Docker简单使用 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>Docker简单使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div id="zys-wrapper" style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">Docker简单使用</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">Docker简单使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:01 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-07-16 01:43 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">安装</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">安装</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">一些概念</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">一些概念</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">基本命令</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">基本命令</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">Dockerfile</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">Dockerfile</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">网络</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">网络</a>
   </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">分区挂载和数据卷</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">分区挂载和数据卷</a>
   </li>
-  <li><a href="#toc7" style="color: #0184b7; text-decoration: none">镜像服务器</a>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">镜像服务器</a>
   </li>
-  <li><a href="#toc8" style="color: #0184b7; text-decoration: none">参考</a>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">参考</a>
   </li>
   </ol>
 
+</div>
 
-<a id="toc1" name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 安装</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 安装</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 照着官方文档 <a href="http://docs.docker.com/installation/ubuntulinux/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/installation/ubuntulinux/</a> 做吧.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 一般就是:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>更新内核:
-<p style="margin: 15px 0;"></p>
-
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$ </span>sudo apt-get update
-<span style="color: #008080">$ </span>sudo apt-get install linux-image-generic-lts-raring linux-headers-generic-lts-raring
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-
-<p style="margin: 15px 0;"></p>
-</li>
-<li>重启系统.
-</li>
-<li>添加软件源的 KEY:
-<p style="margin: 15px 0;"></p>
-
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$ </span>sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-                   --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-
-<p style="margin: 15px 0;"></p>
-</li>
-<li>添加软件源:
-<p style="margin: 15px 0;"></p>
-
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$ </span>sudo sh -c \
-  <span style="color: #dd1144">&quot;echo deb https://get.docker.io/ubuntu docker main &gt; /etc/apt/sources.list.d/docker.list&quot;</span>
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-
-<p style="margin: 15px 0;"></p>
-</li>
-<li>更新源列表并安装:
-<p style="margin: 15px 0;"></p>
-
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$ </span>sudo apt-get update
-<span style="color: #008080">$ </span>sudo apt-get install lxc-docker
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">更新内核:
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-安装完成之后, 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker</code> 命令可供使用. 同时, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker</code> 的服务默认监听在一个 <em style=" color: #d75100; font-style: normal; ">sock</em> 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-get update
+<span style="color: #008080">$ </span>sudo apt-get install linux-image-generic-lts-raring linux-headers-generic-lts-raring
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">重启系统.
+</li>
+<li style="margin: 10px auto;">添加软件源的 KEY:
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
+                   --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">添加软件源:
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo sh -c \
+  <span style="color: #dd1144">&quot;echo deb https://get.docker.io/ubuntu docker main &gt; /etc/apt/sources.list.d/docker.list&quot;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">更新源列表并安装:
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-get update
+<span style="color: #008080">$ </span>sudo apt-get install lxc-docker
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装完成之后, 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 命令可供使用. 同时, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 的服务默认监听在一个 <em style="color: #d75100; font-style: normal;">sock</em> 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
 </p>
-<p style="margin: 15px 0;">
-权限方面, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker</code> 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sudo</code> 用, 要么把当前用户加入到 docker 组:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+权限方面, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sudo</code> 用, 要么把当前用户加入到 docker 组:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #008080">$ </span>sudo groupadd docker
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo groupadd docker
 <span style="color: #008080">$ </span>sudo gpasswd -a zys docker
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 重启一下系统吧.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 最后, 先安装一个可用的"镜像":
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker pull ubuntu:14.04
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull ubuntu:14.04
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这可能需要一点时间, 也可能因为 GFW 的影响而不容易安装成功.
 </p>
-<p style="margin: 15px 0;">
-然后作一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Hello World</code> :
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后作一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Hello World</code> :
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run ubuntu:14.04 <span style="color: #0086B3">echo</span> <span style="color: #dd1144">&quot;Hello World&quot;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run ubuntu:14.04 <span style="color: #0086B3">echo</span> <span style="color: #dd1144">&quot;Hello World&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 安装成功.
 </p>
 
-<a id="toc2" name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. 一些概念</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 一些概念</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">docker</em> 是一套 Linux 的 <em style=" color: #d75100; font-style: normal; ">LXC</em> 管理工具.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">docker</em> 是一套 Linux 的 <em style="color: #d75100; font-style: normal;">LXC</em> 管理工具.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">LXC</em> (<em style=" color: #d75100; font-style: normal; ">Linux Containers</em>) 的概念类似于虚拟机, 但是形式上有区别. 虚拟机更像是提供"机器环境", 而 <em style=" color: #d75100; font-style: normal; ">LXC</em> 则是提供"运行环境". 单看概念它们的区别有些微妙, 但是 <em style=" color: #d75100; font-style: normal; ">LXC</em> 的特点就是, 同样是提供一套完全隔离的操作系统环境, 它很快, 超级快.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">LXC</em> (<em style="color: #d75100; font-style: normal;">Linux Containers</em>) 的概念类似于虚拟机, 但是形式上有区别. 虚拟机更像是提供"机器环境", 而 <em style="color: #d75100; font-style: normal;">LXC</em> 则是提供"运行环境". 单看概念它们的区别有些微妙, 但是 <em style="color: #d75100; font-style: normal;">LXC</em> 的特点就是, 同样是提供一套完全隔离的操作系统环境, 它很快, 超级快.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在使用上, 概念上的区别就是, 用虚拟机, 可能更多是想, 做一个电脑, 让它跑起来, 然后再说让这台电脑干什么事.
 </p>
-<p style="margin: 15px 0;">
-而 <em style=" color: #d75100; font-style: normal; ">docker</em> 的使用, 则是做一个环境(一组进程, 还有虚拟的设备等), 用环境来运行一个命令. <em style=" color: #d75100; font-style: normal; ">环境-命令</em> 是一体的(一个容器), 命令一旦执行完成, 那么一个容器实例的任务就结束了. 所以如果我们想让一个容器像一台电脑那样, 通常我们给它一个像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/usr/bin/sshd -D</code> 这样的命令, 这个容器像一台电脑, 是因为这个命令一直"没有执行完成"的效果.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而 <em style="color: #d75100; font-style: normal;">docker</em> 的使用, 则是做一个环境(一组进程, 还有虚拟的设备等), 用环境来运行一个命令. <em style="color: #d75100; font-style: normal;">环境-命令</em> 是一体的(一个容器), 命令一旦执行完成, 那么一个容器实例的任务就结束了. 所以如果我们想让一个容器像一台电脑那样, 通常我们给它一个像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/usr/bin/sshd -D</code> 这样的命令, 这个容器像一台电脑, 是因为这个命令一直"没有执行完成"的效果.
 </p>
-<p style="margin: 15px 0;">
-虚拟机的使用, 一个镜像就是一个安装好的系统. 而 <em style=" color: #d75100; font-style: normal; ">docker</em> 中, 镜像更像是一张安装光盘(刻盘后不能更改), 容器才是安装好的系统. 这种两层式结构相较于传统的"快照"机制, 要好用得多. (如何从真正的系统安装 ISO 镜像得到 docker 镜像, 我现在也不清楚怎么做)
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虚拟机的使用, 一个镜像就是一个安装好的系统. 而 <em style="color: #d75100; font-style: normal;">docker</em> 中, 镜像更像是一张安装光盘(刻盘后不能更改), 容器才是安装好的系统. 这种两层式结构相较于传统的"快照"机制, 要好用得多. (如何从真正的系统安装 ISO 镜像得到 docker 镜像, 我现在也不清楚怎么做)
 </p>
-<p style="margin: 15px 0;">
-更具体一些, 使用 <em style=" color: #d75100; font-style: normal; ">docker</em> , 就是在指定的环境中执行一条命令, 比如:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更具体一些, 使用 <em style="color: #d75100; font-style: normal;">docker</em> , 就是在指定的环境中执行一条命令, 比如:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run ubuntu:14.04 /bin/bash
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run ubuntu:14.04 /bin/bash
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-意思就是, 在 <em style=" color: #d75100; font-style: normal; ">ubuntu:14.04</em> 这个环境中, 执行 <em style=" color: #d75100; font-style: normal; ">/bin/bash</em> 这条命令. 当然, 这条命令显然是瞬间就执行完了的. 如果和这个命令立即有交互, 那么需要一些参数:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+意思就是, 在 <em style="color: #d75100; font-style: normal;">ubuntu:14.04</em> 这个环境中, 执行 <em style="color: #d75100; font-style: normal;">/bin/bash</em> 这条命令. 当然, 这条命令显然是瞬间就执行完了的. 如果和这个命令立即有交互, 那么需要一些参数:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -t -i ubuntu:14.04 /bin/bash
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -t -i ubuntu:14.04 /bin/bash
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-t</code> 是分配一个虚拟终端, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-i</code> 是获取当前的输入. 这样你可以立即使用一个终端来和这个环境交互了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-t</code> 是分配一个虚拟终端, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-i</code> 是获取当前的输入. 这样你可以立即使用一个终端来和这个环境交互了.
 </p>
-<p style="margin: 15px 0;">
-虽然终端是正常使用电脑最常用的交互方式, 不过真实使用 <em style=" color: #d75100; font-style: normal; ">docker</em> 的场景中, 会这样用的机会不会很多的. 通常是直接执行我们要做的事, 比如运行一个服务, 或者执行一系列的计算.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然终端是正常使用电脑最常用的交互方式, 不过真实使用 <em style="color: #d75100; font-style: normal;">docker</em> 的场景中, 会这样用的机会不会很多的. 通常是直接执行我们要做的事, 比如运行一个服务, 或者执行一系列的计算.
 </p>
-<p style="margin: 15px 0;">
-使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">nc</code> 来作一个例子:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nc</code> 来作一个例子:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -t ubuntu:14.04 nc -l 8000
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -t ubuntu:14.04 nc -l 8000
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-t</code> 是因为需要一个终端来显示输出, 否则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">nc</code> 的标准输出就没地方去了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-t</code> 是因为需要一个终端来显示输出, 否则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nc</code> 的标准输出就没地方去了.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">docker</em> 安装之后, 会自动在系统中作一个网桥配置, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 出来的每个容器实例, 都会分配一个桥接的 IP 地址. 上面的命令执行之后, 已经有容器在运行了, 并且在其中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">nc</code> 正监听着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">8000</code> 端口. 我们要接上去试试, 首先需要找到这个容器实例的 IP 地址.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">docker</em> 安装之后, 会自动在系统中作一个网桥配置, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 出来的每个容器实例, 都会分配一个桥接的 IP 地址. 上面的命令执行之后, 已经有容器在运行了, 并且在其中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nc</code> 正监听着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">8000</code> 端口. 我们要接上去试试, 首先需要找到这个容器实例的 IP 地址.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先看当前运行着的实例列表:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker ps
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker ps
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 你先看到下面的信息:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">CONTAINER ID  IMAGE         COMMAND     CREATED        STATUS        PORTS  NAMES
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">CONTAINER ID  IMAGE         COMMAND     CREATED        STATUS        PORTS  NAMES
 e1d0c9193025  ubuntu:14.04  nc -l 8000  5 seconds ago  Up 4 seconds         silly_curie
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 记下 ID , 不需要全部, 前面几位就可以了, 然后查看指定容器实例的细节:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker inspect e1d0
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker inspect e1d0
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 会输出一串 json 字符串, 里面会有这样一节:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">&quot;NetworkSettings&quot;: {
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&quot;NetworkSettings&quot;: {
     &quot;Bridge&quot;: &quot;docker0&quot;,
     &quot;Gateway&quot;: &quot;172.17.42.1&quot;,
     &quot;IPAddress&quot;: &quot;172.17.0.82&quot;,
@@ -224,127 +254,135 @@ e1d0c9193025  ubuntu:14.04  nc -l 8000  5 seconds ago  Up 4 seconds         sill
 },
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-可以看到, 容器的 IP 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">172.17.0.82</code> , 上面的网关 IP <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">172.17.42.1</code> 就是你"实体机"的.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到, 容器的 IP 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">172.17.0.82</code> , 上面的网关 IP <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">172.17.42.1</code> 就是你"实体机"的.
 </p>
-<p style="margin: 15px 0;">
-在实体机使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">telnet</code> 连上去:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在实体机使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">telnet</code> 连上去:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">telnet 172.17.0.82 8000
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">telnet 172.17.0.82 8000
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在能看到效果了.
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">^]</code> 然后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">quit</code> 退出, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">nc</code> 那边结束执行, 命令执行完, 之前的那个容器实例也就关闭了. 你使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker ps</code> 看不到. 但是使用:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">^]</code> 然后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">quit</code> 退出, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nc</code> 那边结束执行, 命令执行完, 之前的那个容器实例也就关闭了. 你使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker ps</code> 看不到. 但是使用:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker ps -a
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker ps -a
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 就能看到所有的容器实例. 在这里列出的实例是真实存在的, 只是当前并没有运行起来而已. 你可以随时让其中的实例再运行起来:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker start e1d0c9193025
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker start e1d0c9193025
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这样你又可以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">telnet</code> , 只是没地方看输出.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样你又可以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">telnet</code> , 只是没地方看输出.
 </p>
-<p style="margin: 15px 0;">
-回顾上面的过程, 提出两个概念, <em style=" color: #d75100; font-style: normal; ">镜像</em> 和 <em style=" color: #d75100; font-style: normal; ">容器</em> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回顾上面的过程, 提出两个概念, <em style="color: #d75100; font-style: normal;">镜像</em> 和 <em style="color: #d75100; font-style: normal;">容器</em> .
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">镜像</em> 指上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ubuntu:14.04</code> 这种, 嗯, 这种环境, 这种系统. 后面会讲如何做一个自己的 <em style=" color: #d75100; font-style: normal; ">镜像</em> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">镜像</em> 指上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ubuntu:14.04</code> 这种, 嗯, 这种环境, 这种系统. 后面会讲如何做一个自己的 <em style="color: #d75100; font-style: normal;">镜像</em> .
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">容器</em> 是在具体的 <em style=" color: #d75100; font-style: normal; ">镜像</em> 上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 具体的命令, 得到的一个"绑定状态". <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 命令执行时的一些参数(比如和实体机的端口映射), 也是"状态"的一部分, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 过之后就不能更改了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">容器</em> 是在具体的 <em style="color: #d75100; font-style: normal;">镜像</em> 上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 具体的命令, 得到的一个"绑定状态". <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 命令执行时的一些参数(比如和实体机的端口映射), 也是"状态"的一部分, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 过之后就不能更改了.
 </p>
-<p style="margin: 15px 0;">
-它们的关系, 有些像编程语言中的 <em style=" color: #d75100; font-style: normal; ">类</em> 和 <em style=" color: #d75100; font-style: normal; ">实例</em> . <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 时的命令就像是类实例化时的参数. 后面会提到, 你可以删除 <em style=" color: #d75100; font-style: normal; ">容器</em> , 也可以删除 <em style=" color: #d75100; font-style: normal; ">镜像</em> . 当你想删除 <em style=" color: #d75100; font-style: normal; ">镜像</em> , 但是使用它的 <em style=" color: #d75100; font-style: normal; ">容器</em> 还存在时, 你会得到操作失败的提示.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它们的关系, 有些像编程语言中的 <em style="color: #d75100; font-style: normal;">类</em> 和 <em style="color: #d75100; font-style: normal;">实例</em> . <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 时的命令就像是类实例化时的参数. 后面会提到, 你可以删除 <em style="color: #d75100; font-style: normal;">容器</em> , 也可以删除 <em style="color: #d75100; font-style: normal;">镜像</em> . 当你想删除 <em style="color: #d75100; font-style: normal;">镜像</em> , 但是使用它的 <em style="color: #d75100; font-style: normal;">容器</em> 还存在时, 你会得到操作失败的提示.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">类</em> 有继承关系, 得利于 <em style=" color: #d75100; font-style: normal; ">AUFS</em> 这些的层级文件系统, <em style=" color: #d75100; font-style: normal; ">镜像</em> 的构建也是这种层层封装的结果.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">类</em> 有继承关系, 得利于 <em style="color: #d75100; font-style: normal;">AUFS</em> 这些的层级文件系统, <em style="color: #d75100; font-style: normal;">镜像</em> 的构建也是这种层层封装的结果.
 </p>
 
-<a id="toc3" name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 基本命令</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 基本命令</h1>
 
-<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker images</code></dt><dd style="margin-left: 30px;">
+<dl style="">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker images</code></dt><dd style="">
     显示镜像列表
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker ps</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker ps</code></dt><dd style="">
     显示容器列表
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run IMAGE_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run IMAGE_ID</code></dt><dd style="">
     指定镜像, 运行一个容器
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker start/stop/pause/unpause/kill/restart CONTAINER_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker start/stop/pause/unpause/kill/restart CONTAINER_ID</code></dt><dd style="">
     操作容器状态
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker tag IMAGE_ID [REGISTRYHOST/][USERNAME/]NAME[:TAG]</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker tag IMAGE_ID [REGISTRYHOST/][USERNAME/]NAME[:TAG]</code></dt><dd style="">
     给指定镜像命名
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker pull/push NAME:TAG</code></dt><dd style="margin-left: 30px;">
-    下载, 推送镜像到 <em style=" color: #d75100; font-style: normal; ">Docker registry server</em> , NAME 部分包括了服务地址
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker pull/push NAME:TAG</code></dt><dd style="">
+    下载, 推送镜像到 <em style="color: #d75100; font-style: normal;">Docker registry server</em> , NAME 部分包括了服务地址
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker rm/rmi CONTAINER_ID/IMAGE_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker rm/rmi CONTAINER_ID/IMAGE_ID</code></dt><dd style="">
     删除容器, 镜像
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker inspect CONTAINER_ID/IMAGE_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker inspect CONTAINER_ID/IMAGE_ID</code></dt><dd style="">
     查看细节信息
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker top CONTAINER_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker top CONTAINER_ID</code></dt><dd style="">
     查看指定的运行容器的进程情况
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker info</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker info</code></dt><dd style="">
     查看系统配置信息
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker save/load</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker save/load</code></dt><dd style="">
     保存, 恢复镜像信息
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker commit CONTAINER_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker commit CONTAINER_ID</code></dt><dd style="">
     从容器创建镜像
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker export &gt; xxx.tar</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker export &gt; xxx.tar</code></dt><dd style="">
     保存一个容器
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker import - &lt; xxx.tar</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker import - &lt; xxx.tar</code></dt><dd style="">
     恢复一个容器
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker cp CONTAINER_ID:PATH HOSTPATH</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker cp CONTAINER_ID:PATH HOSTPATH</code></dt><dd style="">
     从镜像复制文件到实体机
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker diff CONTAINER_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker diff CONTAINER_ID</code></dt><dd style="">
     查看容器相对于镜像的文件变化
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker logs CONTAINER_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker logs CONTAINER_ID</code></dt><dd style="">
     查看容器日志
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker build</code></dt><dd style="margin-left: 30px;">
-    从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Dockerfile</code> 构建镜像
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker build</code></dt><dd style="">
+    从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Dockerfile</code> 构建镜像
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker history IMAGE_ID</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker history IMAGE_ID</code></dt><dd style="">
     查看镜像的构建历史
 </dd>
 </dl>
 
-<a id="toc4" name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. Dockerfile</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. Dockerfile</h1>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">Dockerfile</em> 是记录了镜像是如何被构建出来的配置文件, 可以被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker</code> 直接执行以创建一个镜像. 它的样子:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Dockerfile</em> 是记录了镜像是如何被构建出来的配置文件, 可以被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 直接执行以创建一个镜像. 它的样子:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">FROM ubuntu<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">14.04</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">FROM ubuntu<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">14.04</span>
 MAINTAINER YS.Zou <span style="color: #000000; font-weight: bold">&lt;&gt;</span>
 
 ADD run <span style="color: #000000; font-weight: bold">/</span>root<span style="color: #000000; font-weight: bold">/</span>run
@@ -360,158 +398,170 @@ RUN mkdir <span style="color: #000000; font-weight: bold">-</span>p <span style=
 CMD [<span style="color: #dd1144">&quot;bash&quot;</span>, <span style="color: #dd1144">&quot;/root/run&quot;</span>]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-把文件命名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">Dockerfile</code> , 进入文件所在目录, 输入:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把文件命名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Dockerfile</code> , 进入文件所在目录, 输入:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker build .
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker build .
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 就可以开始构建过程, 并且得到一个新的镜像了.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">Dockerfile</em> 支持一些很简单的命令:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Dockerfile</em> 支持一些很简单的命令:
 </p>
 
-<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">FROM</em></dt><dd style="margin-left: 30px;">
+<dl style="">
+<dt style=""><em style="color: #d75100; font-style: normal;">FROM</em></dt><dd style="">
     以哪个镜像为基础开始构建.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">MAINTAINER</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">MAINTAINER</em></dt><dd style="">
     作者信息.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">RUN</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">RUN</em></dt><dd style="">
     运行一条命令.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">CMD</em></dt><dd style="margin-left: 30px;">
-    <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run IMAGE_ID cmd</code> 这里的默认命令.
-<p style="margin: 15px 0;"></p>
+<dt style=""><em style="color: #d75100; font-style: normal;">CMD</em></dt><dd style="">
+    <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run IMAGE_ID cmd</code> 这里的默认命令.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ENTRYPOINT</em></dt><dd style="margin-left: 30px;">
-    <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run IMAGE_ID cmd</code> 这里的默认命令的前面部分, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">run</code> 中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">cmd</code> 可以作为后续参数. 
-<p style="margin: 15px 0;"></p>
+<dt style=""><em style="color: #d75100; font-style: normal;">ENTRYPOINT</em></dt><dd style="">
+    <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run IMAGE_ID cmd</code> 这里的默认命令的前面部分, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">run</code> 中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cmd</code> 可以作为后续参数. 
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">EXPOSE</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">EXPOSE</em></dt><dd style="">
     声明会用到的端口.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ENV</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ENV</em></dt><dd style="">
     设置环境变量
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ADD</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ADD</em></dt><dd style="">
     从当前目录复制文件到容器. 会自动处理目录, 压缩包等情况.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">COPY</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">COPY</em></dt><dd style="">
     从当前目录复制文件到容器. 只是单纯地复制文件.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">VOLUME</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">VOLUME</em></dt><dd style="">
     声明一个数据卷, 可用于挂载.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">USER</em></dt><dd style="margin-left: 30px;">
-    <em style=" color: #d75100; font-style: normal; ">RUN</em> 命令执行时的用户.
-<p style="margin: 15px 0;"></p>
+<dt style=""><em style="color: #d75100; font-style: normal;">USER</em></dt><dd style="">
+    <em style="color: #d75100; font-style: normal;">RUN</em> 命令执行时的用户.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">WORKDIR</em></dt><dd style="margin-left: 30px;">
-    <em style=" color: #d75100; font-style: normal; ">RUN</em>, <em style=" color: #d75100; font-style: normal; ">CMD</em>, <em style=" color: #d75100; font-style: normal; ">ENTRYPOINT</em> 这些命令执行时的当前目录.
-<p style="margin: 15px 0;"></p>
+<dt style=""><em style="color: #d75100; font-style: normal;">WORKDIR</em></dt><dd style="">
+    <em style="color: #d75100; font-style: normal;">RUN</em>, <em style="color: #d75100; font-style: normal;">CMD</em>, <em style="color: #d75100; font-style: normal;">ENTRYPOINT</em> 这些命令执行时的当前目录.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><em style=" color: #d75100; font-style: normal; ">ONBUILD</em></dt><dd style="margin-left: 30px;">
+<dt style=""><em style="color: #d75100; font-style: normal;">ONBUILD</em></dt><dd style="">
     前缀命令, 放在上面这些命令前面, 表示生成的镜像再次作为"基础镜像"被用于构建时, 要执行的命令.
 </dd>
 </dl>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">build</code> 的过程, 会依次执行上面的命令, 实际上, docker 做的事, 也就是从基础镜像启一个容器, 然后执行一条命令, 修改之后提交此容器为新镜像. 以此类推, 直到所有命令都执行完. 所以在得到最终构建的镜像时, 会生成很多"中间镜像". 而如果 <em style=" color: #d75100; font-style: normal; ">Dockerfile</em> 中某条命令有错, 也是在当前中止, 过程中的"中间镜像"及"当前构建用的容器"仍然存在的.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">build</code> 的过程, 会依次执行上面的命令, 实际上, docker 做的事, 也就是从基础镜像启一个容器, 然后执行一条命令, 修改之后提交此容器为新镜像. 以此类推, 直到所有命令都执行完. 所以在得到最终构建的镜像时, 会生成很多"中间镜像". 而如果 <em style="color: #d75100; font-style: normal;">Dockerfile</em> 中某条命令有错, 也是在当前中止, 过程中的"中间镜像"及"当前构建用的容器"仍然存在的.
 </p>
 
-<a id="toc5" name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 网络</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 网络</h1>
 
-<p style="margin: 15px 0;">
-docker 安装后, 会自动在系统做一个网桥配置 <em style=" color: #d75100; font-style: normal; ">docker0</em> . 其容器都会分配到此网桥配置下的独立, 私有 IP 地址.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+docker 安装后, 会自动在系统做一个网桥配置 <em style="color: #d75100; font-style: normal;">docker0</em> . 其容器都会分配到此网桥配置下的独立, 私有 IP 地址.
 </p>
-<p style="margin: 15px 0;">
-如果你要自己配置桥接, 也可以把 <em style=" color: #d75100; font-style: normal; ">docker0</em> 删除掉. <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run</code> 的时候使用参数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-b</code> 指定你自己配置的网桥.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你要自己配置桥接, 也可以把 <em style="color: #d75100; font-style: normal;">docker0</em> 删除掉. <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run</code> 的时候使用参数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-b</code> 指定你自己配置的网桥.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 docker 容器的网络, 是相对于实体机的私有网络. 在网桥配置下, 只要知道 IP 地址, 各容器, 及实体机本身都可以自由通信.
 </p>
-<p style="margin: 15px 0;">
-但是在实体机的网卡网络下, docker 容器就不可见了. 要让容器被外界访问到, 最简单的一个方法就是直接做端口映射, 把容器的端口和实体机端口成对连通. <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run</code> 的时候使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-p</code> 参数就可以指定一对端口映射:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是在实体机的网卡网络下, docker 容器就不可见了. 要让容器被外界访问到, 最简单的一个方法就是直接做端口映射, 把容器的端口和实体机端口成对连通. <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run</code> 的时候使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-p</code> 参数就可以指定一对端口映射:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -d -p 5000:22 -p 18888:8888 zys:common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -p 18888:8888 zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 上面的命令, 在启动容器时, 指定的端口映射表示实体机 5000 端口映射到容器 22 端口, 同时 18888 端口映射到容器 8888 端口. 这样做之后, 就可以通过实体机的 5000 端口 ssh 登录到容器了:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">ssh root@localhost -p5000
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">ssh root@localhost -p5000
 ssh root@realip -p5000
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker run</code> 时还有其它参数可用到控制容器的网络配置:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker run</code> 时还有其它参数可用到控制容器的网络配置:
 </p>
 
-<dl style="font-size: 15px; margin: 10px auto; padding: 10px;">
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-p</code></dt><dd style="margin-left: 30px;">
+<dl style="">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-p</code></dt><dd style="">
     端口映射
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-h</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-h</code></dt><dd style="">
     设置主机名, 这个主机名是仅容器自己可见的.
-<p style="margin: 15px 0;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">--link=CONTAINER_NAME:ALIAS</code></dt><dd style="margin-left: 30px;">
-    把另一个容器的地址配置成一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ALIAS</code> 主机名.
-<p style="margin: 15px 0;"></p>
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">--link=CONTAINER_NAME:ALIAS</code></dt><dd style="">
+    把另一个容器的地址配置成一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ALIAS</code> 主机名.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </dd>
-<dt style="padding-left: 5px; margin: 5px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">--dns</code></dt><dd style="margin-left: 30px;">
+<dt style=""><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">--dns</code></dt><dd style="">
     配置 DNS 服务器.
 </dd>
 </dl>
 
-<a id="toc6" name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 分区挂载和数据卷</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 分区挂载和数据卷</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 容器中的文件系统是独立的, 一旦容器被删除, 则文件系统也会被删除. 如果想容器和实体机在文件系统层面打通, 可以把指定目录挂载到容器当中:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -d -p 5000:22 -v /home/zys/temp:/root/volumn zys:common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /home/zys/temp:/root/volumn zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">-v</code> 参数, 就可以把多个实体机目录挂载到容器的文件系统中.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-v</code> 参数, 就可以把多个实体机目录挂载到容器的文件系统中.
 </p>
-<p style="margin: 15px 0;">
-上面是直观的目录挂载. docker 还有自己的一个 <em style=" color: #d75100; font-style: normal; ">数据卷</em> 的概念. 它可以在容器中定义一些目录, 这些目录不使用层级的 AUFS 文件系统, 并且这些目录独立于容器而存在:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面是直观的目录挂载. docker 还有自己的一个 <em style="color: #d75100; font-style: normal;">数据卷</em> 的概念. 它可以在容器中定义一些目录, 这些目录不使用层级的 AUFS 文件系统, 并且这些目录独立于容器而存在:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -d -p 5000:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这样, 其 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/root/a</code> 目录就是一个数据卷, 如果使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">docker inspect</code> 查看容器, 可以看到类似下面的信息:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样, 其 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/root/a</code> 目录就是一个数据卷, 如果使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker inspect</code> 查看容器, 可以看到类似下面的信息:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">&quot;Volumes&quot;: {
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&quot;Volumes&quot;: {
     &quot;/root/a&quot;: &quot;/var/lib/docker/vfs/dir/xxx&quot;
 },
 &quot;VolumesRW&quot;: {
@@ -519,131 +569,434 @@ ssh root@realip -p5000
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 其它的容器可以重用这个数据卷:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -d -p 5000:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里的形式有些别扭啊, 数据卷本来是独立于容器, 但是要想重用它, 又必须基于容器的名字.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 当所有容器被删除后, 数据卷本身是还存在的, 但是这时好像没办法再去直接使用它了, 不过里面的数据你可以想办法弄到容器里去再作下一步处理.
 </p>
 
-<a id="toc7" name="toc7"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 镜像服务器</h1>
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 镜像服务器</h1>
 
-<p style="margin: 15px 0;">
-docker 的镜像服务器 <em style=" color: #d75100; font-style: normal; ">docker-registry</em> 是 docker 项目的组成部分. 前面在谈 docker 的命令时, 它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">pull/push</code> 命令就是和镜像服务器打交道. 并且, docker 的设计之中, 服务器地址不是单独配置的, 而是作为镜像名称的一部分.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+docker 的镜像服务器 <em style="color: #d75100; font-style: normal;">docker-registry</em> 是 docker 项目的组成部分. 前面在谈 docker 的命令时, 它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">pull/push</code> 命令就是和镜像服务器打交道. 并且, docker 的设计之中, 服务器地址不是单独配置的, 而是作为镜像名称的一部分.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 镜像的完整名称是:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">127.0.0.1:5000/zephyr/common:latest
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">127.0.0.1:5000/zephyr/common:latest
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 各部分的意思:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">127.0.0.1:5000</code> 就是服务器地址
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">127.0.0.1:5000</code> 就是服务器地址
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">zephyr</code> 是名字空间
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">zephyr</code> 是名字空间
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">common</code> 是镜像名
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">common</code> 是镜像名
 </li>
-<li><code style="margin: auto 3px; color: #228b22; font-family: monospace; ">latest</code> 是版本
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">latest</code> 是版本
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">docker-registry</em> 的实现也是开源的, 在 github <a href="https://github.com/dotcloud/docker-registry" style="color: #0184b7; text-decoration: none">https://github.com/dotcloud/docker-registry</a> 上拿下源码就可以跑起来.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">docker-registry</em> 的实现也是开源的, 在 github <a href="https://github.com/dotcloud/docker-registry" style="color: #0184b7; text-decoration: none">https://github.com/dotcloud/docker-registry</a> 上拿下源码就可以跑起来.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 拿下源码之后, 项目中有一个 Dockerfile 文件, 我们可以开始构建镜像了. build 之前, 因为 GFW 的原因, 我们可以先把 Dockerfile 调整一下, 包括两部分:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>把 ubuntu 的软件源改成国内的.
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">把 ubuntu 的软件源改成国内的.
 </li>
-<li>把 pip 的源改成国内的.
+<li style="margin: 10px auto;">把 pip 的源改成国内的.
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 然后开始构建:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker build -rm -t registry .
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker build -rm -t registry .
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 完成之后, 你可以得到一个名为 registry 的镜像, 直接运行即可:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker run -p 5000:5000 registry
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -p 5000:5000 registry
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-访问 <a href="http://localhost:5000" style="color: #0184b7; text-decoration: none">http://localhost:5000</a> 能得到响应, 一个 <em style=" color: #d75100; font-style: normal; ">docker-registry</em> 服务就起来了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+访问 <a href="http://localhost:5000" style="color: #0184b7; text-decoration: none">http://localhost:5000</a> 能得到响应, 一个 <em style="color: #d75100; font-style: normal;">docker-registry</em> 服务就起来了.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在你可以把镜像提交到上面去:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker tag xxx 127.0.0.1:5000/zephyr/common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker tag xxx 127.0.0.1:5000/zephyr/common
 docker push 127.0.0.1:5000/zephyr/common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 完成之后, 在浏览器中访问 <a href="http://localhost:5000/v1/search" style="color: #0184b7; text-decoration: none">http://localhost:5000/v1/search</a> 可以看到列表.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 获取镜像:
 </p>
 
-<div class="highlight" style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">docker pull 127.0.0.1:5000/zephyr/common
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull 127.0.0.1:5000/zephyr/common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">docker-registry</em> 本身是设计成一套 Web API 的, 具体文档在 <a href="http://docs.docker.com/reference/api/registry_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/registry_api/</a> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">docker-registry</em> 本身是设计成一套 Web API 的, 具体文档在 <a href="http://docs.docker.com/reference/api/registry_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/registry_api/</a> .
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">docker</em> 本身的服务, 也是有一套基于网络的 API 可供使用的, 文档在 <a href="http://docs.docker.com/reference/api/docker_remote_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/docker_remote_api/</a> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">docker</em> 本身的服务, 也是有一套基于网络的 API 可供使用的, 文档在 <a href="http://docs.docker.com/reference/api/docker_remote_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/docker_remote_api/</a> .
 </p>
 
-<a id="toc8" name="toc8"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">8. 参考</h1>
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 参考</h1>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><a href="http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/" style="color: #0184b7; text-decoration: none">http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/</a>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><a href="http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/" style="color: #0184b7; text-decoration: none">http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/</a>
 </li>
-<li><a href="http://www.oschina.net/translate/docker-network-configuration" style="color: #0184b7; text-decoration: none">http://www.oschina.net/translate/docker-network-configuration</a>
+<li style="margin: 10px auto;"><a href="http://www.oschina.net/translate/docker-network-configuration" style="color: #0184b7; text-decoration: none">http://www.oschina.net/translate/docker-network-configuration</a>
 </li>
-<li><a href="http://opjasee.com/2014/06/27/docker-data-storage/" style="color: #0184b7; text-decoration: none">http://opjasee.com/2014/06/27/docker-data-storage/</a>
+<li style="margin: 10px auto;"><a href="http://opjasee.com/2014/06/27/docker-data-storage/" style="color: #0184b7; text-decoration: none">http://opjasee.com/2014/06/27/docker-data-storage/</a>
 </li>
-<li><a href="http://www.cnblogs.com/xguo/p/3829329.html" style="color: #0184b7; text-decoration: none">http://www.cnblogs.com/xguo/p/3829329.html</a>
+<li style="margin: 10px auto;"><a href="http://www.cnblogs.com/xguo/p/3829329.html" style="color: #0184b7; text-decoration: none">http://www.cnblogs.com/xguo/p/3829329.html</a>
 </li>
 </ul>
 
 
-<script type="text/javascript">var prettyPrint = function(){}</script>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
     
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'docker';
@@ -674,8 +1027,20 @@ docker push 127.0.0.1:5000/zephyr/common
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoElEQVR4nN2XMY7bMBREHy0BdCoq
+XTr6JNbmWAGEmFkskGPsVUTnItQBFqA6CrA1KTZdXO4vEpZT8PNjZv4fOvH32Q4PQPjXUDQDfqaT
+37kIIDa7NzhJOCW4hoSXbpa95Ur0e1DhHCQ/M1n2BoCrP8bG2n/0vY/RKxBy/XYyrxZUkLstaABG
+Jctqcs7hKpFfFTbnekuVSJLmoKJciZIkM5WgmUvxc0i0UQmckrEm43qpUyQPRM4feO8D1FWWo1xa
+jgBNztTdO1NsYyV6VfDZljdJ8juX4nOdopdulrxduZ/WA7CNsV+2p9XQAQc0vBCy+thc7YSiIW89
+rt5fm4a6fGHdXPu0U8y2KVKd8HtIKCtFzsGUN+i0Pq23uH2Hxc+WvKGZrgATEBIy1SSSVLSHFBml
+0kZLvx3Iw/3kvi7KwP10zMOLpQPG2knPAHkgal63k3XmUu3URt2iz7azxEkiD9Pin9eepuFnsc5c
+UqK59/1m2NuflKXPb68AtOPwZp4nc51grLwPFEO/ZUk+VyJjhUYwziXgZy7FZ3NNuv/4R/Ub27gQ
+VgZDfG0AAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

@@ -1,139 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>SAE上微信公众账号开发参考 - YS.Zou</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+    <meta charset="UTF-8" />
+    <title>SAE上微信公众账号开发参考 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body style=" margin: 0px; padding: 0px; background-color: #e0e0e0; font-family: Arial,Helvetica,sans-serif; ">
-<div style=" width: 800px; margin: auto; font-size: 17px; line-height: 1.7em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; margin: 30px auto 30px auto; ">SAE上微信公众账号开发参考</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">SAE上微信公众账号开发参考</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-09-30 15:13 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2014-08-06 18:12 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛</li>
-    </ul>
-</div>
+<div class="toc">
 
-
-  <ol style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-  <li><a href="#toc1" style="color: #0184b7; text-decoration: none">申请测试账号</a>
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">申请测试账号</a>
   </li>
-  <li><a href="#toc2" style="color: #0184b7; text-decoration: none">wsgi简单介绍</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">wsgi简单介绍</a>
   </li>
-  <li><a href="#toc3" style="color: #0184b7; text-decoration: none">对接服务</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">对接服务</a>
   </li>
-  <li><a href="#toc4" style="color: #0184b7; text-decoration: none">了解数据格式</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">了解数据格式</a>
   </li>
-  <li><a href="#toc5" style="color: #0184b7; text-decoration: none">第一个响应</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">第一个响应</a>
   </li>
-  <li><a href="#toc6" style="color: #0184b7; text-decoration: none">使用lxml处理XML数据</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">使用lxml处理XML数据</a>
   </li>
-  <li><a href="#toc7" style="color: #0184b7; text-decoration: none">自定义菜单</a>
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li><a href="#toc8" style="color: #0184b7; text-decoration: none">7.1. 获取access_token</a>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">自定义菜单</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">7.1. 获取access_token</a>
     </li>
-    <li><a href="#toc9" style="color: #0184b7; text-decoration: none">7.2. 创建自定义菜单</a>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">7.2. 创建自定义菜单</a>
     </li>
     </ul>
   </li>
   </ol>
 
-<p style="margin: 15px 0;">
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 微信公众账号因为格式相对固定, 比做一个 Web 类应用简单多了.
 </p>
-<p style="margin: 15px 0;">
-此文以 SAE 环境为背景介绍开发过程, 从 0 开始, 不依赖任何 Web 框架, 以 <em style=" color: #d75100; font-style: normal; ">wsgi</em> 接口为基础. 如果你是想学习, 那么搞明白数据流和处理规则是唯一的重点, 至于 Web 框架随意.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+此文以 SAE 环境为背景介绍开发过程, 从 0 开始, 不依赖任何 Web 框架, 以 <em style="color: #d75100; font-style: normal;">wsgi</em> 接口为基础. 如果你是想学习, 那么搞明白数据流和处理规则是唯一的重点, 至于 Web 框架随意.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在开发过程中, 会涉及一些辅助工具的开发, 这些东西不涉及项目最终部署, 但是却为日常开发带来方便. 因为这些东西可能会涉及其它方面的基础知识, 所以我不会详细介绍实现, 有兴趣者在理解原理之后可以自己实现适合自己的东西.
 </p>
 
-<a name="toc1"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">1. 申请测试账号</h1>
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 申请测试账号</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 要做微信公众账号开发, 首先要去弄一个公众账号. 企鹅提供了专门的测试账号服务, 直接申请即可.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Google 一下 "微信公众账号 测试账号" 找到申请页:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login</a>
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 选择登录之后, 用你的手机微信客户端连上网扫一码就可以了.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 测试账号的页面有账号的各种基本信息, 下文有开发需要的文档.
 </p>
-<p style="margin: 15px 0;">
-需要开发者配置的是 <em style=" color: #d75100; font-style: normal; ">接口配置信息</em> 部分. 这里 <em style=" color: #d75100; font-style: normal; ">Token</em> 就自己随机生成一串字符即可. 而 <em style=" color: #d75100; font-style: normal; ">URL</em> 则会需要一个"认证"过程. 在修改这个 <em style=" color: #d75100; font-style: normal; ">URL</em> 时腾讯的服务器会向此地址发一个 GET 请求, 要求得到一个指定响应, 响应的文本是请求中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 参数. 对应的文档在:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+需要开发者配置的是 <em style="color: #d75100; font-style: normal;">接口配置信息</em> 部分. 这里 <em style="color: #d75100; font-style: normal;">Token</em> 就自己随机生成一串字符即可. 而 <em style="color: #d75100; font-style: normal;">URL</em> 则会需要一个"认证"过程. 在修改这个 <em style="color: #d75100; font-style: normal;">URL</em> 时腾讯的服务器会向此地址发一个 GET 请求, 要求得到一个指定响应, 响应的文本是请求中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 参数. 对应的文档在:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/wiki/index.php?title=%E9%AA%8C%E8%AF%81%E6%B6%88%E6%81%AF%E7%9C%9F%E5%AE%9E%E6%80%A7" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/wiki/index.php?title=%E9%AA%8C%E8%AF%81%E6%B6%88%E6%81%AF%E7%9C%9F%E5%AE%9E%E6%80%A7</a>
 </p>
-<p style="margin: 15px 0;">
-当然, 目前我们不需要去管它的"验证"逻辑, 直接返回参数中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 的值就可以了. SAE 中怎么做下面会介绍.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然, 目前我们不需要去管它的"验证"逻辑, 直接返回参数中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 的值就可以了. SAE 中怎么做下面会介绍.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 先去注册一个 SAE 账号, 并创建一个 Python 类型的 app , 把代码拿下来.
 </p>
 
-<a name="toc2"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">2. wsgi简单介绍</h1>
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. wsgi简单介绍</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 SAE 的初始化的 Python 项目, 在对应版本的目录下, 只有两个文件:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">- config.yaml
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">- config.yaml
 - index.wsgi
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">config.yaml</code> 是 SAE 的项目配置文件. 先不管它. <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 就是 <em style=" color: #d75100; font-style: normal; ">wsgi</em> 接口的 <em style=" color: #d75100; font-style: normal; ">application</em> 的定义文件.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.yaml</code> 是 SAE 的项目配置文件. 先不管它. <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 就是 <em style="color: #d75100; font-style: normal;">wsgi</em> 接口的 <em style="color: #d75100; font-style: normal;">application</em> 的定义文件.
 </p>
-<p style="margin: 15px 0;">
-这个文件虽然扩展名是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">.wsgi</code> , 其实它就是普通的 Python 文件, 根据 SAE 的环境要求, 它里面需要定义一个名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 的可调用对象(比如一个函数). 这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 实现的是 <em style=" color: #d75100; font-style: normal; ">wsgi</em> 接口的规范.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个文件虽然扩展名是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.wsgi</code> , 其实它就是普通的 Python 文件, 根据 SAE 的环境要求, 它里面需要定义一个名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 的可调用对象(比如一个函数). 这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 实现的是 <em style="color: #d75100; font-style: normal;">wsgi</em> 接口的规范.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">wsgi</em> 的这套东西不用太细究, 我们只用到它的基础形式就可以让我们的应用跑起来了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">wsgi</em> 的这套东西不用太细究, 我们只用到它的基础形式就可以让我们的应用跑起来了.
 </p>
-<p style="margin: 15px 0;">
-初始状态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 大概是这样的样子的:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+初始状态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 大概是这样的样子的:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">application</span>(environ, start_response):
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">application</span>(environ, start_response):
     start_response(<span style="color: #dd1144">&#39;200 ok&#39;</span>, [(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;text/plain&#39;</span>)])
     <span style="color: #000000; font-weight: bold">return</span> [<span style="color: #dd1144">&quot;Hello SAE&quot;</span>]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 的可调用对象(函数), 接收两个参数, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">start_response</code> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 的可调用对象(函数), 接收两个参数, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start_response</code> .
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">start_response</code> 是一个函数, 用以响应 HTTP 的头. 比如上面的代码中, 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">start_response</code> 的调用即是, 响应的状态码是 200 , 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">content-type</code> 的头, 表明响应的内容是纯文本.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start_response</code> 是一个函数, 用以响应 HTTP 的头. 比如上面的代码中, 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start_response</code> 的调用即是, 响应的状态码是 200 , 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">content-type</code> 的头, 表明响应的内容是纯文本.
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 函数需要返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">iterable</code> 的对象, 比如一个列表. 里面的内容就是 HTTP 响应的 body 部分.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 函数需要返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">iterable</code> 的对象, 比如一个列表. 里面的内容就是 HTTP 响应的 body 部分.
 </p>
-<p style="margin: 15px 0;">
-一个请求的所有细节, 比如 GET 参数, POST 参数, 请求头这些, 都封装在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ</code> 对象里了. 这是一个类似于 <em style=" color: #d75100; font-style: normal; ">dict</em> 的对象, 相应的属性都通过 <em style=" color: #d75100; font-style: normal; ">key</em> 的方式获取, 比如获取 GET 参数, 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ['QUERY_STRING']</code> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个请求的所有细节, 比如 GET 参数, POST 参数, 请求头这些, 都封装在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ</code> 对象里了. 这是一个类似于 <em style="color: #d75100; font-style: normal;">dict</em> 的对象, 相应的属性都通过 <em style="color: #d75100; font-style: normal;">key</em> 的方式获取, 比如获取 GET 参数, 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ['QUERY_STRING']</code> .
 </p>
-<p style="margin: 15px 0;">
-在后面我们可能还需要继续和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ</code> 对象打交道, 所以我们最好自己做一个 <em style=" color: #d75100; font-style: normal; ">wsgi</em> 的运行环境, 以方便需要查看地 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ</code> 的细节. 用 Tornado 做这事很容易.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在后面我们可能还需要继续和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ</code> 对象打交道, 所以我们最好自己做一个 <em style="color: #d75100; font-style: normal;">wsgi</em> 的运行环境, 以方便需要查看地 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ</code> 的细节. 用 Tornado 做这事很容易.
 </p>
-<p style="margin: 15px 0;">
-在目录下新建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">server.py</code> 文件, 内容如下:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在目录下新建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">server.py</code> 文件, 内容如下:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">imp</span>
 <span style="color: #000000; font-weight: bold">with</span> <span style="color: #0086B3">open</span>(<span style="color: #dd1144">&#39;index.wsgi&#39;</span>, <span style="color: #dd1144">&#39;rb&#39;</span>) <span style="color: #000000; font-weight: bold">as</span> f:
@@ -153,30 +159,34 @@ SAE 的初始化的 Python 项目, 在对应版本的目录下, 只有两个文�
     main()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这个服务会读入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 对象, 然后让它在一个 Web 服务器上跑起来.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个服务会读入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 对象, 然后让它在一个 Web 服务器上跑起来.
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">python server.py
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">python server.py
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-服务启动之后, 在浏览器访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">http://localhost:8888</code> 就可以看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 中返回内容了. 同理, 我们可以随时在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">application</code> 中加入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">print dir(environ)</code> 之类的内容来获取帮助信息.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+服务启动之后, 在浏览器访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://localhost:8888</code> 就可以看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 中返回内容了. 同理, 我们可以随时在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application</code> 中加入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">print dir(environ)</code> 之类的内容来获取帮助信息.
 </p>
 
-<a name="toc3"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">3. 对接服务</h1>
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 对接服务</h1>
 
-<p style="margin: 15px 0;">
-回到微信的话题上来. 目前我们需要完成的一件事是, 当接受到微信服务器的 GET 请求时, 直接响应请求中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 参数的内容即可.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到微信的话题上来. 目前我们需要完成的一件事是, 当接受到微信服务器的 GET 请求时, 直接响应请求中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 参数的内容即可.
 </p>
-<p style="margin: 15px 0;">
-把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 改成:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 改成:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">re</span>
 
@@ -188,57 +198,63 @@ SAE 的初始化的 Python 项目, 在对应版本的目录下, 只有两个文�
     <span style="color: #000000; font-weight: bold">return</span> [s]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-先使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ.get('QUERY_STRING')</code> 获取 GET 参数部分, 大概形如:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ.get('QUERY_STRING')</code> 获取 GET 参数部分, 大概形如:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">signature=xx&amp;timestamp=xxx&amp;nonce=xxx&amp;echostr=xxx
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">signature=xx&amp;timestamp=xxx&amp;nonce=xxx&amp;echostr=xxx
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-各个参数的顺序是不一定的, 如果参数中有非 ascii 的内容, 它还是被编码后像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xx%xx%</code> 这种样子的.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+各个参数的顺序是不一定的, 如果参数中有非 ascii 的内容, 它还是被编码后像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xx%xx%</code> 这种样子的.
 </p>
-<p style="margin: 15px 0;">
-我们现在不关心验证, 只是简单地把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 的值取出来返回即可.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们现在不关心验证, 只是简单地把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 的值取出来返回即可.
 </p>
-<p style="margin: 15px 0;">
-获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 的值方法是通过正则表达式拿到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr=</code> 后面的所有内容, 然后用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">&amp;</code> 字符切一下就好了. 这样不管 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 字段其顺序是在中间还是在最后, 都可以正常处理.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 的值方法是通过正则表达式拿到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr=</code> 后面的所有内容, 然后用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&amp;</code> 字符切一下就好了. 这样不管 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 字段其顺序是在中间还是在最后, 都可以正常处理.
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">signature=xx&amp;timestamp=xxx&amp;nonce=xxx&amp;echostr=xxx
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">signature=xx&amp;timestamp=xxx&amp;nonce=xxx&amp;echostr=xxx
 signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-把代码通过 svn 提交, 这样在测试账号的页面, 就可以把对接服务的 <em style=" color: #d75100; font-style: normal; ">URL</em> 设置上了. 这里推荐设置成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">http://xxx.sinaapp.com/wx</code> 的形式, 加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">/wx</code> 的 PATH 方便后面的逻辑切分, 当然, 我们现在在 <em style=" color: #d75100; font-style: normal; ">wsgi</em> 接口上的处理还完全不涉及请求的 PATH  .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把代码通过 svn 提交, 这样在测试账号的页面, 就可以把对接服务的 <em style="color: #d75100; font-style: normal;">URL</em> 设置上了. 这里推荐设置成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://xxx.sinaapp.com/wx</code> 的形式, 加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/wx</code> 的 PATH 方便后面的逻辑切分, 当然, 我们现在在 <em style="color: #d75100; font-style: normal;">wsgi</em> 接口上的处理还完全不涉及请求的 PATH  .
 </p>
 
-<a name="toc4"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">4. 了解数据格式</h1>
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 了解数据格式</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 到了这一步, 在微信上关注那个测试账号, 发送的信息已经会到我们的 SAE 的 app 服务上了.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 微信过来的信息都是 XML 格式的, 具体地可以参考文档:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E6%99%AE%E9%80%9A%E6%B6%88%E6%81%AF" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/wiki/index.php?title=%E6%8E%A5%E6%94%B6%E6%99%AE%E9%80%9A%E6%B6%88%E6%81%AF</a>
 </p>
-<p style="margin: 15px 0;">
-虽然文档上有具体的数据例子, 但是, 一般还是自己亲眼看到过来的数据, 心理上才会踏实一些吧. 所以, 我们在代码上添加一些逻辑, 使用 <em style=" color: #d75100; font-style: normal; ">storage</em> 服务把请求过来的数据保存下来. SAE 环境上标准的输出不太好用, 所以开发时把 <em style=" color: #d75100; font-style: normal; ">storage</em> 当成记日志的地方就好了, 还有现成的 Web 工具可以直接查看呢.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然文档上有具体的数据例子, 但是, 一般还是自己亲眼看到过来的数据, 心理上才会踏实一些吧. 所以, 我们在代码上添加一些逻辑, 使用 <em style="color: #d75100; font-style: normal;">storage</em> 服务把请求过来的数据保存下来. SAE 环境上标准的输出不太好用, 所以开发时把 <em style="color: #d75100; font-style: normal;">storage</em> 当成记日志的地方就好了, 还有现成的 Web 工具可以直接查看呢.
 </p>
-<p style="margin: 15px 0;">
-<strong style=" color: red; font-weight: normal; ">先去把应用的 storage 服务开启, 并创建一个 Bucket</strong>, Bucket 我这里取的名字是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">log</code> , 为了方便查看, 把权限改成 <em style=" color: #d75100; font-style: normal; ">public</em> .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">先去把应用的 storage 服务开启, 并创建一个 Bucket</strong>, Bucket 我这里取的名字是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">log</code> , 为了方便查看, 把权限改成 <em style="color: #d75100; font-style: normal;">public</em> .
 </p>
-<p style="margin: 15px 0;">
-然后修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 代码:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 代码:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">re</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
@@ -263,24 +279,26 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
     <span style="color: #000000; font-weight: bold">return</span> [<span style="color: #dd1144">&#39;&#39;</span>]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-用户的数据都是通过 POST 方法过来的, 所以, 对于 GET 方法, 我们还是原来的逻辑, 直接返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">echostr</code> 的数据即可.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用户的数据都是通过 POST 方法过来的, 所以, 对于 GET 方法, 我们还是原来的逻辑, 直接返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">echostr</code> 的数据即可.
 </p>
-<p style="margin: 15px 0;">
-<em style=" color: #d75100; font-style: normal; ">wsgi</em> 接口上, 获取 POST 数据的简单方法, 就是先拿到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">CONTENT_LENGTH</code> 头, 它标识了 HTTP 请求的 body 部分的长度. 然后从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">environ['wsgi.input']</code> 这个 file like 对象中读取指定长度的数据即可.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">wsgi</em> 接口上, 获取 POST 数据的简单方法, 就是先拿到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CONTENT_LENGTH</code> 头, 它标识了 HTTP 请求的 body 部分的长度. 然后从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">environ['wsgi.input']</code> 这个 file like 对象中读取指定长度的数据即可.
 </p>
-<p style="margin: 15px 0;">
-上面代码中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">body</code> 就是一个 XML 形式的数据了, 我们目前也不做任何处理, 直接以时间戳为名, 存到 <em style=" color: #d75100; font-style: normal; ">storage</em> 中去.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码中, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">body</code> 就是一个 XML 形式的数据了, 我们目前也不做任何处理, 直接以时间戳为名, 存到 <em style="color: #d75100; font-style: normal;">storage</em> 中去.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 提交代码, 然后在微信上向这个测试账号发一些不同类型的信息吧, 文字, 图像, 语音.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 文字内容:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
 <span style="color: #000080">&lt;FromUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]&gt;</span><span style="color: #000080">&lt;/FromUserName&gt;</span>
 <span style="color: #000080">&lt;CreateTime&gt;</span>1407299911<span style="color: #000080">&lt;/CreateTime&gt;</span>
 <span style="color: #000080">&lt;MsgType&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[text]]&gt;</span><span style="color: #000080">&lt;/MsgType&gt;</span>
@@ -289,12 +307,14 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 <span style="color: #000080">&lt;/xml&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 图像内容:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
 <span style="color: #000080">&lt;FromUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]&gt;</span><span style="color: #000080">&lt;/FromUserName&gt;</span>
 <span style="color: #000080">&lt;CreateTime&gt;</span>1407300008<span style="color: #000080">&lt;/CreateTime&gt;</span>
 <span style="color: #000080">&lt;MsgType&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[image]]&gt;</span><span style="color: #000080">&lt;/MsgType&gt;</span>
@@ -304,15 +324,17 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 <span style="color: #000080">&lt;/xml&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-直接访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">PicUrl</code> 都可以看到图片的.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">PicUrl</code> 都可以看到图片的.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 语音内容:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
 <span style="color: #000080">&lt;FromUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]&gt;</span><span style="color: #000080">&lt;/FromUserName&gt;</span>
 <span style="color: #000080">&lt;CreateTime&gt;</span>1407300099<span style="color: #000080">&lt;/CreateTime&gt;</span>
 <span style="color: #000080">&lt;MsgType&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[voice]]&gt;</span><span style="color: #000080">&lt;/MsgType&gt;</span>
@@ -323,28 +345,30 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 <span style="color: #000080">&lt;/xml&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在也不用去管这堆 XML 的解析问题, 了解一下这些数据就可以了.
 </p>
 
-<a name="toc5"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">5. 第一个响应</h1>
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 第一个响应</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在我们要做的, 就是让用户发了信息之后, 可以得到回应. 回应的内容, 暂且就是 "hello" 吧, 刚开始写死就可以了.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我们目前只考虑普通的文本消息的回复, 对应的文档在:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/wiki/index.php?title=%E5%8F%91%E9%80%81%E8%A2%AB%E5%8A%A8%E5%93%8D%E5%BA%94%E6%B6%88%E6%81%AF" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/wiki/index.php?title=%E5%8F%91%E9%80%81%E8%A2%AB%E5%8A%A8%E5%93%8D%E5%BA%94%E6%B6%88%E6%81%AF</a>
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 要回复的内容:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;xml&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;xml&gt;</span>
 <span style="color: #000080">&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
 <span style="color: #000080">&lt;FromUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/FromUserName&gt;</span>
 <span style="color: #000080">&lt;CreateTime&gt;</span>12345678<span style="color: #000080">&lt;/CreateTime&gt;</span>
@@ -353,15 +377,17 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 <span style="color: #000080">&lt;/xml&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-注意里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">ToUserName</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">FromUserName</code> 用前面的内容换一下.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ToUserName</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">FromUserName</code> 用前面的内容换一下.
 </p>
-<p style="margin: 15px 0;">
-现在的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> :
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> :
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">re</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
@@ -393,28 +419,30 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
     <span style="color: #000000; font-weight: bold">return</span> [s]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">s</code> 的第一行不要空行. (我记得空行好像会出错)
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s</code> 的第一行不要空行. (我记得空行好像会出错)
 </p>
-<p style="margin: 15px 0;">
-提交代码到 SAE , 现在向测试账号发消息, 就可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">hello</code> 的回应了.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+提交代码到 SAE , 现在向测试账号发消息, 就可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello</code> 的回应了.
 </p>
 
-<a name="toc6"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">6. 使用lxml处理XML数据</h1>
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 使用lxml处理XML数据</h1>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 数据的解析是不可避免的, 我们继续推进我们的代码.
 </p>
-<p style="margin: 15px 0;">
-下一个目标, 是在回复了消息的基础上更一步. 不是固守地回复一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">hello</code> , 而是用户发什么文本, 就回复什么文本.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下一个目标, 是在回复了消息的基础上更一步. 不是固守地回复一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello</code> , 而是用户发什么文本, 就回复什么文本.
 </p>
-<p style="margin: 15px 0;">
-看到前面的 xml 数据, 可能有人就直接暴力地操上正则表达式, 去抽取各字段的内容了. 这当然也行, 毕竟这套 xml 格式是很简单的. 当然, 即使如此, 你写的正则表达式也不一定总能正式工作了, 比如我发的消息内容就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">]]&gt;</code> , 那么微信服务器过来的数据就是:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看到前面的 xml 数据, 可能有人就直接暴力地操上正则表达式, 去抽取各字段的内容了. 这当然也行, 毕竟这套 xml 格式是很简单的. 当然, 即使如此, 你写的正则表达式也不一定总能正式工作了, 比如我发的消息内容就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">]]&gt;</code> , 那么微信服务器过来的数据就是:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;xml&gt;&lt;ToUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[gh_b47caeadeeb7]]&gt;</span><span style="color: #000080">&lt;/ToUserName&gt;</span>
 <span style="color: #000080">&lt;FromUserName&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[ov_QzuF0iskLIXqu0r71qOLmZV6B]]&gt;</span><span style="color: #000080">&lt;/FromUserName&gt;</span>
 <span style="color: #000080">&lt;CreateTime&gt;</span>1407301203<span style="color: #000080">&lt;/CreateTime&gt;</span>
 <span style="color: #000080">&lt;MsgType&gt;</span><span style="color: #999999; font-weight: bold; font-style: italic">&lt;![CDATA[text]]&gt;</span><span style="color: #000080">&lt;/MsgType&gt;</span>
@@ -423,64 +451,70 @@ signature=xx&amp;echostr=xxx&amp;nonce=xxx&amp;timestamp=xxx
 <span style="color: #000080">&lt;/xml&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-有些纠结了吧. 你可以拿 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">]]&gt;</code> 这些字符串去试一下其它的公众账号的反应, 上面的内容不是合格的 XML .
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有些纠结了吧. 你可以拿 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">]]&gt;</code> 这些字符串去试一下其它的公众账号的反应, 上面的内容不是合格的 XML .
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 正则不是不能写, 但是解析 xml , 还是上专业的工具更合适, 也更高效与方便. 同时我们不光要解析 XML 数据, 在回复时还需要构建 XML 数据, 虽然在构建上使用 lxml 的 api 不一定比直接上模板直观.
 </p>
-<p style="margin: 15px 0;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; ">lxml</code> 是 Python 的第三方模块, 是对 C 实现的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">libxml</code> 的封装. SAE 已经预装了此模块, 谢天谢地. 此项目的官网在 <a href="http://lxml.de/" style="color: #0184b7; text-decoration: none">http://lxml.de/</a> . 你可以需要去上面看看文档和示例代码.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">lxml</code> 是 Python 的第三方模块, 是对 C 实现的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">libxml</code> 的封装. SAE 已经预装了此模块, 谢天谢地. 此项目的官网在 <a href="http://lxml.de/" style="color: #0184b7; text-decoration: none">http://lxml.de/</a> . 你可以需要去上面看看文档和示例代码.
 </p>
-<p style="margin: 15px 0;">
-使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">lxml</code> 解析比较小的 xml 时, <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xpath</code> 是一个强大的工具, 你可能需要额外地去了解一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">xpath</code> 的基本使用.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">lxml</code> 解析比较小的 xml 时, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xpath</code> 是一个强大的工具, 你可能需要额外地去了解一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">xpath</code> 的基本使用.
 </p>
-<p style="margin: 15px 0;">
-要在 SAE 中使用 <em style=" color: #d75100; font-style: normal; ">lxml</em> 这个模块, 需要在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">config.yaml</code> 中单独配置一下, 先在下面的文档看看 SAE 支持的预装模块及对应的版本:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要在 SAE 中使用 <em style="color: #d75100; font-style: normal;">lxml</em> 这个模块, 需要在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.yaml</code> 中单独配置一下, 先在下面的文档看看 SAE 支持的预装模块及对应的版本:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://sae.sina.com.cn/doc/python/runtime.html#pre-installed-package-list" style="color: #0184b7; text-decoration: none">http://sae.sina.com.cn/doc/python/runtime.html#pre-installed-package-list</a>
 </p>
-<p style="margin: 15px 0;">
-修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">config.yaml</code> 文件:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.yaml</code> 文件:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">name: xxx
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">name: xxx
 version: 1
 libraries:
 - name: lxml
   version: <span style="color: #dd1144">&quot;2.3.4&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-前面说过了, 除了解析 XML , 我们还使用 <em style=" color: #d75100; font-style: normal; ">lxml</em> 生成响应的 XML 数据. <em style=" color: #d75100; font-style: normal; ">lxml</em> 提供的 <em style=" color: #d75100; font-style: normal; ">E-factory</em> 这个 API 用来生成 XML 数据很好用. 不过坏消息是它不支持节点的填充内容为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">CDATA</code> , 好消息是在 github 上的 <em style=" color: #d75100; font-style: normal; ">lxml</em> 项目的开发源码中, 已经添加了这个特性.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说过了, 除了解析 XML , 我们还使用 <em style="color: #d75100; font-style: normal;">lxml</em> 生成响应的 XML 数据. <em style="color: #d75100; font-style: normal;">lxml</em> 提供的 <em style="color: #d75100; font-style: normal;">E-factory</em> 这个 API 用来生成 XML 数据很好用. 不过坏消息是它不支持节点的填充内容为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CDATA</code> , 好消息是在 github 上的 <em style="color: #d75100; font-style: normal;">lxml</em> 项目的开发源码中, 已经添加了这个特性.
 </p>
-<p style="margin: 15px 0;">
-这里我们就要自己动手搞点东西了, 我们把 github 上的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">builder.py</code> 的最新源码拿下来单独用. 为了组织代码方便, 我们先在项目目录中创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">packages</code> 目录, 第三方模块就往这里放.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里我们就要自己动手搞点东西了, 我们把 github 上的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">builder.py</code> 的最新源码拿下来单独用. 为了组织代码方便, 我们先在项目目录中创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">packages</code> 目录, 第三方模块就往这里放.
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">mkdir packages
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">mkdir packages
 <span style="color: #0086B3">cd </span>packages
 wget https://raw.githubusercontent.com/lxml/lxml/master/src/lxml/builder.py -Olxml_builder.py
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-这样就可以了. 现在慢慢地我们的逻辑在增加, 每做一次修改, 都要把代码提交到 SAE 上, 然后打开手机, 发送消息来检查代码的正确于否, 这样做太痛苦了. 还记得之前做的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">server.py</code> 么, 我们应该在本机完成更多的测试工作.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就可以了. 现在慢慢地我们的逻辑在增加, 每做一次修改, 都要把代码提交到 SAE 上, 然后打开手机, 发送消息来检查代码的正确于否, 这样做太痛苦了. 还记得之前做的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">server.py</code> 么, 我们应该在本机完成更多的测试工作.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在不添加验证逻辑的情况下, 和微信服务器的交互, 仅仅是处理 POST 的数据而已. 这点我们在本机很容易实现.
 </p>
-<p style="margin: 15px 0;">
-创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sample</code> 目录, 把之前在 <em style=" color: #d75100; font-style: normal; ">storage</em> 中保存的那几个文本, 图片, 音频的请求数据存到文件中去.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sample</code> 目录, 把之前在 <em style="color: #d75100; font-style: normal;">storage</em> 中保存的那几个文本, 图片, 音频的请求数据存到文件中去.
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在我们项目的目录树是这样的了:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">.
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">.
 ├── config.yaml
 ├── index.wsgi
 ├── packages
@@ -492,12 +526,14 @@ wget https://raw.githubusercontent.com/lxml/lxml/master/src/lxml/builder.py -Olx
 └── server.py
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-开始在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">index.wsgi</code> 中实现我们的逻辑, 用户发什么, 我们就回复什么:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+开始在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.wsgi</code> 中实现我们的逻辑, 用户发什么, 我们就回复什么:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">sys</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">os</span>
@@ -551,39 +587,43 @@ sys<span style="color: #000000; font-weight: bold">.</span>path<span style="colo
     <span style="color: #000000; font-weight: bold">return</span> [s]
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里我们不光回复了用户输入的内容, 还把整个请求信息都得现一遍.
 </p>
-<p style="margin: 15px 0;">
-先在本机跑跑, 启动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">python server.py</code> , 然后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">curl</code> 发送保存 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">sample</code> 目录下的数据看看结果:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先在本机跑跑, 启动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python server.py</code> , 然后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">curl</code> 发送保存 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sample</code> 目录下的数据看看结果:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">curl -d @sample/wx-txt.xml <span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">curl -d @sample/wx-txt.xml <span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 得到正确的 xml 响应就没问题了. 把代码提交到 SAE , 用手机上的微信试试了.
 </p>
 
-<a name="toc7"></a>
-<h1 style=" padding: 4px; line-height: 1.3em; margin: 50px auto; font-size: 22px; border-bottom: 1px solid; clear: both;">7. 自定义菜单</h1>
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 自定义菜单</h1>
 
-<a name="toc8"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">7.1. 获取access_token</h2>
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.1. 获取access_token</h2>
 
-<p style="margin: 15px 0;">
-自定义菜单的接口调用需要用到 <em style=" color: #d75100; font-style: normal; ">access_token</em> , 它的获取方式是通过 GET 调用获取到, 文档在:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+自定义菜单的接口调用需要用到 <em style="color: #d75100; font-style: normal;">access_token</em> , 它的获取方式是通过 GET 调用获取到, 文档在:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/wiki/index.php?title=%E8%8E%B7%E5%8F%96access_token" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/wiki/index.php?title=%E8%8E%B7%E5%8F%96access_token</a>
 </p>
-<p style="margin: 15px 0;">
-需要的 <em style=" color: #d75100; font-style: normal; ">appid</em> 和 <em style=" color: #d75100; font-style: normal; ">secret</em> 在测试账号的页面都可以找到.
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+需要的 <em style="color: #d75100; font-style: normal;">appid</em> 和 <em style="color: #d75100; font-style: normal;">secret</em> 在测试账号的页面都可以找到.
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
 <span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
@@ -599,48 +639,52 @@ sys<span style="color: #000000; font-weight: bold">.</span>path<span style="colo
     <span style="color: #000000; font-weight: bold">print</span> get_access_token(<span style="color: #dd1144">&#39;x&#39;</span>, <span style="color: #dd1144">&#39;x&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
-拿到的 <em style=" color: #d75100; font-style: normal; ">access_token</em> 形如:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+拿到的 <em style="color: #d75100; font-style: normal;">access_token</em> 形如:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">XHF6G0NCBrLEEjmkjGZF6QcuBrHcwxt7r93Q1TlCf4YsvozD9a6zg3T17XCQXSd8MdAD-iP8QmO-z3tX7sAJ3A
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">XHF6G0NCBrLEEjmkjGZF6QcuBrHcwxt7r93Q1TlCf4YsvozD9a6zg3T17XCQXSd8MdAD-iP8QmO-z3tX7sAJ3A
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<a name="toc9"></a>
-<h2 style=" padding: 2px; margin: 25px auto; font-size: 20px;">7.2. 创建自定义菜单</h2>
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.2. 创建自定义菜单</h2>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 官方的文档在:
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <a href="http://mp.weixin.qq.com/wiki/index.php?title=%E8%87%AA%E5%AE%9A%E4%B9%89%E8%8F%9C%E5%8D%95%E5%88%9B%E5%BB%BA%E6%8E%A5%E5%8F%A3" style="color: #0184b7; text-decoration: none">http://mp.weixin.qq.com/wiki/index.php?title=%E8%87%AA%E5%AE%9A%E4%B9%89%E8%8F%9C%E5%8D%95%E5%88%9B%E5%BB%BA%E6%8E%A5%E5%8F%A3</a>
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 假设我们要创建的菜单是:
 </p>
 
-<ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li>第二个
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">第二个
 </li>
-<li>帮助
+<li style="margin: 10px auto;">帮助
 </li>
-<li>一级
-    <ul style="line-height: 1.6em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-    <li>ZYS(<a href="http://www.zouyesheng.com" style="color: #0184b7; text-decoration: none">www.zouyesheng.com</a>)
+<li style="margin: 10px auto;">一级
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">ZYS(<a href="http://www.zouyesheng.com" style="color: #0184b7; text-decoration: none">www.zouyesheng.com</a>)
     </li>
-    <li>HAHA
+    <li style="margin: 10px auto;">HAHA
     </li>
     </ul>
 </li>
 </ul>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 对应的 JSON 结构就是:
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">{
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{
      <span style="color: #000080">&quot;button&quot;</span>:[
           {
             <span style="color: #000080">&quot;type&quot;</span>:<span style="color: #dd1144">&quot;click&quot;</span>,
@@ -671,21 +715,317 @@ sys<span style="color: #000000; font-weight: bold">.</span>path<span style="colo
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 创建自定义菜单不是经常有的操作, 把上面的 json 数据存到文件, 用 curl 做一个请求就好了.
 </p>
 
-<div style="background: #ffffff"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style=" background-color: white; font-size: small; line-height: 1.5em; padding: 0 15px 0 15px; margin: 0;">curl -d @sample/menu.json <span style="color: #dd1144">&#39;https://api.weixin.qq.com/cgi-bin/menu/create?access_token=xxx&#39;</span>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">curl -d @sample/menu.json <span style="color: #dd1144">&#39;https://api.weixin.qq.com/cgi-bin/menu/create?access_token=xxx&#39;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
+</div>
 
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 得到正确的响应之后, 重新关注测试账号就可以看到菜单了.
 </p>
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin-top: 100px; margin-bottom: 20px; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'sae-wx';
@@ -716,8 +1056,20 @@ sys<span style="color: #000000; font-weight: bold">.</span>path<span style="colo
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2014 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoklEQVR4nN2XQY7bMAxFH+MAmp1y
+A/kiTeZgbuNBAsyxKicXsW8g72zA8e8iKbqYdBcuWu70F/z4FEl9mfga8+YJCP8e2pnZW7dj4DJa
+bWZWO7KZJA6FBHEhSIur4tFqLnwY+7GFzlr3+mpXCaXQvzjvX9CxHawqt9qXDXWSwhqXFDKkIC1p
+8tMmM+M6tGClYTbbemqTJK3x1IdMdT+5aUOZSqGT+rBS9co0fpVEK5UmoqQMYJ73hroCmKSw0oCV
+yq+SG7RrkjIfxrWAfqbZb3OhlSaFHE+613TP0bNLutKglaqfTKc+SK1vlxz/TDchg3NP9uq0oE5L
+mg46eXaJaa7f4FPzj7EduLwq73NUFjS+j7NxAcI6tp5s1wJxjdvEt13V22HXeLLtY8tothAyt/o+
+7J7TfaujynmY3wGznSPb4w3IcSF0pUnKnhPw8Fx7zkxKW96Ip97bczFK83FYmKzcPPdkV0hBpbk7
+PPDckw/0whngs1fGUdtvNJ46aWjTfCwvzfsFjeoBkm3i9/puKp09l2yu2cMQ8qvyPgv7j39UvwA4
+Ovvr3ew8KAAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

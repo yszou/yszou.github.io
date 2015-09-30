@@ -1,105 +1,393 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-cmn-Hans">
 <head>
-<meta charset="utf-8" />
-<title>使用 Python 实现 LDAP 交互的例子 - 进出自由,我的分享</title>
-<meta name="generator" content="http://txt2tags.org" />
-<meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
-<meta name="keywords" content="使用 Python 实现 LDAP 交互的例子,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy"/>
-<meta name="description" content="使用 Python 实现 LDAP 交互的例子,Yesheng Zou,YS.Zou,邹业盛,孤高天使,AceFantasy的个人网站" />
+    <meta charset="UTF-8" />
+    <title>使用 Python 实现 LDAP 交互的例子 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
-<body onload="prettyPrint()" style=" margin: 0px; padding: 0px; background-image: url(http://zouyesheng.com/static/bg.jpg); font-family: Arial,Helvetica,sans-serif; ">
-<div id="zys-wrapper" style=" width: 700px; margin: auto; font-size: 15px; line-height: 1.6em; color: #333; letter-spacing: 1px; padding: 30px; background-color: white; ">
 
-<h1 style=" color: black; letter-spacing: 0.2em; text-align: center; font-size: x-large; font-weight: bold; text-shadow: 2px 2px 2px gray; margin: 30px auto 30px auto; ">使用 Python 实现 LDAP 交互的例子</h1>
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">使用 Python 实现 LDAP 交互的例子</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛 2013-3-27</span>
+                <span>2015-09-30 15:12 更新</span>
+            </div>
+        </div>
 
-<div style=" float: right; font-size: 13px; color: #777; ">
-    <ul style=" text-align: right; ">
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">2013-03-27 21:58 更新</li>
-        <li style=" list-style-type: none; border-right: 4px solid rgb(0, 120, 181); padding-right: 10px; ">邹业盛 2013-3-27</li>
-    </ul>
-</div>
-
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这两天在配置 mutt 邮件客户端，有一个比较重要的功能就是需要实现使用 LDAP 查询公司的员工邮件。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Python 上有现成的 ldap 模块，在 <a href="http://www.python-ldap.org/" style="color: #0184b7; text-decoration: none">http://www.python-ldap.org/</a> ，虽然官方上也有示例代码，但是要正常从 MS 的服务中获取到数据也真是折腾了一番。后面发现其实这个问题在官方的 FAQ 中都有明确说明的。
 </p>
-<p style="margin: 15px 0;">
-后来又看了一下 LDAP 协议中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; ">filter</code> 的写法，然后根据公司服务的情况自已定义了一些需要的属性。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后来又看了一下 LDAP 协议中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">filter</code> 的写法，然后根据公司服务的情况自已定义了一些需要的属性。
 </p>
-<p style="margin: 15px 0;">
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 把一些东西搞明白之后，用起来还是比较顺手的 :)
 </p>
 
-<pre style=" white-space: pre-wrap; word-wrap: break-word; border: 1px solid #888; font-size: x-small; line-height: 1.5em; padding: 5px;" class="prettyprint">
-  # -*- coding: utf-8 -*-
-  
-  
-  import sys
-  import ldap
-  
-  ldap.set_option(ldap.OPT_REFERRALS, 0)    &lt;--- 不加这个访问不到MS的服务
-  con = ldap.initialize('server') 
-  con.simple_bind_s( 'user', 'password' )
-  
-  base_dn = 'dc=xxx,dc=com'
-  scope = ldap.SCOPE_SUBTREE
-  
-  input = sys.argv[1]
-  
-  filter = "(&amp;(|(cn=*%(input)s*)(mail=*%(input)s*))(mail=*))" % {'input': input}
-  
-  attrs = ['mail', 'givenName', 'sn', 'department', 'telephoneNumber', 'displayName']
-  
-  result = []
-  for i in con.search_s(base_dn, scope, filter, None):
-      if i[0]:
-          d = {}
-          for k in i[1]:
-              d[k] = i[1][k][0]
-  
-          if 'telephoneNumber' not in d:
-              d['telephoneNumber'] = '(无电话)'
-  
-          if 'department' not in d:
-              d['department'] = '(无部门)'
-  
-          if 'sn' not in d and 'givenName' not in d:
-              d['givenName'] = d.get('displayName', '')
-  
-          if 'sn' not in d:
-              d['sn'] = ''
-  
-          if 'givenName' not in d:
-              d['givenName'] = ''
-  
-          result.append(d)
-  
-  print '共找到结果 %s 条' % (len(result))
-  for d in result:
-      print '%(mail)s\t%(sn)s%(givenName)s\t%(telephoneNumber)s %(department)s' % d
-</pre>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
 
-<p style="margin: 15px 0;">
+
+import sys
+import ldap
+
+ldap.set_option(ldap.OPT_REFERRALS, <span style="color: #009999">0</span>)    <span style="color: #000000; font-weight: bold">&lt;---</span> 不加这个访问不到MS的服务
+con <span style="color: #000000; font-weight: bold">=</span> ldap.initialize(<span style="color: #dd1144">&#39;server&#39;</span>) 
+con.simple_bind_s( <span style="color: #dd1144">&#39;user&#39;</span>, <span style="color: #dd1144">&#39;password&#39;</span> )
+
+base_dn <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;dc=xxx,dc=com&#39;</span>
+scope <span style="color: #000000; font-weight: bold">=</span> ldap.SCOPE_SUBTREE
+
+input <span style="color: #000000; font-weight: bold">=</span> sys.argv[<span style="color: #009999">1</span>]
+
+filter <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;(&amp;(|(cn=*%(input)s*)(mail=*%(input)s*))(mail=*))&quot;</span> <span style="color: #000000; font-weight: bold">% {&#39;input&#39;: input}</span>
+
+<span style="color: #000000; font-weight: bold">attrs = [&#39;mail&#39;, &#39;givenName&#39;, &#39;sn&#39;, &#39;department&#39;, &#39;telephoneNumber&#39;, &#39;displayName&#39;]</span>
+
+<span style="color: #000000; font-weight: bold">result = []</span>
+<span style="color: #000000; font-weight: bold">for i in con.search_s(base_dn, scope, filter, None):</span>
+<span style="color: #000000; font-weight: bold">    if i[0]:</span>
+<span style="color: #000000; font-weight: bold">        d = {}</span>
+<span style="color: #000000; font-weight: bold">        for k in i[1]:</span>
+<span style="color: #000000; font-weight: bold">            d[k] = i[1][k][0]</span>
+
+<span style="color: #000000; font-weight: bold">        if &#39;telephoneNumber&#39; not in d:</span>
+<span style="color: #000000; font-weight: bold">            d[&#39;telephoneNumber&#39;] = &#39;(无电话)&#39;</span>
+
+<span style="color: #000000; font-weight: bold">        if &#39;department&#39; not in d:</span>
+<span style="color: #000000; font-weight: bold">            d[&#39;department&#39;] = &#39;(无部门)&#39;</span>
+
+<span style="color: #000000; font-weight: bold">        if &#39;sn&#39; not in d and &#39;givenName&#39; not in d:</span>
+<span style="color: #000000; font-weight: bold">            d[&#39;givenName&#39;] = d.get(&#39;displayName&#39;, &#39;&#39;)</span>
+
+<span style="color: #000000; font-weight: bold">        if &#39;sn&#39; not in d:</span>
+<span style="color: #000000; font-weight: bold">            d[&#39;sn&#39;] = &#39;&#39;</span>
+
+<span style="color: #000000; font-weight: bold">        if &#39;givenName&#39; not in d:</span>
+<span style="color: #000000; font-weight: bold">            d[&#39;givenName&#39;] = &#39;&#39;</span>
+
+<span style="color: #000000; font-weight: bold">        result.append(d)</span>
+
+<span style="color: #000000; font-weight: bold">print &#39;共找到结果 %</span>s 条<span style="color: #dd1144">&#39; % (len(result))</span>
+<span style="color: #dd1144">for d in result:</span>
+<span style="color: #dd1144">    print &#39;</span><span style="color: #000000; font-weight: bold">%(mail)s\t%</span>(sn)s<span style="color: #000000; font-weight: bold">%(givenName)s\t%</span>(telephoneNumber)s <span style="color: #000000; font-weight: bold">%(department)s&#39; %</span> d
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 参考：
 </p>
 
-<ul style="line-height: 1.4em; padding: 0px; padding-left: 20px; margin: auto 30px;">
-<li><a href="http://latty.iteye.com/blog/1694399" style="color: #0184b7; text-decoration: none">http://latty.iteye.com/blog/1694399</a>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><a href="http://latty.iteye.com/blog/1694399" style="color: #0184b7; text-decoration: none">http://latty.iteye.com/blog/1694399</a>
 </li>
-<li><a href="http://www.python-ldap.org/faq.shtml" style="color: #0184b7; text-decoration: none">http://www.python-ldap.org/faq.shtml</a>
+<li style="margin: 10px auto;"><a href="http://www.python-ldap.org/faq.shtml" style="color: #0184b7; text-decoration: none">http://www.python-ldap.org/faq.shtml</a>
 </li>
 </ul>
 
 
-<link href="http://zouyesheng.com/static/google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://zouyesheng.com/static/google-code-prettify/prettify.js"></script>
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
     
 
-<div style=" -moz-border-radius: 5px; -webkit-border-radius: 5px; -moz-box-shadow: 3px 3px 5px #333; -webkit-box-shadow: 3px 3px 5px #333; box-shadow: 3px 3px 5px #333;  border-radius: 5px; background-color: #2a9af9; padding: 4px; color: white; line-height: 1.3em; text-shadow: 2px 2px 2px black; margin: 20px auto; font-size: medium; clear: both;">评论</div>
-<div id="disqus_thread"></div>
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'ldap-python-example';
@@ -130,8 +418,20 @@ Python 上有现成的 ldap 模块，在 <a href="http://www.python-ldap.org/" s
 </script>
     
 
-<div style="font-size: x-small; text-align: right; margin-top: 50px;">
-&copy;2010-2013 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABk0lEQVR4nN2XMW7jMBBF31gBmI6+
+AXUS61wLaDdc2AejkotIN6A7GqD0t3C6TZkpdln+YoZ/MP9/0sTf53H6AoR/DUUFCAczTHUQQGp+
+dzBJfCisEDtB6q6M7zYiy6np/Htksew+3wszYdm0fnPdr9EPvWB23kffbmiRFErstAuDgtQ9t0Rm
+hm05xWv9MT7MXjy5SZJKzAkgSZLcuKESr2KqM08tWB38up2Y6m7tHVBht7Cnx+i5JZUUCjOSMuHA
+kRuSOs3UaVbfFIpvt6WSwiKtOgAuMfspAEk56WAmSDlJ9c11knUmHDEnSR2m6pgBqDBISx3WdoGk
+Eq+eCjB1XmGfeI954/Jddb88OmJPOmImlCh3n/yot82GrSes7uN9Ot98fTLTJvUET26uClier5Gn
+AsCcFfDMgM8g0OKpgBOLmb0CG1ZnXonX1Tu7D2aaqTtz+/TJI3YasQPRVQEAvEOKhVsKhcFvkp/o
+VG807lob959+aXqCqJXF8vb4xT5iCp5bUoCwKCeV2GkmR1e2//hH9QezyBmwcS2sUgAAAABJRU5E
+rkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
