@@ -7,6 +7,9 @@ TypeScript语言学习参考
 %%toc
 
 
+**本文的内容对应 TypeScript 的 1.6.2 版本。**
+
+
 #概述与环境安装#
 
 *TypeScript* 是在 *JavaScript* 基础上被微软做出来的新语言，目的是补充 js 的语法，而变更的地方主要是有两点。一是加入了类型声明，二是加入了常见的基于“类”的面向对象语法。前者，“类型声明”使得代码的静态分析成为可能，后者则为组织 js 代码提供了一种更易于被人接受的形式。
@@ -30,6 +33,7 @@ tsc hello.ts
 这样，就可以在同目录中得到一个 ``hello.js`` 。
 
 编译工具还有其它的一些选项，具体的直接敲入 ``tsc`` 后看屏幕信息吧。
+
 
 
 #声明与预置规则#
@@ -65,9 +69,9 @@ $.ajax({});
 
 
 
-#数据类型#
+#类型#
 
-这里提到的“数据类型”包含了两层意义，一方面表示“一个变量是什么东西”，比如 ``var a = '1';`` ，我们可以说这个 ``a`` 是一个字符串。另一方面，表示“如何描述一个变量是什么东西”，举个例子：
+这里提到的“类型”包含了两层意义，一方面表示“一个变量是什么东西”，比如 ``var a = '1';`` ，我们可以说这个 ``a`` 是一个字符串。另一方面，表示“如何描述一个变量是什么东西”，举个例子：
 
 ```typescript
 var a:string[];
@@ -81,12 +85,220 @@ var a:[string, number];
 
 上面的 ``string[]`` 和 ``[string, number]`` 在 ts 中其实是两种不同的类型，前者是 *Array* ，后者是 *Tuple* 。但是，这两个东西的区别，其实只在“声明”时有，或者说区别只在于“约束”，而不在于实际的数据形式。即反过来看，你无法区别 ``['1', '1']`` 这个值的类型，它对应的到底是 ``string[]`` 这个 *Array* ，还是 ``[string, string]`` 这个 *Tuple* ，当然也可以说它两者都是，从这个角度来说，类型的意义，也仅仅是在于“约束”，跟实际的数据结构完全没有关系的（js 这种高高级的语言本来也不关心）。想明白这点，应该有助于减少纠结。
 
+前面的一点点例子，也展示了 ts 中的类型的用法——后置声明。
 
 
+##基本类型##
+
+```typescript
+var a:number = 1;
+var b:string = 'abc';
+var c:boolean = true;
+var d:void;
+var e:any = null;
+
+enum Color { red = 5, blue = 2, green = 3 }
+var f:Color = Color.red;
+```
+
+- *number* , *string* , *boolean* 这几个不用说了。
+- *void* 表示“空”，常用于函数返回值类型的声明。
+- *any* 表示“任意类型”。
+- *enum* 的写法，是 ts 自己扩展出的“枚举”类型，它实际上只能是数字的形式化表示。
+
+
+##函数声明##
+
+```typescript
+var func1 = function(a:string, b:number):number{
+    return 1;
+};
+
+function func2(a:string, b:number):number{
+    return 1;
+}
+
+function func3(a:string, b:number):void{
+}
+```
+
+参数的类型声明，一样是放参数名后面。在参数部分之后，可以加上函数返回值的类型声明。
+
+
+#操作符#
+
+整体上跟 js 是一样的，因为引入了类型，提几点：
+
+```typescript
+function f():void{
+    var obj = {a: 1};
+    return (delete obj.a);
+}
+```
+
+上面的代码有编译期错误，因为 ``delete`` 操作符的返回值是 *boolean* 类型。
+
+*void* 也是一个操作符，它的返回值是 ``undefined`` ：
+
+```typescript
+function f():void{
+    var obj = {a: 1};
+    return (void (delete obj.a));
+}
+```
+
+这样就对了。
+
+
+##类型求值##
+
+``typeof`` 这个操作符，本来是返回一个字符串。但是在 ts 中，如果它的使用位置是在一个“类型声明”中，则它的行为就是一个“类型求值”：
+
+```typescript
+var n = 123;
+function f():typeof n{
+    return (typeof n);
+}
+```
+
+上面的代码就是错的，因为 ``f`` 的返回值需要是一个 *number* ，但是实际上返回了一个 *string* 。
+
+##匹配赋值##
+
+（这部分功能 ECMA 6 以上本来就支持了，ts 便不会再作额外转换）
+
+在 ts 中可以写：
+
+```typescript
+var x:number, y:number;
+[x, y] = [1, 2, 3];
+console.log(x, y);
+```
+
+ts 会生成这样的 js 代码：
+
+```javascript
+var x, y;
+_a = [1, 2, 3], x = _a[0], y = _a[1];
+console.log(x, y);
+var _a;
+```
+
+再扩展一下，可以给一个“默认值”：
+
+```typescript
+var [x, y, z='ok'] = [1, 2, undefined];
+console.log(x, y, z);
+```
+
+注意， ``z`` 在这里的行为是，当对应位置没有匹配时，取 ``ok`` 。但是，如果写成：
+
+```typescript
+var [x, y, z='ok'] = [1, 2];
+```
+
+这样就不行，会检查出类型不匹配。
+
+前面正确的例子对应生成的 js 代码是：
+
+```javascript
+var _a = [1, 2], x = _a[0], y = _a[1], _b = _a[2], z = _b === void 0 ? 'ok' : _b;
+console.log(x, y, z);
+```
+
+列表可以匹配，对象也可以匹配，形式上是把原始属性名映射到目标属性名：
+
+```typescript
+var {x: a, y: b, z: c=false} = {x: 1, y: 2, z: undefined};
+console.log(a, b, c);
+```
+
+生成的 js 代码是：
+
+```javascript
+var _a = { x: 1, y: 2, z: undefined }, a = _a.x, b = _a.y, _b = _a.z, c = _b === void 0 ? false : _b;
+console.log(a, b, c);
+```
 
 
 
 #控制结构#
+
+（没有特殊的地方， ECMA 6 新增的语法不论）
+
+
+#函数，声明，参数约束与默认值#
+
+
+##参数匹配与默认值##
+
+
+前面说类型的时候，谈到过一点函数的定义形式：
+
+```typescript
+var func1 = function(a:string, b:number):number{
+    return 1;
+};
+```
+
+结合前面“匹配赋值”，函数在定义时就可以有“默认值”机制了：
+
+```typescript
+function f({x: a=1}){
+    console.log(a);
+}
+
+f({});
+```
+
+上面的代码从传入的对象中抽取 ``x`` 属性赋值给 ``a`` 变量，如果没有 ``x`` 属性，则把 ``a`` 变量的值赋值成 ``1`` ，对应的 js 代码为：
+
+```javascript
+function f(_a) {
+    var _b = _a.x, a = _b === void 0 ? 1 : _b;
+    console.log(a);
+}
+f({});
+```
+
+还可以复杂一点：
+
+```typescript
+function f({x: a=1, pair: [x, y]=['a', 'b']}){
+    console.log(x, y);
+}
+
+f({pair: ['1', '2']});
+```
+
+##参数类型约束##
+
+
+前面在函数的参数中作了额外的事的话，类型约束上就没法直接做了。这种情况，就需要在整个参数对象上，定义一个 *接口* 来约束类型。
+
+```typescript
+interface FInfo {
+    x?: number;
+    pair: [string, string];
+}
+
+function f({x: a=1, pair: [x, y]=['a', 'b']}: FInfo){
+    console.log(x, y);
+}
+
+f({pair: ['1', '2']});
+```
+
+定义函数时，直接声明参数是一个 ``FInfo`` 类型，那么在编译期就可以用参数的有效性检查了。（ *interface* 只是约束，只在编译期起作用，对生成 js 代码没有任意影响）。
+
+
+##新的函数书写形式##
+
+
+
+
+
+
 
 #类#
 
