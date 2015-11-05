@@ -125,6 +125,19 @@ function func3(a:string, b:number):void{
 参数的类型声明，一样是放参数名后面。在参数部分之后，可以加上函数返回值的类型声明。
 
 
+##类型聚合##
+
+在声明类型的时候，类型与类型之间，是可以有逻辑关系的，比如“A类型，或者B类型”，甚至是“A类型，也是B类型”。推广一下，就是指定的对象实现了多个接口中的一个，或者，实现了所有的接口。
+
+```typescript
+function f(a:number|string):string|number{
+    return a;
+}
+```
+
+
+
+
 #操作符#
 
 整体上跟 js 是一样的，因为引入了类型，提几点：
@@ -292,15 +305,101 @@ f({pair: ['1', '2']});
 定义函数时，直接声明参数是一个 ``FInfo`` 类型，那么在编译期就可以用参数的有效性检查了。（ *interface* 只是约束，只在编译期起作用，对生成 js 代码没有任意影响）。
 
 
+类型本身是可以有逻辑关系的，这个前面提过：
+
+```typescript
+function f(a:number|string):string|number{
+    return a;
+}
+```
+
+如果一个参数可以缺失，可以使用这种方式声明，加一个问号：
+
+```typescript
+function f(a?:number|string):string|number{
+    return a;
+}
+```
+
+
 ##新的函数书写形式##
 
+ts 为函数表达式提供了一种更简单的写法，比如原来要写成：
 
+```javascript
+var f = function(a, b, c){return a}
+```
 
+现在 ts 中可以写为：
 
+```typescript
+var f = (a, b, c) => a;
+```
 
+使用 *=>* 箭头的语法，来作为一个函数表达式。
+
+箭头的左边，是参数。右边，是函数体，左右边都有简写形式。上面的右边就简写了，完整的形式应该是：
+
+```typescript
+var f = (a, b, c) => { return a };
+```
+
+当参数只有一个时，左边的括号可以省略：
+
+```typescript
+var f = a => a+1;
+//function(a){ return a+1 }
+```
+
+如果没有参数，则写为一个空括号：
+
+```typescript
+var f = () => 1;
+//function(){return 1}
+```
+
+注意，箭头形式的函数表达式中， *this* 不是上下文，会被 ts 处理成一个简单的闭包变量。
+
+```typescript
+var f = () => this.x;
+```
+
+转成 js 是：
+
+```javascript
+var _this = this;
+var f = function () { return _this.x; };
+```
+
+箭头形式的函数表达式用在回调函数中很方便：
+
+```typescript
+var n = ([1,2,3]).forEach((x) => x+1);
+console.log(n);
+```
+
+生成的 js 是：
+
+```javascript
+var n = ([1, 2, 3]).forEach(function (x) { return x + 1; });
+console.log(n);
+```
+
+带上类型也是一样的：
+
+```typescript
+var f = (x:number):number => x + 1;
+```
 
 
 #类#
+
+##实例化，构造函数，继承##
+
+
+
+
+
 
 #模块加载#
 
