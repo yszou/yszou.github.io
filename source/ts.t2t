@@ -394,9 +394,728 @@ var f = (x:number):number => x + 1;
 
 #类#
 
-##实例化，构造函数，继承##
+##构造函数，实例化##
+
+ts 中有标准的 *class* 关键词了，定义一个类的方式变得直观：
+
+```typescript
+enum Sex {male, female};
+class People {
+    name: string = 'noname';
+    sex: Sex;
+
+    constructor(name:string, sex: Sex){
+        this.name = name;
+        this.sex = sex;
+    }
+
+    get_name():string{
+        return this.name;
+    }
+
+    set_name(name:string):People{
+        this.name = name;
+        return this;
+    }
+
+    get_sex():Sex{
+        return this.sex;
+    }
+
+    set_sex(sex:Sex):People{
+        this.sex = sex;
+        return this;
+    }
+
+}
+
+var p = new People('hello', Sex.male);
+console.log(p.get_name());
+console.log(p.set_name('world').get_name());
+```
+
+上面的代码就是一个典型的“类”的定义，里面有它的属性和方法。我们还额外定义了一个枚举类型。
+
+这里在写法上的注意的是，“属性”结尾，可选一个分号结尾。“方法”结尾，一定不能要分号。
+
+``constructor`` 方法，强制为类的构造方法。 ``new`` 用于实例化一个类。
+
+一个类的方法实现中， ``this`` ，仍然是 js 中的“上下文”，所以对于上述代码，我们写：
+
+```typescript
+var f = p.get_name;
+console.log(f());
+```
+
+输出的结果，是 ``undefined`` 。
+
+为此，我们可以使用“属性”来代替“方法”，本来“函数”在 js 中就跟数字，字符串一样，是再普通不过的类型嘛。使用“箭头函数”把 ``this`` 作为闭包变量使用，我们把前面的代码修改一下：
+
+```typescript
+class People {
+    name: string = 'noname';
+    sex: Sex;
+
+    get_real_name = ():string => {return this.name};
+    set_real_name = (name:string):People => {
+        this.name = name;
+        return this;
+    };
+    
+    ... ...
+```
+
+这样，再使用：
+
+```typescript
+var get = p.get_real_name;
+var set = p.set_real_name;
+console.log(get());
+set('real');
+console.log(get());
+```
+
+结果就不会有任何改变了。
+
+前面的 ``People`` 这个类定义，转换出来的 js 代码是：
+
+```javascript
+var People = (function () {
+    function People(name, sex) {
+        var _this = this;
+        this.name = 'noname';
+        this.get_real_name = function () { return _this.name; };
+        this.set_real_name = function (name) {
+            _this.name = name;
+            return _this;
+        };
+        this.name = name;
+        this.sex = sex;
+    }
+    People.prototype.get_name = function () {
+        return this.name;
+    };
+    People.prototype.set_name = function (name) {
+        this.name = name;
+        return this;
+    };
+    People.prototype.get_sex = function () {
+        return this.sex;
+    };
+    People.prototype.set_sex = function (sex) {
+        this.sex = sex;
+        return this;
+    };
+    return People;
+})();
+```
 
 
+##继承##
+
+ts 中使用 ``extends`` 关键词来做继承。
+
+```typescript
+class A {
+    constructor(name:string=''){}
+}
+class B extends A {
+    name:string = 'B';
+}
+
+var b = new B();
+console.log(b.name);
+```
+
+ts 中的 ``extends`` 不支持多重继承。
+
+
+
+##成员类型##
+
+ts 中的类的成员可以有 ``public`` 和 ``private`` 两类限定。默认是 ``public`` （其实还有一个 ``protected`` 类型，在后面的“父类引用”中会介绍）。
+
+```typescript
+class A {
+    private _name:string;
+    public get_name = () => this._name;
+    constructor(name:string){
+        this._name = name;
+    }
+}
+
+var a = new A('hello');
+//console.log(a._name); //ERROR
+console.log(a.get_name());
+```
+
+对于 ``public`` 和 ``private`` ，在构造函数上有一点“特殊功能”，可以在构造函数的参数中声明 ``public`` 或 ``private`` ，这样的话，实例化的时候会自动处理相应的实例成员变量。
+
+```typescript
+class A {
+    constructor(){ }
+}
+
+var a = new A();
+console.log(a.name);
+```
+
+上面的代码在编译时会报 ``a.name`` 不存在的错误。改一下：
+
+```typescript
+class A {
+    constructor(public name:string='hello'){ console.log('here') }
+}
+
+var a = new A();
+console.log(a.name);
+```
+
+在构造函数的参数前面多加一个 ``public`` ，那么在实例化的时候， ``name`` 参数会自动对应到对实例的 ``name`` 成员属性的赋值上。上面的 ts 代码生成的 js 代码是：
+
+```javascript
+var A = (function () {
+    function A(name) {
+        if (name === void 0) { name = 'hello'; }
+        this.name = name;
+        console.log('here');
+    }
+    return A;
+})();
+var a = new A();
+console.log(a.name);
+```
+
+生成的 ``function A(name)`` 中，第一行是处理默认参数行为。第二行，就是编译生成的“自动对应同名属性”的行为。
+
+换成 ``private`` 也是一样的：
+
+```typescript
+class A {
+    get_name = ():string => this.name;
+    constructor(private name:string='hello'){ console.log('here') }
+}
+
+var a = new A();
+console.log(a.get_name());
+```
+
+
+##静态成员，类引用##
+
+前面写在“类”中的属性或方法，可以看成是“实例的成员”，相对的，我们在前面加一个 ``static`` 限定的话，就可以把属性或方法定义成“静态的成员”，或者从认识上是“类成员”。这些属性或方法存在于类的名字名字空间下，与实例无关。
+
+```typescript
+class A {
+    x:number = 0;
+    static x:number = 1;
+}
+
+var a = new A();
+console.log(a.x);
+console.log(A.x);
+```
+
+上面代码中，虽然有两个 ``x`` ，但是一个是实例属性，一个是“类属性（静态属性）”，所以，它们是两个不同，也互不相关的东西。
+
+对应生成的 js 代码是：
+
+```javascript
+var A = (function () {
+    function A() {
+        this.x = 0;
+    }
+    A.x = 1;
+    return A;
+})();
+var a = new A();
+console.log(a.x);
+console.log(A.x);
+```
+
+在实例的相关成员定义中，要引用静态成员的话：
+
+```typescript
+class A {
+    x:number = 0;
+    static x:number = 1;
+    show_normal = ():number => this.x;
+    show_static = ():number => A.x;
+}
+```
+
+直接写 ``A.x`` 自然没有问题，但是更好的方法，应该是表达成“当前实例的类”，在 js 中，“类”其实就是一个函数，比如上面的代码转成 js 是：
+
+```javascript
+var A = (function () {
+    function A() {
+        var _this = this;
+        this.x = 0;
+        this.show_normal = function () { return _this.x; };
+        this.show_static = function () { return A.x; };
+    }
+    A.x = 1;
+    return A;
+})();
+```
+
+我们可以通过对应实例的 ``constructor`` 成员来得到这个 ``A`` 的引用：
+
+```typescript
+class A {
+    x:number = 0;
+    static x:number = 1;
+    static name:string = '123';
+    show_normal = ():number => this.x;
+    show_static = ():number => A.x;
+    show_static2 = ():number => this.constructor.x;
+    show_cls_name = ():string => this.constructor.name;
+}
+
+var a = new A();
+console.log(a.show_normal());
+console.log(a.show_static());
+console.log(a.show_static2());
+console.log(a.constructor === A);
+console.log(a.show_cls_name());
+console.log(A.name);
+```
+
+好吧，我自认为的道理都说完了，不过，上面的代码会提示编译有错误（ ``this.constructor`` 这个函数没有 ``x`` 这个属性），但是却能正确得到 js 结果。同时，那个静态的 ``name`` ，赋值为 ``123`` 也是没用的，得到的结果总是 ``A`` 。不要问我为什么，我也不知道。
+
+接下来要确认的问题，静态成员可以被更改吗？或者说得准确点， ts 允许静态成员被更改吗？因为 js 层面肯定是没问题的。
+
+```typescript
+class A {
+    static x:number = 1;
+}
+
+console.log(A.x);
+A.x = 2;
+console.log(A.x);
+```
+
+上面的代码没有编译错误，所以，看起来静态成员是可以被更改的。
+
+```typeof
+class A {
+    static x:number = 1;
+    public get_x = ():number => A.x;
+}
+
+var a = new A();
+var B:typeof A = A;
+console.log(a.get_x());
+B.x = 2;
+console.log(a.get_x());
+var b = new B();
+console.log(b.get_x());
+```
+
+上面的代码演示了一下 ``typeof`` 的用法，并且也对静态成员作了更改。
+
+
+##父类引用##
+
+ts 的实例方法中，使用 ``super`` 作为对父类的引用。
+
+```typescript
+class A {
+    name:string;
+    constructor(name:string){this.name = name;}
+    func():void{
+        console.log('A');
+    }
+}
+
+class B extends A {
+    constructor(name:string){
+        super(name);
+        this.name += 'XXXX';
+    }
+    func():void{
+        super.func();
+        console.log('B');
+    }
+}
+
+var b = new B('B');
+b.func();
+console.log(b.name);
+```
+
+上面的代码中，特别注意一下 ``constructor`` 构造函数中 ``super`` 的处理方式，不是 ``super.constructor`` 。
+
+前面的代码对应的 js 代码是：
+
+```javascript
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var A = (function () {
+    function A(name) {
+        this.name = name;
+    }
+    A.prototype.func = function () {
+        console.log('A');
+    };
+    return A;
+})();
+var B = (function (_super) {
+    __extends(B, _super);
+    function B(name) {
+        _super.call(this, name);
+        this.name += 'XXXX';
+    }
+    B.prototype.func = function () {
+        _super.prototype.func.call(this);
+        console.log('B');
+    };
+    return B;
+})(A);
+var b = new B('B');
+b.func();
+console.log(b.name);
+```
+
+大概看一下，继承的实现是通过“传参”实现的，而 ``super`` 的则是通过“绑定上下文”来实现的。
+
+提到上下文的话，我们再确定一下：
+
+```typescript
+class A {
+    name:string = 'A';
+    func():void{
+        console.log(this.name);
+    }
+}
+
+class B extends A {
+    name:string = 'B';
+    func():void{
+        super.func();
+        console.log('B');
+    }
+}
+
+(new B()).func();
+```
+
+没问题，结果是两个 ``B`` 。
+
+*super* 的作用，只能发生在“方法”上，所以，运用“箭头函数”，把属性的值做成函数的方法，在实现中是不能使用 ``super`` 的：
+
+```typescript
+class A {
+    func = () => console.log('A');
+}
+
+class B extends A {
+    func = () => {
+        console.log('B');
+    }
+}
+
+(new B()).func();
+```
+
+这样没问题。但是：
+
+```typescript
+class B extends A {
+    func = () => {
+        super.func();
+        console.log('B');
+    }
+}
+```
+
+这样是不行的，因为 *super* 只能访问到父类的方法，准确地说，是 ``public`` 或 ``protected`` 的方法。
+
+说到这个 ``protected`` ，先看 ``private`` ：
+
+```typescript
+class A {
+    private func():void{
+        console.log('A');
+    }
+}
+
+class B extends A {
+    say():void {
+        this.func();
+    }
+}
+
+(new B()).say();
+```
+
+上面的代码是错误的， ``private`` 的 ``func`` 方法，不能被子类 ``B`` 的实例方法。
+
+如果把 ``private`` 换成 ``protected`` 就可以了：
+
+```typescript
+class A {
+    protected func():void{
+        console.log('A');
+    }
+}
+
+class B extends A {
+    say():void {
+        this.func();
+    }
+}
+
+(new B()).say();
+```
+
+当然，不直接用到了 ``private`` 的方法肯定是没问题的：
+
+```typescript
+class A {
+    private name:string = 'MMM';
+    private func():void{
+        console.log(this.name);
+    }
+    say():void{
+        this.func();
+        console.log('say');
+    }
+}
+
+class B extends A {
+    say():void{
+        super.say();
+        console.log('BB');
+    }
+}
+
+(new B()).say();
+```
+
+子类覆写父类方法，在方法的“类型”限定上，的需要遵循一些规则。
+
+- *private* 的不能变成其它。
+- *public* 的不能变成其它。
+- *protected* 的可以变成 *public* 。
+
+
+
+##接口##
+
+说完了类，再来看“接口”。
+
+```typescript
+interface X {
+    name:string;
+    set_name(name:string):A;
+}
+
+class A implements X {
+    name:string = '';
+    set_name(name:string){
+        this.name = name;
+        return this;
+    }
+}
+```
+
+接口只是规则了一套规则，或者说只是定义了一套约束，它跟生成的 js 代码完全没有关系，接口只用于 ts 的类型检查。
+
+一个类，可以实现多个接口：
+
+```typescript
+interface X {
+    name:string;
+    set_name(name:string):A;
+}
+interface Y {
+    type:string;
+}
+
+class A implements X,Y {
+    name:string = '';
+    type:string = 'A';
+    set_name(name:string){
+        this.name = name;
+        return this;
+    }
+}
+```
+
+接口中可以约束构造函数，其实也不能叫“约束构造函数”，我X，我也不知道应该怎么说了。
+
+意思就是定义的接口中的“构造函数”部分，这个接口不能被用来 ``implements`` ，只能用来作为一个“类型限定”，在类型检查时用到“构造函数”约束这部分。
+
+构造这部分不能写为 ``constructor`` ， 要使用 ``new`` 代替。
+
+见如下代码：
+
+```typescript
+interface X {
+    new(name:string);
+}
+
+class A implements X {
+    constructor(name:string){ }
+}
+```
+
+这样写是不行的（我也不知道为什么不行啊）。 ``X`` 中定义了 ``new`` ， ``X`` 不能被用来 ``implements`` 。
+
+```typescript
+interface X {
+    new(name:string):Y;
+}
+
+interface Y { }
+
+class A implements Y {
+    constructor(name:string){
+        console.log(name);
+    }
+}
+
+function func(cls:X){
+    new cls('123');
+}
+
+func(A);
+```
+
+接口中的 ``new`` 是这样用的。
+
+关于接口，还有一条机制，同名的接口定义，规则会作合并处理，不会提示名字冲突。
+
+```typescript
+interface X {
+    name: string;
+}
+
+interface X {
+    type: string;
+}
+
+class A implements X {
+    name: string = '123';
+    type: string = 'hello';
+}
+```
+
+
+
+##多态##
+
+
+因为 js 本身是动态语言，也没有类型限制，所以，这里说的“多态”仅指 ts 的“编译期”的类型检查相关的内容。
+
+前面介绍接口的时候，已经有“面向接口”的例子了。
+
+```typescript
+interface X {
+    get_name(name:string):string;
+}
+
+function func(obj:X):void{
+    console.log(obj.get_name('haha'));
+}
+
+
+class A implements X {
+    get_name = (name:string) => name;
+}
+
+var a = new A();
+func(a);
+```
+
+不过事实上，类型约束中的接口，只是一个“说明”性质的东西，以上面代码来说，它只是表达了“传入的参数要像接口 X 声明的那样”，至于到底是不是“实现了接口 X ”这无关重要。即：
+
+```typescript
+interface X {
+    get_name(name:string):string;
+}
+
+function func(obj:X):void{
+    console.log(obj.get_name('haha'));
+}
+
+class A {
+    get_name = (name:string) => name;
+}
+
+var a = new A();
+func(a);
+```
+
+上面 ``A`` 没有声明实现了 ``X`` ，也是没有问题的，只要有 ``get_name`` 方法。
+
+
+对于普通的类型声明，规则也跟上面接口一样：
+
+```typescript
+class A {
+    name:string = 'A';
+    a_func(){}
+}
+
+class B{
+    name:string = 'B';
+}
+
+var b:A = new B();
+console.log(b.name);
+```
+
+上面的代码会报错，但是报错的原因，不是说 ``B`` 不是 ``A`` 的子类，而是， ``B`` 中没有 ``a_func`` 这个方法而已。
+
+所以：
+
+```typescript
+class A {
+    name:string = 'A';
+    a_func(){}
+}
+
+class B{
+    name:string = 'B';
+    b_func(){}
+}
+
+var b:A = new B();
+console.log(b.name);
+```
+
+这样是没问题的。对于函数的参数同理：
+
+```typescript
+class A {
+    name:string = 'A';
+    a_func(){}
+}
+
+class B {
+    name:string = 'B';
+    a_func(){}
+}
+
+function func(obj:A){
+    console.log(obj.name);
+}
+
+func(new B());
+```
+
+简而言之， ts 中虽然有强类型的形式，但是，类型检查还是 “鸭子类型”那种规则。
+
+
+
+##元类##
+
+##反射##
 
 
 
