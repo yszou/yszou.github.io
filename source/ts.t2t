@@ -1115,14 +1115,170 @@ func(new B());
 
 ##元类##
 
+元类，简单来说就是考虑如何动态地创建一个“类”。
+
+*TypeScript* 在这方面没有补充新的东西，同时，因为使用了 *new* 作为实例化的方法，所以，在统一的形式上是没有办法有进一层的抽象了。
+
+*new* 的作用需要的是一个函数 *Function*，但是 *new* 的结果，却一定是一个 *Object* 。所以，我们没有办法通过“实例化”来得到一个新的类（函数）。
+
+当然，如果不管 *new* ，那自己随便怎么写都好说了。更何况， js 中还有一个无所不能的 ``new Function()`` 呢。
+
+
 ##反射##
 
+同样，在这方面 ts 也没有提供新的东西。 js 层面，我们能通过 ``for in`` 有限地获取成员，但是，获取父类，子类这些东西就没有标准的作法了。说到这里，想到 ts 在生成 js 的时候，在实现继承的方式上会自己定义一个 ``__extends`` 函数。但是编译器对 ``__extends`` 这个名字是没有作特殊保护的。
+
+```typescript
+var __extends = function(){}
+class A {
+    static a:string = 'A';
+}
+class B extends A {}
+console.log(B.a);
+```
+
+
+##泛型##
+
+关于类型前面都讲得差不多了，现在考虑，类型本身是动态的情况。
+
+这里最简单的例子，就是“传入什么，就传出什么”。
+
+```javascript
+function func(a){
+    return a;
+}
+```
+
+这是一个最简单不过的函数，但是，当我们考虑给它加上类型约束的时候，却碰到无法解决的困难了。
+
+可能有人直观地会想到这样做：
+
+```typescript
+function func(a:any):any{
+    return a;
+}
+```
+
+“所有类型都可以”嘛，显然，这是不符合我们的“传入什么，就传出什么”这个目的的，按这种约束，传入一个 *number* ，传出一个 *string* 都满足 *any* 类型的约束。
+
+实际上，这里我们需要的不是“任何类型”，而是“跟传入值一样的类型”。这种动态的，确定的类型约束，就需要用到“泛型”机制。在 ts 中使用尖括号定义“泛型变量”来实现：
+
+```typescript
+function func<T>(a:T):T{
+    return a;
+}
+```
+
+这里的 ``T`` 只是一个普通的引用变量名，它也完全可以是其它的写法：
+
+```typescript
+function func<what>(a:what):what{
+    return a;
+}
+```
+
+定义之后，在调用时，同样也是使用尖括号来人为指定一种类型（确定的类型）：
+
+```javascript
+func<string>('123');
+func<number>(123);
+func<number[]>([11]);
+func<[number, string]>([11, 'ss']);
+```
+
+这种方式明确在调用时给出的类型信息，这样 ts 就可以正常进行类型检查了。
+
+箭头函数也可以使用：
+
+```typescript
+var func = <T>(a:T):T => a;
+func<number>(123);
+```
+
+甚至是类也可以使用“泛型变量”：
+
+```typescript
+class A<T, U> {
+    number:T;
+    age:U;
+}
+
+var a = new A<number, string>();
+a.number = 123;
+a.age = '11';
+```
+
+这里注意，“泛型变量”只用于类型约束，类型约束只在编译期起作用，它跟在运行期起作用的普通变量的层次是不同的。
+
+接口中同样可以使用“泛型变量”：
+
+```typescript
+interface X<T> {
+    number:T
+}
+
+class A implements X<string> {
+    number: string;
+}
+```
+
+直接用于类型约束中：
+
+```typescript
+interface X<T> {
+    number:T
+}
+
+function func<T>(obj:X<T>):T{
+    return obj.number;
+}
+
+func<string>({number: '11'});
+```
+
+约束成员函数：
+
+```typescript
+function func<T>(obj: { new():T; show():string }):T{
+    return new obj();
+}
+
+
+class A {
+    static show():string{return 'A'}
+}
+
+func<A>(A);
+```
+
+“泛型参数”也可以直接描述继承关系（``implements`` 不可以用）：
+
+```typescript
+class A {
+    number:string;
+}
+
+function func<T extends A>(obj):T{
+    return new obj();
+}
+
+class B {}
+func<B>(B); //ERROR
+```
+
+
+#名字空间与模块加载#
 
 
 
-#模块加载#
+
+
 
 #与js文件的协作#
+
+
+#总结#
 
 
 
