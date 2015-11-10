@@ -1271,6 +1271,99 @@ func<B>(B); //ERROR
 #名字空间与模块加载#
 
 
+##名字空间##
+
+ts 中专门添加了名字空间机制，使用 ``namespace`` 处理：
+
+```typescript
+namespace A {
+    export var name:string;
+    name = '123';
+    var age:number = 11;
+}
+console.log(A.name);
+```
+
+对应的 js 代码为：
+
+```javascript
+var A;
+(function (A) {
+    A.name = '123';
+    var age = 11;
+})(A || (A = {}));
+console.log(A.name);
+```
+
+名字空间中需要导出的变量，使用 ``export`` 标识出来。名字空间本身的嵌套也是如此：
+
+```typescript
+namespace A {
+    export var name:string;
+    name = '123';
+    var age:number = 11;
+
+    export namespace B {
+        export var name:string;
+        name = 'in b';
+    }
+}
+console.log(A.name);
+console.log(A.B.name);
+```
+
+生成的 js 代码为：
+
+```javascript
+var A;
+(function (A) {
+    A.name = '123';
+    var age = 11;
+    var B;
+    (function (B) {
+        B.name = 'in b';
+    })(B = A.B || (A.B = {}));
+})(A || (A = {}));
+console.log(A.name);
+console.log(A.B.name);
+```
+
+名字空间和接口一样，同名的会自动合并，即使是在不同文件中也没有关系。
+
+```typescript
+namespace A {
+    export var name:string = 'A';
+}
+
+namespace A {
+    export var age:number = 123;
+}
+console.log(A.name);
+console.log(A.age);
+```
+
+生成的 js 代码是：
+
+```javascript
+var A;
+(function (A) {
+    A.name = 'A';
+})(A || (A = {}));
+var A;
+(function (A) {
+    A.age = 123;
+})(A || (A = {}));
+console.log(A.name);
+console.log(A.age);
+```
+
+
+##模块##
+
+##tsconfig.json##
+
+
+
 
 
 
