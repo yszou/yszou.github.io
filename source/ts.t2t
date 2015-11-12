@@ -1358,7 +1358,42 @@ console.log(A.age);
 ```
 
 
-##模块##
+##生成js模块##
+
+js 的模块机制，市面上大概分成 CommonJS 和 AMD，及一个想通吃的 UMD 。 *typescript* 在转换到 js 时，可以根据配置对应这几种模块机制。
+
+对于 ts 来说，只要在一个文件的顶级空间中有 ``export`` 或者 ``import`` ，那么 ts 就认为此文件是在定义一个“模块”，在作编译时，就会把 ts 代码转换成相应的 js 模块。
+
+以 AMD 为例，我们写代码（ ``hello.ts`` ）：
+
+```typescript
+export var a:string;
+import b = require('./other');
+a = '131';
+console.log(b.name);
+```
+
+要作编译时通过参数指定模块加载使用的类型：
+
+```bash
+tsc --module amd hello.ts
+```
+
+对应生成的 js 就是：
+
+```javascript
+define(["require", "exports", './other'], function (require, exports, b) {
+    exports.a = '131';
+    console.log(b.name);
+});
+```
+
+ts 的 AMD 方式是以 ``requirejs`` 为准的。
+
+一个文件如果被 ts 认为是一个模块了的话，那么最后生成的 js 一定只是此文件的内容。相反，如果一个 ts 文件，里面没有关系模块的内容，那么在编译时是可以通过参数把所有的 ts 文件拼在一起，只生成一个 js 文件的。
+
+所以，如果我们是在前端环境中使用 ts 的话，那就把 ts 看成是 js 文件的单纯的预处理，一个 ts 文件对应一个 js 文件，考虑这个 ts 文件生成的 js 模块文件是什么样子就好了。
+
 
 ##tsconfig.json##
 
