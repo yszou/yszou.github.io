@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">Docker简单使用</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-30 15:01 更新</span>
+                <span>2015-10-01 00:37 更新</span>
             </div>
         </div>
 
@@ -382,20 +382,20 @@ e1d0c9193025  ubuntu:14.04  nc -l 8000  5 seconds ago  Up 4 seconds         sill
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">FROM ubuntu<span style="color: #000000; font-weight: bold">:</span><span style="color: #009999">14.04</span>
-MAINTAINER YS.Zou <span style="color: #000000; font-weight: bold">&lt;&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">FROM</span><span style="color: #dd1144"> ubuntu:14.04</span>
+<span style="color: #000000; font-weight: bold">MAINTAINER</span><span style="color: #dd1144"> YS.Zou &lt;&gt;</span>
 
-ADD run <span style="color: #000000; font-weight: bold">/</span>root<span style="color: #000000; font-weight: bold">/</span>run
-ADD sources.list <span style="color: #000000; font-weight: bold">/</span>etc<span style="color: #000000; font-weight: bold">/</span>apt<span style="color: #000000; font-weight: bold">/</span>sources.list
-ADD id_rsa.pub <span style="color: #000000; font-weight: bold">/</span>tmp<span style="color: #000000; font-weight: bold">/</span>pubkey
-ADD requirements <span style="color: #000000; font-weight: bold">/</span>root<span style="color: #000000; font-weight: bold">/</span>requirements
+<span style="color: #000000; font-weight: bold">ADD</span><span style="color: #dd1144"> run /root/run</span>
+<span style="color: #000000; font-weight: bold">ADD</span><span style="color: #dd1144"> sources.list /etc/apt/sources.list</span>
+<span style="color: #000000; font-weight: bold">ADD</span><span style="color: #dd1144"> id_rsa.pub /tmp/pubkey</span>
+<span style="color: #000000; font-weight: bold">ADD</span><span style="color: #dd1144"> requirements /root/requirements</span>
 
-RUN mkdir <span style="color: #000000; font-weight: bold">-</span>p <span style="color: #000000; font-weight: bold">/</span>root<span style="color: #000000; font-weight: bold">/</span>.ssh <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #a61717; background-color: #e3d2d2">\</span>
-    cat <span style="color: #000000; font-weight: bold">/</span>tmp<span style="color: #000000; font-weight: bold">/</span>pubkey <span style="color: #000000; font-weight: bold">&gt;&gt;</span> <span style="color: #000000; font-weight: bold">/</span>root<span style="color: #000000; font-weight: bold">/</span>.ssh<span style="color: #000000; font-weight: bold">/</span>authorized_keys <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #a61717; background-color: #e3d2d2">\</span>
-    rm <span style="color: #000000; font-weight: bold">-</span>rf <span style="color: #000000; font-weight: bold">/</span>tmp<span style="color: #000000; font-weight: bold">/</span>pubkey
+<span style="color: #000000; font-weight: bold">RUN</span> mkdir -p /root/.ssh <span style="color: #000000; font-weight: bold">&amp;&amp;</span> \
+    cat /tmp/pubkey &gt;&gt; /root/.ssh/authorized_keys <span style="color: #000000; font-weight: bold">&amp;&amp;</span> \
+    rm -rf /tmp/pubkey
 ...
 
-CMD [<span style="color: #dd1144">&quot;bash&quot;</span>, <span style="color: #dd1144">&quot;/root/run&quot;</span>]
+<span style="color: #000000; font-weight: bold">CMD</span><span style="color: #dd1144"> [&quot;bash&quot;, &quot;/root/run&quot;]</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -807,7 +807,7 @@ $(function(){
     }
 
     function is_mobile(){
-        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+        if(window.devicePixelRatio >= 2 || navigator.userAgent.indexOf('Android') >= 0){
             return true;
         }
         return false;
