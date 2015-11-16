@@ -1397,13 +1397,37 @@ ts 的 AMD 方式是以 ``requirejs`` 为准的。
 
 ##tsconfig.json##
 
+``tsconfig.json`` 是在项目的根目录下，作为编译行为的配置文件。在里面可以设置“模块类型”，“是否压缩”，“忽略哪些目录”等选项。
 
+大概的样子是：
 
+```javascript
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "out": "../../built/local/tsc.js",
+        "sourceMap": true
+    },
+    "exclude": [
+        "node_modules",
+        "wwwroot"
+    ]
+}
+```
 
+详情参见： https://github.com/Microsoft/typescript/wiki/tsconfig.json
+
+因为 ``tsconfig.json`` 包含了 *tsc* 需要的信息，所以，存在 ``tsconfig.json`` 的情况下，简单地输入 ``tsc`` 不需要任何参数就可以完成项目编译了。
 
 
 
 #与js文件的协作#
+
+
+
 
 
 #总结#
