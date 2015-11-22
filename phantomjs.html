@@ -2,7 +2,7 @@
 <html lang="zh-cmn-Hans">
 <head>
     <meta charset="UTF-8" />
-    <title>PhantomJS 的使用 - YS.Zou</title>
+    <title>PhantomJS的使用 - YS.Zou</title>
     <meta name="generator" content="http://txt2tags.org" />
     <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
@@ -10,10 +10,10 @@
 <body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
     <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
         <div class="header">
-            <h1 style="text-align: center; font-size: 26px; margin: 0;">PhantomJS 的使用</h1>
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">PhantomJS的使用</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-11-22 22:21 更新</span>
+                <span>2015-11-22 22:35 更新</span>
             </div>
         </div>
 
@@ -55,17 +55,17 @@
 Windows 和 OS X ，官方都直接提供了二进制包。但是， Linux ，没有。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-Linux 下要编译其实很容易，这个项目对于像 <em style="color: #d75100; font-style: normal;">WebKit</em> ， <em style="color: #d75100; font-style: normal;">Qt</em> 这些依赖项目，代码都是直接放到源码中的，而不是用的动态链接的方式，编译的结果最后也只是一个 50M 多的可执行文件。但是麻烦的地方不在于依赖。按官方的文档， <a href="http://phantomjs.org/build.html" style="color: #0184b7; text-decoration: none">http://phantomjs.org/build.html</a> 。
+Linux 下要编译其实很容易，这个项目对于像 <em style="color: #d75100; font-style: normal;">WebKit</em> ， <em style="color: #d75100; font-style: normal;">Qt</em> 这些依赖项目，代码都是直接放到源码中的，而不是用的动态连接的方式，编译的结果最后也只是一个 50M 多的可执行文件。但是麻烦的地方不在于依赖。按官方的文档， <a href="http://phantomjs.org/build.html" style="color: #0184b7; text-decoration: none">http://phantomjs.org/build.html</a> 。
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">git</em> 抽取的那个项目一共有 500M 吧， github 在国内的连接又慢得要死。所以，要快点的话可以在国外的主机上 <em style="color: #d75100; font-style: normal;">git clone</em> ，打包后 <em style="color: #d75100; font-style: normal;">scp</em> 回来。 （别忘了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">git checkout 2.0</code> ）
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">git</em> 抽取的 phantomjs 项目一共有 500M 多吧， github 在国内的连接又慢得要死。所以，要快点的话可以在国外的主机上 <em style="color: #d75100; font-style: normal;">git clone</em> ，打包后 <em style="color: #d75100; font-style: normal;">scp</em> 回来。 （别忘了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">git checkout 2.0</code> ）
 </li>
-<li style="margin: 10px auto;">我在 Ubuntu 12.04 下没有问题，但在 Ubuntu 14.04 下会有错误。搜索一下，提到的错误有关于 <em style="color: #d75100; font-style: normal;">gcc</em> 版本的，连着出来的有 <em style="color: #d75100; font-style: normal;">WebKit</em> 的 Bug ，也有 <em style="color: #d75100; font-style: normal;">Qt</em> 的 Bug 。不过提到的 Bug ，相应的 patch 在源码中我看是已经修正了的。后面我只在 12.04 下用了。
+<li style="margin: 10px auto;">我在 Ubuntu 12.04 下没有问题，但在 Ubuntu 14.04 下会有错误。搜索一下，提到的错误有关于 <em style="color: #d75100; font-style: normal;">gcc</em> 版本的，连着出来的有 <em style="color: #d75100; font-style: normal;">WebKit</em> 的 Bug ，也有 <em style="color: #d75100; font-style: normal;">Qt</em> 的 Bug 。不过提到这些的 Bug ，相应的 patch 在源码中我看是已经有了的，我也没把这些错误解决，后面我只在 12.04 下用了。
 </li>
-<li style="margin: 10px auto;">我在买的低配的远端主机上编译，会出错。原因好像是配置问题（只有 1G 内存）。我本机（ 8G 内存）的 docker 里编译没有问题。
+<li style="margin: 10px auto;">在买的低配的远端主机上编译，会出错。原因好像是配置问题（只有 1G 内存），我本机（ 8G 内存）的 docker 里编译是没有问题的。
 </li>
-<li style="margin: 10px auto;">编译的时间嘛，我本机 i3-4130 + 8G 内存，大概也要 1 个小时吧。
+<li style="margin: 10px auto;">编译的时间嘛，我的 i3-4130 + 8G 内存，大概也要 1 个小时吧。
 </li>
 </ul>
 
@@ -92,7 +92,7 @@ phantomjs 中也没有 nodejs 的官方模块，phantomjs 自己做的一些 API
 既然 phantomjs 跟系统的 nodejs 无关，那么自然地想把它无缝融合进 nodejs 相关的方案中其实不那么容易的。按官方的说法与支持的态度 —— 进程间通信，这样搞随便把不同语言的问题也解决了。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-我之前介绍过 <em style="color: #d75100; font-style: normal;">CEFPython</em> 这个项目， <a href="http://www.zouyesheng.com/cefpython.html" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/cefpython.html</a> ， phantomjs 在结构上跟它是类似的，只是 phantomjs 可以“真·无头”。但是相对的，除了“无头”这个很重要的点外，在系统功能上， phantomjs 比 CEFPython 还是要差不少的，最基本的，向 Web Context 的 js 全局空间注入我们自己的实现，这在 CEFPython 中是一个最直接的功能，但在 phantomjs 中我没找到。
+之前介绍过 <em style="color: #d75100; font-style: normal;">CEFPython</em> 这个项目， <a href="http://www.zouyesheng.com/cefpython.html" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/cefpython.html</a> ， phantomjs 在结构上跟它是类似的，只是 phantomjs 可以“真·无头”。但是相对的，除了“无头”这个很重要的点外，在系统功能上， phantomjs 比 CEFPython 还是要差不少的，最基本的，向 Web Context 的 js 全局空间注入我们自己的实现，这在 CEFPython 中是一个最直接的功能，但在 phantomjs 中我没找到。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 对比 CEFPython ，有助于对 phantomjs 结构上的一个理解 —— 外部的程序运行上下文 ， 跟页面的 Web Context 是互相隔离的。在 phantomjs 上只是这两部分刚好都是 js 语言的而已（而在 CEFPython 中，它们一个是 Python 一个是 js）。另一方面， phantomjs 中，这两部分的代码一般还是直接写在一起的，因为都是 js 嘛。而 CEFPython 中虽然可以，但我想没人会愿意在 Python 代码中去写 js 代码的字符串。
@@ -105,7 +105,7 @@ phantomjs 中也没有 nodejs 的官方模块，phantomjs 自己做的一些 API
 对 phantomjs 的使用，主要集中在 <em style="color: #d75100; font-style: normal;">page</em> 相关的 API 上， <a href="http://phantomjs.org/api/webpage/" style="color: #0184b7; text-decoration: none">http://phantomjs.org/api/webpage/</a> ，而其中最关键的方法，我觉得是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">evaluate</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onCallback</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">window.callPhantom</code> 。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-phantomjs 的 <em style="color: #d75100; font-style: normal;">page</em> ，除了按正常浏览器流程打开页面之外，还可能手动设置设置，相关的方法在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setContent</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">injectJs</code> ，基本使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sendEvent</code> 在浏览器的 DOM 之外模拟事件。
+phantomjs 的 <em style="color: #d75100; font-style: normal;">page</em> ，除了按正常浏览器流程打开页面之外，还能手动设置内容，相关的方法在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setContent</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">injectJs</code> ，除此而外，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sendEvent</code> 可以在浏览器的 DOM 之外模拟事件（底层一些）。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 看一个典型的例子：
@@ -155,7 +155,7 @@ page.open(<span style="color: #dd1144">&quot;http://www.douban.com/group/explore
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-上面的代码会打开豆瓣小组页，并把值得加入的小组信息抽取出来，然后，会写到文件 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/tmp/phantomjs</code> 中。
+上面的代码会打开豆瓣小组页，并把“值得加入的小组”信息抽取出来，然后，会写到文件 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/tmp/phantomjs</code> 中。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 我知道要做这件事并不是非 phantomjs 不可，这里只是为了演示直接使用 jQuery 从页面内部解析出来了信息，然后通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">window.callPhantom</code> 把信息传递给外部的 phantomjs 上下文，在外部使用文件系统 API 把信息写入文件保存。
@@ -460,7 +460,7 @@ $(function(){
   var disqus_shortname = 'zys';
   var disqus_identifier = 'phantomjs';
   var disqus_url = 'http://zouyesheng.com/phantomjs.html';
-  var disqus_title = 'PhantomJS 的使用';
+  var disqus_title = 'PhantomJS的使用';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
