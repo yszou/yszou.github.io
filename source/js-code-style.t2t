@@ -1,0 +1,304 @@
+JS代码风格
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/js-code-style.html
+%%toc
+
+
+#别人的规范#
+
+Google: http://google.github.io/styleguide/javascriptguide.xml
+Google(HTML): http://google.github.io/styleguide/htmlcssguide.xml
+
+Airbnb: https://github.com/sivan/javascript-style-guide/blob/master/es5/README.md
+
+Douglas Crockford: http://javascript.crockford.com/code.html
+
+Dojo:  https://dojotoolkit.org/reference-guide/1.9/developer/styleguide.html
+
+jQuery: https://contribute.jquery.org/style-guide/js/
+
+WordPress: https://make.wordpress.org/core/handbook/best-practices/coding-standards/javascript/
+
+
+
+#Google#
+
+使用大写表示“常量”。
+
+
+```javascript
+NAMES_LIKE_THIS
+```
+
+总是使用分号。但是区分函数声明和函数表达式。
+
+
+```javascript
+var foo = function() {
+  return true;
+};  // semicolon here.
+
+
+function foo() {
+  return true;
+}  // no semicolon here.
+```
+
+禁止块中使用函数声明，虽然实现支持，但是 ECMA 标准并不支持。函数声明只用在 root 空间或者一个函数的顶级空间。
+
+```javascript
+if (x) {
+  function foo() {}
+}
+
+if (x) {
+  var foo = function() {};
+}
+```
+
+优先使用标准方式，比如字符串取索引：
+
+```javascript
+string.charAt(3) //V
+string[3]  //X
+```
+
+删除 ``delete`` 的使用。除非是真的要删除一个对象的属性，否则直接赋值为 ``null`` 。 ``delete`` 慢。
+
+```javascript
+//V
+Foo.prototype.dispose = function() {
+  this.property_ = null;
+};
+
+//X
+Foo.prototype.dispose = function() {
+  delete this.property_;
+};
+```
+
+闭包，小心保持引用而造成的资源无法回收问题，特别是操作节点时。
+
+```javascript
+//X
+function foo(element, a, b) {
+  element.onclick = function() { /* uses a and b */ };
+}
+
+//V
+function foo(element, a, b) {
+  element.onclick = bar(a, b);
+}
+
+function bar(a, b) {
+  return function() { /* uses a and b */ };
+}
+```
+
+``with`` 禁用。
+
+``this`` 限用（只在构造函数及对象的方法中使用）。
+
+``for in`` 遍历，只用于 ``object`` ，禁止用于 ``Array`` 。
+
+``Array`` 中禁止使用非数字索引。
+
+禁用字符串的多行语法，使用运行符：
+
+```javascript
+//X
+var myString = 'A rather long string of English text, an error message \
+                actually that just keeps going and going -- an error \
+                message to make the Energizer bunny blush (right through \
+                those Schwarzenegger shades)! Where was I? Oh yes, \
+                you\'ve got an error and all the extraneous whitespace is \
+                just gravy.  Have a nice day.';
+
+
+//V
+var myString = 'A rather long string of English text, an error message ' +
+    'actually that just keeps going and going -- an error ' +
+    'message to make the Energizer bunny blush (right through ' +
+    'those Schwarzenegger shades)! Where was I? Oh yes, ' +
+    'you\'ve got an error and all the extraneous whitespace is ' +
+    'just gravy.  Have a nice day.';
+```
+
+``Array`` 和 ``Object`` 直接使用语法创建，禁止使用构造函数。
+
+```javascript
+//X
+var a1 = new Array(x1, x2, x3);
+var o = new Object();
+
+//V
+var a = [x1, x2, x3];
+var o = {};
+```
+
+禁止动内置对象的原型。
+
+禁止使用 IE 的条件注释。
+
+```javascript
+var f = function () {
+    /*@cc_on if (@_jscript) { return 2* @*/  3; /*@ } @*/
+};
+```
+
+优先使用单引号。
+
+使用 *JSDoc* 风格的注释。
+
+面向用户的代码必须被编译。
+
+
+命名方式：
+
+```javascript
+functionNamesLikeThis
+variableNamesLikeThis
+ClassNamesLikeThis
+EnumNamesLikeThis
+methodNamesLikeThis
+CONSTANT_VALUES_LIKE_THIS
+foo.namespaceNamesLikeThis.bar
+filenameslikethis.js
+```
+
+
+代码格式（参照 C++）：
+
+```javascript
+if (something) {
+  // ...
+} else {
+  // ...
+}
+
+//----------------
+
+var arr = [1, 2, 3];  // No space after [ or before ].
+var obj = {a: 1, b: 2, c: 3};  // No space after { or before }.
+
+//----------------
+
+//2 spaces
+// Object initializer.
+var inset = {
+  top: 10,
+  right: 20,
+  bottom: 15,
+  left: 12
+};
+
+// Array initializer.
+this.rows_ = [
+  '"Slartibartfast" <fjordmaster@magrathea.com>',
+  '"Zaphod Beeblebrox" <theprez@universe.gov>',
+  '"Ford Prefect" <ford@theguide.com>',
+  '"Arthur Dent" <has.no.tea@gmail.com>',
+  '"Marvin the Paranoid Android" <marv@googlemail.com>',
+  'the.mice@magrathea.com'
+];
+
+// Used in a method call.
+goog.dom.createDom(goog.dom.TagName.DIV, {
+  id: 'foo',
+  className: 'some-css-class',
+  style: 'display:none'
+}, 'Hello, world!');
+
+
+//----------------
+
+// Four-space, wrap at 80.  Works with very long function names, survives
+// renaming without reindenting, low on space.
+goog.foo.bar.doThingThatIsVeryDifficultToExplain = function(
+    veryDescriptiveArgumentNumberOne, veryDescriptiveArgumentTwo,
+    tableModelEventHandlerProxy, artichokeDescriptorAdapterIterator) {
+  // ...
+};
+
+// Four-space, one argument per line.  Works with long function names,
+// survives renaming, and emphasizes each argument.
+goog.foo.bar.doThingThatIsVeryDifficultToExplain = function(
+    veryDescriptiveArgumentNumberOne,
+    veryDescriptiveArgumentTwo,
+    tableModelEventHandlerProxy,
+    artichokeDescriptorAdapterIterator) {
+  // ...
+};
+
+// Parenthesis-aligned indentation, wrap at 80.  Visually groups arguments,
+// low on space.
+function foo(veryDescriptiveArgumentNumberOne, veryDescriptiveArgumentTwo,
+             tableModelEventHandlerProxy, artichokeDescriptorAdapterIterator) {
+  // ...
+}
+
+// Parenthesis-aligned, one argument per line.  Emphasizes each
+// individual argument.
+function bar(veryDescriptiveArgumentNumberOne,
+             veryDescriptiveArgumentTwo,
+             tableModelEventHandlerProxy,
+             artichokeDescriptorAdapterIterator) {
+  // ...
+}
+
+
+//----------------
+// Anonymous Functions
+
+prefix.something.reallyLongFunctionName('whatever', function(a1, a2) {
+  if (a1.equals(a2)) {
+    someOtherLongFunctionName(a1);
+  } else {
+    andNowForSomethingCompletelyDifferent(a2.parrot);
+  }
+});
+
+var names = prefix.something.myExcellentMapFunction(
+    verboselyNamedCollectionOfItems,
+    function(item) {
+      return item.name;
+    });
+
+
+//----------------
+
+var x = a ? b : c;  // All on one line if it will fit.
+
+// Indentation +4 is OK.
+var y = a ?
+    longButSimpleOperandB : longButSimpleOperandC;
+
+// Indenting to the line position of the first operand is also OK.
+var z = a ?
+        moreComplicatedB :
+        moreComplicatedC;
+```
+
+
+小心坑：
+
+```text
+//false
+null
+undefined
+'' the empty string
+0 the number
+
+
+//true
+'0' the string
+[] the empty array
+{} the empty object
+```
+
+
+最重要的一点： **保持一致** ，你可以不鸟上面这些东西 。
+
