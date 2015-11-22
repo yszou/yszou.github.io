@@ -1,0 +1,114 @@
+PhantomJS的使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/phantomjs.html
+%%toc
+
+
+#简介#
+
+*phantomjs* 简单来说是一个基于 *WebKit* 的“无头浏览器”环境。对“无头”，你可以理解成没有一个前端的 GUI 界面，所有的东西都在后台运行。
+
+*phantomjs* 在“无头”界的名声，是源于从 *WebKit* 里得到的对 *DOM / JS* 的完整支持。
+
+一个纯后台的，完整功能的浏览器，这东西就有很多可以想像的空间了 —— 抓取，测试等。
+
+
+#安装#
+
+http://phantomjs.org/download.html
+
+Windows 和 OS X ，官方都直接提供了二进制包。但是， Linux ，没有。
+
+Linux 下要编译其实很容易，这个项目对于像 *WebKit* ， *Qt* 这些依赖项目，代码都是直接放到源码中的，而不是用的动态链接的方式，编译的结果最后也只是一个 50M 多的可执行文件。但是麻烦的地方不在于依赖。按官方的文档， http://phantomjs.org/build.html 。
+
+
+- *git* 抽取的那个项目一共有 500M 吧， github 在国内的连接又慢得要死。所以，要快点的话可以在国外的主机上 *git clone* ，打包后 *scp* 回来。 （别忘了 ``git checkout 2.0`` ）
+- 我在 Ubuntu 12.04 下没有问题，但在 Ubuntu 14.04 下会有错误。搜索一下，提到的错误有关于 *gcc* 版本的，连着出来的有 *WebKit* 的 Bug ，也有 *Qt* 的 Bug 。不过提到的 Bug ，相应的 patch 在源码中我看是已经修正了的。后面我只在 12.04 下用了。
+- 我在买的低配的远端主机上编译，会出错。原因好像是配置问题（只有 1G 内存）。我本机（ 8G 内存）的 docker 里编译没有问题。
+- 编译的时间嘛，我本机 i3-4130 + 8G 内存，大概也要 1 个小时吧。
+
+
+编译完成之后，在目录中会有一个新的 *bin* 目录，里面一个叫 ``phantomjs`` 的可执行文件，真是暴力。
+
+通过 ``phantomjs -h`` 能看到支持的命令行参数。
+
+
+#基本概念#
+
+phantomjs 这个东西，最好单纯地把它看成是一个独立的工具，虽然它要执行的目标源文件，是需要用 nodejs 来写的，但它跟 nodejs 的关系也仅此而已。
+
+phantomjs 跟系统的 nodejs 无关，跟系统的 npm 也无关。不过 nodejs 在语法层面的东西它是没有问题的，比如 ``require`` 。
+
+phantomjs 中也没有 nodejs 的官方模块，phantomjs 自己做的一些 API ，从文档来看， http://phantomjs.org/api/ ，只提到了 *process* / *filesystem* / *system* 。
+
+既然 phantomjs 跟系统的 nodejs 无关，那么自然地想把它无缝融合进 nodejs 相关的方案中其实不那么容易的。按官方的说法与支持的态度 —— 进程间通信，这样搞随便把不同语言的问题也解决了。
+
+我之前介绍过 *CEFPython* 这个项目， http://www.zouyesheng.com/cefpython.html ， phantomjs 在结构上跟它是类似的，只是 phantomjs 可以“真·无头”。但是相对的，除了“无头”这个很重要的点外，在系统功能上， phantomjs 比 CEFPython 还是要差不少的，最基本的，向 Web Context 的 js 全局空间注入我们自己的实现，这在 CEFPython 中是一个最直接的功能，但在 phantomjs 中我没找到。
+
+对比 CEFPython ，有助于对 phantomjs 结构上的一个理解 —— 外部的程序运行上下文 ， 跟页面的 Web Context 是互相隔离的。在 phantomjs 上只是这两部分刚好都是 js 语言的而已（而在 CEFPython 中，它们一个是 Python 一个是 js）。另一方面， phantomjs 中，这两部分的代码一般还是直接写在一起的，因为都是 js 嘛。而 CEFPython 中虽然可以，但我想没人会愿意在 Python 代码中去写 js 代码的字符串。
+
+
+#使用#
+
+
+对 phantomjs 的使用，主要集中在 *page* 相关的 API 上， http://phantomjs.org/api/webpage/ ，而其中最关键的方法，我觉得是 ``evaluate`` / ``onCallback`` / ``window.callPhantom`` 。
+
+phantomjs 的 *page* ，除了按正常浏览器流程打开页面之外，还可能手动设置设置，相关的方法在 ``setContent`` / ``injectJs`` ，基本使用 ``sendEvent`` 在浏览器的 DOM 之外模拟事件。
+
+
+看一个典型的例子：
+
+```javascript
+var fs = require('fs');
+var page = require('webpage').create();
+
+page.onError = function(msg) {
+    console.log('ERROR:', msg)
+};
+page.onConsoleMessage = function(msg) {
+    console.log('Web:', msg);
+};
+
+page.onCallback = function(data) {
+    var s = data.map(function(o){ return o.text + ' | ' + o.href });
+    var file = fs.open('/tmp/phantom', 'w');
+    file.write(s.join('\n'));
+    file.close();
+    phantom.exit();
+};
+
+page.open("http://www.douban.com/group/explore", function(status) {
+    if ( status === "success" ) {
+
+        page.evaluate(function() {
+
+            $(function () {
+                var link_list = $.map(
+                    $('div.channel-group-rec > .bd > ul > li > .info > .title > a'),
+                    function(o) {
+                        return {text: $(o).text(), href: $(o).attr('href')}
+                    }
+                );
+                window.callPhantom(link_list);
+            });
+
+
+        });
+
+    }
+});
+```
+
+上面的代码会打开豆瓣小组页，并把值得加入的小组信息抽取出来，然后，会写到文件 ``/tmp/phantomjs`` 中。
+
+我知道要做这件事并不是非 phantomjs 不可，这里只是为了演示直接使用 jQuery 从页面内部解析出来了信息，然后通过 ``window.callPhantom`` 把信息传递给外部的 phantomjs 上下文，在外部使用文件系统 API 把信息写入文件保存。
+
+
+
+
+
+
+

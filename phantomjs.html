@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>PhantomJS 的使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">PhantomJS 的使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-11-22 22:21 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">简介</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">基本概念</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">使用</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 简介</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">phantomjs</em> 简单来说是一个基于 <em style="color: #d75100; font-style: normal;">WebKit</em> 的“无头浏览器”环境。对“无头”，你可以理解成没有一个前端的 GUI 界面，所有的东西都在后台运行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">phantomjs</em> 在“无头”界的名声，是源于从 <em style="color: #d75100; font-style: normal;">WebKit</em> 里得到的对 <em style="color: #d75100; font-style: normal;">DOM / JS</em> 的完整支持。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个纯后台的，完整功能的浏览器，这东西就有很多可以想像的空间了 —— 抓取，测试等。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<a href="http://phantomjs.org/download.html" style="color: #0184b7; text-decoration: none">http://phantomjs.org/download.html</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Windows 和 OS X ，官方都直接提供了二进制包。但是， Linux ，没有。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Linux 下要编译其实很容易，这个项目对于像 <em style="color: #d75100; font-style: normal;">WebKit</em> ， <em style="color: #d75100; font-style: normal;">Qt</em> 这些依赖项目，代码都是直接放到源码中的，而不是用的动态链接的方式，编译的结果最后也只是一个 50M 多的可执行文件。但是麻烦的地方不在于依赖。按官方的文档， <a href="http://phantomjs.org/build.html" style="color: #0184b7; text-decoration: none">http://phantomjs.org/build.html</a> 。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">git</em> 抽取的那个项目一共有 500M 吧， github 在国内的连接又慢得要死。所以，要快点的话可以在国外的主机上 <em style="color: #d75100; font-style: normal;">git clone</em> ，打包后 <em style="color: #d75100; font-style: normal;">scp</em> 回来。 （别忘了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">git checkout 2.0</code> ）
+</li>
+<li style="margin: 10px auto;">我在 Ubuntu 12.04 下没有问题，但在 Ubuntu 14.04 下会有错误。搜索一下，提到的错误有关于 <em style="color: #d75100; font-style: normal;">gcc</em> 版本的，连着出来的有 <em style="color: #d75100; font-style: normal;">WebKit</em> 的 Bug ，也有 <em style="color: #d75100; font-style: normal;">Qt</em> 的 Bug 。不过提到的 Bug ，相应的 patch 在源码中我看是已经修正了的。后面我只在 12.04 下用了。
+</li>
+<li style="margin: 10px auto;">我在买的低配的远端主机上编译，会出错。原因好像是配置问题（只有 1G 内存）。我本机（ 8G 内存）的 docker 里编译没有问题。
+</li>
+<li style="margin: 10px auto;">编译的时间嘛，我本机 i3-4130 + 8G 内存，大概也要 1 个小时吧。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译完成之后，在目录中会有一个新的 <em style="color: #d75100; font-style: normal;">bin</em> 目录，里面一个叫 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">phantomjs</code> 的可执行文件，真是暴力。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">phantomjs -h</code> 能看到支持的命令行参数。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 基本概念</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+phantomjs 这个东西，最好单纯地把它看成是一个独立的工具，虽然它要执行的目标源文件，是需要用 nodejs 来写的，但它跟 nodejs 的关系也仅此而已。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+phantomjs 跟系统的 nodejs 无关，跟系统的 npm 也无关。不过 nodejs 在语法层面的东西它是没有问题的，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">require</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+phantomjs 中也没有 nodejs 的官方模块，phantomjs 自己做的一些 API ，从文档来看， <a href="http://phantomjs.org/api/" style="color: #0184b7; text-decoration: none">http://phantomjs.org/api/</a> ，只提到了 <em style="color: #d75100; font-style: normal;">process</em> / <em style="color: #d75100; font-style: normal;">filesystem</em> / <em style="color: #d75100; font-style: normal;">system</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+既然 phantomjs 跟系统的 nodejs 无关，那么自然地想把它无缝融合进 nodejs 相关的方案中其实不那么容易的。按官方的说法与支持的态度 —— 进程间通信，这样搞随便把不同语言的问题也解决了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我之前介绍过 <em style="color: #d75100; font-style: normal;">CEFPython</em> 这个项目， <a href="http://www.zouyesheng.com/cefpython.html" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/cefpython.html</a> ， phantomjs 在结构上跟它是类似的，只是 phantomjs 可以“真·无头”。但是相对的，除了“无头”这个很重要的点外，在系统功能上， phantomjs 比 CEFPython 还是要差不少的，最基本的，向 Web Context 的 js 全局空间注入我们自己的实现，这在 CEFPython 中是一个最直接的功能，但在 phantomjs 中我没找到。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对比 CEFPython ，有助于对 phantomjs 结构上的一个理解 —— 外部的程序运行上下文 ， 跟页面的 Web Context 是互相隔离的。在 phantomjs 上只是这两部分刚好都是 js 语言的而已（而在 CEFPython 中，它们一个是 Python 一个是 js）。另一方面， phantomjs 中，这两部分的代码一般还是直接写在一起的，因为都是 js 嘛。而 CEFPython 中虽然可以，但我想没人会愿意在 Python 代码中去写 js 代码的字符串。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 使用</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对 phantomjs 的使用，主要集中在 <em style="color: #d75100; font-style: normal;">page</em> 相关的 API 上， <a href="http://phantomjs.org/api/webpage/" style="color: #0184b7; text-decoration: none">http://phantomjs.org/api/webpage/</a> ，而其中最关键的方法，我觉得是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">evaluate</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onCallback</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">window.callPhantom</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+phantomjs 的 <em style="color: #d75100; font-style: normal;">page</em> ，除了按正常浏览器流程打开页面之外，还可能手动设置设置，相关的方法在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setContent</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">injectJs</code> ，基本使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sendEvent</code> 在浏览器的 DOM 之外模拟事件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看一个典型的例子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>);
+<span style="color: #000000; font-weight: bold">var</span> page <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;webpage&#39;</span>).create();
+
+page.onError <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(msg) {
+    console.log(<span style="color: #dd1144">&#39;ERROR:&#39;</span>, msg)
+};
+page.onConsoleMessage <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(msg) {
+    console.log(<span style="color: #dd1144">&#39;Web:&#39;</span>, msg);
+};
+
+page.onCallback <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(data) {
+    <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> data.map(<span style="color: #000000; font-weight: bold">function</span>(o){ <span style="color: #000000; font-weight: bold">return</span> o.text <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; | &#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.href });
+    <span style="color: #000000; font-weight: bold">var</span> file <span style="color: #000000; font-weight: bold">=</span> fs.open(<span style="color: #dd1144">&#39;/tmp/phantom&#39;</span>, <span style="color: #dd1144">&#39;w&#39;</span>);
+    file.write(s.join(<span style="color: #dd1144">&#39;\n&#39;</span>));
+    file.close();
+    phantom.exit();
+};
+
+page.open(<span style="color: #dd1144">&quot;http://www.douban.com/group/explore&quot;</span>, <span style="color: #000000; font-weight: bold">function</span>(status) {
+    <span style="color: #000000; font-weight: bold">if</span> ( status <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&quot;success&quot;</span> ) {
+
+        page.evaluate(<span style="color: #000000; font-weight: bold">function</span>() {
+
+            $(<span style="color: #000000; font-weight: bold">function</span> () {
+                <span style="color: #000000; font-weight: bold">var</span> link_list <span style="color: #000000; font-weight: bold">=</span> $.map(
+                    $(<span style="color: #dd1144">&#39;div.channel-group-rec &gt; .bd &gt; ul &gt; li &gt; .info &gt; .title &gt; a&#39;</span>),
+                    <span style="color: #000000; font-weight: bold">function</span>(o) {
+                        <span style="color: #000000; font-weight: bold">return</span> {text<span style="color: #000000; font-weight: bold">:</span> $(o).text(), href<span style="color: #000000; font-weight: bold">:</span> $(o).attr(<span style="color: #dd1144">&#39;href&#39;</span>)}
+                    }
+                );
+                <span style="color: #0086B3">window</span>.callPhantom(link_list);
+            });
+
+
+        });
+
+    }
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码会打开豆瓣小组页，并把值得加入的小组信息抽取出来，然后，会写到文件 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/tmp/phantomjs</code> 中。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我知道要做这件事并不是非 phantomjs 不可，这里只是为了演示直接使用 jQuery 从页面内部解析出来了信息，然后通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">window.callPhantom</code> 把信息传递给外部的 phantomjs 上下文，在外部使用文件系统 API 把信息写入文件保存。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'phantomjs';
+  var disqus_url = 'http://zouyesheng.com/phantomjs.html';
+  var disqus_title = 'PhantomJS 的使用';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoklEQVR4nN1XMY7cMAwcrgzInfwD
++SXr5FkHOLEDF3nWSb6PyD+QqrMBryeFF0hxWy4XSFQI0BQkyCGHlBBfz3Z5AAL/HhpFpJ7LD8Fc
+pBURadW8gZGkPQBvyf28VsWIi7SYMcTyrYxAlPEF+b217t3b9HS7j1Bh5cv3fGt1vd15YzbpL3mK
+vFFEMOOtw0fusYlUmrGdJ/ceV5jzoRYbGGBoY4a3B0xiQK+XSTC4MzYwAIBo8gZGjrAB8DzQA5KN
+XiYvYDOkFRiimAzw3W96ylUBRYArbq39vBhuP8uUFGdAlw0ZXIXNcFxcpKoqhztbyR7AyaBilTCb
+RHLiKtz92nHS7LeYew+43aPLPVbR9Xa43TNg4NrlHqRuB3xkLHWXsdQzTJKu6XV1cvdkNglwO8g8
+qHa3jEs9owdQRog0T7L7GBVOXNnAMwCeAb/0+u2+c10B1FdXoYab0gt2Llhy94wv2LmEE4s0WKTT
+nN13dC7jAuB3OoVM2Rubt87FDL8N+Zl2v6KOCcJxWYFbC3qrWSUBgA1u4tplgIdT1En5j39UfwCW
+uwti5AGFAAAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
