@@ -220,15 +220,6 @@ WordPress: https://make.wordpress.org/core/handbook/best-practices/coding-standa
 
 #Google#
 
-我不赞同的地方：
-
-- 文件名 ``filenameslikethis.js`` -> ``filenames-like-this.js`` 。
-- 缩进 2 个空格 -> 4 个空格。
-
-
----------------------------
-
-
 
 使用大写表示“常量”。
 
@@ -505,4 +496,566 @@ undefined
 
 
 最重要的一点： **保持一致** ，你可以不鸟上面这些东西 。
+
+
+
+#Airbnb#
+
+
+不要使用关键字作为键名。
+
+```javascript
+// bad
+var superman = {
+  default: { clark: 'kent' },
+  private: true
+};
+
+// good
+var superman = {
+  defaults: { clark: 'kent' },
+  hidden: true
+};
+
+
+// bad
+var superman = {
+  class: 'alien'
+};
+
+// bad
+var superman = {
+  klass: 'alien'
+};
+
+// good
+var superman = {
+  type: 'alien'
+};
+```
+
+使用 ``slice`` 复制数组。
+
+```javascript
+var len = items.length;
+var itemsCopy = [];
+var i;
+
+// bad
+for (i = 0; i < len; i++) {
+  itemsCopy[i] = items[i];
+}
+
+// good
+itemsCopy = items.slice();
+```
+
+
+使用 ``Array.prototype.slice`` 转换类数组对象。
+
+```javascript
+function trigger() {
+  var args = Array.prototype.slice.call(arguments);
+  ...
+}
+```
+
+
+字符串使用单引号，单行 80 字。
+
+```javascript
+// bad
+var errorMessage = 'This is a super long error that was thrown because of Batman. When you stop to think about how Batman had anything to do with this, you would get nowhere fast.';
+
+// bad
+var errorMessage = 'This is a super long error that was thrown because \
+of Batman. When you stop to think about how Batman had anything to do \
+with this, you would get nowhere \
+fast.';
+
+// good
+var errorMessage = 'This is a super long error that was thrown because ' +
+  'of Batman. When you stop to think about how Batman had anything to do ' +
+  'with this, you would get nowhere fast.';
+```
+
+
+使用 ``join`` 连接字符串。
+
+
+函数声明不是语句，http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf#page=97 所以：
+
+```javascript
+// bad
+if (currentUser) {
+  function test() {
+    console.log('Nope.');
+  }
+}
+
+// good
+var test;
+if (currentUser) {
+  test = function test() {
+    console.log('Yup.');
+  };
+}
+```
+
+
+永远不要把参数命名为 arguments。这将取代函数作用域内的 arguments 对象。
+
+
+除非必须，通过 ``.`` 来访问属性。
+
+```javascript
+var luke = {
+  jedi: true,
+  age: 28
+};
+
+// bad
+var isJedi = luke['jedi'];
+
+// good
+var isJedi = luke.jedi;
+```
+
+
+使用 var 声明每一个变量。
+
+```javascript
+// bad
+var items = getItems(),
+    goSportsTeam = true,
+    dragonball = 'z';
+
+// bad
+// （跟上面的代码比较一下，看看哪里错了）
+var items = getItems(),
+    goSportsTeam = true;
+    dragonball = 'z';
+
+// good
+var items = getItems();
+var goSportsTeam = true;
+var dragonball = 'z';
+```
+
+
+最后再声明未赋值的变量。当你需要引用前面的变量赋值时这将变的很有用。
+
+```javascript
+// bad
+var i, len, dragonball,
+    items = getItems(),
+    goSportsTeam = true;
+
+// bad
+var i;
+var items = getItems();
+var dragonball;
+var goSportsTeam = true;
+var len;
+
+// good
+var items = getItems();
+var goSportsTeam = true;
+var dragonball;
+var length;
+var i;
+```
+
+
+变量声明会提升至作用域顶部，但赋值不会。
+
+```javascript
+// 我们知道这样不能正常工作（假设这里没有名为 notDefined 的全局变量）
+function example() {
+  console.log(notDefined); // => throws a ReferenceError
+}
+
+// 但由于变量声明提升的原因，在一个变量引用后再创建它的变量声明将可以正常工作。
+// 注：变量赋值为 `true` 不会提升。
+function example() {
+  console.log(declaredButNotAssigned); // => undefined
+  var declaredButNotAssigned = true;
+}
+
+// 解释器会把变量声明提升到作用域顶部，意味着我们的例子将被重写成：
+function example() {
+  var declaredButNotAssigned;
+  console.log(declaredButNotAssigned); // => undefined
+  declaredButNotAssigned = true;
+}
+```
+
+
+函数声明提升它们的名字和函数体。
+
+```javascript
+function example() {
+  superPower(); // => Flying
+
+  function superPower() {
+    console.log('Flying');
+  }
+}
+```
+
+优先使用 ``===`` 和 ``!==`` 而不是 ``==`` 和 ``!=`` .
+
+
+一些逻辑比较：
+
+```javascript
+// bad
+if (name !== '') {
+  // ...stuff...
+}
+
+// good
+if (name) {
+  // ...stuff...
+}
+
+// bad
+if (collection.length > 0) {
+  // ...stuff...
+}
+
+// good
+if (collection.length) {
+  // ...stuff...
+}
+```
+
+使用大括号包裹所有的多行代码块。
+
+```javascript
+// bad
+if (test)
+  return false;
+
+// good
+if (test) return false;
+
+// good
+if (test) {
+  return false;
+}
+
+// bad
+function() { return false; }
+
+// good
+function() {
+  return false;
+}
+```
+
+如果通过 if 和 else 使用多行代码块，把 else 放在 if 代码块关闭括号的同一行。
+
+```javascript
+// bad
+if (test) {
+  thing1();
+  thing2();
+}
+else {
+  thing3();
+}
+
+// good
+if (test) {
+  thing1();
+  thing2();
+} else {
+  thing3();
+}
+```
+
+
+在注释中使用 *TODO* 和 *FIXME* 。
+
+
+在大括号前放一个空格。
+
+```javascript
+// bad
+function test(){
+  console.log('test');
+}
+
+// good
+function test() {
+  console.log('test');
+}
+
+// bad
+dog.set('attr',{
+  age: '1 year',
+  breed: 'Bernese Mountain Dog'
+});
+
+// good
+dog.set('attr', {
+  age: '1 year',
+  breed: 'Bernese Mountain Dog'
+});
+```
+
+
+在控制语句（if、while 等）的小括号前放一个空格。在函数调用及声明中，不在函数的参数列表前加空格。
+
+```javascript
+// bad
+if(isJedi) {
+  fight ();
+}
+
+// good
+if (isJedi) {
+  fight();
+}
+
+// bad
+function fight () {
+  console.log ('Swooosh!');
+}
+
+// good
+function fight() {
+  console.log('Swooosh!');
+}
+```
+
+在文件末尾插入一个空行。
+
+在使用长方法链时进行缩进。使用前面的点 . 强调这是方法调用而不是新语句。
+
+```javascript
+// bad
+$('#items').find('.selected').highlight().end().find('.open').updateCount();
+
+// bad
+$('#items').
+  find('.selected').
+    highlight().
+    end().
+  find('.open').
+    updateCount();
+
+// good
+$('#items')
+  .find('.selected')
+    .highlight()
+    .end()
+  .find('.open')
+    .updateCount();
+```
+
+
+行首逗号: 不需要。
+
+```javascript
+// bad
+var story = [
+    once
+  , upon
+  , aTime
+];
+
+// good
+var story = [
+  once,
+  upon,
+  aTime
+];
+```
+
+
+额外的行末逗号：不需要。
+
+```javascript
+//bad
+var heroes = [
+  'Batman',
+  'Superman',
+];
+
+// good
+var hero = {
+  firstName: 'Kevin',
+  lastName: 'Flynn'
+};
+```
+
+
+```javascript
+// bad
+(function() {
+  var name = 'Skywalker'
+  return name
+})()
+
+// good
+(function() {
+  var name = 'Skywalker';
+  return name;
+})();
+
+// good (防止函数在两个 IIFE 合并时被当成一个参数
+;(function() {
+  var name = 'Skywalker';
+  return name;
+})();
+```
+
+
+使用 parseInt 转换数字时总是带上类型转换的基数。
+
+```javascript
+// bad
+var val = parseInt(inputValue);
+
+// good
+var val = parseInt(inputValue, 10);
+```
+
+布尔:
+
+```javascript
+// good
+var hasAge = !!age;
+```
+
+
+使用驼峰式命名对象、函数和实例。
+
+```javascript
+// bad
+var OBJEcttsssss = {};
+var this_is_my_object = {};
+var o = {};
+function c() {}
+
+// good
+var thisIsMyObject = {};
+function thisIsMyFunction() {}
+```
+
+使用 _this 保存 this 的引用。
+
+给函数命名。这在做堆栈轨迹时很有帮助。
+
+```javascript
+// bad
+var log = function(msg) {
+  console.log(msg);
+};
+
+// good
+var log = function log(msg) {
+  console.log(msg);
+};
+```
+
+如果你需要存取函数时使用 getVal() 和 setVal('hello')。
+
+```javascript
+// bad
+dragon.age();
+
+// good
+dragon.getAge();
+
+// bad
+dragon.age(25);
+
+// good
+dragon.setAge(25);
+```
+
+
+如果属性是布尔值，使用 isVal() 或 hasVal()。
+
+```javascript
+// bad
+if (!dragon.age()) {
+  return false;
+}
+
+// good
+if (!dragon.hasAge()) {
+  return false;
+}
+```
+
+
+当给时间附加数据时（无论是 DOM 事件还是私有事件），传入一个哈希而不是原始值。这样可以让后面的贡献者增加更多数据到事件数据而无需找出并更新事件的每一个处理器。例如，不好的写法：
+
+```javascript
+// bad
+$(this).trigger('listingUpdated', listing.id);
+
+...
+
+$(this).on('listingUpdated', function(e, listingId) {
+  // do something with listingId
+});
+
+
+// good
+$(this).trigger('listingUpdated', { listingId : listing.id });
+
+...
+
+$(this).on('listingUpdated', function(e, data) {
+  // do something with data.listingId
+});
+```
+
+
+使用 $ 作为存储 jQuery 对象的变量名前缀。
+
+```javascript
+// bad
+var sidebar = $('.sidebar');
+
+// good
+var $sidebar = $('.sidebar');
+```
+
+
+使用下划线标识私有成员。
+
+
+#Douglas Crockford#
+
+<script src=filename.js> tags should be placed as late in the body as possible. This reduces the effects of delays imposed by script loading on other page components. There is no need to use the language or type attributes. It is the server, not the script tag, that determines the MIME type.   ( *charset* ?)
+
+
+Avoid lines longer than 80 characters. When a statement will not fit on a single line, it may be necessary to break it. Place the break after an operator, ideally after a comma. A break after an operator decreases the likelihood that a copy-paste error will be masked by semicolon insertion. The next line should be indented 8 spaces.
+
+
+All variables should be declared before used. JavaScript does not require this, but doing so makes the program easier to read and makes it easier to detect undeclared variables that may become implied globals. Implied global variables should never be used. Use of global variables should be minimized.
+
+
+ , (comma) Operator
+
+Avoid the use of the comma operator. (This does not apply to the comma separator, which is used in object literals, array literals, var statements, and parameter lists.)
+
+
+
+#jQuery#
+
+实在不认同，不看了。
+
+
+
+
+
+
+
 
