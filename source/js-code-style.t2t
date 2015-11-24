@@ -18,12 +18,153 @@ JS代码风格
 
 
 - 编码： **UTF-8**
-- 换行： Linux 风格的 **\n**
+- 换行： Linux 风格的 **\n** (LF)
 
 
-编辑器配置： TODO
 
-GIT配置：TODO
+#要求#
+
+- 编码： **UTF-8**
+- 换行： Linux 风格的 **\n** (LF)
+- 缩进 4 个空格。（ HTML 缩进 2 个空格， CSS / LESS / SASS 缩进 4 个空格）
+- 驼峰命名。（ ``XMLHttpRequest`` -> ``XmlHttpRequest`` ，不要纠结）
+- 键名不得使用关键词（比如 ``default`` , ``class`` ）。
+- 使用 ``===`` / ``!==`` ，不用 ``==`` / ``!=`` 。
+- 单行长度，原则上为 120 个字符。
+- “函数声明”只能单独使用，不能在语句中使用（比如 ``if`` 后来个 ``function abc(){}`` ）。
+- 总是使用大括号，哪怕在 ``if`` 后只有一行语句。
+- 注释中使用 *TODO* 和 *FIXME* 。
+- 当一行语句排到多行时，操作符放前面。
+- 列表，对象，最后一个成员，末尾不要逗号。
+- 使用 ``parseInt`` 时总是带上基数。
+- 使用 ``!!some`` 的方式得到布尔类型。
+- 相关方法的命名： ``isVal()`` / ``hasVal()`` ， ``getVal()`` / ``setVal()`` 。
+- *jQuery* 对象的变量名使用 ``$`` 前缀。
+- ``script`` 标签一定是完整关闭而不是自关闭，一定写清楚 ``type`` 属性及 ``charset`` 属性， ``<script type="text/javascript" charset="utf-8" ...>...</script>`` 。
+
+
+
+例子：
+
+- 键名不得使用关键词（比如 ``default`` , ``class`` ）。
+
+
+```javascript
+{
+    default: '123',
+    class: 'first'
+}
+
+------------->
+
+{
+    origin: '123',
+    type: 'first'
+}
+```
+
+
+- “函数声明”只能单独使用，不能在语句中使用（比如 ``if`` 后来个 ``function abc(){}`` ）。
+
+
+```javascript
+if (true) {
+    function abc() { return 'ok'}
+}
+
+------------->
+
+if (true) {
+    var abc = function(){ return 'ok' }
+}
+```
+
+
+- 总是使用大括号，哪怕在 ``if`` 后只有一行语句。
+
+
+```javascript
+if (foo > 1) console.log('haha')
+
+------------->
+
+if (foo > 1) { console.log('haha') }
+```
+
+
+- 当一行语句排到多行时，操作符放前面。
+
+
+```javascript
+$('#items').
+    find('.selected').
+    highlight();
+
+------------->
+
+$('#items')
+    .find('.selected')
+    .highlight();
+```
+
+
+- 列表，对象，最后一个成员，末尾不要逗号。
+
+
+```javascript
+{
+    first: 123,
+    other: 456,
+}
+
+------------->
+
+{
+    first: 123,
+    other: 456
+}
+```
+
+
+- *jQuery* 对象的变量名使用 ``$`` 前缀。
+
+
+```javascript
+var d = $('.abc');
+
+------------->
+
+var $d = $('.abc');
+```
+
+
+
+
+#环境配置#
+
+
+##GIT##
+
+git 需要配置提交 / 抽取代码时对换行符的处理。
+
+```bash
+git config --global core.autocrlf input
+```
+
+或者在具体的项目下，编辑 git 的配置文件 ``.git/config`` ，添加：
+
+```gitconfig
+[core]
+    ...
+    autocrlf = input
+    ...
+```
+
+
+##IDEA 编辑器##
+
+##Sublime Text 2 编辑器##
+
 
 
 
@@ -993,7 +1134,7 @@ if (!dragon.hasAge()) {
 ```
 
 
-当给时间附加数据时（无论是 DOM 事件还是私有事件），传入一个哈希而不是原始值。这样可以让后面的贡献者增加更多数据到事件数据而无需找出并更新事件的每一个处理器。例如，不好的写法：
+当给事件附加数据时（无论是 DOM 事件还是私有事件），传入一个哈希而不是原始值。这样可以让后面的贡献者增加更多数据到事件数据而无需找出并更新事件的每一个处理器。例如，不好的写法：
 
 ```javascript
 // bad
