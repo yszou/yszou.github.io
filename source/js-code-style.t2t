@@ -36,6 +36,7 @@ JS代码风格
 - 注释中使用 *TODO* 和 *FIXME* 。
 - 当一行语句排到多行时，操作符放前面。
 - 列表，对象，最后一个成员，末尾不要逗号。
+- 总是使用 ``that`` 保留上下文对象 ``this`` 。
 - 使用 ``parseInt`` 时总是带上基数。
 - 使用 ``!!some`` 的方式得到布尔类型。
 - 相关方法的命名： ``isVal()`` / ``hasVal()`` ， ``getVal()`` / ``setVal()`` 。
@@ -141,6 +142,55 @@ var $d = $('.abc');
 
 
 #环境配置#
+
+##JSCS##
+
+```json
+{
+
+      "disallowEmptyBlocks": true
+    , "disallowKeywords": ["with"]
+    , "disallowMixedSpacesAndTabs": true
+    , "disallowMultipleLineStrings": true
+    , "disallowMultipleSpaces": {"allowEOLComments": true}
+    , "disallowNamedUnassignedFunctions": true
+    , "disallowNestedTernaries": true
+    , "disallowNewlineBeforeBlockStatements": true
+    , "disallowOperatorBeforeLineBreak": ["+", "."]
+    , "disallowSpaceAfterObjectKeys": true
+    , "disallowSpaceAfterPrefixUnaryOperators": true
+    , "disallowSpaceBeforeComma": true
+    , "disallowSpaceBeforePostfixUnaryOperators": true
+    , "disallowSpaceBeforeSemicolon": {"allExcept": [ "(" ]}
+    , "disallowSpacesInCallExpression": true
+    , "disallowTabs": true
+    , "disallowTrailingComma": true
+    , "maximumLineLength": 120
+    , "requireCamelCaseOrUpperCaseIdentifiers": { "ignoreProperties": false, "strict": true}
+    , "requireCapitalizedConstructors": true
+    , "requireCurlyBraces": true
+    , "requireDollarBeforejQueryAssignment": "ignoreProperties"
+    , "requireObjectKeysOnNewLine": { "allExcept": ["sameLine"] }
+    , "requireParenthesesAroundIIFE": true
+    , "requireSemicolons": true
+    , "requireSpaceAfterBinaryOperators": true
+    , "requireSpaceAfterComma": true
+    , "requireSpaceBeforeBinaryOperators": true
+    , "requireSpaceBeforeKeywords": ['else', 'while', 'catch']
+    , "requireSpaceBeforeObjectValues": true
+    , "requireSpaceBetweenArguments": true
+    , "requireSpacesInConditionalExpression": true
+    , "requireSpacesInForStatement": true
+    , "requireVarDeclFirst": true
+    , "safeContextKeyword": ["that"]
+    , "validateIndentation": 4
+    , "validateLineBreaks": "LF"
+    , "validateParameterSeparator": ", "
+    , "validateQuoteMarks": "'"
+
+}
+```
+
 
 ##JSHint##
 
