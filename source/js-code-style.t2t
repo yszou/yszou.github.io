@@ -148,7 +148,8 @@ var $d = $('.abc');
 ```json
 {
 
-      "disallowEmptyBlocks": true
+      "maxErrors": 100
+    , "disallowEmptyBlocks": true
     , "disallowKeywords": ["with"]
     , "disallowMixedSpacesAndTabs": true
     , "disallowMultipleLineStrings": true
@@ -166,13 +167,13 @@ var $d = $('.abc');
     , "disallowTabs": true
     , "disallowTrailingComma": true
     , "maximumLineLength": 120
-    , "requireCamelCaseOrUpperCaseIdentifiers": { "ignoreProperties": false, "strict": false}
+    , "requireCamelCaseOrUpperCaseIdentifiers": { "ignoreProperties": true, "strict": false }
     , "requireCapitalizedConstructors": true
     , "requireCurlyBraces": true
     , "requireDollarBeforejQueryAssignment": "ignoreProperties"
     , "requireObjectKeysOnNewLine": { "allExcept": ["sameLine"] }
     , "requireParenthesesAroundIIFE": true
-    , "requireSemicolons": true
+    , "requireSemicolons": false
     , "requireSpaceAfterBinaryOperators": true
     , "requireSpaceAfterComma": true
     , "requireSpaceBeforeBinaryOperators": true
@@ -181,13 +182,11 @@ var $d = $('.abc');
     , "requireSpaceBetweenArguments": true
     , "requireSpacesInConditionalExpression": true
     , "requireSpacesInForStatement": true
-    , "requireVarDeclFirst": true
     , "safeContextKeyword": ["that"]
     , "validateIndentation": 4
     , "validateLineBreaks": "LF"
     , "validateParameterSeparator": ", "
-    , "validateQuoteMarks": "'"
-
+    , "validateQuoteMarks": true
 }
 ```
 
@@ -196,7 +195,8 @@ var $d = $('.abc');
 
 ```json
 {
-      "predef": ["$", "jQuery", "angular", "define", "require", "echarts", "console"]
+
+      "predef": ["$", "jQuery", "angular", "define", "require", "echarts", "console", "chrome"]
     , "curly": true
     , "eqeqeq": true
     , "freeze": true
@@ -210,6 +210,8 @@ var $d = $('.abc');
     , "notypeof": false
     , "undef": true
 
+    , "asi": true
+    , "expr": true
     , "debug": false
     , "lastsemic": true
     , "loopfunc": false
