@@ -5,6 +5,7 @@ Android学习参考
 %!options(xhtml): --google-analytics --disqus
 %%toc
 
+
 #关于此文#
 
 这是一个连 *java* 都不会写的人的学习过程.
@@ -21,6 +22,21 @@ cd tools
 
 
 工具中可以设置 http 代理, 自己准备一台墙外的机器吧.
+
+http 代理的工具可以使用 ``privoxy`` , 下载之后通过 ``autoconf`` 工具生成配置, 然后编译安装即可.
+
+```bash
+autoheader
+autoconf
+./configure --with-user=zys --with-group=zys --prefix=/home/zys/opt/privoxy
+make
+make install 
+```
+
+在它的配置文件中设置代理端口, 默认是 8118 , 同时 ``privoxy`` 还有对接后端 *socks* 代理的能力, 具体看它的配置文件说明.
+
+配置文件作好之后, 还需要把配置文件链接到 ``sbin`` 目录下, 然后直接运行 ``privoxy`` 就可以了.
+
 
 开发工具中已经包含了虚拟机, 但是相关的镜像文件是在对应版本的 SDK 中的.
 
@@ -245,7 +261,53 @@ sudo adb kill-server
 sudo adb devices
 ```
 
+这里如果用 ``sudo`` 还不行, 那可以考虑直接处理一下 ``udev`` 的权限.
+
+创建 ``/etc/udev/rules.d/XX-android.rules`` 配置文件, 里面的内容是:
+
+```text
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0bb4", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0e79", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0502", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0b05", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="413c", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0489", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="091e", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="18d1", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0bb4", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="12d1", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="24e3", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2116", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0482", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="17ef", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1004", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="22b8", MODE="0666", GROUP="plugdev"    
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0409", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2080", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0955", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2257", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="10a9", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d4d", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0471", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04da", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="05c6", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1f53", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04e8", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04dd", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fce", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0930", MODE="0666", GROUP="plugdev"  
+SUBSYSTEM=="usb", ATTRS{idVendor}=="19d2", MODE="0666", GROUP="plugdev" 
+```
+
+保存之后:
+
+```bash
+sudo udevadm control --reload-rules
+sudo service udev restart
+```
+
 接下来就可以在 IDE 中创建一个项目, 并且马上编译在手机上看一下 ``Hello World`` 的效果了.
+
 
 
 ##添加组件和事件处理##
