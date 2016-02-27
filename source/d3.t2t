@@ -1,0 +1,445 @@
+D3学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/d3.html
+%!format: !email
+%%toc
+
+
+# 第一印象 #
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3</title>
+    <script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+    <script type="text/javascript" src="http://s.zys.me/js/d3/d3.min.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      $(function(){
+        d3.select('body').append('div').text('Hello D3');
+      });
+    </script>
+  </body>
+</html>
+```
+
+
+*D3* 是一套专注于数据可视化处理的工具 https://d3js.org/，链式调用风格配合数据绑定后的向量化操作（vectorized operation）巧妙地实现数据与表现的衔接。
+
+- 链式调用，类似于 jQuery 的选择器方法，代码写出来是一连串的点点点……
+- 数据绑定，准确地说其实不算是“绑定”行为，只是在调用时把“数据”与“选择”关联起来，同时 d3 的 api 提供了对这两者之间的差异的处理途径。
+- 向量化操作，这点和上面的“数据绑定”是一起的，许多用于数据处理的工具都有类似的机制（比如 Python 的 Pandas http://pandas.pydata.org/），简单来说这个机制可以让你简单地直接处理一个数据集，而不用自己手工再去遍历一次。就像 jQuery 那种直接把后续操作（比如设置样式）作用到当前选择的多个节点上。
+
+
+d3 的 api 看起来很多，但我觉得核心的东西就是上面三点，其它的，全是为处理数据和展示数据的方便所提供的工具，比如对 svg 的支持，一个数据集与另一个数据集之间的映射，颜色处理工具，等。
+
+
+
+# 核心形式 #
+
+## 选择与链式调用 ##
+
+数据展现离不开对 DOM 的操作，这方面 d3 跟 jQuery 比较相似。
+
+``d3.select() / d3.selectAll()`` ：选择符合条件的第一个或全部节点。参数可以直接是节点，或者选择器表达式。比如：
+
+```javascript
+d3.select('body');
+d3.selectAll('div.circle');
+d3.select($('div.wrapper').find('.rectangle')[0]);
+```
+
+如果使用 jQuery 的话注意 jQuery 对象与 DOM 节点之间的转换。
+
+``d3.select()`` 的返回值，可以继续被 ``select() / selectAll()`` ：
+
+对于：
+
+```html
+<div class="out">
+    <div class="in"></div>
+    <div class="in"></div>
+    <div class="in"></div>
+    <div class="in"></div>
+</div>
+```
+
+可以：
+
+```javascript
+d3.select('div.out').selectAll('div.in');
+```
+
+选择之后可以跟 jQuery 一样，对节点进行各种样式，属性，内容等的处理：
+
+- ``selection.attr()`` 节点属性。
+- ``selection.classed()`` 节点类。
+- ``selection.style()`` 节点样式。
+- ``selection.property()`` “内属性”。
+- ``selection.text() / selection.html()`` 节点内容。
+- ``selection.append() selection.remove()`` 添加 / 删除节点。
+
+
+
+``classed()`` 的使用：
+
+```javascript
+d3.select('body').classed('a b', true);
+d3.select('body').classed({a: true, b: false});
+```
+
+``style()`` 的使用：
+
+```javascript
+d3.select('body').style('background-color', 'red');
+d3.select('body').style({'background-color': 'red', height: '200px'});
+```
+
+注意，在设置样式时， d3 不像 jQuery 那么智能，知道在 *background-color* 与 *backgroundColor* 之间转换。同时，对于样式值的处理， d3 也不会自己加上 *px* 这种合适的单位。
+
+另外，d3 的选择的结果是一个二维结构：
+
+```html
+<div class="action">
+  <button id="btn-a">三个</button>
+  <button id="btn-b">二个</button>
+
+  <div class="wrapper">
+    <div class="item">1</div>
+    <div class="item">2</div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="item">1</div>
+  <div class="item">2</div>
+  <div class="item">3</div>
+  <div class="item">4</div>
+</div>
+```
+
+对上面的页面，使用：
+
+```javascript
+var query = d3.selectAll('div.wrapper').selectAll('.item');
+console.log(query);
+```
+
+会看到 ``[ [node, node], [node, node, node, node] ]`` 这种结构的输出。
+
+
+
+## 数据绑定与变化 ##
+
+
+d3 的选择结果，可以通过 ``data()`` 方法映射一个数据集，映射之后，选择与数据的差异作为结果返回。这个差异里，有可能是“选择有，但是数据没有”的多余节点，也可能是“选择没有，但是数据有”的空节点占位符。
+
+看一个完整的例子：
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3</title>
+    <script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+    <script type="text/javascript" src="http://s.zys.me/js/d3/d3.min.js"></script>
+  </head>
+  <body>
+
+    <div class="action">
+      <button id="btn-a">三个</button>
+      <button id="btn-b">二个</button>
+    </div>
+    <div class="wrapper"></div>
+
+    <script type="text/javascript">
+      $(function(){
+
+        function test(item){
+          var query = d3.select('div.wrapper').selectAll('.item');
+          var bind = query.data(item);
+          //var bind = query.data(item, function(d){ return d });
+          bind.enter().append('div').classed('item', true).text(function(d, i){return d});
+          bind.exit().remove();
+        }
+
+        $('#btn-a').click(function(){
+          test(['A', 'B', 'C']);
+          d3.select('div.wrapper').selectAll('.item')
+            .each(function(){ $(this).attr('data-d3', this.__data__)});
+        });
+
+        $('#btn-b').click(function(){
+          test(['B', 'C']);
+          d3.select('div.wrapper').selectAll('.item')
+            .each(function(){ $(this).attr('data-d3', this.__data__)});
+        });
+
+
+      });
+    </script>
+  </body>
+</html>
+```
+
+上面的例子，在点击“三个”按钮之后，会看到“A，B，C”的结果。
+
+但是，点击“二个”按钮，看到的结果是“A，B”，不是“B，C”。除非使用注释掉的这句：
+
+```javascript
+//var bind = query.data(item, function(d){ return d });
+```
+
+这其中的原因，在于 d3 对于是否传入了第二个函数参数，本来就有不同的处理逻辑。
+
+首先， ``data()`` 方法的第一个参数，可以传入一个列表，或者一个会返回列表的回调函数。如果是一个函数，则这个函数接收的参数是当前选择的节点集的父节点的 ``__data__`` 属性值，及序号：
+
+```html
+<div class="wrapper">
+    <div class="item">1</div>
+    <div class="item">2</div>
+</div>
+```
+
+```javascript
+d3.select('div.wrapper').data(['X', 'Y']);
+var query = d3.select('div.wrapper').selectAll('.item');
+query.data(function(d, i){
+    console.log(d, i);
+    return [];
+});
+```
+
+上面会输出： ``X 0`` 的结果。
+
+这里提到的 ``__data__`` 属性值，就是在 ``data()`` 方法调用之后，节点中绑定的数据（放在节点的 ``__data__`` 属性）。
+
+看到 ``data()`` 方法的调用时，始终要留意考虑两方面的东西，一方面是当前选择的节点集（及这些节点集的 ``__data__`` 状态），另一方面是 ``data()`` 方法调用时传入的数据。
+
+``data()`` 调用之后：
+
+- 本身后续得到的是 *匹配节点* ，表示这些节点的 ``__data__`` 属性更新了。
+- ``enter()`` 得到 *新增节点* （的占位符），表示这些节点在数据中，但是不在当前选择中。
+- ``exit()`` 得到 *删除节点* （多余的），表示这些节点不在数据中，但在当前选择中（是否删除在于你怎么处理了）。
+
+
+关于 *匹配节点* 看一个列子：
+
+```html
+<div class="wrapper">
+    <div class="item">1</div>
+    <div class="item">2</div>
+    <div class="item">3</div>
+    <div class="item">4</div>
+</div>
+```
+
+```javascript
+d3.select('div.wrapper').selectAll('.item')
+    .data(['A', 'B'])
+    .style('color', 'red')
+    .each(
+        function(){
+            $(this).attr('data-d3', this.__data__);
+        }
+    );
+```
+
+结果就是 ``1`` 和 ``2`` 变成红色。随便再把 ``__data__`` 属性放出来看看。
+
+注意，前面说过， ``selectAll()`` 结果是二维的， ``data()`` 传入的数据是一维的（即使形式是多维，它的作用也只是一维），所以 ``data()`` 传入的数据是会在当前的所有选择集上遍历作用一次的。
+
+
+---------------------------
+
+
+当调用 ``data()`` 方法没有传第二个函数参数时：
+
+- 按序号对应关系，节点的 ``__data__`` 设置为相应的数据。
+- 所以 *匹配节点* 是前 N 个， N 为当前选择节点个数与传入数据个数的小者。
+- 如果有多出来的数据，作为 *新增节点* ， ``enter()`` 的结果。
+- 如果有多出来的节点，作为 *删除节点* ， ``exit()`` 的结果。
+
+
+所以刚才先点击“三个”按钮，再点击“二个”按钮，发生的事是：
+
+- 点“三个”按钮时，当前选择节点为空，于是会有三个 *新增节点* ，依次绑定的数据是 ``A, B, C`` 。
+- 再点“二个”按钮时，当前选择是三个绑定了数据的节点，但是只有两个数据传入，于是第三个节点被作为 *删除节点* ， ``bind.exit().remove()`` 会把它删除掉，就完了，这里没有涉及任何数据的表现上的更新。所以页面上还显示 ``A, B`` ，虽然，前两个节点的绑定数据，已经从 ``A, B`` 变成 ``B, C`` 了。（看节点属性的 ``data-d3`` 能看到）。
+
+
+我们把代码改一下：
+
+```javascript
+$('#btn-b').click(function(){
+    test(['B', 'C']);
+    d3.select('div.wrapper').selectAll('.item').text(function(d, i){return d});
+});
+```
+
+在后面多加一个 ``text()`` 调用，就可以把页面显示改成 ``B, C`` 了。
+
+
+---------------------------
+
+
+如果调用 ``data()`` 方法，传了第二个函数参数（ *key 函数* ， ``function(data, index){}``），问题会复杂一点点。从上面的简单的扁平结构按长度出差异，要变成一个映射结构，来判断键值存在与否得出差异。
+
+- 第一步，根据当前选择的节点集，生成一个节点索引，键值由 *key 函数* 得出，传入的 ``data`` 为节点当前 ``__data__`` （如果键值有重复的，则作为 *删除节点* 处理）。
+- 第二步，遍历传入的数据的对应键值（把数据传入 *key 函数*），如果这些键值存在节点索引中，则作为 *匹配节点* 处理，更新 ``__data__`` ，不在节点索引中，则作为 *新增节点* 处理。同时这部分命中的索引会做出标记。
+- 第三步，遍历当前选择的节点集，根据对应的索引键值，在第二步命令中之外的节点，作为 *删除节点* 处理。
+
+
+如果我们使用：
+
+```javascript
+var bind = query.data(item, function(d){ return d });
+```
+
+那么先点“三个”按钮，再点“二个”按钮的流程就变成了：
+
+- 点“三个”按钮时，当前选择节点为空，于是会有三个 *新增节点* ，依次绑定的数据是 ``A, B, C`` 。
+- 点“二个”按钮时，因为页面上有三点绑定了数据的节点，根据传入的函数，先生成的节点索引为 ``{A: none, B: node, C: node}`` 。
+- 传入数据是 ``['B', 'C']`` ，对于的键值也就是 ``['B', 'C']`` ，所以后两个节点定为 *匹配节点* 处理了。
+- 最后遍历当前选择的三个节点，会发现第一个节点对应的键值不在索引中，于是按 *删除节点* 处理。执行 ``bind.exit().remove()`` 后被删除。
+
+
+最后我们就在页面上看到剩下的 ``B, C`` 了。
+
+
+---------------------------
+
+
+前面说了传入的 *key 函数* 用于索引键值的计算，这里注意一下，“键值”与“绑定的数据”，是两个东西（只是前面的例子，它们“碰巧”一样而已）。
+
+把前面的代码稍作修正：
+
+```javascript
+function test(item){
+    var query = d3.select('div.wrapper').selectAll('.item');
+    //var bind = query.data(item);
+    var bind = query.data(item, function(d, i){ return i });  // <-----
+    bind.enter().append('div').classed('item', true).text(function(d, i){return d});
+    bind.exit().remove();
+}
+
+$('#btn-a').click(function(){
+    test(['A', 'B', 'C']);
+    d3.select('div.wrapper').selectAll('.item').each(function(){ $(this).attr('data-d3', this.__data__)});
+});
+
+$('#btn-b').click(function(){
+    test(['X', 'Y']);
+    d3.select('div.wrapper').selectAll('.item').each(function(){ $(this).attr('data-d3', this.__data__)});
+});
+```
+
+先点“三个”按钮，再点“二个”按钮，最后显示的是 ``A, B`` 了。内容传的是 ``X, Y`` ，但是内容并不影响 *key 函数*的返回（它的返回值是序号嘛）。
+
+注意，跟之前一样，虽然当前显示的是 ``A, B`` 了，但是，实际上两个节点绑定的数据已经变成 ``X, Y`` 了。
+
+
+
+## 多维数据的绑定与展开 ##
+
+先把前面提过的，也许不起眼的两句话列出来：
+
+- ``data()`` 传入的数据是一维的（即使形式是多维，它的作用也只是一维）。
+- ``data()`` 方法的第一个参数，可以传入一个列表，或者一个会返回列表的回调函数。如果是一个函数，则这个函数接收的参数是当前选择的节点集的父节点的 ``__data__`` 属性值，及序号。
+
+
+假设我们有一个三维的数据：
+
+```javascript
+var info = [
+    [
+        { name: zys, url: www.zouyesheng.com },
+        { name: google, url: google.com },
+        { name: taobao, url: www.taobao.com },
+    ],
+    [
+        { name: zys, url: www.zouyesheng.com },
+        { name: google, url: google.com },
+        { name: taobao, url: www.taobao.com },
+    ]
+];
+```
+
+要如何绑定展示出来呢，比如要放到 2 个表格中，表格有 name 和 url 两列。
+
+直观地我们能想到：
+
+```javascript
+d3.selectAll('table').data(info).enter().append('table');
+d3.selectAll('table').selectAll('tr') ... ...
+```
+
+接下来呢？
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3</title>
+    <script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+    <script type="text/javascript" src="http://s.zys.me/js/d3/d3.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+      $(function(){
+        var info = [
+          [
+            { name: 'zys', url: 'www.zouyesheng.com' },
+            { name: 'google', url: 'google.com' },
+            { name: 'taobao', url: 'www.taobao.com' }
+          ],
+          [
+            { name: 'zys', url: 'www.zouyesheng.com' },
+            { name: 'google', url: 'google.com' },
+            { name: 'taobao', url: 'www.taobao.com' }
+          ]
+        ];
+
+        var table = d3.select('body').selectAll('table')
+        .data(info).enter().append('table');
+
+        var tr = table.selectAll('tr')
+        .data(function(parent){ return parent }).enter().append('tr');
+
+        var td = tr.selectAll('td')
+        .data(function(parent){ return [parent.name, parent.url] }).enter().append('td').text(function(d){return d});
+
+        table.style({
+          margin: '10px',
+          'border-collapse': 'collapse'
+        });
+
+        td.style({
+          border: '1px solid #ccc',
+          padding: '5px'
+        });
+
+      });
+    </script>
+  </body>
+</html>
+```
+
+``data()`` 的数据形式可以是一个回调函数，这个回调函数接收的是父级节点的 ``__data__`` ，而我们在绑定数据的时候，数据的形式是没有限制的。所以父节点中可以保存足够复制的数据来供给子节点进一步的展开。只需要记住，这个回调函数需要返回一个列表就可以了。
+
+（突然想到，这个回调函数是不支持异步的，但愿不会碰到这种需求吧）
+
+看上面的代码，多维的展开这点不论， ``table`` ， ``td`` 这种 ``selectAll()`` 的结果先保存下来，最后再指定处理它们的样式，这种形式也非常漂亮。
+
+
+
+
+
