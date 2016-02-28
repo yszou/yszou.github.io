@@ -437,8 +437,156 @@ d3.selectAll('table').selectAll('tr') ... ...
 
 （突然想到，这个回调函数是不支持异步的，但愿不会碰到这种需求吧）
 
-看上面的代码，多维的展开这点不论， ``table`` ， ``td`` 这种 ``selectAll()`` 的结果先保存下来，最后再指定处理它们的样式，这种形式也非常漂亮。
+看上面的代码，多维的展开这点不论， ``table`` ， ``td`` 这种 ``selectAll()`` 的结果先保存下来，最后再指定处理它们的样式，这种方式也非常漂亮。
 
+
+
+# 动画效果 #
+
+
+## 基本使用 ##
+
+
+动画， *transition* ，是 d3 中我觉得很赞的一块东西，特别是跟 ``data()`` 的 ``enter()`` 和 ``exit()`` 配合起来使用时。
+
+``transition()`` 的基本使用方法类似 jQuery 的 ``animate()``  ，给出目标样式，中间的补间动画效果会自动处理。
+
+```javascript
+$(function(){
+  d3.select('body').append('div')
+  .style({
+    width: '100px',
+    height: '100px',
+    'background-color': 'red',
+    'margin-left': '0'
+  })
+  .transition()
+  .delay(1000)
+  .duration(2000)
+  .style({
+    'margin-left': '300px'
+  });
+});
+```
+
+上面的代码效果是，一个红色方块，在 1 秒种之后，会花 2 秒时间从左边移动到右边。
+
+``transition()`` 调用之后，后续会有一些方法来控制动画的一些细节：
+
+- ``transition([name])`` 声明动画的时候是可以指定名字的，这样可以为同一目标设置多组不同名的动画。
+- ``duration()`` 指定动画的时间，默认是 250 毫秒。
+- ``delay()`` 播放前的延迟时间，默认是 0 。
+- ``tween()`` 自定义补间动画的实现函数。
+- ``ease()`` 指定变化率相关的函数，默认是 *cubicInOut*。
+
+
+---------------------------
+
+
+先说，``transition([name])`` 。如果你想对于同一个节点，有多个动画一个接一个地发生的话，可以简单地串连调用 ``transition()`` 就可以了：
+
+```javascript
+var query = d3.select('body').append('div')
+.style({
+  width: '100px',
+  height: '100px',
+  'background-color': 'red',
+  'margin-left': '0',
+  'margin-top': '0'
+});
+
+query
+.transition()
+.delay(500)
+.duration(2000)
+.style({
+  'margin-left': '300px'
+}).transition()
+.duration(2500)
+.style({
+  'margin-top': '300px'
+})
+;
+```
+
+但是如果想让多个动画效果同时发生，那么除了对选择对象多次应用 ``transition()`` 之外，还有指定不同的名字。
+
+不指定名字：
+
+```javascript
+query
+.transition()
+.delay(500)
+.duration(2000)
+.style({
+  'margin-left': '300px'
+});
+
+query
+.transition()
+.duration(2500)
+.style({
+  'margin-top': '300px'
+});
+```
+
+这样是不行的，后定义的会覆盖先前定义的，所以结果就是方块只会往下移，而不会向右移动了。
+
+多次调用 ``transition()`` 时指定不同名字：
+
+```javascript
+query
+.transition('x')
+.delay(500)
+.duration(2000)
+.style({
+  'margin-left': '300px'
+});
+
+query
+.transition('y')
+.duration(2500)
+.style({
+  'margin-top': '300px'
+});
+```
+
+指定名字之后，右移和下移的行为就会同时执行，看起来方块的移动路径就像是一条弧线。
+
+跟 ``transition()`` 相关的其它一些 api ，也是支持传入一个 ``name`` 用来指定名字的，比如 ``tween([name])`` 。
+
+
+---------------------------
+
+
+现在来说 ``tween()`` ，这个是用来自定义补间动画实现的，你可以认为 ``style()`` 样式上动画效果的自动实现，只是 d3 官方预先使用 ``tween()`` 做了一些事而已。
+
+```javascript
+var query = d3.select('body').append('div')
+.style({
+  width: '100px',
+  height: '100px',
+  'background-color': 'red',
+  'margin-left': '0',
+  'margin-top': '0'
+});
+
+query
+.transition()
+.delay(500)
+.duration(2000)
+.style({
+  'margin-left': '300px'
+}).
+tween('', function(d, i){
+  var that = this;
+  return function(t){
+    $(that).text(t);
+  }
+});
+```
+
+上面的代码能在方块移动过程中看到里面文本的变化。从中看 ``tween()`` 的调用方法，第一个参数是一个名字，不能省略。第二个参数是一个返回函数的函数，它本身接收的参数是当前节点绑定的数据（ ``data()`` 方法），返回的函数，其接收的参数是一个“时间位置”，取值范围 ``[0, 1]`` 。
 
 
 
