@@ -103,7 +103,7 @@ d3.select('body').style({'background-color': 'red', height: '200px'});
 
 注意，在设置样式时， d3 不像 jQuery 那么智能，知道在 *background-color* 与 *backgroundColor* 之间转换。同时，对于样式值的处理， d3 也不会自己加上 *px* 这种合适的单位。
 
-另外，d3 的选择的结果是一个二维结构：
+另外，d3 的选择的结果是一个两层结构：
 
 ```html
 <div class="action">
@@ -254,7 +254,7 @@ d3.select('div.wrapper').selectAll('.item')
 
 结果就是 ``1`` 和 ``2`` 变成红色。随便再把 ``__data__`` 属性放出来看看。
 
-注意，前面说过， ``selectAll()`` 结果是二维的， ``data()`` 传入的数据是一维的（即使形式是多维，它的作用也只是一维），所以 ``data()`` 传入的数据是会在当前的所有选择集上遍历作用一次的。
+注意，前面说过， ``selectAll()`` 结果是两层结构的， ``data()`` 传入的数据是单层的（即使形式是多层，它的作用也只是一层），所以 ``data()`` 传入的数据是会在当前的所有选择集上遍历作用一次的。
 
 
 ---------------------------
@@ -346,15 +346,15 @@ $('#btn-b').click(function(){
 
 
 
-## 多维数据的绑定与展开 ##
+## 多层数据的绑定与展开 ##
 
 先把前面提过的，也许不起眼的两句话列出来：
 
-- ``data()`` 传入的数据是一维的（即使形式是多维，它的作用也只是一维）。
+- ``data()`` 传入的数据是单层的（即使形式是多层，它的作用也只是一层）。
 - ``data()`` 方法的第一个参数，可以传入一个列表，或者一个会返回列表的回调函数。如果是一个函数，则这个函数接收的参数是当前选择的节点集的父节点的 ``__data__`` 属性值，及序号。
 
 
-假设我们有一个三维的数据：
+假设我们有一个三层的数据：
 
 ```javascript
 var info = [
@@ -437,7 +437,7 @@ d3.selectAll('table').selectAll('tr') ... ...
 
 （突然想到，这个回调函数是不支持异步的，但愿不会碰到这种需求吧）
 
-看上面的代码，多维的展开这点不论， ``table`` ， ``td`` 这种 ``selectAll()`` 的结果先保存下来，最后再指定处理它们的样式，这种方式也非常漂亮。
+看上面的代码，多层的展开这点不论， ``table`` ， ``td`` 这种 ``selectAll()`` 的结果先保存下来，最后再指定处理它们的样式，这种方式也非常漂亮。
 
 
 
@@ -694,5 +694,233 @@ ease('elastic', '2', '0.5')
 - bounce - simulates a bouncy collision.
 ```
 
+
+## 数据绑定后的动画处理 ##
+
+``data()`` 前面已经介绍过了，通过它注入数据之后，使用 ``enter()`` 获取新增的节点，使用 ``exit()`` 获取多余的节点。自然地，在 ``enter()`` 和 ``exit()`` 之后，我们可以使用 ``transition()`` ，这样就可以为将要新增的节点及将要删除的节点添加动画效果了。
+
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3</title>
+    <script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+    <script type="text/javascript" src="http://s.zys.me/js/d3/d3.js"></script>
+  </head>
+  <body>
+
+
+    <script type="text/javascript">
+      $(function(){
+        function process(data){
+          var query = d3.select('body').selectAll('.item');
+          var bind = query.data(data, function(o){ return o });
+
+          bind.enter()
+          .append('div').classed('item', true)
+          .text(function(d, i){ return d })
+          .style({
+            width: '100px',
+            height: '100px',
+            margin: '20px',
+            'background-color': 'red',
+            'margin-left': '0'
+          })
+          .transition()
+          .duration(500)
+          .style({
+            'margin-left': '200px'
+          });
+
+
+          bind.exit()
+          .transition()
+          .delay(function(d, i){ return i * 300 })
+          .duration(5000)
+          .style({
+            'margin-left': '800px',
+            'opacity': '0'
+          })
+          .remove();
+
+        }
+
+        process(['A', 'B', 'C', 'D', 'E', 'F']);
+        setTimeout(function(){
+          process(['A', 'C', 'E']);
+        }, 2000);
+
+
+      });
+    </script>
+  </body>
+</html>
+```
+
+上面的例子中，在 ``enter()`` 和 ``exit()`` 之上，我们再加入 ``transition()`` ，然后分别为节点的加入及删除定义动画效果，这样，在数据变化时，“入”和“出”阶段都有动画过渡了。
+
+
+
+# 先尽量画一个柱状图 #
+
+前面说了那么多，我们就按已知的东西做点事吧。
+
+一组数据如下：
+
+
+||  页面名字  |  点击次数  ||
+|  A  |  10  |
+|  B  |  20  |
+|  C  |  100  |
+|  D  |  80  |
+|  E  |  40  |
+
+
+这是一种典型的原始数据形式，关注列。在这组数据中，我们把第一列作为 X 轴数据，第二列作为 Y 轴数据。
+
+最后出来的图形大概像：
+
+```text
+             _
+            | |
+            | |   _
+            | |  | |
+            | |  | |
+            | |  | |
+            | |  | |   _ 
+            | |  | |  | |
+        _   | |  | |  | |
+   _   | |  | |  | |  | |
+  |_|  |_|  |_|  |_|  |_|
+   A    B    C    D    E 
+```
+
+
+我们用 *div* 的属性来表现柱状图，为了方便看，像素值按次数的 5 倍计算，每一条宽按 30 像素处理。DOM 结构，我预想大概是这样的：
+
+```html
+<div class="chart">
+    <div class="block">  X 5
+        <div class="bar">
+            <div class="space"></div>
+        </div>
+        <div class="label">A</div>
+    </div>
+</div>
+```
+
+第一步，先不考虑具体的数值，画出 5 个矩形再说。
+
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3</title>
+    <script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+    <script type="text/javascript" src="http://s.zys.me/js/d3/d3.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+      $(function(){
+        function process(){
+          var data = [
+             ['A', 10], 
+             ['B', 20], 
+             ['C', 100], 
+             ['D', 80], 
+             ['E', 40]
+          ];
+
+          $('body').append('<div class="chart"></div>');
+
+          var block = d3.select('div.chart').selectAll('.block')
+          .data(data, function(d){ return d[0]}).enter()
+          .append('div').classed('block', true)
+          .style({
+            float: 'left',
+            width: '30px',
+            height: '600px',
+            margin: '20px'
+          });
+
+          var bar = block.selectAll('.bar')
+          .data(function(parent){ return [parent[1]] }).enter()
+          .append('div').classed('bar', true).style({
+            width: '30px',
+            height: '500px',
+            'background-color': 'red'
+          })
+          .append('div').classed('space', true);
+
+          var label = block.selectAll('.label')
+          .data(function(parent){ return [parent[0]] }).enter()
+          .append('div').classed('label', true).text(function(d){ return d })
+          .style({
+            width: '30px',
+            'text-align': 'center'
+          });
+
+        }
+        process();
+
+
+      });
+    </script>
+  </body>
+</html>
+```
+
+第二步考虑数值的显示，这里用了一个小技巧，因为视觉上柱状图是“从下往上”的，但是在 DOM 布局中，高度的表现是“从上往下”的，所以，这里的处理方式是先把整个块用红色打底，然后根据数据的计算，从上往下，使用一个白块把多余的部分挡住。这部分只会涉及对 ``div.space`` 属性的修改：
+
+```javascript
+var bar = block.selectAll('.bar')
+.data(function(parent){ return [parent[1]] }).enter()
+.append('div').classed('bar', true).style({
+  width: '30px',
+  height: '500px',
+  'background-color': 'red'
+})
+.append('div').classed('space', true)
+.style({
+  width: '30px',
+  'background-color': 'white'
+})
+.each(function(d, i){
+  d3.select(this).style({
+    height: 500 - d * 5 + 'px'
+  });
+});
+```
+
+第三步，加动画，为了好看。一般柱状图有一个“从下往上”的伸展过程。只需要修改之前处理 ``div.space`` 的那个 ``each()`` 里面的内容就可以了。
+
+
+```javascript
+.each(function(d, i){
+  d3.select(this).style('height', '500px')
+  .transition()
+  .duration(800)
+  .style({
+    height: 500 - d * 5 + 'px'
+  });
+});
+```
+
+
+这个很毛糙的柱状图就算完成了。当然，我们在实际使用中肯定是不会这样直接拿着 DOM 去画这些图形的，不过这个很简单的例子有助于我们去思考整个“数据可视化”流程中的很多问题：
+
+- “数据可视化”的目的是以合适的形式展现数据，这个合适的形式，包括最朴实的 DOM 结构，不是只有“图”才叫“可视化”。 *SVG*， *Canvas*， *DOM* 都是可以加以利用的手段。
+- 同理，d3 提供的是一系列的工具，这些工具中也许包括专门的 *SVG* 类的工具，但是，把 d3 作用于 *SVG* ，或者 *Canvas* ，或者 *DOM* ，那是你的选择，你可以有的选择。
+- 在“画”出数据的时候，我们会涉及“画布”（这里我们用的是 DOM），“坐标”（这里的坐标就是 DOM 的从左上往右下），“数据映射”（我们把 100 的次数画出来是 500 像素的高度），等等这些因素。 d3 这个框架，提供了处理这些因素的工具，后面会介绍到。
+- 这个例子，我分成了 3 步来处理，那么对于一般的“数据可视化”工程，又有怎样的可参照的流程与实践呢？
+- d3 中实现动画如此轻松。
+
+
+我觉得这是一个不错的开始。
 
 
