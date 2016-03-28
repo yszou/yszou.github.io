@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>钉钉手机端应用获取当前用户信息流程 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">钉钉手机端应用获取当前用户信息流程</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-03-28 23:30 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">基本概念</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">前端流程</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">后端流程</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">总结</a>
+  </li>
+  </ol>
+
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先吐个槽，钉钉的“开发者中心”是直接对接的阿里云的后台，跳来跳去很容易懵圈，再加上钉钉的文档，它内容倒是有，但是组织方式不是按流程来的，而是按模块来的，这样的结果就是你要通过文档去了解某个完整的流程怎么处理，也要跳来跳去，转一圈下来看得都有点恶心了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里说的“获取当前用户信息”，最有价值的一点，是获取手机端当前用户的在某企业的一个工号（至于到底是不是工号，或者其它的标识，那是管理员在后台自己维护的）。有了这个用户标识，就可以实现“直接登录”等功能了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-home.jpg" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-action.jpg" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 基本概念</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+钉钉有一个专门的“企业管理”后台，创建一个“企业”之后，作为管理员可以登录这个后台 <a href="https://oa.dingtalk.com/" style="color: #0184b7; text-decoration: none">https://oa.dingtalk.com/</a> （这个登录表单竟然没有处理 Enter 键）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+钉钉的手机客户端里面，中间的“工作”一页，里面可以在你当前加入的多个企业之间切换（顶部中间）。每个企业都有一个“首页”，这个首页的地址本身是可配置的，如果不配置，则默认是一个 9 宫格的样式，每个格子是一个应用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+每个应用在钉钉中就是一个链接地址，但是这个地址不一定是 http 协议开头的，也可以是其它协议头，以实现直接唤起相应的应用的功能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在管理后台可以配置“首页”中的应用，如果是 http 协议开头，则会使用使用钉钉内部的浏览器容器打开指定页面。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+钉钉内部的浏览器容器，有提供自己有一套 jsapi ，除了“获取当前用户”这类功能，还有 UI 上的一些工具提供，<a href="http://h5.m.laiwang.com/home/ding.html" style="color: #0184b7; text-decoration: none">http://h5.m.laiwang.com/home/ding.html</a> （钉钉打开这个地址，把这个地址转成二维码，扫一下就可以了） 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在你可以创建一个企业，进入后台，然后新建一个“微应用”，再填上这个应用的“首页地址”就可以了。这时你打开钉钉，就能在这个企业的页面看到你创建的应用的图标了，点击的话，就会访问指定的页面地址，简单直接有效。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在后台中，随便把以下几处配置项弄明白：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">AgentID</em> ，应用的 ID 标识，在具体的应用设置页面能找到。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">CorpID</em> ，企业 ID ，在“微应用设置”页面能看到，相当于 OAuth2 中的 <em style="color: #d75100; font-style: normal;">app_id</em> 。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">CorpSecret</em> ，在“微应用设置”页面能看到，相当于 OAuth2 中的 <em style="color: #d75100; font-style: normal;">app_secret</em> ，换 <em style="color: #d75100; font-style: normal;">access_token</em> 时会用到。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">SSOsecret</em> ，同样是在“微应用设置”页，注意跟 <em style="color: #d75100; font-style: normal;">CorpSecret</em> 分开。目前我没用到这个配置。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面几个值可以先记一下，后面代码中会用到的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+钉钉的开发文档在 <a href="http://ddtalk.github.io/dingTalkDoc/" style="color: #0184b7; text-decoration: none">http://ddtalk.github.io/dingTalkDoc/</a> ，所有内容都在这一个页面中。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 前端流程</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们的目的是“获取当前用户信息”，在钉钉的容器环境中，要正常用上它的 jsapi ，前端这里要先作一个 “签权” 及 “配置” 的过程，签权这个大部分是后端的逻辑，后面会介绍。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前端的流程大概如下：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">页面中需要引入 dingtalk.js .
+</li>
+<li style="margin: 10px auto;">前端传递当前页面 URI 或者后端写死这个 URI （计算签名时要用）.
+</li>
+<li style="margin: 10px auto;">从后端获取 jsapi 的签名及其它在计算签名时用到的基本信息.
+</li>
+<li style="margin: 10px auto;">得到基本信息后调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> (签名是在这里用), 这里把要用到的 jsapi 写上.
+</li>
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.runtime.permission.requestAuthCode</code> 取得当前用户的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> .
+</li>
+<li style="margin: 10px auto;">把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 传给后端, 后端使用 <em style="color: #d75100; font-style: normal;">access_token</em> 获取当前用户信息, 响应 .
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里先不管签名什么的怎么计算，那是后端的事。简单来说前端只需要作两件事：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">从后端拿到 jsapi 的签名用其它信息，然后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 进行配置。
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.runtime.permission.requestAuthCode</code> 得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> ，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 给后端去请求当前用户信息。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整的前端部分代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+<span style="color: #000080">&lt;html&gt;</span>
+<span style="color: #000080">&lt;head&gt;</span>
+<span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
+<span style="color: #000080">&lt;title&gt;</span>钉钉登录<span style="color: #000080">&lt;/title&gt;</span>
+<span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://g.alicdn.com/ilw/ding/0.8.6/scripts/dingtalk.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+<span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/jq/jquery.min.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+<span style="color: #000080">&lt;/head&gt;</span>
+<span style="color: #000080">&lt;body&gt;</span>
+  <span style="color: #000080">&lt;h1&gt;</span>正在登录 ...<span style="color: #000080">&lt;/h1&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>1. 页面中需要引入 dingtalk.js .<span style="color: #000080">&lt;/p&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>2. 前端传递当前页面 URI 或者后端写死这个 URI .<span style="color: #000080">&lt;/p&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>3. 从后端获取 jsapi 的签名及其它在计算签名时用到的基本信息.<span style="color: #000080">&lt;/p&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>4. 得到基本信息后作 dd.config , 这里把要用到的 jsapi 写上.<span style="color: #000080">&lt;/p&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>5. 通过 dd.runtime.permission.requestAuthCode 取得当前用户的 code .<span style="color: #000080">&lt;/p&gt;</span>
+  <span style="color: #000080">&lt;p&gt;</span>6. 把 code 传给后端, 后端使用 access_token 获取当前用户信息, 响应 .<span style="color: #000080">&lt;/p&gt;</span>
+
+
+  <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
+
+    $(<span style="color: #000000; font-weight: bold">function</span>(){
+      <span style="color: #000000; font-weight: bold">var</span> infoDefer <span style="color: #000000; font-weight: bold">=</span> $.Deferred();
+
+      <span style="color: #999988">// 这个事件处理得有问题, 延迟绑定就无效了</span>
+      dd.ready(<span style="color: #000000; font-weight: bold">function</span>(){
+
+        infoDefer.done(<span style="color: #000000; font-weight: bold">function</span>(info){
+
+          dd.device.notification.showPreloader({
+              text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;正在获取当前用户信息 ...&quot;</span>,
+              showIcon<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>,
+              onSuccess <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) { },
+              onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {}
+          });
+
+          dd.runtime.permission.requestAuthCode({
+              corpId<span style="color: #000000; font-weight: bold">:</span> info.corp_id,
+              onSuccess<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) {
+                <span style="color: #000000; font-weight: bold">var</span> code <span style="color: #000000; font-weight: bold">=</span> result.code;
+
+                <span style="color: #000000; font-weight: bold">var</span> defer <span style="color: #000000; font-weight: bold">=</span> $.ajax({
+                  url<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/dingding/user-info&#39;</span>,
+                  data<span style="color: #000000; font-weight: bold">:</span> {code<span style="color: #000000; font-weight: bold">:</span> code},
+                  dataType<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;json&#39;</span>
+                });
+
+                <span style="color: #999988">// 看一看 loading 效果</span>
+                setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+                  defer.done(<span style="color: #000000; font-weight: bold">function</span>(response){
+                    <span style="color: #999988">// 响应内容把所有变量命名的风格都过了一遍 -_-</span>
+
+                    dd.device.notification.hidePreloader({
+                        onSuccess <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) { },
+                        onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {}
+                    });
+
+                    dd.device.notification.vibrate({
+                        duration<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">300</span>,
+                        onSuccess <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) { },
+                        onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {}
+                    });
+
+                    dd.device.notification.actionSheet({
+                        title<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;当前用户信息&quot;</span>,
+                        cancelButton<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;关闭&#39;</span>,
+                        otherButtons<span style="color: #000000; font-weight: bold">:</span> [
+                          <span style="color: #dd1144">&#39;userid: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> response.obj.userid, 
+                          <span style="color: #dd1144">&#39;deviceId: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> response.obj.deviceId,
+                          <span style="color: #dd1144">&#39;is_sys: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> response.obj.is_sys,
+                          <span style="color: #dd1144">&#39;sys_level: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> response.obj.sys_level
+                        ],
+                        onSuccess <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) {
+                          <span style="color: #999988">// 取消这里取的是 -1</span>
+                          alert(result.buttonIndex);
+                        },
+                        onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {}
+                    });
+                  });
+
+                }, <span style="color: #009999">3000</span>);
+
+              },
+              onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {
+                alert(<span style="color: #dd1144">&#39;出错了, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> err);
+              }
+          });
+
+        });
+      });
+
+      <span style="color: #000000; font-weight: bold">var</span> defer <span style="color: #000000; font-weight: bold">=</span> $.ajax({
+        url<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/dingding/jsapi-sign&#39;</span>,
+        data<span style="color: #000000; font-weight: bold">:</span> {url<span style="color: #000000; font-weight: bold">:</span> location.href},
+        dataType<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;json&#39;</span>,
+      });
+
+      defer.done(<span style="color: #000000; font-weight: bold">function</span>(response){
+        <span style="color: #000000; font-weight: bold">var</span> info <span style="color: #000000; font-weight: bold">=</span> response.obj;
+
+        dd.config({
+          agentId<span style="color: #000000; font-weight: bold">:</span> info.agent_id, <span style="color: #999988">// 必填，微应用ID</span>
+          corpId<span style="color: #000000; font-weight: bold">:</span> info.corp_id,<span style="color: #999988">//必填，企业ID</span>
+          timeStamp<span style="color: #000000; font-weight: bold">:</span> info.timestamp, <span style="color: #999988">// 必填，生成签名的时间戳</span>
+          nonceStr<span style="color: #000000; font-weight: bold">:</span> info.nonce, <span style="color: #999988">// 必填，生成签名的随机串</span>
+          signature<span style="color: #000000; font-weight: bold">:</span> info.sign, <span style="color: #999988">// 必填，签名</span>
+          jsApiList<span style="color: #000000; font-weight: bold">:</span> [
+            <span style="color: #dd1144">&#39;runtime.permission.requestAuthCode&#39;</span>,
+            <span style="color: #dd1144">&#39;device.notification.showPreloader&#39;</span>,
+            <span style="color: #dd1144">&#39;device.notification.hidePreloader&#39;</span>,
+            <span style="color: #dd1144">&#39;device.notification.vibrate&#39;</span>,
+            <span style="color: #dd1144">&#39;device.notification.actionSheet&#39;</span>
+          ] <span style="color: #999988">// 必填，需要使用的jsapi列表</span>
+        });
+
+        infoDefer.resolve(info);
+
+      });
+
+    });
+
+  <span style="color: #000080">&lt;/script&gt;</span>
+<span style="color: #000080">&lt;/body&gt;</span>
+<span style="color: #000080">&lt;/html&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 后端流程</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+开始之前，先把几个后面会用到的配置项写上：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">CORP_ID <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;ding5c8c7ccc6462b535&#39;</span>
+CORP_SECRET <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;eVuSoZwTA0mc3fZL1XnyHhjkeEPs2ZGLioxIUkGWuje1t4P0SFxQXg2a_f3L3D8Y&#39;</span>
+AGENT_ID <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;17531912&#39;</span>
+
+TOKEN_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/gettoken&#39;</span>
+TICKET_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/get_jsapi_ticket&#39;</span>
+USER_INFO_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/user/getuserinfo&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前三个在前面已经介绍过了，具体值在管理后台能找到的。后三个是会用到的服务地址。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CORP_ID</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CORP_SECRET</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">TOKEN_URL</code> 可以得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 。
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">TICKET_URL</code> 可以得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ticket</code> ，这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ticket</code> 用于计算前端的 jsapi 需要的一个签名。
+</li>
+<li style="margin: 10px auto;">把 jsapi 签名给前端，前端通过 jsapi 能得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">USER_INFO_URL</code> 就可以得到当前用户信息了。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整个过程中，官方的文档应该有的地方都讲到了的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+给前端 jsapi 签名值的时候，虽然“保密”的量就这一个，但是其它的用于计算签名的其它量，比如时间戳， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">AGENT_ID</code> 这些，在前端调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 还是需要用到，所以这块后端响应时，就全部返回吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+计算签名的具体逻辑跟一般算签名的差不多，参数，排序， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sha1</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">sign</span>(<span style="color: #999999">self</span>, ticket, url):
+    <span style="color: #dd1144">&#39;jsapi 需要的签名&#39;</span>
+
+    stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(time<span style="color: #000000; font-weight: bold">.</span>time())
+    nonce <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex
+    p <span style="color: #000000; font-weight: bold">=</span> {
+        <span style="color: #dd1144">&#39;noncestr&#39;</span>: nonce,
+        <span style="color: #dd1144">&#39;jsapi_ticket&#39;</span>: ticket<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>),
+        <span style="color: #dd1144">&#39;timestamp&#39;</span>: <span style="color: #0086B3">str</span>(stamp),
+        <span style="color: #dd1144">&#39;url&#39;</span>: url,
+    }
+
+    keys <span style="color: #000000; font-weight: bold">=</span> p<span style="color: #000000; font-weight: bold">.</span>keys()
+    keys<span style="color: #000000; font-weight: bold">.</span>sort()
+    pair <span style="color: #000000; font-weight: bold">=</span> [ (k, p[k]) <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> keys]
+    pair <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(pair)
+    sign <span style="color: #000000; font-weight: bold">=</span> hashlib<span style="color: #000000; font-weight: bold">.</span>sha1(pair)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
+    <span style="color: #000000; font-weight: bold">return</span> sign, stamp, nonce
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整的后端代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">hashlib</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">uuid</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">urllib</span>
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado.httpclient</span> <span style="color: #000000; font-weight: bold">import</span> AsyncHTTPClient
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado</span> <span style="color: #000000; font-weight: bold">import</span> web
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado</span> <span style="color: #000000; font-weight: bold">import</span> gen
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">base</span> <span style="color: #000000; font-weight: bold">import</span> BaseHandler
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingBaseHandler</span>(BaseHandler):
+
+    CORP_ID <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;ding5c8c7ccc6462b535&#39;</span>
+    CORP_SECRET <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;eVuSoZwTA0mc3fZL1XnyHhjkeEPs2ZGLioxIUkGWuje1t4P0SFxQXg2a_f3L3D8Y&#39;</span>
+    AGENT_ID <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;17531912&#39;</span>
+
+    TOKEN_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/gettoken&#39;</span>
+    TICKET_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/get_jsapi_ticket&#39;</span>
+    USER_INFO_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/user/getuserinfo&#39;</span>
+
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_user_info_by_code</span>(<span style="color: #999999">self</span>, code, callback):
+        <span style="color: #dd1144">&#39;通过前端 jsapi 得到的 code 获取当前用户信息&#39;</span>
+
+        token <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_token)
+
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;access_token&#39;</span>: token,
+            <span style="color: #dd1144">&#39;code&#39;</span>: code,
+        }
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>USER_INFO_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(p)
+        resposne <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        callback(json<span style="color: #000000; font-weight: bold">.</span>loads(resposne<span style="color: #000000; font-weight: bold">.</span>body))
+
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">sign</span>(<span style="color: #999999">self</span>, ticket, url):
+        <span style="color: #dd1144">&#39;jsapi 需要的签名&#39;</span>
+
+        stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(time<span style="color: #000000; font-weight: bold">.</span>time())
+        nonce <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;noncestr&#39;</span>: nonce,
+            <span style="color: #dd1144">&#39;jsapi_ticket&#39;</span>: ticket<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>),
+            <span style="color: #dd1144">&#39;timestamp&#39;</span>: <span style="color: #0086B3">str</span>(stamp),
+            <span style="color: #dd1144">&#39;url&#39;</span>: url,
+        }
+
+        keys <span style="color: #000000; font-weight: bold">=</span> p<span style="color: #000000; font-weight: bold">.</span>keys()
+        keys<span style="color: #000000; font-weight: bold">.</span>sort()
+        pair <span style="color: #000000; font-weight: bold">=</span> [ (k, p[k]) <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> keys]
+        pair <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(pair)
+        sign <span style="color: #000000; font-weight: bold">=</span> hashlib<span style="color: #000000; font-weight: bold">.</span>sha1(pair)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
+        <span style="color: #000000; font-weight: bold">return</span> sign, stamp, nonce
+
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_ticket</span>(<span style="color: #999999">self</span>, token, callback):
+        <span style="color: #dd1144">&#39;通过 access_token 获取 jsapi_ticket&#39;</span>
+
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;access_token&#39;</span>: token
+        }
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>TICKET_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(p)
+        resposne <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        ticket <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(resposne<span style="color: #000000; font-weight: bold">.</span>body)[<span style="color: #dd1144">&#39;ticket&#39;</span>]
+        callback(ticket)
+
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_token</span>(<span style="color: #999999">self</span>, callback):
+        <span style="color: #dd1144">&#39;能过 corp_id 和 corp_secret 获取 access_token&#39;</span>
+
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;corpid&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>CORP_ID,
+            <span style="color: #dd1144">&#39;corpsecret&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>CORP_SECRET,
+        }
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>TOKEN_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(p)
+        resposne <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        token <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(resposne<span style="color: #000000; font-weight: bold">.</span>body)[<span style="color: #dd1144">&#39;access_token&#39;</span>]
+        callback(token)
+
+
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingHandler</span>(DingDingBaseHandler):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>redirect(<span style="color: #dd1144">&#39;/dingding/login&#39;</span>)
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingJsapiSignHandler</span>(DingDingBaseHandler):
+
+    <span style="color: #3c5d5d; font-weight: bold">@web.asynchronous</span>
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #dd1144">&#39;获取指定页面的钉钉 jsapi 的签名&#39;</span>
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;url&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+
+        token <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_token)
+        ticket <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_ticket, token)
+
+        sign, stamp, nonce <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>sign(ticket, url)
+
+        data <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;agent_id&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>AGENT_ID,
+            <span style="color: #dd1144">&#39;corp_id&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>CORP_ID,
+            <span style="color: #dd1144">&#39;timestamp&#39;</span>: stamp,
+            <span style="color: #dd1144">&#39;nonce&#39;</span>: nonce,
+            <span style="color: #dd1144">&#39;sign&#39;</span>: sign,
+        }
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;obj&#39;</span>: data})
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingUserInfoHandler</span>(DingDingBaseHandler):
+
+    <span style="color: #3c5d5d; font-weight: bold">@web.asynchronous</span>
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #dd1144">&#39;通过 code 获取当前用户信息&#39;</span>
+        code <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        obj <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_user_info_by_code, code)
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;obj&#39;</span>: obj})
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingLoginHandler</span>(DingDingBaseHandler):
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>render(<span style="color: #dd1144">&#39;dingding-login.html&#39;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dingding-login.html</code> 就是前面给出的前端代码。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 总结</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+按上面代码的逻辑，整个前后端流程如下图所示，黄色是前端逻辑，蓝色和绿色是后端逻辑，绿色的是有请求钉钉服务的地方。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-process.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'dingding-userinfo';
+  var disqus_url = 'http://zouyesheng.com/dingding-userinfo.html';
+  var disqus_title = '钉钉手机端应用获取当前用户信息流程';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABpUlEQVR4nN2XMY7bMBBF31gGqI7O
+Cagb5AbybpP7BEgTwIvVZgPstSSdRD7BUh0N0Pop7CpJmQmQTENgCn7Mx/zPTxO/1mX3myb8e93J
+zFp4MWQDZmadI5pJQqaFGQhSdZ14tQ7T09EeZR2TDe78znDW9fDH7/2p9rdDhyzm9bW2rmhokhSk
+IYUx1hSkmoofkzIz5rWCnQcuZntPJo8CWN9qS9wjcFQ3GqMW+jgQtihpjJIbk2gEtMWaCjQqlhtP
+NOVTClM+Uey2L66zKZ/QFqViGvBF2wGN2plrB2tNwNXPJ/fMH69dIX+f0AHYvR+So3P1gJnVRB9r
+0sbz4og2A6WPA1huJnvwZPKmtzBl7npTfvbcyUmvizaapViGMIKfT969hDik0scBuboymnKzlP5O
+4lLMWW/x6dha5twqWdeyOuYSJEma9Cp6TulvuHIYY4VjJoURx528Zy7LJH2LA4U4uGeuHrg8wNke
+84unTwKgD18mZFA+HT67pqBMClusQNQCOL6muxvGzJvK8byHnq+eTMogwNWK0pBKS7O4pSD7j39U
+PwBrIAGQDmmlsQAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
