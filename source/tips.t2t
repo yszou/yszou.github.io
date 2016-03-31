@@ -1,0 +1,27 @@
+其它小东西
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 终端颜色 #
+
+查看当前终端是否支持 256 色：
+
+```bash
+(x=`tput op` y=`printf %76s`;for i in {0..256};do o=00$i;echo -e ${o:${#o}-3:3} `tput setaf $i;tput setab $i`${y// /=}$x;done)
+```
+
+设置当前终端，可以加到 ``~/.bashrc`` 中：
+
+```bash
+export TERM=xterm-256color
+```
+
+
+
+
