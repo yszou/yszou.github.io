@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">钉钉手机端应用获取当前用户信息流程</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2016-03-28 23:30 更新</span>
+                <span>2016-05-12 22:55 更新</span>
             </div>
         </div>
 
@@ -315,7 +315,7 @@ USER_INFO_URL <span style="color: #000000; font-weight: bold">=</span> <span sty
     keys <span style="color: #000000; font-weight: bold">=</span> p<span style="color: #000000; font-weight: bold">.</span>keys()
     keys<span style="color: #000000; font-weight: bold">.</span>sort()
     pair <span style="color: #000000; font-weight: bold">=</span> [ (k, p[k]) <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> keys]
-    pair <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(pair)
+    pair <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&amp;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(<span style="color: #dd1144">&#39;{}={}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(<span style="color: #000000; font-weight: bold">*</span>p) <span style="color: #000000; font-weight: bold">for</span> p <span style="color: #000000; font-weight: bold">in</span> pair)
     sign <span style="color: #000000; font-weight: bold">=</span> hashlib<span style="color: #000000; font-weight: bold">.</span>sha1(pair)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
     <span style="color: #000000; font-weight: bold">return</span> sign, stamp, nonce
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -382,7 +382,7 @@ USER_INFO_URL <span style="color: #000000; font-weight: bold">=</span> <span sty
         keys <span style="color: #000000; font-weight: bold">=</span> p<span style="color: #000000; font-weight: bold">.</span>keys()
         keys<span style="color: #000000; font-weight: bold">.</span>sort()
         pair <span style="color: #000000; font-weight: bold">=</span> [ (k, p[k]) <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> keys]
-        pair <span style="color: #000000; font-weight: bold">=</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(pair)
+        pair <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&amp;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(<span style="color: #dd1144">&#39;{}={}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(<span style="color: #000000; font-weight: bold">*</span>p) <span style="color: #000000; font-weight: bold">for</span> p <span style="color: #000000; font-weight: bold">in</span> pair)
         sign <span style="color: #000000; font-weight: bold">=</span> hashlib<span style="color: #000000; font-weight: bold">.</span>sha1(pair)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
         <span style="color: #000000; font-weight: bold">return</span> sign, stamp, nonce
 

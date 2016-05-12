@@ -242,7 +242,7 @@ def sign(self, ticket, url):
     keys = p.keys()
     keys.sort()
     pair = [ (k, p[k]) for k in keys]
-    pair = urllib.urlencode(pair)
+    pair = '&'.join('{}={}'.format(*p) for p in pair)
     sign = hashlib.sha1(pair).hexdigest()
     return sign, stamp, nonce
 ```
@@ -305,7 +305,7 @@ class DingDingBaseHandler(BaseHandler):
         keys = p.keys()
         keys.sort()
         pair = [ (k, p[k]) for k in keys]
-        pair = urllib.urlencode(pair)
+        pair = '&'.join('{}={}'.format(*p) for p in pair)
         sign = hashlib.sha1(pair).hexdigest()
         return sign, stamp, nonce
 
