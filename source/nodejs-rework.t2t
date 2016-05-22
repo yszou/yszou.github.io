@@ -1,0 +1,117 @@
+记一次用 Node.js 重写工具的过程
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+之前用 Python 做了一个方便项目开发的脚手架工具，这个工具中用到了 Python 的 C 绑定形式的模块， 于是在安装时就需要机器中有相应的编译环境，比如 OS X 上先装 *ports* 然后用它装一些库。如果事先没有这套编译环境，第一次安装时还是比较折腾的，虽然我已经尽可能详尽地写文档了。
+
+稳定用了一段时间之后，我现在考虑用 Node.js 来把这个工具重新实现一下，这样在环境方面应该就会友好很多了，毕竟 Node.js 的环境肯定是事先就准备好了的。（不过，我好像记得 Node.js 的某些模块也是需要编译环境的）
+
+
+# 要做什么 #
+
+就是一个 ``z.py`` 的文件，它目前的功能有 5 个：
+
+- ``python z.py init``
+- ``python z.py project PROJECT_NAME``
+- ``python z.py app PROJECT_NAME APP_NAME``
+- ``python z.py sass SASS_FILE_ABSOLUTE_PATH``
+- ``python z.py html HTML_FILE_ABSOLUTE_PATH``
+
+
+``init`` 会创建一个代码库的初始目录结构，当然这个功能几乎不会用到（我所有项目都放一个代码库）。
+
+
+``project`` 是在代码库中创建一个“项目”的目录结构，大概长这样：
+
+```text
+test
+├── common
+│   ├── app.sass
+│   └── app.sass.css
+├── config.js
+├── iconfont
+│   ├── app.sass
+│   └── app.sass.css
+├── index
+│   ├── app.js
+│   ├── demo.html
+│   └── _index.html
+├── page-index
+│   ├── app.html
+│   ├── app.html.js
+│   ├── app.js
+│   ├── app.sass
+│   ├── app.sass.css
+│   └── demo.html
+└── service
+    └── app.js
+```
+
+当然，这个项目名字是 ``test`` ，所以里面的一些文件中的名字是跟 ``test`` 有关的（一些约定）。
+
+
+``app`` 跟 ``project`` 相似，不过它是创建一个“组件”的目录结构，这是平时使用最多的功能（为此会在 IDE 中专门为它配置“快捷方式”），一个组件大概长这样：
+
+```text
+test/first
+├── app.html
+├── app.html.js
+├── app.js
+├── app.sass
+├── app.sass.css
+└── demo.html
+```
+
+同理，这个组件是 ``test`` 项目中的名为 ``first`` 的组件，那么上面文件中的一些内容，是跟 ``test`` 和 ``first`` 这些词有关的。比如 ``test/first/app.js`` 中会有：
+
+```javascript
+var MODULE_NAME = 'test/first';
+var DIRECTIVE_NAME = 'testFirst';
+```
+
+这种内容。
+
+
+``sass`` 的功能是把 ``app.sass`` 变成 ``app.sass.js`` ，就是普通的 *sass* 转换行为。
+
+``html`` 的功能是把 ``app.html`` 变成 ``app.html.js`` ，这个功能简单来说是把 ``app.html`` 中的 html 片段（注意只是片段）以一个字符串形式放到 ``app.html.js`` 中（ ``app.html.js`` 中的内容是 AMD 形式的）。
+
+
+
+- ``init``
+- ``project``
+- ``app``
+- ``sass``
+- ``html``
+
+
+5 个功能，对我这个没正经写过 Node.js 的人来说，我预估还是要花些时间的。
+
+
+# 先要解决什么问题 #
+
+我之所以想把这次重写的过程记录下来，是因为我觉得目前面对的这个问题，算是“一个有经验的人如何去学习使用一种新语言”的典型场景。换句话说，即使选择的不是 Node.js 来重写这个工具，而是其它的 A 语言，X 语言，我接下来要做的事也没有什么不同。
+
+要完成这个工具，我认为我首先要学会使用 Node.js 处理以下场景：
+
+- 标准输入输出在 Node.js 中如何处理。
+- 字节与字符，编码，等问题在 Node.js 中是怎样的。
+- 如何处理命令行参数。
+- 文件 IO。
+- 找个解析 HTML 的方法。
+- 选择一种模板引擎。
+
+
+这些问题后面一个一个来搞定。
+
+
+
+
+
+

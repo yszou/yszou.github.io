@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>钉钉 ISV 接入流程 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">钉钉 ISV 接入流程</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-05-22 23:23 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">基本概念</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">1.1. 用户user与企业corp</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">1.2. 应用agent与套件suite</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">1.3. 签名signature与对称加密AES</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">1.4. 应用市场与间接授权</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">1.5. 为了安全？</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">第一步，注册</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">第二步，被动回调处理</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">3.1. 检查签名</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">3.2. 解密信息</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">3.3. 拆结构体</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">3.4. 拼结构体与加密</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">3.5. 完整过程</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">3.6. 处理全部回调</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">第三步，服务端主动调用</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">第四步，容器页面与 jsapi</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">整体流程示意图</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 基本概念</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+相较于 Web 领域经常碰到的 OAuth2 这类简单的三方授权模型，钉钉的 ISV 接入流程涉及的东西比较多一点，所以在正式开始之前，先把过程中会见到的各种概念拿出来说一下，同时，先用用钉钉吧。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.1. 用户user与企业corp</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+钉钉中的用户与企业，算是一个开放式的关联关系，通过手机号来标识一个“唯一”的用户。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个用户可以是多个企业的成员，在具体的操作页面上，可以切换到不同企业，从而看到不同企业中可能有不同的应用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-user-corp.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与用户相关的关键数据有： <em style="color: #d75100; font-style: normal;">userId</em> 和 <em style="color: #d75100; font-style: normal;">jobnumber</em> ， <em style="color: #d75100; font-style: normal;">userId</em> 是使用钉钉相关 api 时的用户标识， <em style="color: #d75100; font-style: normal;">jobnumber</em> 是用户在钉钉中，作为“员工”角色时的一个属性，它一般是打通钉钉与企业内部其它系统的标识。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与企业有关的关键数据，是几个配置数据， <em style="color: #d75100; font-style: normal;">corp_id</em> ， <em style="color: #d75100; font-style: normal;">corp_secret</em> 这两个是换 <em style="color: #d75100; font-style: normal;">token</em> 时会用到的（ISV 流程中用不到）。还有一个 <em style="color: #d75100; font-style: normal;">sso_secret</em> ，在作后台直接登录时会用到（这个功能不是非实现不可）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用户的角色，除了是某个企业的“员工”之后，还可以是企业的“管理员”，或是“主管理员”。具体企业的管理后台，是通过 <a href="https://oa.dingtalk.com" style="color: #0184b7; text-decoration: none">https://oa.dingtalk.com</a> 单独登录的。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.2. 应用agent与套件suite</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“应用”就是在具体的企业页面，默认九宫格里一个一个的图标，点击之后会跳转到特定的页面。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“套件”是多个应用，视觉上在九宫格中它们会收在一起，点击之后再在一个弹出框中展开，就像 iOS 上的那个“附加程序”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-suite-agent.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“套件”是对 ISV 才有的概念，因为钉钉设计的 ISV 接入规则中， ISV 就是以“套件”为单位来提供“产品输出”的。在创建了一个套件之后，可以在里面创建多个应用，而且按目前来看，授权也是以套件为单位，但是企业的管理员可以停用其中的某一个应用（这里钉钉的后台在交互上还有一个 BUG，2016-5-20）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-corp-admin-suite.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与应用有关的数据，是 <em style="color: #d75100; font-style: normal;">app_id</em> 和 <em style="color: #d75100; font-style: normal;">agent_id</em> 。与套件有关的数据，有 <em style="color: #d75100; font-style: normal;">suite_key</em>, <em style="color: #d75100; font-style: normal;">suite_secret</em> ，这两个也是用来换 <em style="color: #d75100; font-style: normal;">token</em> 的，当然还涉及其它的加密解密过程。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+套件中的应用，用 <em style="color: #d75100; font-style: normal;">app_id</em> 来标识，但是它被企业使用了，放到了某个企业中，就用 <em style="color: #d75100; font-style: normal;">agent_id</em> 来标识了。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.3. 签名signature与对称加密AES</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+签名用来防串改，钉钉用的签名算法是 <em style="color: #d75100; font-style: normal;">sha1</em> ，跟其它场景一样，做法基本上也就是把几个值先排序，然后算 <em style="color: #d75100; font-style: normal;">sha1</em> 就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">AES</em> 是对称加密算法，在钉钉服务器往 ISV 自己的应用服务器“推送”的场景，传递的信息就是 <em style="color: #d75100; font-style: normal;">AES</em> 加密之后的密文，并且要求响应的内容也要是密文。这块如果没接触过会比较折腾的。 <em style="color: #d75100; font-style: normal;">AES</em> 的具体实现中，会涉及到“补位”（因为 <em style="color: #d75100; font-style: normal;">AES</em> 是按固定长度的分块来处理，所以如果最后一块长度不够要补上），“补位”有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Zero Padding</code> 就是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\0</code> 来补，或者用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">PKCS #7</code> 方法，根据最后一块长度的不同用不同的字节来补。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这块在各种语言中肯定都有现成方法，了解概念并且看文档仔细点，还是好处理的，代码也没几行。不过看文档不仔细就可能被坑哭，“补位”那里我起码被郁闷了一个小时，就是不知道哪里错了（我开始直接用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\0</code> 来补的，而且因为解密没问题还没想到这块来）。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.4. 应用市场与间接授权</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ISV 机制是为“应用市场”而设计的，按钉钉官方的想法，作为独立服务提供商，可以开发完应用之后，上架市场，需要的企业自己到市场上来采购应用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基于此，它的授权，通知的实现机制也就是现在这样，有些麻烦的样子了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用户“采购应用”， 或者对应用做任何的配置性的操作，都是在钉钉的服务中完成的，但是实际提供服务的，却是具体 ISV 开发的应用。所以，企业用户，钉钉，ISV 三方之间，钉钉的服务就是一个衔接的作用，这其间的“推送”也算 ISV 方式与普通的“微应用”方式最大的不同了。（推送那里就涉及 <em style="color: #d75100; font-style: normal;">AES</em> 加解密）。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.5. 为了安全？</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+背后依据与实际的效果不清楚，但是整个流程中因为安全的考虑，引入不少系统上的实现成本的。除了前面说的对称加密，还有一个很烦的机制是动态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ticket</code> 值，这个动态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ticket</code> 还是通过“推送”的方式来维护的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+还有为什么要使用“临时授权码”来换“永久授权码”也不是很懂，不过整个过程让我有点想起了 OAuth 1 时的痛苦。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好了，我们正式开始吧。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 第一步，注册</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一步按官方文档操作就好了。不需要自己单独去申请“企业”，在 ISV 的后台，可以专门创建测试用的企业，并且把未上架的套件对这些你自己创建的测试企业授权。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<a href="http://g.alicdn.com/dingding/opendoc/docs/_isvguide/tab3.html" style="color: #0184b7; text-decoration: none">http://g.alicdn.com/dingding/opendoc/docs/_isvguide/tab3.html</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过这个文档，进到“阿里云”的后台 <a href="http://console.d.aliyun.com/" style="color: #0184b7; text-decoration: none">http://console.d.aliyun.com/</a> ，然后创建一个钉钉的套件。这个过程可能需要附加阿里云的开发者认证，但是事实上它跟阿里云完全没关系的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-isv-admin.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好吧，如果你最后已经走到“创建套件”这里了，那么就可以了，不出意外的话，你是没法简单地把一个套件成功创建的，因为那个“回调URL”需要被即时检查，并通过，这就是下面我们要讲到的内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-isv-suite-create.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 第二步，被动回调处理</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在创建套件时，填写的“回调URL”那里，需要通过有效性的检查，这一步就需要在服务器上完成对推送消息的处理（你点“验证有效性”时就马上会有一个请求出去，调试还是比较方便的）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“验证有效性”是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#2-回调接口（分为五个回调类型）</code> 这里的第一个回调，在你填写的地址中，会收到一个 POST 请求，这个请求的完整样子大概像：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">POST /callback?signature=111108bb8e6dbce3c9671d6fdb69d15066227608&amp;timestamp=1783610513&amp;nonce=380320111 HTTP/1.1
+Host: example.com
+Content-Type: application/json
+Content-Length: xxx
+
+{
+    &quot;encrypt&quot;:&quot;1ojQf0NSvw2WPvW7LijxS8UvISr8pdDP+rXpPbcLGOmIBNbWetRg7
+               IP0vdhVgkVwSoZBJeQwY2zhROsJq/HJ+q6tp1qhl9L1+ccC9ZjKs1
+               wV5bmA9NoAWQiZ+7MpzQVq+j74rJQljdVyBdI/dGOvsnBSCxCVW0I
+               SWX0vn9lYTuuHSoaxwCGylH9xRhYHL9bRDskBc7bO0FseHQQasdfghjkl&quot;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encrypt</code> 的换行是我自己处理的）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对这个请求的所有处理，官方文档在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#消息体签名</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说，我们自己写的服务接下来需要做三件事：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">检查签名
+</li>
+<li style="margin: 10px auto;">解密消息
+</li>
+<li style="margin: 10px auto;">把响应内容加密再返回
+</li>
+</ul>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 检查签名</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+每个对回调地址的请求，都会带上签名，我们需要按排序规则计算出签名值，再与请求中的签名值作比对。参与签名运算的有 4 个值：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">SUITE_TOKEN</em> ，套件的 <em style="color: #d75100; font-style: normal;">token</em> 配置，就是在创建套件时我们自己填写的一段字符串。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">timestamp</em> ，时间戳，在请求的 GET 参数中（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1783610513</code> ）。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">nonce</em> ， 噪声值，在请求的 GET 参数中（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">380320111</code> ）。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">encrypt</em> ，请求的 body 中，按 json 解编码，取的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encrypt</code> 的属性值（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1ojQf...hjkl</code> ）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+计算签名的方法如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">hashlib</span> <span style="color: #555555">imoprt</span> <span style="color: #555555">sha1</span>
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">sign</span>(<span style="color: #999999">self</span>, stamp, nonce, <span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;签名计算&#39;</span>
+
+    arg <span style="color: #000000; font-weight: bold">=</span> [TOKEN, stamp, nonce, <span style="color: #0086B3">str</span>]
+    arg<span style="color: #000000; font-weight: bold">.</span>sort()
+    s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(arg)
+    <span style="color: #000000; font-weight: bold">return</span> sha1(s)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+得到的结果应该与 GET 参数中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">signature</code> 参数的值 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">11...608</code> 一致。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. 解密信息</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第二步，钉钉服务器给的真正的信息是被加密后放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encrypt</code> 中的，所以我们要获取到真正有用的信息需要解密密文。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+加解密使用 <em style="color: #d75100; font-style: normal;">AES</em> 算法，加密时以 <em style="color: #d75100; font-style: normal;">PKCS#7</em> 方式处理“补位”填充。解密时可以不用管“补位”的情况，因为原文还不是直接就是业务信息，原文本身还是一个“结构体”，业务信息是其中的一段字节。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先解密，密文是（换行是我自己处理的）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{
+    <span style="color: #000080">&quot;encrypt&quot;</span>:<span style="color: #dd1144">&quot;1ojQf0NSvw2WPvW7LijxS8UvISr8pdDP+rXpPbcLGOmIBNbWetRg7I</span>
+<span style="color: #dd1144">               P0vdhVgkVwSoZBJeQwY2zhROsJq/HJ+q6tp1qhl9L1+ccC9ZjKs1wV</span>
+<span style="color: #dd1144">               5bmA9NoAWQiZ+7MpzQVq+j74rJQljdVyBdI/dGOvsnBSCxCVW0ISWX</span>
+<span style="color: #dd1144">               0vn9lYTuuHSoaxwCGylH9xRhYHL9bRDskBc7bO0FseHQQasdfghjkl&quot;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encrypt</code> 的属性值，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1ojQf..hjkl</code> 这段字符。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">AES</em> 算法需要一个密钥，它在创建件时的“数据加密密钥”这里，当然，页面上显示的是密钥 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">base64</code> 编码之后的样子，我们使用时要作 <em style="color: #d75100; font-style: normal;">decode</em> （先在后面加一个等号 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">=</code> 再 decode）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+解密都有现成的实现，用起来很简单了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">Crypto.Cipher</span> <span style="color: #000000; font-weight: bold">import</span> AES
+AES_KEY <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #dd1144">&#39;&lt;数据加密密钥&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;=&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;base64&#39;</span>)
+IV <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;x&#39;</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">16</span>
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">decrypt</span>(<span style="color: #999999">self</span>, <span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;解密&#39;</span>
+    aes <span style="color: #000000; font-weight: bold">=</span> AES<span style="color: #000000; font-weight: bold">.</span>new(AES_KEY, AES<span style="color: #000000; font-weight: bold">.</span>MODE_CBC, IV)
+    s <span style="color: #000000; font-weight: bold">=</span> aes<span style="color: #000000; font-weight: bold">.</span>decrypt(<span style="color: #0086B3">str</span>)
+    <span style="color: #000000; font-weight: bold">return</span> s
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">IV</code> 是随便一个长度为 16 的字符串就可以了。解密之后，得到的是一个“结构体”。
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 拆结构体</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上一部解密出来的“字节串”是一个“结构体”，它的构成是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">16字节随机串 + 4字节表示消息长度（网络序） + N字节的消息 + SUITE_KEY的值 + 补位字节
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们的目标只是那 <em style="color: #d75100; font-style: normal;">N字节的消息</em> ，所以先从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">16:20</code> 的位置取出 4 个字节，按网络序解成整数，比如是 N ，再从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">20</code> 的位置开始往后取 N 个字节就好了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">struct</span>
+
+msg_len <span style="color: #000000; font-weight: bold">=</span> struct<span style="color: #000000; font-weight: bold">.</span>unpack(<span style="color: #dd1144">&#39;!I&#39;</span>, s[<span style="color: #009999">16</span>:<span style="color: #009999">20</span>])[<span style="color: #009999">0</span>]
+<span style="color: #000000; font-weight: bold">return</span> s[<span style="color: #009999">20</span> : <span style="color: #009999">20</span> <span style="color: #000000; font-weight: bold">+</span> msg_len]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">s</code> 是解密出来的“字节串”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把这一步合到上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">decrypt</code> 方法中就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">decrypt</span>(<span style="color: #999999">self</span>, <span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;解密&#39;</span>
+
+    aes <span style="color: #000000; font-weight: bold">=</span> AES<span style="color: #000000; font-weight: bold">.</span>new(AES_KEY, AES<span style="color: #000000; font-weight: bold">.</span>MODE_CBC, IV)
+    s <span style="color: #000000; font-weight: bold">=</span> aes<span style="color: #000000; font-weight: bold">.</span>decrypt(<span style="color: #0086B3">str</span>)
+    msg_len <span style="color: #000000; font-weight: bold">=</span> struct<span style="color: #000000; font-weight: bold">.</span>unpack(<span style="color: #dd1144">&#39;!I&#39;</span>, s[<span style="color: #009999">16</span>:<span style="color: #009999">20</span>])[<span style="color: #009999">0</span>]
+    <span style="color: #000000; font-weight: bold">return</span> s[<span style="color: #009999">20</span> : <span style="color: #009999">20</span> <span style="color: #000000; font-weight: bold">+</span> msg_len]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encrypt</code> 拆出来之后，最后得到的是一个 json 字符串，大概像：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{
+
+  <span style="color: #000080">&quot;EventType&quot;</span>:<span style="color: #dd1144">&quot;check_create_suite_url&quot;</span>,
+  <span style="color: #000080">&quot;Random&quot;</span>:<span style="color: #dd1144">&quot;brdkKLMW&quot;</span>,
+  <span style="color: #000080">&quot;TestSuiteKey&quot;</span>:<span style="color: #dd1144">&quot;suite4xxxxxxxxxxxxxxx&quot;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 拼结构体与加密</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说完了解密，再说加密。代码也很简单了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">encrypt</span>(<span style="color: #999999">self</span>, <span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;加密&#39;</span>
+
+    aes <span style="color: #000000; font-weight: bold">=</span> AES<span style="color: #000000; font-weight: bold">.</span>new(AES_KEY, AES<span style="color: #000000; font-weight: bold">.</span>MODE_CBC, IV)
+    msg_len <span style="color: #000000; font-weight: bold">=</span> struct<span style="color: #000000; font-weight: bold">.</span>pack(<span style="color: #dd1144">&#39;!I&#39;</span>, <span style="color: #0086B3">len</span>(<span style="color: #0086B3">str</span>))
+    s <span style="color: #000000; font-weight: bold">=</span> [uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex[:<span style="color: #009999">16</span>], msg_len, <span style="color: #0086B3">str</span>, SUITE_KEY]
+    s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(s)
+
+    <span style="color: #999988"># 补位</span>
+    s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>padding(s)
+
+    s <span style="color: #000000; font-weight: bold">=</span> aes<span style="color: #000000; font-weight: bold">.</span>encrypt(s)
+    <span style="color: #000000; font-weight: bold">return</span> s<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;base64&#39;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在拼结构体时，我们用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uuid</code> 来产生随机值，用“无符号整型”类型的数据结构（网络序）来处理长度为 4 字节的一个数字。最后把这些直接拼在一起就好了（Python 2.x 的 String 类型就是“字节”， Unicode 类型是“字符”）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">padding</code> 方法要说一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">padding</span>(<span style="color: #999999">self</span>, <span style="color: #0086B3">str</span>):
+     <span style="color: #dd1144">&#39;PKCS7补位&#39;</span>
+
+     block_size <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">32</span>
+     count <span style="color: #000000; font-weight: bold">=</span> block_size <span style="color: #000000; font-weight: bold">-</span> <span style="color: #0086B3">len</span>(<span style="color: #0086B3">str</span>) <span style="color: #000000; font-weight: bold">%</span> block_size
+     <span style="color: #000000; font-weight: bold">if</span> count <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+         count <span style="color: #000000; font-weight: bold">=</span> block_size
+
+     <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">str</span> <span style="color: #000000; font-weight: bold">+</span> count <span style="color: #000000; font-weight: bold">*</span> <span style="color: #0086B3">chr</span>(count)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以 32 为块长，最后差多少补多少，如果是 32 的整数倍则补 32 个字节。而用来填充的单字节内容，就是“差值”。
+</p>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 完整过程</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+官方在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#调试工具</code> 这里提供了一套符合计算规则的例子，我们可以用这里的数据来验证我们的代码是否正确。这个页面中给出的数据有：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">signature</em> 需要比对的签名值： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">5a65ceeef9aab2d149439f82dc191dd6c5cbe2c0</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">timestamp</em> 时间戳： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1445827045067</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">nonce</em> 噪声值： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nEXhMP4r</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">SUITE_TOKEN</em> token 值： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">123456</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">base64后的AES密钥</em>： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">4g5j64qlyl3zvetqxz5jiocdr586fn2zvjpa8zls3ij</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">SUITE_KEY</em>： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite4xxxxxxxxxxxxxxx</code>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">加密的内容</em>（换行是我自己处理的）：
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1a3NBxmCFwkCJvfoQ7WhJHB+iX3qHPsc9JbaDznE1i03peOk1LaOQoRz3+nlyGNhwmwJ3vDMG+OzrHMeiZI7gT
+RWVdUBmfxjZ8Ej23JVYa9VrYeJ5as7XM/ZpulX8NEQis44w53h1qAgnC3PRzM7Zc/D6Ibr0rgUathB6zRHP8PY
+rfgnNOS9PhSBdHlegK+AGGanfwjXuQ9+0pZcy0w9lQ==
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整的代码如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">uuid</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">struct</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">hashlib</span> <span style="color: #000000; font-weight: bold">import</span> sha1
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">Crypto.Cipher</span> <span style="color: #000000; font-weight: bold">import</span> AES
+
+<span style="color: #dd1144">&#39;http://ddtalk.github.io/dingTalkDoc/#调试工具&#39;</span>
+
+
+TOKEN <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123456&#39;</span>
+ENCODING_AES_KEY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;4g5j64qlyl3zvetqxz5jiocdr586fn2zvjpa8zls3ij&#39;</span>
+AES_KEY <span style="color: #000000; font-weight: bold">=</span> (ENCODING_AES_KEY <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;=&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;base64&#39;</span>)
+SUITE_KEY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;suite4xxxxxxxxxxxxxxx&#39;</span>
+IV <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;x&#39;</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">16</span>
+
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">sign</span>(stamp, nonce, <span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;签名计算&#39;</span>
+
+    arg <span style="color: #000000; font-weight: bold">=</span> [TOKEN, stamp, nonce, <span style="color: #0086B3">str</span>]
+    arg<span style="color: #000000; font-weight: bold">.</span>sort()
+    s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(arg)
+    <span style="color: #000000; font-weight: bold">return</span> sha1(s)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">decrypt</span>(<span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;解密&#39;</span>
+
+    aes <span style="color: #000000; font-weight: bold">=</span> AES<span style="color: #000000; font-weight: bold">.</span>new(AES_KEY, AES<span style="color: #000000; font-weight: bold">.</span>MODE_CBC, IV)
+    s <span style="color: #000000; font-weight: bold">=</span> aes<span style="color: #000000; font-weight: bold">.</span>decrypt(<span style="color: #0086B3">str</span>)
+    msg_len <span style="color: #000000; font-weight: bold">=</span> struct<span style="color: #000000; font-weight: bold">.</span>unpack(<span style="color: #dd1144">&#39;!I&#39;</span>, s[<span style="color: #009999">16</span>:<span style="color: #009999">20</span>])[<span style="color: #009999">0</span>]
+    <span style="color: #000000; font-weight: bold">return</span> s[<span style="color: #009999">20</span> : <span style="color: #009999">20</span> <span style="color: #000000; font-weight: bold">+</span> msg_len]
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">padding</span>(<span style="color: #0086B3">str</span>):
+     <span style="color: #dd1144">&#39;PKCS7补位&#39;</span>
+
+     block_size <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">32</span>
+     count <span style="color: #000000; font-weight: bold">=</span> block_size <span style="color: #000000; font-weight: bold">-</span> <span style="color: #0086B3">len</span>(<span style="color: #0086B3">str</span>) <span style="color: #000000; font-weight: bold">%</span> block_size
+     <span style="color: #000000; font-weight: bold">if</span> count <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+         count <span style="color: #000000; font-weight: bold">=</span> block_size
+
+     <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">str</span> <span style="color: #000000; font-weight: bold">+</span> count <span style="color: #000000; font-weight: bold">*</span> <span style="color: #0086B3">chr</span>(count)
+
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">encrypt</span>(<span style="color: #0086B3">str</span>):
+    <span style="color: #dd1144">&#39;加密&#39;</span>
+
+    <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">isinstance</span>(<span style="color: #0086B3">str</span>, <span style="color: #0086B3">unicode</span>):
+        <span style="color: #0086B3">str</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">str</span><span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>)
+
+    aes <span style="color: #000000; font-weight: bold">=</span> AES<span style="color: #000000; font-weight: bold">.</span>new(AES_KEY, AES<span style="color: #000000; font-weight: bold">.</span>MODE_CBC, IV)
+    msg_len <span style="color: #000000; font-weight: bold">=</span> struct<span style="color: #000000; font-weight: bold">.</span>pack(<span style="color: #dd1144">&#39;!I&#39;</span>, <span style="color: #0086B3">len</span>(<span style="color: #0086B3">str</span>))
+    s <span style="color: #000000; font-weight: bold">=</span> [uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex[:<span style="color: #009999">16</span>], msg_len, <span style="color: #0086B3">str</span>, SUITE_KEY]
+    s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(s)
+    s <span style="color: #000000; font-weight: bold">=</span> padding(s)
+    s <span style="color: #000000; font-weight: bold">=</span> aes<span style="color: #000000; font-weight: bold">.</span>encrypt(s)
+    <span style="color: #000000; font-weight: bold">return</span> s<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;base64&#39;</span>)
+
+
+
+demo <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">&#39;nonce&#39;</span>: <span style="color: #dd1144">&#39;nEXhMP4r&#39;</span>,
+    <span style="color: #dd1144">&#39;stamp&#39;</span>: <span style="color: #dd1144">&#39;1445827045067&#39;</span>,
+    <span style="color: #dd1144">&#39;sign&#39;</span>: <span style="color: #dd1144">&#39;5a65ceeef9aab2d149439f82dc191dd6c5cbe2c0&#39;</span>,
+    <span style="color: #dd1144">&#39;body&#39;</span>: <span style="color: #dd1144">&#39;1a3NBxmCFwkCJvfoQ7WhJHB+iX3qHPsc9JbaDznE1i03peOk1LaOQoRz3+nlyGNhwmwJ3vDM</span>
+             G<span style="color: #000000; font-weight: bold">+</span>OzrHMeiZI7gTRWVdUBmfxjZ8Ej23JVYa9VrYeJ5as7XM<span style="color: #000000; font-weight: bold">/</span>ZpulX8NEQis44w53h1qAgnC3P
+             RzM7Zc<span style="color: #000000; font-weight: bold">/</span>D6Ibr0rgUathB6zRHP8PYrfgnNOS9PhSBdHlegK<span style="color: #000000; font-weight: bold">+</span>AGGanfwjXuQ9<span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">0</span>pZcy0w9lQ<span style="color: #000000; font-weight: bold">==</span><span style="color: #dd1144">&#39;</span>
+}
+
+
+<span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    <span style="color: #000000; font-weight: bold">print</span> sign(demo[<span style="color: #dd1144">&#39;stamp&#39;</span>], demo[<span style="color: #dd1144">&#39;nonce&#39;</span>], demo[<span style="color: #dd1144">&#39;body&#39;</span>])
+    <span style="color: #000000; font-weight: bold">print</span> decrypt(demo[<span style="color: #dd1144">&#39;body&#39;</span>]<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;base64&#39;</span>))
+
+    info <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(decrypt(demo[<span style="color: #dd1144">&#39;body&#39;</span>]<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;base64&#39;</span>)))
+
+    <span style="color: #0086B3">type</span> <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;EventType&#39;</span>]
+    random <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;Random&#39;</span>]
+    suite_key <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;TestSuiteKey&#39;</span>]
+
+    return_encrypt <span style="color: #000000; font-weight: bold">=</span> encrypt(random)
+    nonce <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex[:<span style="color: #009999">8</span>]
+    stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">str</span>(<span style="color: #0086B3">int</span>(time<span style="color: #000000; font-weight: bold">.</span>time() <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1000</span>))
+    return_sign <span style="color: #000000; font-weight: bold">=</span> sign(stamp, nonce, return_encrypt)
+    p <span style="color: #000000; font-weight: bold">=</span> {
+        <span style="color: #dd1144">&#39;msg_signature&#39;</span>: return_sign,
+        <span style="color: #dd1144">&#39;timeStamp&#39;</span>: stamp,
+        <span style="color: #dd1144">&#39;nonce&#39;</span>: nonce,
+        <span style="color: #dd1144">&#39;encrypt&#39;</span>: return_encrypt,
+    }
+    <span style="color: #000000; font-weight: bold">print</span> json<span style="color: #000000; font-weight: bold">.</span>dumps(p)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.6. 处理全部回调</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实有了上面的内容，只需要把获取到的信息解密，得到 <em style="color: #d75100; font-style: normal;">Random</em> 值再加密响应就好了，这样套件就能创建成功了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+套件成功之后，先在套件管理后台把 <em style="color: #d75100; font-style: normal;">SUITE_KEY</em> 这个值看一下，之前用的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite4xxxxxxxxxxxxxxx</code> 只是一个临时值，在套件创建成功之后，就不用了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+目前钉钉的服务器会往“回调”地址推送的消息，一共有 7 种类型（加密的 json 字符串中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EventType</code> 属性会标识类型）：
+</p>
+
+<table style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">EventType</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">说明</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">响应</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">check_create_suite_url</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">验证回调 URL 的有效性，创建套件时发生</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">响应得到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Random</code> 值</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">suite_ticket</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">定时推送的 ticket 值，20 分钟一次</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">记录 <em style="color: #d75100; font-style: normal;">ticket</em> 值，响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">success</code> 字符串</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">tmp_auth_code</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">推送临时授权码，在套件页面添加测试企业时发生（真实环境不知道何时发生，可能是企业添加应用时？）</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">记录 <em style="color: #d75100; font-style: normal;">AuthCode</em> 值，响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">success</code> 字符串</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">change_auth</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">推送授权变更消息，比如禁用启用应用时</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">检查各应用状态，响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">success</code> 字符串</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">check_update_suite_url</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">套件信息更新，套件信息改变时发生</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">响应得到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Random</code> 值</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">suite_relieve</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">企业解除授权</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">清理相关数据，响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">success</code> 字符串</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;"><em style="color: #d75100; font-style: normal;">check_suite_license_code</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">不知道什么时候会用到</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">成功的话响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">success</code> 字符串</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然 7 种类型看起来有些多，但是因为它们的结构都是一样的，所以代码写起来没多少：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingIsvCallbackHandler</span>(DingDingIsvBaseHandler):
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">return_encrypt</span>(<span style="color: #999999">self</span>, s):
+        <span style="color: #dd1144">&#39;响应加密后的内容&#39;</span>
+
+        stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">str</span>(<span style="color: #0086B3">int</span>(time<span style="color: #000000; font-weight: bold">.</span>time() <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1000</span>))
+        nonce <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex[:<span style="color: #009999">8</span>]
+        encrypt <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>encrypt(s)
+        sign <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>sign(stamp, nonce, encrypt)
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;msg_signature&#39;</span>: sign,
+            <span style="color: #dd1144">&#39;timeStamp&#39;</span>: stamp,
+            <span style="color: #dd1144">&#39;nonce&#39;</span>: nonce,
+            <span style="color: #dd1144">&#39;encrypt&#39;</span>: encrypt,
+        }
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(p)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">check_create_suite_url</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;创建套件时的检查&#39;</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(info[<span style="color: #dd1144">&#39;Random&#39;</span>])
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">suite_ticket</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;定时推送的 ticket&#39;</span>
+
+        suite_key <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;SuiteKey&#39;</span>]
+        <span style="color: #999988"># 这个 suite_key 要保存下来</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(<span style="color: #dd1144">&#39;success&#39;</span>)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">tmp_auth_code</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;企业的临时码&#39;</span>
+
+        tmp_code <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;AuthCode&#39;</span>]
+        <span style="color: #999988"># 保存下来，或者在这里就去换永久授权码了</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(<span style="color: #dd1144">&#39;success&#39;</span>)
+
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">change_auth</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;授权变更&#39;</span>
+
+        corp_id <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;AuthCorpId&#39;</span>]
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(<span style="color: #dd1144">&#39;success&#39;</span>)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">check_update_suite_url</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;套件信息变更&#39;</span>
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(info[<span style="color: #dd1144">&#39;Random&#39;</span>])
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">suite_relieve</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;企业取消了授权&#39;</span>
+
+        corp_id <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;AuthCorpId&#39;</span>]
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(<span style="color: #dd1144">&#39;success&#39;</span>)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">check_suite_license_code</span>(<span style="color: #999999">self</span>, info):
+        <span style="color: #dd1144">&#39;检查序列号&#39;</span>
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>return_encrypt(<span style="color: #dd1144">&#39;success&#39;</span>)
+
+    <span style="color: #3c5d5d; font-weight: bold">@web.asynchronous</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">post</span>(<span style="color: #999999">self</span>):
+        sign <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;signature&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        nonce <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;nonce&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;timestamp&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+
+        <span style="color: #000000; font-weight: bold">try</span>:
+            encrypt <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>request<span style="color: #000000; font-weight: bold">.</span>body)[<span style="color: #dd1144">&#39;encrypt&#39;</span>]
+        <span style="color: #000000; font-weight: bold">except</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(<span style="color: #dd1144">&#39;error&#39;</span>)
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        check_sign <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>sign(stamp, nonce, encrypt)
+        <span style="color: #000000; font-weight: bold">if</span> check_sign <span style="color: #000000; font-weight: bold">!=</span> sign:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(<span style="color: #dd1144">&#39;error&#39;</span>)
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        info <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>decrypt(encrypt<span style="color: #000000; font-weight: bold">.</span>decode(<span style="color: #dd1144">&#39;base64&#39;</span>))
+        info <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(info)
+
+        logger<span style="color: #000000; font-weight: bold">.</span>info(<span style="color: #dd1144">&#39;DingDingISV:&#39;</span><span style="color: #000000; font-weight: bold">+</span> <span style="color: #0086B3">str</span>(info))
+
+        <span style="color: #0086B3">type</span> <span style="color: #000000; font-weight: bold">=</span> info[<span style="color: #dd1144">&#39;EventType&#39;</span>]
+
+        method_map <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;check_create_suite_url&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>check_create_suite_url,
+            <span style="color: #dd1144">&#39;suite_ticket&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>suite_ticket,
+            <span style="color: #dd1144">&#39;tmp_auth_code&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>tmp_auth_code,
+            <span style="color: #dd1144">&#39;change_auth&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>change_auth,
+            <span style="color: #dd1144">&#39;check_update_suite_url&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>check_update_suite_url,
+            <span style="color: #dd1144">&#39;suite_relieve&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>suite_relieve,
+            <span style="color: #dd1144">&#39;check_suite_license_code&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>check_suite_license_code,
+        }
+
+        <span style="color: #000000; font-weight: bold">return</span> method_map[<span style="color: #0086B3">type</span>](info)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+至此，我们的服务就可以接收钉钉服务器的消息推送了。重点是我们可以得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SUITE_TICKET</code> 值了，后面会看到，其它的会在运算中用到的配置项都可以在一个配置文件中写死，只有这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ticket</code> 值是动态的。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 第三步，服务端主动调用</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面做完，ISV 接入中特别的地方也就差不多了，剩下的东西跟普通的自建微应用没有大的区别，基本上就是拿 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">token</code> 请求 api 取数据的套路，只是 ISV 接入在流程上多几步。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这部分的官方文档在： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#isv接入开发指南</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（下面所有的“服务地址”，都是以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">https://oapi.dingtalk.com/service</code> 开头的）
+</p>
+
+<table style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">要做的事</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">用到的钉钉服务地址</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">请求的参数</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">响应</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">获取套件的 <em style="color: #d75100; font-style: normal;">suite_access_token</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/get_suite_token</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_secret</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_ticket</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code></td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">获取企业的永久授权码</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/get_permanent_code</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tmp_auth_code</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code></td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">获取企业的基本信息</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/get_auth_info</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auth_corpid</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">企业基本信息，包括套件中的各应用在这个企业的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent</code> 信息</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">获取企业中的本套件中的具体应用的状态</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/get_agent</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auth_corpid</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agentid</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">应用信息，包括是否“激活”的状态</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">激活某企业中的套件</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/activate_suite</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auth_corpid</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;">（无）</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">获取企业的 <em style="color: #d75100; font-style: normal;">corp_access_token</em></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/get_corp_token</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auth_corpid</code></td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code></td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说一下上面每一个操作拿到的东西都有什么用：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code> ， ISV 行为的所有 api 都需要用它。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code> ，以 ISV 角色去获取指定企业的相关信息需要用它（直到拿到企业的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code>）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code> ，这东西的作用跟“微应用”方式下我们自己取得的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 是一样的，用它就可以直接去使用钉钉的其它 api 了。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看了上面的列表，是不是特别想吐槽那重复的“请求参数”，本来嘛，一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code> 中其实已经包含了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code> 这个信息。同理， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code> 中也是包含了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auth_corpid</code> 信息。那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code> + <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code> 已经表达清楚了我是哪个套件，要针对哪个企业进行操作。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再补充说几点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">至少在测试企业中，只是在套件后台添加了一个测试企业的话，在测试企业的管理后台还是看不到套件应用的。需要“激活”之后，才能在企业的后台看到添加的套件应用，并进行配置，或者停用其中的某些应用。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_ticket</code> 是动态变化的，钉钉的服务器会通过“回调地址”定时主动推送，需要应用自己保存。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_access_token</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code> 在调用 api 时会频繁用到，在获取时钉钉服务会一并响应一个“有效期”，在有效期内 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 是可以重复使用的，所以应用系统应该自己缓存并维护 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 的更新。
+</li>
+</ul>
+
+<a class="anchor" name="toc16"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 第四步，容器页面与 jsapi</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面进行至获取到企业的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">access_token</code> 之后，剩下的事跟普通的自建“微应用”就一样了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是在这之前，从用户的页面上去考虑流程，还有一点是我们需要去解决的，页面中的 jsapi 在使用时某些功能是依赖 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 的，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 需要的信息中，有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 企业 ID 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 应用 ID 这两个。在自建微应用的方式下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 都是确定的，我们完全可以写死在应用系统的配置中。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+换到 ISV 流程下的话， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 都不是确定的，那么就需要我们在交互流程中去确定这两个信息，才能让 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 完成，进而让页面有完整的 jsapi 能力。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+哪里去弄 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 呢？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#免登服务</code> 从这里，能看到官方“补丁”式的一个解决方法，在应用的地址中，显式地用“占位符”的方法标识当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> ，这样就可以通过地址来给到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 信息了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以在套件后台，我们把应用的主页地址写成： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://example.com/index?corp=$CORPID$</code> 这样。之后不管是后端的模板直接在页面渲染 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$CORPID$</code> 的值，还是前端解析 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">location.href</code> 获取这个值，反正 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.runtime.permission.requestAuthCode</code> 的正确执行是没有问题了（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">requestAuthCode</code> 不需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 也可以的），拿到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 之后，可以进而得到当前用户在当前企业的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">userId</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再回到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 的话题，如果要完全能力的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">jsapi</code> ，那么需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> ，它需要有签名。在后端作签名时，需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code> ，而得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_access_token</code> 也是需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> （这里假设前面的流程都没有问题，已经得到了对应企业的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">permanent_code</code>）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+考虑到 URL 参数中加塞一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp</code> 参数的不确定性（不同页面切换时总要小心），同时考虑我们纠结的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 只会在钉钉场景中出现（这个条件可以确定用户访问某个页面一定可以“自动完成登录”），所以：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">单独的一个登录页， URL 带 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 。
+</li>
+<li style="margin: 10px auto;">后端的 jsapi 签名， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 换用户信息这两个服务，以参数形式显式接收 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 。
+</li>
+<li style="margin: 10px auto;">在单独的登录页，前端通过直接解析 URL 来得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> ，以作请求服务时使用。
+</li>
+<li style="margin: 10px auto;">登录完成之后，后端把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 保存到当前用户的“会话”中。后面的服务不再需要显式地传递 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面我们解决了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 的问题。现在说 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dd.config</code> 还需要的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 这个值，就是这个应用在这个企业中的 id 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在处理上，套件后台配置具体应用的主页地址时，我们可以把套件应用的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">appid</code> （应用的独立 ID，没有挂在某个企业下时）写到 URL 当中，请求上面说的两个服务时也带上，后台通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://ddtalk.github.io/dingTalkDoc/#6-获取企业授权的授权数据</code> 这个服务，可以在比对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">appid</code> 之后得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 信息。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把上面的四点改进为：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">单独的一个登录页， URL 带 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code> 信息。（套件应用的主页地址）其中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$CORPID$</code> 获取， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code> 是写死的确定值。
+</li>
+<li style="margin: 10px auto;">后端的 jsapi 签名， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 换用户信息，这两个服务，以参数形式显式接收 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code> ，响应时给到前端 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 。
+</li>
+<li style="margin: 10px auto;">在单独的登录页，前端通过直接解析 URL 来得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code>，以作请求服务时使用。
+</li>
+<li style="margin: 10px auto;">登录完成之后，后端把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 保存到当前用户的“会话”中。后面的服务不再需要显式地传递 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其中前端通过 jsapi 拿到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">code</code> 就可以作为其登录的一个凭证。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整个过程后端有两个服务，前端一个页面。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+获取签名的参考：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingIsvJsapiSignHandler</span>(DingDingIsvBaseHandler):
+
+    TICKET_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/get_jsapi_ticket&#39;</span>
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_ticket</span>(<span style="color: #999999">self</span>, token, callback):
+        <span style="color: #dd1144">&#39;通过 access_token 获取 jsapi_ticket&#39;</span>
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>TICKET_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;access_token=&#39;</span> <span style="color: #000000; font-weight: bold">+</span> token
+        response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        ticket <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(response<span style="color: #000000; font-weight: bold">.</span>body)[<span style="color: #dd1144">&#39;ticket&#39;</span>]
+        callback(ticket)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">jsapi_sign</span>(<span style="color: #999999">self</span>, ticket, url):
+        <span style="color: #dd1144">&#39;jsapi 需要的签名&#39;</span>
+
+        stamp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(time<span style="color: #000000; font-weight: bold">.</span>time())
+        nonce <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()<span style="color: #000000; font-weight: bold">.</span>hex
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;noncestr&#39;</span>: nonce,
+            <span style="color: #dd1144">&#39;jsapi_ticket&#39;</span>: ticket<span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>),
+            <span style="color: #dd1144">&#39;timestamp&#39;</span>: <span style="color: #0086B3">str</span>(stamp),
+            <span style="color: #dd1144">&#39;url&#39;</span>: url,
+        }
+
+        keys <span style="color: #000000; font-weight: bold">=</span> p<span style="color: #000000; font-weight: bold">.</span>keys()
+        keys<span style="color: #000000; font-weight: bold">.</span>sort()
+        pair <span style="color: #000000; font-weight: bold">=</span> [ (k, p[k]) <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> keys]
+        pair <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&amp;&#39;</span><span style="color: #000000; font-weight: bold">.</span>join(<span style="color: #dd1144">&#39;{}={}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(<span style="color: #000000; font-weight: bold">*</span>p) <span style="color: #000000; font-weight: bold">for</span> p <span style="color: #000000; font-weight: bold">in</span> pair)
+        sign <span style="color: #000000; font-weight: bold">=</span> sha1(pair)<span style="color: #000000; font-weight: bold">.</span>hexdigest()
+        <span style="color: #000000; font-weight: bold">return</span> sign, stamp, nonce
+
+    <span style="color: #3c5d5d; font-weight: bold">@web.asynchronous</span>
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #dd1144">&#39;获取指定页面的钉钉 jsapi 的签名&#39;</span>
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;url&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        corp_id <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;corp_id&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        app_id <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;app_id&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+
+        corp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>session<span style="color: #000000; font-weight: bold">.</span>query(Corp)<span style="color: #000000; font-weight: bold">.</span>filter_by(corp_id<span style="color: #000000; font-weight: bold">=</span>corp_id, suite_key<span style="color: #000000; font-weight: bold">=</span>SUITE_KEY)<span style="color: #000000; font-weight: bold">.</span>first()
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> corp:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;msg&#39;</span>: <span style="color: #dd1144">u&#39;不存在的企业&#39;</span>})
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        token <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_corp_access_token, corp_id, corp<span style="color: #000000; font-weight: bold">.</span>permanent_code)
+        ticket <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_ticket, token)
+        sign, stamp, nonce <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>jsapi_sign(ticket, url)
+
+        response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_corp_auth_info, corp_id, corp<span style="color: #000000; font-weight: bold">.</span>permanent_code)
+        agent_list <span style="color: #000000; font-weight: bold">=</span> response[<span style="color: #dd1144">&#39;auth_info&#39;</span>][<span style="color: #dd1144">&#39;agent&#39;</span>]
+        agent_id <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>
+        <span style="color: #000000; font-weight: bold">for</span> agent <span style="color: #000000; font-weight: bold">in</span> agent_list:
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">str</span>(agent[<span style="color: #dd1144">&#39;appid&#39;</span>]) <span style="color: #000000; font-weight: bold">==</span> app_id:
+                agent_id <span style="color: #000000; font-weight: bold">=</span> agent[<span style="color: #dd1144">&#39;agentid&#39;</span>]
+
+        data <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;agent_id&#39;</span>: agent_id,
+            <span style="color: #dd1144">&#39;corp_id&#39;</span>: corp_id,
+            <span style="color: #dd1144">&#39;timestamp&#39;</span>: stamp,
+            <span style="color: #dd1144">&#39;nonce&#39;</span>: nonce,
+            <span style="color: #dd1144">&#39;sign&#39;</span>: sign,
+        }
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;data&#39;</span>: data})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+获取当前用户信息：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">DingDingIsvLoginHandler</span>(DingDingIsvBaseHandler):
+    <span style="color: #dd1144">&#39;通过 code 来获取当前用户信息并登录&#39;</span>
+
+    USER_INFO_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/user/getuserinfo&#39;</span>
+    USER_DETAIL_URL <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;https://oapi.dingtalk.com/user/get&#39;</span>
+
+    <span style="color: #3c5d5d; font-weight: bold">@web.asynchronous</span>
+    <span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        code <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        corp_id <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;corp_id&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
+        corp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>session<span style="color: #000000; font-weight: bold">.</span>query(Corp)<span style="color: #000000; font-weight: bold">.</span>filter_by(corp_id<span style="color: #000000; font-weight: bold">=</span>corp_id, suite_key<span style="color: #000000; font-weight: bold">=</span>SUITE_KEY)<span style="color: #000000; font-weight: bold">.</span>first()
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> corp:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;msg&#39;</span>: <span style="color: #dd1144">u&#39;不存在的企业&#39;</span>})
+            <span style="color: #000000; font-weight: bold">return</span>
+        token <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_corp_access_token, corp_id, corp<span style="color: #000000; font-weight: bold">.</span>permanent_code)
+
+        <span style="color: #999988"># 拿 userId</span>
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;access_token&#39;</span>: token,
+            <span style="color: #dd1144">&#39;code&#39;</span>: code,
+        }
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>USER_INFO_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(p)
+        response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        response <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(response<span style="color: #000000; font-weight: bold">.</span>body)
+        userId <span style="color: #000000; font-weight: bold">=</span> response[<span style="color: #dd1144">&#39;userid&#39;</span>]
+
+        <span style="color: #999988"># 拿更多的信息</span>
+        p <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;access_token&#39;</span>: token,
+            <span style="color: #dd1144">&#39;userid&#39;</span>: userId,
+        }
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>USER_DETAIL_URL <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;?&#39;</span> <span style="color: #000000; font-weight: bold">+</span> urllib<span style="color: #000000; font-weight: bold">.</span>urlencode(p)
+        response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(AsyncHTTPClient()<span style="color: #000000; font-weight: bold">.</span>fetch, url)
+        obj <span style="color: #000000; font-weight: bold">=</span> json<span style="color: #000000; font-weight: bold">.</span>loads(response<span style="color: #000000; font-weight: bold">.</span>body)
+
+        <span style="color: #999988"># 做登录的事</span>
+        <span style="color: #999988"># 把 corp_id 写到会话中</span>
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish({<span style="color: #dd1144">&#39;code&#39;</span>: <span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;data&#39;</span>: obj})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前端页面：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+<span style="color: #000080">&lt;html&gt;</span>
+<span style="color: #000080">&lt;head&gt;</span>
+<span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
+<span style="color: #000080">&lt;title&gt;</span>钉钉 ISV 登录<span style="color: #000080">&lt;/title&gt;</span>
+<span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://g.alicdn.com/ilw/ding/0.8.6/scripts/dingtalk.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+<span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/jq/jquery.min.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+<span style="color: #000080">&lt;/head&gt;</span>
+<span style="color: #000080">&lt;body&gt;</span>
+  <span style="color: #000080">&lt;h1&gt;</span>正在登录 ...<span style="color: #000080">&lt;/h1&gt;</span>
+  <span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;msg&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+
+  <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
+    $(<span style="color: #000000; font-weight: bold">function</span>(){
+      <span style="color: #000000; font-weight: bold">var</span> corpId <span style="color: #000000; font-weight: bold">=</span> location.href.match(<span style="color: #009926">/corp_id=(\w*)/</span>)[<span style="color: #009999">1</span>];
+      <span style="color: #000000; font-weight: bold">var</span> appId <span style="color: #000000; font-weight: bold">=</span> location.href.match(<span style="color: #009926">/app_id=(\d*)/</span>)[<span style="color: #009999">1</span>];
+
+      $.ajax({
+        url<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/dingding-isv/jsapi-sign&#39;</span>,
+        dataType<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;jsonp&#39;</span>,
+        data<span style="color: #000000; font-weight: bold">:</span> {corp_id<span style="color: #000000; font-weight: bold">:</span> corpId, app_id<span style="color: #000000; font-weight: bold">:</span> appId, url<span style="color: #000000; font-weight: bold">:</span> location.href},
+        success<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+          <span style="color: #000000; font-weight: bold">var</span> info <span style="color: #000000; font-weight: bold">=</span> response.data;
+
+          dd.config({
+            agentId<span style="color: #000000; font-weight: bold">:</span> info.agent_id, <span style="color: #999988">// 必填，微应用ID</span>
+            corpId<span style="color: #000000; font-weight: bold">:</span> info.corp_id,<span style="color: #999988">//必填，企业ID</span>
+            timeStamp<span style="color: #000000; font-weight: bold">:</span> info.timestamp, <span style="color: #999988">// 必填，生成签名的时间戳</span>
+            nonceStr<span style="color: #000000; font-weight: bold">:</span> info.nonce, <span style="color: #999988">// 必填，生成签名的随机串</span>
+            signature<span style="color: #000000; font-weight: bold">:</span> info.sign, <span style="color: #999988">// 必填，签名</span>
+            jsApiList<span style="color: #000000; font-weight: bold">:</span> [
+              <span style="color: #dd1144">&#39;runtime.permission.requestAuthCode&#39;</span>,
+            ]
+          });
+
+          dd.ready(<span style="color: #000000; font-weight: bold">function</span>(){
+            dd.runtime.permission.requestAuthCode({
+              corpId<span style="color: #000000; font-weight: bold">:</span> info.corp_id,
+              onSuccess<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(result) {
+                <span style="color: #000000; font-weight: bold">var</span> code <span style="color: #000000; font-weight: bold">=</span> result.code;
+
+                $.ajax({
+                  url<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/dingding-isv/login&#39;</span>,
+                  data<span style="color: #000000; font-weight: bold">:</span> {code<span style="color: #000000; font-weight: bold">:</span> code, corp_id<span style="color: #000000; font-weight: bold">:</span> corpId},
+                  dataType<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;json&#39;</span>,
+                  success<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(response){
+                    <span style="color: #000000; font-weight: bold">var</span> user <span style="color: #000000; font-weight: bold">=</span> response.data;
+                    <span style="color: #000000; font-weight: bold">var</span> value <span style="color: #000000; font-weight: bold">=</span> [user.name, user.jobnumber, user.userId];
+                    $(<span style="color: #dd1144">&#39;#msg&#39;</span>).html(value.join(<span style="color: #dd1144">&#39;&lt;br /&gt;&#39;</span>)).css(<span style="color: #dd1144">&#39;font-size&#39;</span>, <span style="color: #dd1144">&#39;40px&#39;</span>);
+                  }
+                });
+
+              },
+              onFail <span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(err) {
+                alert(<span style="color: #dd1144">&#39;出错了, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> err);
+              }
+            });
+          });
+
+        }
+      });
+    
+
+    });
+
+  <span style="color: #000080">&lt;/script&gt;</span>
+<span style="color: #000080">&lt;/body&gt;</span>
+<span style="color: #000080">&lt;/html&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc17"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 整体流程示意图</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-isv-process.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'dingding-isv';
+  var disqus_url = 'http://zouyesheng.com/dingding-isv.html';
+  var disqus_title = '钉钉 ISV 接入流程';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABrklEQVR4nN2XMW7cMBRE318JkDpu
+TkBdxJJzrABrSMnuPVLkIJHWF6EOYIDquIC8k8Zxk6TLLxJWxC84mP85w6GJX9ft8Jsi/HvVxcxa
+Wb0imzAz6xzRTBKmp44r0Ei7K+PNOmRn2SjrWGxy7+9zZi3L8a+f+6fqpyHM2zn5oqFFUnNnTM0c
+9thIeyx+3GRmPOfXAVsnbma1H7eaQYA+vHwr11AjcFQ3moMSPSd0D5LmILl1EimPSUseE1CpWK78
+0A7oCO1DtA7TTrgHR3WjRec3RqaJRnLs5AHZrWsfjidg2yPw6umTg2q05FdDx8t6O2yOCkCSEj2j
+Sh/2KOXR804u+RQl7ZFBSgz55OclNYR6NcLL2nw/5ii2KnmqmyppDhKWoZnBjxuawxTpOVH6MCFX
+V0aLlDRTScpjKuarN7YptqZpbRWta9kccwmSJC3aoecUfV35PXOdheULLdvkmRTeM1fzJUwUgmvC
+Y7OOngvbI6z2MVfJ8w3IxOYelApA6YOjAuqfm89fV0JeW2h2Ry9ZJDUzlRhylehx9Mm3zEV46ori
+FMsVx7nZf/yj+gFfpwrtH8hhlwAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
