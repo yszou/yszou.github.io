@@ -112,6 +112,136 @@ var DIRECTIVE_NAME = 'testFirst';
 
 
 
+# 标准输入输出 #
+
+``console.log`` 似乎就是标准输出，但是，显示这只是一个“别名”才对，使用 ``console`` 这个名字作为标准输出太不专业了。
+
+我刚开始为标准输入输出而去翻官方文档时，整个人是懵逼的，找不到 ``system`` ， ``io`` 这类东西啊，后来通过 Google 才知道标准输入输出是放在 ``process`` 这个名字空间下的。
+
+标准输出除了用 ``console.log`` 外，它比较“正式”的名字应该是 ``process.stdout()`` ：
+
+```javascript
+var stdout = process.stdout;
+stdout.write('ok');
+stdout.write('ok');
+```
+
+这里注意一下，跟其它语言类似， ``console.log`` 是加 ``\n`` 的。
+
+
+标准输出有了，随便猜一下，标准错误应该是 ``process.stderr`` 和 ``console.error`` 吧：
+
+```javascript
+var stderr = process.stderr;
+stderr.write('error\n');
+console.error('console');
+console.log('stdout');
+```
+
+直接看看不出区别的，在 ``bash`` 中稍处理一下（假设上面几行代码在文件 ``test.js`` 中）：
+
+```bash
+$ node test 1>/dev/null
+error
+console
+
+$ node test 2>/dev/null
+stdout
+```
+
+看起来没问题。
+
+然后是标准输入， ``prcess.stdin`` ，这里就涉及几个读的操作了：
+
+```javascript
+var stdin = process.stdin;
+var buff = [];
+
+stdin.on('readable', function(){
+  var chunk = stdin.read();
+  if(chunk !== null){
+    buff.push(chunk);
+  }
+});
+
+stdin.on('end', function(){
+  console.log(buff.join('\n'));
+});
+```
+
+在终端中：
+
+```bash
+$ echo "123"|node test.js
+123
+
+```
+
+``stdin`` 的 api 就是 *Node.js* 的异步IO 那套，这个地方事件倒是比 ``while 1`` 的死循环好看些。
+
+
+# Node.js 中的字节与字符 #
+
+我对 Node.js 中的字符中的细节是没有任何概念的，先从这里着手吧（我源文件是 UTF-8 编码）：
+
+```javascript
+console.log(('中文').length);
+// 2
+```
+
+能看到输出的结果是 ``2`` ，当然，这个 ``2`` 可能真的是表示 ``'中文'`` 这个字符串是 2 个字符，但是也不排除 ``length`` 这个方法实现上的处理。
+
+暂且认为字符串在 Node.js 中是“字符”的概念，那么接下来，把文件的源码改成 GBK 看看会发生什么：
+
+```javascript
+$ iconv demo.js -f utf8 -t gbk > demo.gbk.js
+$ node demo.gbk.js
+4
+```
+
+输出的是 ``4`` ， WTF …… ，这不被坑成猪头才怪。
+
+通过 google 之后，目前我对 Node.js 的概念是，Node.js 中的字符串是“字符”的概念，但是，它的源文件只能是 utf8 ，换句话说，“编译”时就假定“字符串”中的“字节”是 UTF-8 的编码。
+
+要处理“字节”的话，Node.js 有提供 ``Buffer`` 这个对象，它初始化时接收的数组可以看作是“字节序列”，通过 ``toString(encoding)`` 方法可以转成“字符”，从最简单的 ASCII 开始：
+
+```javascript
+var buff = new Buffer([65]);
+console.log(buff.toString());
+// A
+```
+
+给个“中”字的 UTF-8 的三字节：
+
+```javascript
+var buff = new Buffer([0xe4, 0xb8, 0xad]);
+console.log(buff.toString());
+// 中
+```
+
+看来 ``toString()`` 的默认行为就是按 UTF-8 进行“解码”啊。
+
+``Buffer`` 还有 ``hex`` 和 ``base64`` 这两个比较常用的编码方式：
+
+```javascript
+var buff = new Buffer([0xe4, 0xb8, 0xad]);
+console.log(buff.toString('hex'));
+console.log(buff.toString('base64'));
+console.log(buff.length); // 3
+```
+
+``Buffer.length`` 方法得到的就是字节长度了。
+
+从 api 层面考虑的话， ``buff.toString('gbk')`` 应该是按 GBK 编码进行“解码”了，不过，坏消息是目前实现的只有 UTF-8 一种编码。
+
+所以，在 Node.js 中如果涉及到除 UTF-8 之外的其它“字节串”的话，只能借助额外的模块能力来处理，比如 https://github.com/bnoordhuis/node-iconv 。
+
+
+
+
+
+
+
 
 
 
