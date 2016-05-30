@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">AngularJS学习笔记</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-28 03:43 更新</span>
+                <span>2016-01-10 16:55 更新</span>
             </div>
         </div>
 
@@ -259,7 +259,7 @@ ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -285,7 +285,7 @@ ng 可以和 jQuery 集成工作，事实上，如果没有 jQuery ， ng 自己
 
 <span style="color: #000000; font-weight: bold">var</span> BoxCtrl <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>($scope, $element){
 
-  <span style="color: #999988; font-style: italic">//$element 就是一个 jQuery 对象</span>
+  <span style="color: #999988">//$element 就是一个 jQuery 对象</span>
   <span style="color: #000000; font-weight: bold">var</span> e <span style="color: #000000; font-weight: bold">=</span> $element.children().eq(<span style="color: #009999">0</span>);
   $scope.w <span style="color: #000000; font-weight: bold">=</span> e.width();
   $scope.h <span style="color: #000000; font-weight: bold">=</span> e.height();
@@ -343,7 +343,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html</span> <span style="color: #008080">ng-app=</span><span style="color: #dd1144">&quot;MyApp&quot;</span><span style="color: #000080">&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -366,7 +366,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
   console.log(<span style="color: #dd1144">&#39;ok&#39;</span>);
 }
 
-<span style="color: #999988; font-style: italic">//angular.bootstrap(document.documentElement);</span>
+<span style="color: #999988">//angular.bootstrap(document.documentElement);</span>
 angular.module(<span style="color: #dd1144">&#39;MyApp&#39;</span>, [], <span style="color: #000000; font-weight: bold">function</span>(){console.log(<span style="color: #dd1144">&#39;here&#39;</span>)});
 <span style="color: #000080">&lt;/script&gt;</span>
 
@@ -396,8 +396,8 @@ app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>,
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var app <span style="color: #000000; font-weight: bold">=</span> angular.module(<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>Demo<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>, [], angular.noop);
-angular.bootstrap(document, [<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>Demo<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>]);
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var app = angular.module(&#39;Demo&#39;, [], angular.noop);
+angular.bootstrap(document, [&#39;Demo&#39;]);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -430,7 +430,7 @@ angular.bootstrap(document, [<span style="color: #a61717; background-color: #e3d
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> BoxCtrl <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #dd1144">&#39;$scope&#39;</span>, <span style="color: #dd1144">&#39;$element&#39;</span>, function(<span style="color: #0086B3">s</span>, e){}<span style="color: #999999; font-weight: bold; font-style: italic">]</span>;
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> BoxCtrl <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999; font-weight: bold">[</span><span style="color: #dd1144">&#39;$scope&#39;</span>, <span style="color: #dd1144">&#39;$element&#39;</span>, function(s, e){}<span style="color: #999999; font-weight: bold">]</span>;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -452,7 +452,7 @@ angular.bootstrap(document, [<span style="color: #a61717; background-color: #e3d
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">f</span>(Ia, Ib):
     <span style="color: #000000; font-weight: bold">print</span> Ia, Ib
@@ -517,7 +517,7 @@ ng 的一大特点，就是数据双向绑定。双向绑定是一体，为了�
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;p&gt;</span>{{ w }} x {{ h }}<span style="color: #000080">&lt;/p&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;p&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">w</span> <span style="color: #999999; font-weight: bold">}}</span> x <span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">h</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/p&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -543,8 +543,8 @@ angular.bootstrap(document.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span>(<span style="color: #a61717; background-color: #e3d2d2">&#39;#</span>test<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>).scope().a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #009999">12345</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>;
-<span style="color: #a61717; background-color: #e3d2d2">$</span>(<span style="color: #a61717; background-color: #e3d2d2">&#39;#</span>test<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>).scope().<span style="color: #a61717; background-color: #e3d2d2">$</span>digest();
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(<span style="color: #dd1144">&#39;#test&#39;</span>).<span style="color: #008080">scope</span>().<span style="color: #008080">a</span> = &#39;12345&#39;;
+$(<span style="color: #dd1144">&#39;#test&#39;</span>).<span style="color: #008080">scope</span>().$<span style="color: #008080">digest</span>();
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -593,7 +593,7 @@ angular.bootstrap(document.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span>rootScope.<span style="color: #a61717; background-color: #e3d2d2">$</span>digest();
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$<span style="color: #008080">rootScope</span>.$<span style="color: #008080">digest</span>();
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -621,7 +621,7 @@ angular.bootstrap(document.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #a61717; background-color: #e3d2d2">$</span>(<span style="color: #a61717; background-color: #e3d2d2">&#39;#</span>test<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>).scope().a
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$(&#39;#test&#39;).scope().a
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -770,7 +770,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;script</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/ng-template&quot;</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;tpl&quot;</span><span style="color: #000080">&gt;</span>
-here, {{ 1 + 1 }}
+here, <span style="color: #999999; font-weight: bold">{{</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span> <span style="color: #999999; font-weight: bold">}}</span>
 <span style="color: #000080">&lt;/script&gt;</span>
 
 <span style="color: #000080">&lt;div</span> <span style="color: #a61717; background-color: #e3d2d2">ng-include</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;&#39;tpl&#39;&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
@@ -784,7 +784,7 @@ here, {{ 1 + 1 }}
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;script</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/ng-template&quot;</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;tpl&quot;</span><span style="color: #000080">&gt;</span>
-here, {{ 1 + 1 }}
+here, <span style="color: #999999; font-weight: bold">{{</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span> <span style="color: #999999; font-weight: bold">}}</span>
 <span style="color: #000080">&lt;/script&gt;</span>
 
 <span style="color: #000080">&lt;a</span> <span style="color: #008080">ng-click=</span><span style="color: #dd1144">&quot;v=&#39;tpl&#39;&quot;</span><span style="color: #000080">&gt;</span>Load<span style="color: #000080">&lt;/a&gt;</span>
@@ -905,8 +905,8 @@ var TestCtrl = function($scope){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;ul</span> <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;l=</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>,<span style="color: #009999">4</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">&quot;</span><span style="color: #000080">&gt;</span>
-  <span style="color: #000080">&lt;li</span> <span style="color: #008080">ng-class-odd=</span><span style="color: #dd1144">&quot;&#39;odd&#39;&quot;</span> <span style="color: #008080">ng-class-even=</span><span style="color: #dd1144">&quot;&#39;even&#39;&quot;</span> <span style="color: #008080">ng-repeat=</span><span style="color: #dd1144">&quot;m in l&quot;</span><span style="color: #000080">&gt;</span>{{ m }}<span style="color: #000080">&lt;/li&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;ul</span> <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;l=[1,2,3,4]&quot;</span><span style="color: #000080">&gt;</span>
+  <span style="color: #000080">&lt;li</span> <span style="color: #008080">ng-class-odd=</span><span style="color: #dd1144">&quot;&#39;odd&#39;&quot;</span> <span style="color: #008080">ng-class-even=</span><span style="color: #dd1144">&quot;&#39;even&#39;&quot;</span> <span style="color: #008080">ng-repeat=</span><span style="color: #dd1144">&quot;m in l&quot;</span><span style="color: #000080">&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">m</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/li&gt;</span>
 <span style="color: #000080">&lt;/ul&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -956,7 +956,7 @@ var TestCtrl = function($scope){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&lt;</span>img ng<span style="color: #000000; font-weight: bold">-</span>src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;{{ &#39;h&#39; + &#39;ead.png&#39; }}&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;img ng-src=&quot;<span style="color: #999999; font-weight: bold">{{</span> <span style="color: #dd1144">&#39;h&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;ead.png&#39;</span> <span style="color: #999999; font-weight: bold">}}</span>&quot; /&gt;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -966,7 +966,7 @@ var TestCtrl = function($scope){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;a</span> <span style="color: #008080">ng-href=</span><span style="color: #dd1144">&quot;{{ &#39;#&#39; + &#39;123&#39; }}&quot;</span><span style="color: #000080">&gt;</span>here<span style="color: #000080">&lt;/a&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;a</span> <span style="color: #008080">ng-href=</span><span style="color: #dd1144">&quot;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #dd1144">&#39;#&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;123&#39;</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #dd1144">&quot;</span><span style="color: #000080">&gt;</span>here<span style="color: #000080">&lt;/a&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1163,7 +1163,7 @@ var TestCtrl = function($scope){
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;input</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text&quot;</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #a61717; background-color: #e3d2d2">required</span> <span style="color: #008080">ng-pattern=</span><span style="color: #dd1144">&quot;/abc/&quot;</span> <span style="color: #000080">/&gt;</span>
-  <span style="color: #000080">&lt;span</span> <span style="color: #008080">ng-click=</span><span style="color: #dd1144">&quot;see()&quot;</span><span style="color: #000080">&gt;</span>{{ test_form.$error }}<span style="color: #000080">&lt;/span&gt;</span>
+  <span style="color: #000080">&lt;span</span> <span style="color: #008080">ng-click=</span><span style="color: #dd1144">&quot;see()&quot;</span><span style="color: #000080">&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">test_form</span><span style="color: #a61717; background-color: #e3d2d2">.$</span><span style="color: #008080">error</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/span&gt;</span>
 <span style="color: #000080">&lt;/form&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -1224,7 +1224,7 @@ var TestCtrl = function($scope){
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;input</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;radio&quot;</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">value=</span><span style="color: #dd1144">&quot;AA&quot;</span> <span style="color: #000080">/&gt;</span>
   <span style="color: #000080">&lt;input</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;radio&quot;</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">value=</span><span style="color: #dd1144">&quot;BB&quot;</span> <span style="color: #000080">/&gt;</span>
-  <span style="color: #000080">&lt;span&gt;</span>{{ a }}<span style="color: #000080">&lt;/span&gt;</span>
+  <span style="color: #000080">&lt;span&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">a</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/span&gt;</span>
 <span style="color: #000080">&lt;/form&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -1276,7 +1276,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span>
-      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span>{<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;AA&#39;</span>}, {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;BB&#39;</span>}<span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">; a=o</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #009999">1</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">;&quot;</span><span style="color: #000080">&gt;</span>
+      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=[{name: &#39;AA&#39;}, {name: &#39;BB&#39;}]; a=o[1];&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;select</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-options=</span><span style="color: #dd1144">&quot;x.name for x in o&quot;</span> <span style="color: #008080">ng-change=</span><span style="color: #dd1144">&quot;show()&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;/select&gt;</span>
 <span style="color: #000080">&lt;/form&gt;</span>
@@ -1290,7 +1290,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span>
-      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span>{<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;AA&#39;</span>, v: <span style="color: #dd1144">&#39;00&#39;</span>}, {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;BB&#39;</span>, v: <span style="color: #dd1144">&#39;11&#39;</span>}<span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">; a=o</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #009999">1</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">.v;&quot;</span><span style="color: #000080">&gt;</span>
+      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=[{name: &#39;AA&#39;, v: &#39;00&#39;}, {name: &#39;BB&#39;, v: &#39;11&#39;}]; a=o[1].v;&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;select</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-options=</span><span style="color: #dd1144">&quot;x.v as x.name for x in o&quot;</span> <span style="color: #008080">ng-change=</span><span style="color: #dd1144">&quot;show()&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;/select&gt;</span>
 <span style="color: #000080">&lt;/form&gt;</span>
@@ -1304,9 +1304,9 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span>
-      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span>{<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;AA&#39;</span>, g: <span style="color: #dd1144">&#39;00&#39;</span>},
-                  {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;BB&#39;</span>, g: <span style="color: #dd1144">&#39;11&#39;</span>},
-                  {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;CC&#39;</span>, g: <span style="color: #dd1144">&#39;00&#39;</span>}<span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">; a=o</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #009999">1</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">;&quot;</span><span style="color: #000080">&gt;</span>
+      <span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=[{name: &#39;AA&#39;, g: &#39;00&#39;},</span>
+<span style="color: #dd1144">                  {name: &#39;BB&#39;, g: &#39;11&#39;},</span>
+<span style="color: #dd1144">                  {name: &#39;CC&#39;, g: &#39;00&#39;}]; a=o[1];&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;select</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-options=</span><span style="color: #dd1144">&quot;x.name group by x.g for x in o&quot;</span> <span style="color: #008080">ng-change=</span><span style="color: #dd1144">&quot;show()&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;/select&gt;</span>
 <span style="color: #000080">&lt;/form&gt;</span>
@@ -1320,9 +1320,9 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;form</span> <span style="color: #008080">name=</span><span style="color: #dd1144">&quot;test_form&quot;</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span>
-<span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span>{<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;AA&#39;</span>, g: <span style="color: #dd1144">&#39;00&#39;</span>, v: <span style="color: #dd1144">&#39;=&#39;</span>},
-            {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;BB&#39;</span>, g: <span style="color: #dd1144">&#39;11&#39;</span>, v: <span style="color: #dd1144">&#39;+&#39;</span>},
-            {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;CC&#39;</span>, g: <span style="color: #dd1144">&#39;00&#39;</span>, v: <span style="color: #dd1144">&#39;!&#39;</span>}<span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">; a=o</span><span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #009999">1</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span><span style="color: #dd1144">.v;&quot;</span><span style="color: #000080">&gt;</span>
+<span style="color: #008080">ng-init=</span><span style="color: #dd1144">&quot;o=[{name: &#39;AA&#39;, g: &#39;00&#39;, v: &#39;=&#39;},</span>
+<span style="color: #dd1144">            {name: &#39;BB&#39;, g: &#39;11&#39;, v: &#39;+&#39;},</span>
+<span style="color: #dd1144">            {name: &#39;CC&#39;, g: &#39;00&#39;, v: &#39;!&#39;}]; a=o[1].v;&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;select</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;a&quot;</span> <span style="color: #008080">ng-options=</span><span style="color: #dd1144">&quot;x.v as x.name group by x.g for x in o&quot;</span>
           <span style="color: #008080">ng-change=</span><span style="color: #dd1144">&quot;show()&quot;</span><span style="color: #000080">&gt;</span>
   <span style="color: #000080">&lt;/select&gt;</span>
@@ -1447,9 +1447,9 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ data <span style="color: #000000; font-weight: bold">|</span> filter<span style="color: #000000; font-weight: bold">:</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span>} }} <span style="color: #000000; font-weight: bold">&lt;</span>br <span style="color: #000000; font-weight: bold">/&gt;</span>
-{{ data <span style="color: #000000; font-weight: bold">|</span> filter<span style="color: #000000; font-weight: bold">:</span> {<span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;3&#39;</span>} }} <span style="color: #000000; font-weight: bold">&lt;</span>br <span style="color: #000000; font-weight: bold">/&gt;</span>
-{{ data <span style="color: #000000; font-weight: bold">|</span> filter<span style="color: #000000; font-weight: bold">:</span> {<span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #000000; font-weight: bold">!</span><span style="color: #009999">3</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>} }} <span style="color: #000000; font-weight: bold">&lt;</span>br <span style="color: #000000; font-weight: bold">/&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">data</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">filter</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">{</span><span style="color: #008080">name</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span><span style="color: #000000; font-weight: bold">}</span> <span style="color: #999999; font-weight: bold">}}</span> &lt;br /&gt;
+<span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">data</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">filter</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">{</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;3&#39;</span><span style="color: #000000; font-weight: bold">}</span> <span style="color: #999999; font-weight: bold">}}</span> &lt;br /&gt;
+<span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">data</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">filter</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">{</span><span style="color: #a61717; background-color: #e3d2d2">$</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;!3&#39;</span><span style="color: #000000; font-weight: bold">}</span> <span style="color: #999999; font-weight: bold">}}</span> &lt;br /&gt;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1512,8 +1512,8 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ [<span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>,<span style="color: #009999">4</span>,<span style="color: #009999">5</span>] <span style="color: #000000; font-weight: bold">|</span> limitTo<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span> }}
-{{ [<span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>,<span style="color: #009999">4</span>,<span style="color: #009999">5</span>] <span style="color: #000000; font-weight: bold">|</span> limitTo<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">3</span> }}
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">4</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">5</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">limitTo</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span> <span style="color: #999999; font-weight: bold">}}</span>
+<span style="color: #999999; font-weight: bold">{{</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">4</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">5</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">limitTo</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">3</span> <span style="color: #999999; font-weight: bold">}}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1523,8 +1523,8 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>abc<span style="color: #a61717; background-color: #e3d2d2">&#39;</span> <span style="color: #000000; font-weight: bold">|</span> uppercase }}
-{{ <span style="color: #a61717; background-color: #e3d2d2">&#39;</span>Abc<span style="color: #a61717; background-color: #e3d2d2">&#39;</span> <span style="color: #000000; font-weight: bold">|</span> lowercase }}
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #dd1144">&#39;abc&#39;</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">uppercase</span> <span style="color: #999999; font-weight: bold">}}</span>
+<span style="color: #999999; font-weight: bold">{{</span> <span style="color: #dd1144">&#39;Abc&#39;</span> <span style="color: #000000; font-weight: bold">|</span> <span style="color: #990000; font-weight: bold">lowercase</span> <span style="color: #999999; font-weight: bold">}}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1542,20 +1542,20 @@ angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement);
     <span style="color: #000080">&lt;/tr&gt;</span>
 
     <span style="color: #000080">&lt;tr</span> <span style="color: #008080">ng-repeat=</span><span style="color: #dd1144">&quot;o in data | orderBy: f : rev&quot;</span><span style="color: #000080">&gt;</span>
-      <span style="color: #000080">&lt;td&gt;</span>{{ o.name }}<span style="color: #000080">&lt;/td&gt;</span>
-      <span style="color: #000080">&lt;td&gt;</span>{{ o.age }}<span style="color: #000080">&lt;/td&gt;</span>
+      <span style="color: #000080">&lt;td&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">o.name</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/td&gt;</span>
+      <span style="color: #000080">&lt;td&gt;</span><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">o.age</span> <span style="color: #999999; font-weight: bold">}}</span><span style="color: #000080">&lt;/td&gt;</span>
     <span style="color: #000080">&lt;/tr&gt;</span>
   <span style="color: #000080">&lt;/table&gt;</span>
 <span style="color: #000080">&lt;/div&gt;</span>
 
 <span style="color: #000080">&lt;script</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
 var TestCtrl = function($scope){
-  $scope.data = <span style="color: #999999; font-weight: bold; font-style: italic">[</span>
-    {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;B&#39;</span>, age: <span style="color: #009999">4</span>},  
-    {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;A&#39;</span>, age: <span style="color: #009999">1</span>},  
-    {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;D&#39;</span>, age: <span style="color: #009999">3</span>},  
-    {<span style="color: #0086B3">name</span>: <span style="color: #dd1144">&#39;C&#39;</span>, age: <span style="color: #009999">3</span>},  
-  <span style="color: #999999; font-weight: bold; font-style: italic">]</span>;
+  $scope.data = [
+    {name: &#39;B&#39;, age: 4},  
+    {name: &#39;A&#39;, age: 1},  
+    {name: &#39;D&#39;, age: 3},  
+    {name: &#39;C&#39;, age: 3},  
+  ];
 }
 
 angular.bootstrap(document.documentElement);
@@ -1632,7 +1632,7 @@ ng 中的锚点路由功能是由几部分 API 共同完成的一整套方案。
 
 <span style="color: #000080">&lt;script</span> <span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
 
-angular.module(&#39;ngView&#39;, <span style="color: #999999; font-weight: bold; font-style: italic">[]</span>,
+angular.module(&#39;ngView&#39;, [],
   function($routeProvider){
     $routeProvider.when(&#39;/test&#39;,
       {
@@ -1778,7 +1778,7 @@ angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, [],
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, <span style="color: #999999; font-weight: bold; font-style: italic">[]</span>,
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, <span style="color: #999999; font-weight: bold">[]</span>,
   <span style="color: #000000; font-weight: bold">function</span>($routeProvider){
     $routeProvider.when(<span style="color: #dd1144">&#39;/test&#39;</span>,
       {
@@ -1799,7 +1799,7 @@ angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, [],
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ title }}
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">{{</span> <span style="color: #008080">title</span> <span style="color: #999999; font-weight: bold">}}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1812,11 +1812,11 @@ angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, [],
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, <span style="color: #a61717; background-color: #e3d2d2">[</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span>,
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">angular.module(&#39;ngView&#39;, [],
   function($routeProvider){
     $routeProvider.when(&#39;/test&#39;,
       {
-        template: &#39;{{}}&#39;,
+        template: &#39;<span style="color: #999999; font-weight: bold">{{}}</span>&#39;,
         controller: function(){
           $(&#39;div&#39;).first().html(&#39;<span style="color: #000080">&lt;b&gt;</span>OK<span style="color: #000080">&lt;/b&gt;</span>&#39;);
         }
@@ -1841,10 +1841,10 @@ angular.module(<span style="color: #dd1144">&#39;ngView&#39;</span>, [],
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">angular.bootstrap(<span style="color: #0086B3">document</span>.documentElement,
-  <span style="color: #999999; font-weight: bold; font-style: italic">[</span>function(<span style="color: #008080">$interpolateProvider</span>){
+  <span style="color: #999999; font-weight: bold">[</span>function(<span style="color: #008080">$interpolateProvider</span>){
     <span style="color: #008080">$interpolateProvider.startSymbol</span>(<span style="color: #dd1144">&#39;[[&#39;</span>);
     <span style="color: #008080">$interpolateProvider.endSymbol</span>(<span style="color: #dd1144">&#39;]]&#39;</span>);
-  }<span style="color: #999999; font-weight: bold; font-style: italic">]</span>);
+  }<span style="color: #999999; font-weight: bold">]</span>);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1914,10 +1914,10 @@ ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起�
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> $config <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.defaults <span style="color: #000000; font-weight: bold">=</span> {
-  <span style="color: #999988; font-style: italic">// transform incoming response data</span>
+  <span style="color: #999988">// transform incoming response data</span>
   transformResponse<span style="color: #000000; font-weight: bold">:</span> [<span style="color: #000000; font-weight: bold">function</span>(data) {
     <span style="color: #000000; font-weight: bold">if</span> (isString(data)) {
-      <span style="color: #999988; font-style: italic">// strip json vulnerability protection prefix</span>
+      <span style="color: #999988">// strip json vulnerability protection prefix</span>
       data <span style="color: #000000; font-weight: bold">=</span> data.replace(PROTECTION_PREFIX, <span style="color: #dd1144">&#39;&#39;</span>);
       <span style="color: #000000; font-weight: bold">if</span> (JSON_START.test(data) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> JSON_END.test(data))
         data <span style="color: #000000; font-weight: bold">=</span> fromJson(data, <span style="color: #000000; font-weight: bold">true</span>);
@@ -1925,12 +1925,12 @@ ng 提供了基本的 AJAX 封装，你直接面对 promise 对象，使用起�
     <span style="color: #000000; font-weight: bold">return</span> data;
   }],
 
-  <span style="color: #999988; font-style: italic">// transform outgoing request data</span>
+  <span style="color: #999988">// transform outgoing request data</span>
   transformRequest<span style="color: #000000; font-weight: bold">:</span> [<span style="color: #000000; font-weight: bold">function</span>(d) {
     <span style="color: #000000; font-weight: bold">return</span> isObject(d) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #000000; font-weight: bold">!</span>isFile(d) <span style="color: #000000; font-weight: bold">?</span> toJson(d) <span style="color: #000000; font-weight: bold">:</span> d;
   }],
 
-  <span style="color: #999988; font-style: italic">// default headers</span>
+  <span style="color: #999988">// default headers</span>
   headers<span style="color: #000000; font-weight: bold">:</span> {
     common<span style="color: #000000; font-weight: bold">:</span> {
       <span style="color: #dd1144">&#39;Accept&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;application/json, text/plain, */*&#39;</span>,
@@ -2034,7 +2034,7 @@ console.log($http.pendingRequests);
   <span style="color: #000000; font-weight: bold">var</span> promise <span style="color: #000000; font-weight: bold">=</span> defer.promise;
   promise.then(<span style="color: #000000; font-weight: bold">function</span>(data){console.log(<span style="color: #dd1144">&#39;ok, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> data)},
                <span style="color: #000000; font-weight: bold">function</span>(data){console.log(<span style="color: #dd1144">&#39;error, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> data)});
-  <span style="color: #999988; font-style: italic">//defer.reject(&#39;xx&#39;);</span>
+  <span style="color: #999988">//defer.reject(&#39;xx&#39;);</span>
   defer.resolve(<span style="color: #dd1144">&#39;xx&#39;</span>);
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -2175,7 +2175,7 @@ p.then(
 <span style="color: #000000; font-weight: bold">var</span> promise <span style="color: #000000; font-weight: bold">=</span> defer.promise;
 promise.then(<span style="color: #000000; font-weight: bold">function</span>(data){console.log(<span style="color: #dd1144">&#39;ok, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> data)},
              <span style="color: #000000; font-weight: bold">function</span>(data){console.log(<span style="color: #dd1144">&#39;error, &#39;</span> <span style="color: #000000; font-weight: bold">+</span> data)});
-<span style="color: #999988; font-style: italic">//defer.reject(&#39;xx&#39;);</span>
+<span style="color: #999988">//defer.reject(&#39;xx&#39;);</span>
 defer.resolve(<span style="color: #dd1144">&#39;xx&#39;</span>);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -2228,9 +2228,9 @@ angular.bind({}, f, <span style="color: #dd1144">&#39;x&#39;</span>)();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var a <span style="color: #000000; font-weight: bold">=</span> {<span style="color: #dd1144">&#39;x&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #009999">123</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>};
-var b <span style="color: #000000; font-weight: bold">=</span> angular.copy(a);
-a.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #009999">456</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>;
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var a = {&#39;x&#39;: &#39;123&#39;};
+var b = angular.copy(a);
+a.x = &#39;456&#39;;
 console.log(b);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -2241,8 +2241,8 @@ console.log(b);
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var a <span style="color: #000000; font-weight: bold">=</span> {<span style="color: #dd1144">&#39;x&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #009999">123</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>};
-var b <span style="color: #000000; font-weight: bold">=</span> {<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>xx<span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #009999">456</span><span style="color: #a61717; background-color: #e3d2d2">&#39;</span>};
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var a = {&#39;x&#39;: &#39;123&#39;};
+var b = {&#39;xx&#39;: &#39;456&#39;};
 angular.extend(b, a);
 console.log(b);
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -2266,7 +2266,7 @@ JSON转换： <em style="color: #d75100; font-style: normal;">angular.fromJson()
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> l <span style="color: #000000; font-weight: bold">=</span> {a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1&#39;</span>, b<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;2&#39;</span>};
 angular.forEach(l, <span style="color: #000000; font-weight: bold">function</span>(v, k){console.log(k <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> v)});
 
-<span style="color: #000000; font-weight: bold">var</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999; font-weight: bold; font-style: italic">[</span><span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;c&#39;</span><span style="color: #999999; font-weight: bold; font-style: italic">]</span>;
+<span style="color: #000000; font-weight: bold">var</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999; font-weight: bold">[</span><span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;c&#39;</span><span style="color: #999999; font-weight: bold">]</span>;
 angular.forEach(l, <span style="color: #000000; font-weight: bold">function</span>(v, i, o){console.log(v)});
 
 <span style="color: #000000; font-weight: bold">var</span> context <span style="color: #000000; font-weight: bold">=</span> {<span style="color: #dd1144">&#39;t&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;xx&#39;</span>};
@@ -2393,7 +2393,7 @@ ng 提供了一个简单封装了缓存机制 <em style="color: #d75100; font-st
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> TestCtrl <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>($timeout){
   <span style="color: #000000; font-weight: bold">var</span> p <span style="color: #000000; font-weight: bold">=</span> $timeout(<span style="color: #000000; font-weight: bold">function</span>(){console.log(<span style="color: #dd1144">&#39;haha&#39;</span>)}, <span style="color: #009999">5000</span>);
   p.then(<span style="color: #000000; font-weight: bold">function</span>(){console.log(<span style="color: #dd1144">&#39;x&#39;</span>)});
-  <span style="color: #999988; font-style: italic">//$timeout.cancel(p);</span>
+  <span style="color: #999988">//$timeout.cancel(p);</span>
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -2539,19 +2539,19 @@ ng 中的模板是很重要，也很强大的一个机制，自然少不了单�
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic">//这是一个provider</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">//这是一个provider</span>
 <span style="color: #000000; font-weight: bold">var</span> pp <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
   <span style="color: #000000; font-weight: bold">this</span>.$get <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
     <span style="color: #000000; font-weight: bold">return</span> {<span style="color: #dd1144">&#39;haha&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;123&#39;</span>};
   }
 }
 
-<span style="color: #999988; font-style: italic">//我在模块的初始化过程当中, 定义了一个叫 PP 的服务</span>
+<span style="color: #999988">//我在模块的初始化过程当中, 定义了一个叫 PP 的服务</span>
 <span style="color: #000000; font-weight: bold">var</span> app <span style="color: #000000; font-weight: bold">=</span> angular.module(<span style="color: #dd1144">&#39;Demo&#39;</span>, [], <span style="color: #000000; font-weight: bold">function</span>($provide){
   $provide.provider(<span style="color: #dd1144">&#39;PP&#39;</span>, pp);
 });
 
-<span style="color: #999988; font-style: italic">//PP服务实际上就是 pp 这个 provider 的 $get() 方法返回的东西</span>
+<span style="color: #999988">//PP服务实际上就是 pp 这个 provider 的 $get() 方法返回的东西</span>
 app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>,
   <span style="color: #000000; font-weight: bold">function</span>($scope, PP){
     console.log(PP);
@@ -2672,7 +2672,7 @@ app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>, <span sty
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html</span> <span style="color: #008080">ng-app=</span><span style="color: #dd1144">&quot;Demo&quot;</span><span style="color: #000080">&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -2789,9 +2789,9 @@ app.controller(<span style="color: #dd1144">&#39;BookCtrl&#39;</span>, <span sty
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">HTTP GET <span style="color: #dd1144">&quot;class&quot;</span> actions<span style="color: #000000; font-weight: bold">:</span> Resource.action([parameters], [success], [error])
-non<span style="color: #000000; font-weight: bold">-</span>GET <span style="color: #dd1144">&quot;class&quot;</span> actions<span style="color: #000000; font-weight: bold">:</span> Resource.action([parameters], postData, [success], [error])
-non<span style="color: #000000; font-weight: bold">-</span>GET instance actions<span style="color: #000000; font-weight: bold">:</span> instance.<span style="color: #a61717; background-color: #e3d2d2">$</span>action([parameters], [success], [error])
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">HTTP GET &quot;class&quot; actions: Resource.action([parameters], [success], [error])
+non-GET &quot;class&quot; actions: Resource.action([parameters], postData, [success], [error])
+non-GET instance actions: instance.$<span style="color: #008080">action</span>([<span style="color: #a61717; background-color: #e3d2d2">parameters</span>], [<span style="color: #a61717; background-color: #e3d2d2">success</span>], [<span style="color: #a61717; background-color: #e3d2d2">error</span>])
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -2834,7 +2834,7 @@ console.log(book)
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic">//响应的数据是 {result: 0, msg: &#39;&#39;, obj: {id: &#39;xxx&#39;}}</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">//响应的数据是 {result: 0, msg: &#39;&#39;, obj: {id: &#39;xxx&#39;}}</span>
 <span style="color: #000000; font-weight: bold">var</span> book <span style="color: #000000; font-weight: bold">=</span> Book.create({title<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;测试标题&#39;</span>, author<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;测试作者&#39;</span>}, <span style="color: #000000; font-weight: bold">function</span>(response){
   console.log(book);
 });
@@ -2877,7 +2877,7 @@ console.log(book)
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">non<span style="color: #000000; font-weight: bold">-</span>GET instance actions<span style="color: #000000; font-weight: bold">:</span> instance.<span style="color: #a61717; background-color: #e3d2d2">$</span>action([parameters], [success], [error])
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">non-GET instance actions: instance.$<span style="color: #008080">action</span>([<span style="color: #a61717; background-color: #e3d2d2">parameters</span>], [<span style="color: #a61717; background-color: #e3d2d2">success</span>], [<span style="color: #a61717; background-color: #e3d2d2">error</span>])
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -3072,7 +3072,7 @@ book.$update();
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html</span> <span style="color: #008080">ng-app=</span><span style="color: #dd1144">&quot;Demo&quot;</span><span style="color: #000080">&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -3134,7 +3134,7 @@ app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>, <span sty
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold; font-style: italic">&lt;!DOCTYPE html&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
 <span style="color: #000080">&lt;html&gt;</span>
 <span style="color: #000080">&lt;head&gt;</span>
 <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
@@ -3440,7 +3440,7 @@ app.directive(<span style="color: #dd1144">&#39;show&#39;</span>, <span style="c
     console.log($attrs);
   }    
   <span style="color: #000000; font-weight: bold">return</span> func;
-  <span style="color: #999988; font-style: italic">//return {compile: function(){return func}}</span>
+  <span style="color: #999988">//return {compile: function(){return func}}</span>
 });
 
 angular.bootstrap(<span style="color: #0086B3">document</span>, [<span style="color: #dd1144">&#39;Demo&#39;</span>]);
@@ -3527,13 +3527,13 @@ app.directive(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="c
     <span style="color: #000000; font-weight: bold">var</span> html <span style="color: #000000; font-weight: bold">=</span> $element.text();
     <span style="color: #000000; font-weight: bold">var</span> lines <span style="color: #000000; font-weight: bold">=</span> html.split(<span style="color: #dd1144">&#39;\n&#39;</span>);
 
-    <span style="color: #999988; font-style: italic">//处理首尾空白</span>
+    <span style="color: #999988">//处理首尾空白</span>
     <span style="color: #000000; font-weight: bold">if</span>(lines[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;&#39;</span>){lines <span style="color: #000000; font-weight: bold">=</span> lines.slice(<span style="color: #009999">1</span>, lines.length <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>)}
     <span style="color: #000000; font-weight: bold">if</span>(lines[lines.length<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;&#39;</span>){lines <span style="color: #000000; font-weight: bold">=</span> lines.slice(<span style="color: #009999">0</span>, lines.length <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>)}
 
     $element.empty();
 
-    <span style="color: #999988; font-style: italic">//处理外框</span>
+    <span style="color: #999988">//处理外框</span>
     (<span style="color: #000000; font-weight: bold">function</span>(){
       $element.css(<span style="color: #dd1144">&#39;clear&#39;</span>, <span style="color: #dd1144">&#39;both&#39;</span>);
       $element.css(<span style="color: #dd1144">&#39;display&#39;</span>, <span style="color: #dd1144">&#39;block&#39;</span>);
@@ -3541,9 +3541,9 @@ app.directive(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="c
       $element.css(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;200px&#39;</span>);
     })();
 
-    <span style="color: #999988; font-style: italic">//是否显示行号的选项</span>
+    <span style="color: #999988">//是否显示行号的选项</span>
     <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #dd1144">&#39;lines&#39;</span> <span style="color: #000000; font-weight: bold">in</span> $attrs){
-      <span style="color: #999988; font-style: italic">//处理行号</span>
+      <span style="color: #999988">//处理行号</span>
       (<span style="color: #000000; font-weight: bold">function</span>(){
         <span style="color: #000000; font-weight: bold">var</span> div <span style="color: #000000; font-weight: bold">=</span> $(<span style="color: #dd1144">&#39;&lt;div style=&quot;width: %spx; background-color: gray;&#39;</span> <span style="color: #000000; font-weight: bold">+</span>
                     <span style="color: #dd1144">&#39;float: left; text-align: right; padding-right: 5px;&#39;</span> <span style="color: #000000; font-weight: bold">+</span>
@@ -3558,7 +3558,7 @@ app.directive(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="c
       })();
     }
 
-    <span style="color: #999988; font-style: italic">//处理内容</span>
+    <span style="color: #999988">//处理内容</span>
     (<span style="color: #000000; font-weight: bold">function</span>(){
       <span style="color: #000000; font-weight: bold">var</span> div <span style="color: #000000; font-weight: bold">=</span> $(<span style="color: #dd1144">&#39;&lt;div style=&quot;float: left;&quot;&gt;&lt;/div&gt;&#39;</span>);
       <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>;
@@ -3572,7 +3572,7 @@ app.directive(<span style="color: #dd1144">&#39;code&#39;</span>, <span style="c
   }
 
   <span style="color: #000000; font-weight: bold">return</span> {link<span style="color: #000000; font-weight: bold">:</span> func,
-          restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;AE&#39;</span>}; <span style="color: #999988; font-style: italic">//以元素或属性的形式使用命令</span>
+          restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;AE&#39;</span>}; <span style="color: #999988">//以元素或属性的形式使用命令</span>
 });
 
 angular.bootstrap(<span style="color: #0086B3">document</span>, [<span style="color: #dd1144">&#39;Demo&#39;</span>]);
@@ -3706,11 +3706,11 @@ console.log(node);
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>($scope, $compile){
   <span style="color: #000000; font-weight: bold">var</span> link <span style="color: #000000; font-weight: bold">=</span> $compile($(<span style="color: #dd1144">&#39;#a&#39;</span>));
 
-  <span style="color: #999988; font-style: italic">//true参数表示新建一个完全隔离的scope,而不是继承的child scope</span>
+  <span style="color: #999988">//true参数表示新建一个完全隔离的scope,而不是继承的child scope</span>
   <span style="color: #000000; font-weight: bold">var</span> scope <span style="color: #000000; font-weight: bold">=</span> $scope.$new(<span style="color: #000000; font-weight: bold">true</span>);
   scope.text <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;12345&#39;</span>;
 
-  <span style="color: #999988; font-style: italic">//var node = link(scope, function(){});</span>
+  <span style="color: #999988">//var node = link(scope, function(){});</span>
   <span style="color: #000000; font-weight: bold">var</span> node <span style="color: #000000; font-weight: bold">=</span> link(scope);
 
   $(<span style="color: #dd1144">&#39;#b&#39;</span>).append(node);
@@ -3730,8 +3730,8 @@ console.log(node);
   scope.text <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;12345&#39;</span>;
 
   <span style="color: #000000; font-weight: bold">var</span> node <span style="color: #000000; font-weight: bold">=</span> link(scope, <span style="color: #000000; font-weight: bold">function</span>(clone_element, scope){
-    clone_element.text(clone_element.text() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; ...&#39;</span>); <span style="color: #999988; font-style: italic">//无效</span>
-    clone_element.text(<span style="color: #dd1144">&#39;{{ text2 }}&#39;</span>); <span style="color: #999988; font-style: italic">//无效</span>
+    clone_element.text(clone_element.text() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; ...&#39;</span>); <span style="color: #999988">//无效</span>
+    clone_element.text(<span style="color: #dd1144">&#39;{{ text2 }}&#39;</span>); <span style="color: #999988">//无效</span>
     clone_element.addClass(<span style="color: #dd1144">&#39;new_class&#39;</span>);
   });
 
@@ -3844,12 +3844,12 @@ angular.bootstrap(<span style="color: #0086B3">document</span>, [<span style="co
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.directive(<span style="color: #dd1144">&#39;more&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>($rootScope, $document){
   <span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(element, attrs, link){
     <span style="color: #000000; font-weight: bold">var</span> node <span style="color: #000000; font-weight: bold">=</span> link($rootScope);
-    node.removeAttr(<span style="color: #dd1144">&#39;more&#39;</span>); <span style="color: #999988; font-style: italic">//不去掉就变死循环了</span>
+    node.removeAttr(<span style="color: #dd1144">&#39;more&#39;</span>); <span style="color: #999988">//不去掉就变死循环了</span>
     $(<span style="color: #dd1144">&#39;body&#39;</span>, $document).append(node);
   }
 
   <span style="color: #000000; font-weight: bold">return</span> {compile<span style="color: #000000; font-weight: bold">:</span> func,
-          transclude<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;element&#39;</span>, <span style="color: #999988; font-style: italic">// element是节点没,其它值是节点的内容没</span>
+          transclude<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;element&#39;</span>, <span style="color: #999988">// element是节点没,其它值是节点的内容没</span>
           restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span>};
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -3921,7 +3921,7 @@ angular.bootstrap(<span style="color: #0086B3">document</span>, [<span style="co
   }
 
   <span style="color: #000000; font-weight: bold">return</span> {compile<span style="color: #000000; font-weight: bold">:</span> func,
-          transclude<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #999988; font-style: italic">// element是节点没,其它值是节点的内容没</span>
+          transclude<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #999988">// element是节点没,其它值是节点的内容没</span>
           restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span>};
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -4052,7 +4052,7 @@ app.directive(<span style="color: #dd1144">&#39;b&#39;</span>, <span style="colo
 
   <span style="color: #000000; font-weight: bold">return</span> {compile<span style="color: #000000; font-weight: bold">:</span> func,
           priority<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span>,
-          <span style="color: #999988; font-style: italic">//terminal: true,</span>
+          <span style="color: #999988">//terminal: true,</span>
           restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span>};
 });
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -4425,7 +4425,7 @@ app.directive(<span style="color: #dd1144">&#39;b&#39;</span>, <span style="colo
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #990000; font-weight: bold">require:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;</span><span style="color: #000000; font-weight: bold">?^</span>not_a<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">require: &#39;?^not_a&#39;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -4465,9 +4465,9 @@ app.directive(<span style="color: #dd1144">&#39;a&#39;</span>, <span style="colo
 
   <span style="color: #000000; font-weight: bold">return</span> {compile<span style="color: #000000; font-weight: bold">:</span> func,
           template<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;&lt;p&gt;标题 {{ name }} &lt;button ng-click=&quot;name=\&#39;</span>hahaha<span style="color: #a61717; background-color: #e3d2d2">\</span><span style="color: #dd1144">&#39;&quot;&gt;修改&lt;/button&gt;&lt;/p&gt;&#39;</span>,
-          <span style="color: #999988; font-style: italic">//replace: true,</span>
-          <span style="color: #999988; font-style: italic">//controller: function($scope){$scope.name = &#39;xxx&#39;},</span>
-          <span style="color: #999988; font-style: italic">//scope: {},</span>
+          <span style="color: #999988">//replace: true,</span>
+          <span style="color: #999988">//controller: function($scope){$scope.name = &#39;xxx&#39;},</span>
+          <span style="color: #999988">//scope: {},</span>
           scope<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> ,
           controller<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>($scope){console.log($scope)},
           restrict<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;A&#39;</span>}
@@ -4725,7 +4725,7 @@ app.directive(<span style="color: #dd1144">&#39;test&#39;</span>, <span style="c
 
 app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>($scope){
   $scope.a <span style="color: #000000; font-weight: bold">=</span> [];
-  <span style="color: #999988; font-style: italic">//$scope.a = [1,2,3];</span>
+  <span style="color: #999988">//$scope.a = [1,2,3];</span>
   $scope.show <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(v){
     console.log(v);
   }
@@ -4802,12 +4802,12 @@ app.controller(<span style="color: #dd1144">&#39;TestCtrl&#39;</span>, <span sty
 app.directive(<span style="color: #dd1144">&#39;test&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(){
   <span style="color: #000000; font-weight: bold">var</span> link <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>($scope, $element, $attrs, $ctrl){
     $scope.<span style="color: #000000; font-weight: bold">do</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){
-      <span style="color: #999988; font-style: italic">//$ctrl.$setDirty();</span>
-      console.log($ctrl.$pristine); <span style="color: #999988; font-style: italic">//form是否没被动过</span>
-      console.log($ctrl.$dirty); <span style="color: #999988; font-style: italic">//form是否被动过</span>
-      console.log($ctrl.$valid); <span style="color: #999988; font-style: italic">//form是否被检验通过</span>
-      console.log($ctrl.$invalid); <span style="color: #999988; font-style: italic">//form是否有错误</span>
-      console.log($ctrl.$error); <span style="color: #999988; font-style: italic">//form中有错误的字段</span>
+      <span style="color: #999988">//$ctrl.$setDirty();</span>
+      console.log($ctrl.$pristine); <span style="color: #999988">//form是否没被动过</span>
+      console.log($ctrl.$dirty); <span style="color: #999988">//form是否被动过</span>
+      console.log($ctrl.$valid); <span style="color: #999988">//form是否被检验通过</span>
+      console.log($ctrl.$invalid); <span style="color: #999988">//form是否有错误</span>
+      console.log($ctrl.$error); <span style="color: #999988">//form中有错误的字段</span>
     }
   }
 
@@ -4955,10 +4955,10 @@ HTML 部分的代码：
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">ng-controller=</span><span style="color: #dd1144">&quot;TestCtrl&quot;</span><span style="color: #000080">&gt;</span>
-  <span style="color: #000080">&lt;ys</span><span style="color: #008080">-block</span> <span style="color: #008080">title=</span><span style="color: #dd1144">&quot;title&quot;</span> <span style="color: #008080">text=</span><span style="color: #dd1144">&quot;text&quot;</span><span style="color: #000080">&gt;</span><span style="color: #a61717; background-color: #e3d2d2">&lt;</span>/ys-block&gt;
+  <span style="color: #000080">&lt;ys-block</span> <span style="color: #008080">title=</span><span style="color: #dd1144">&quot;title&quot;</span> <span style="color: #008080">text=</span><span style="color: #dd1144">&quot;text&quot;</span><span style="color: #000080">&gt;&lt;/ys-block&gt;</span>
   <span style="color: #000080">&lt;p&gt;</span>标题: <span style="color: #000080">&lt;input</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;title&quot;</span> <span style="color: #000080">/&gt;&lt;/p&gt;</span>
   <span style="color: #000080">&lt;p&gt;</span>内容: <span style="color: #000080">&lt;input</span> <span style="color: #008080">ng-model=</span><span style="color: #dd1144">&quot;text&quot;</span> <span style="color: #000080">/&gt;&lt;/p&gt;</span>
-  <span style="color: #000080">&lt;ys</span><span style="color: #008080">-block</span> <span style="color: #008080">title=</span><span style="color: #dd1144">&quot;title&quot;</span> <span style="color: #008080">text=</span><span style="color: #dd1144">&quot;text&quot;</span><span style="color: #000080">&gt;</span><span style="color: #a61717; background-color: #e3d2d2">&lt;</span>/ys-block&gt;
+  <span style="color: #000080">&lt;ys-block</span> <span style="color: #008080">title=</span><span style="color: #dd1144">&quot;title&quot;</span> <span style="color: #008080">text=</span><span style="color: #dd1144">&quot;text&quot;</span><span style="color: #000080">&gt;&lt;/ys-block&gt;</span>
 <span style="color: #000080">&lt;/div&gt;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -5510,17 +5510,15 @@ $(function(){
     
 
 <script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
 </script>
     
 
@@ -5537,7 +5535,7 @@ wx4EsFnf+qoBdHEkzJC0ZEe115nrJbMdAs4+fv3kebeoFfY6nbd9JCz5yW8ueZ25lM57uGK9Wd9+
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

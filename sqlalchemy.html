@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">SQLAlchemy参考</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2015-09-30 15:01 更新</span>
+                <span>2016-01-10 16:55 更新</span>
             </div>
         </div>
 
@@ -111,7 +111,7 @@
 
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> create_engine
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy.orm</span> <span style="color: #000000; font-weight: bold">import</span> sessionmaker
@@ -179,7 +179,7 @@ SQLAlchemy 的连接创建是 Lazy 的方式, 即在需要使用时才会去真�
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">dialect<span style="color: #000000; font-weight: bold">+</span>driver<span style="color: #000000; font-weight: bold">:</span><span style="color: #999988; font-style: italic">//username:password@host:port/database</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">dialect+driver://username:password@host:port/database
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -189,7 +189,7 @@ SQLAlchemy 的连接创建是 Lazy 的方式, 即在需要使用时才会去真�
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> create_engine
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy.engine.url</span> <span style="color: #000000; font-weight: bold">import</span> make_url
@@ -289,7 +289,7 @@ SQLAlchemy 支持连接池, 在 <code style="margin: auto 3px; color: #228b22; f
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> create_engine
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy.engine.url</span> <span style="color: #000000; font-weight: bold">import</span> make_url
@@ -349,7 +349,7 @@ engine <span style="color: #000000; font-weight: bold">=</span> create_engine(
 
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">getconn</span>():
     c <span style="color: #000000; font-weight: bold">=</span> psycopg2<span style="color: #000000; font-weight: bold">.</span>connect(username<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;ed&#39;</span>, host<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;127.0.0.1&#39;</span>, dbname<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;test&#39;</span>)
-    <span style="color: #999988; font-style: italic"># do things with &#39;c&#39; to set up</span>
+    <span style="color: #999988"># do things with &#39;c&#39; to set up</span>
     <span style="color: #000000; font-weight: bold">return</span> c
 
 engine <span style="color: #000000; font-weight: bold">=</span> create_engine(<span style="color: #dd1144">&#39;postgresql+psycopg2://&#39;</span>, creator<span style="color: #000000; font-weight: bold">=</span>getconn)
@@ -411,7 +411,7 @@ cursor<span style="color: #000000; font-weight: bold">.</span>execute(<span styl
 
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> create_engine
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> Column
@@ -448,10 +448,10 @@ Engine <span style="color: #000000; font-weight: bold">=</span> create_engine(<s
 
 
 <span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
-    <span style="color: #999988; font-style: italic">#init_db()</span>
+    <span style="color: #999988">#init_db()</span>
     drop_db()
-    <span style="color: #999988; font-style: italic">#BaseModel.metadata.tables[&#39;user&#39;].create(Engine, checkfirst=True)</span>
-    <span style="color: #999988; font-style: italic">#BaseModel.metadata.tables[&#39;user&#39;].drop(Engine, checkfirst=False)</span>
+    <span style="color: #999988">#BaseModel.metadata.tables[&#39;user&#39;].create(Engine, checkfirst=True)</span>
+    <span style="color: #999988">#BaseModel.metadata.tables[&#39;user&#39;].drop(Engine, checkfirst=False)</span>
     <span style="color: #000000; font-weight: bold">pass</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -1116,7 +1116,7 @@ user <span style="color: #000000; font-weight: bold">=</span> session<span style
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">blogs <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Blog&#39;</span>, collection_class<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">set</span>)
 
-<span style="color: #999988; font-style: italic">#InstrumentedSet([&lt;__main__.Blog object at 0x1a58710&gt;, &lt;__main__.Blog object at 0x1a587d0&gt;])</span>
+<span style="color: #999988">#InstrumentedSet([&lt;__main__.Blog object at 0x1a58710&gt;, &lt;__main__.Blog object at 0x1a587d0&gt;])</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1131,7 +1131,7 @@ user <span style="color: #000000; font-weight: bold">=</span> session<span style
 
 blogs <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Blog&#39;</span>, collection_class<span style="color: #000000; font-weight: bold">=</span>attribute_mapped_collection(<span style="color: #dd1144">&#39;title&#39;</span>))
 
-<span style="color: #999988; font-style: italic">#{u&#39;A&#39;: &lt;__main__.Blog object at 0x20ed810&gt;, u&#39;B&#39;: &lt;__main__.Blog object at 0x20ed8d0&gt;}</span>
+<span style="color: #999988">#{u&#39;A&#39;: &lt;__main__.Blog object at 0x20ed810&gt;, u&#39;B&#39;: &lt;__main__.Blog object at 0x20ed8d0&gt;}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1150,7 +1150,7 @@ blogs <span style="color: #000000; font-weight: bold">=</span> relationship(<spa
 
 blogs <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Blog&#39;</span>, collection_class<span style="color: #000000; font-weight: bold">=</span>mapped_collection(<span style="color: #000000; font-weight: bold">lambda</span> blog: blog<span style="color: #000000; font-weight: bold">.</span>title<span style="color: #000000; font-weight: bold">.</span>lower()))
 
-<span style="color: #999988; font-style: italic">#{u&#39;a&#39;: &lt;__main__.Blog object at 0x1de4890&gt;, u&#39;b&#39;: &lt;__main__.Blog object at 0x1de4950&gt;}</span>
+<span style="color: #999988">#{u&#39;a&#39;: &lt;__main__.Blog object at 0x1de4890&gt;, u&#39;b&#39;: &lt;__main__.Blog object at 0x1de4950&gt;}</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1381,7 +1381,7 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
     user <span style="color: #000000; font-weight: bold">=</span> User(name<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">u&#39;哈哈&#39;</span>)
     blog <span style="color: #000000; font-weight: bold">=</span> Blog(title<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">u&#39;第一个&#39;</span>)
     user<span style="color: #000000; font-weight: bold">.</span>blog_list <span style="color: #000000; font-weight: bold">=</span> [blog]
-    <span style="color: #999988; font-style: italic">#user.blog_list_auto = [blog]</span>
+    <span style="color: #999988">#user.blog_list_auto = [blog]</span>
     session<span style="color: #000000; font-weight: bold">.</span>add(user)
     <span style="color: #000000; font-weight: bold">print</span> blog <span style="color: #000000; font-weight: bold">in</span> session
     session<span style="color: #000000; font-weight: bold">.</span>commit()
@@ -1416,9 +1416,9 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
 <span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
     session <span style="color: #000000; font-weight: bold">=</span> Session()
 
-    <span style="color: #999988; font-style: italic">#user = User(name=u&#39;用户&#39;)</span>
-    <span style="color: #999988; font-style: italic">#user.blog_list = [Blog(title=u&#39;哈哈&#39;)]</span>
-    <span style="color: #999988; font-style: italic">#session.add(user)</span>
+    <span style="color: #999988">#user = User(name=u&#39;用户&#39;)</span>
+    <span style="color: #999988">#user.blog_list = [Blog(title=u&#39;哈哈&#39;)]</span>
+    <span style="color: #999988">#session.add(user)</span>
     user <span style="color: #000000; font-weight: bold">=</span> session<span style="color: #000000; font-weight: bold">.</span>query(User)<span style="color: #000000; font-weight: bold">.</span>first()
     session<span style="color: #000000; font-weight: bold">.</span>delete(user)
     session<span style="color: #000000; font-weight: bold">.</span>commit()
@@ -1476,15 +1476,15 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
 
     session <span style="color: #000000; font-weight: bold">=</span> Session()
 
-    <span style="color: #999988; font-style: italic">#user = User(name=u&#39;用户&#39;)</span>
-    <span style="color: #999988; font-style: italic">#blog = Blog(title=u&#39;一&#39;)</span>
-    <span style="color: #999988; font-style: italic">#blog2 = Blog(title=u&#39;二&#39;)</span>
-    <span style="color: #999988; font-style: italic">#user.blog_list = [blog, blog2]</span>
-    <span style="color: #999988; font-style: italic">#session.add(user)</span>
+    <span style="color: #999988">#user = User(name=u&#39;用户&#39;)</span>
+    <span style="color: #999988">#blog = Blog(title=u&#39;一&#39;)</span>
+    <span style="color: #999988">#blog2 = Blog(title=u&#39;二&#39;)</span>
+    <span style="color: #999988">#user.blog_list = [blog, blog2]</span>
+    <span style="color: #999988">#session.add(user)</span>
     user <span style="color: #000000; font-weight: bold">=</span> session<span style="color: #000000; font-weight: bold">.</span>query(User)<span style="color: #000000; font-weight: bold">.</span>first()
     blog2 <span style="color: #000000; font-weight: bold">=</span>  session<span style="color: #000000; font-weight: bold">.</span>query(Blog)<span style="color: #000000; font-weight: bold">.</span>filter(Blog<span style="color: #000000; font-weight: bold">.</span>title <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">u&#39;二&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>first()
     user<span style="color: #000000; font-weight: bold">.</span>blog_list <span style="color: #000000; font-weight: bold">=</span> [blog2]
-    <span style="color: #999988; font-style: italic">#session.delete(user)</span>
+    <span style="color: #999988">#session.delete(user)</span>
     session<span style="color: #000000; font-weight: bold">.</span>commit()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -1580,10 +1580,10 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
 
     session <span style="color: #000000; font-weight: bold">=</span> Session()
 
-    <span style="color: #999988; font-style: italic">#user = User(id=1, name=&#39;1&#39;)</span>
-    <span style="color: #999988; font-style: italic">#blog = Blog(title=&quot;abc&quot;)</span>
-    <span style="color: #999988; font-style: italic">#user.blog_list = [blog]</span>
-    <span style="color: #999988; font-style: italic">#session.add(user)</span>
+    <span style="color: #999988">#user = User(id=1, name=&#39;1&#39;)</span>
+    <span style="color: #999988">#blog = Blog(title=&quot;abc&quot;)</span>
+    <span style="color: #999988">#user.blog_list = [blog]</span>
+    <span style="color: #999988">#session.add(user)</span>
 
     user <span style="color: #000000; font-weight: bold">=</span> session<span style="color: #000000; font-weight: bold">.</span>query(User)<span style="color: #000000; font-weight: bold">.</span>first()
     blog <span style="color: #000000; font-weight: bold">=</span> user<span style="color: #000000; font-weight: bold">.</span>blog_list[<span style="color: #009999">0</span>]
@@ -1636,7 +1636,7 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
     session<span style="color: #000000; font-weight: bold">.</span>expunge(user)
     <span style="color: #000000; font-weight: bold">print</span> blog <span style="color: #000000; font-weight: bold">in</span> session
 
-    <span style="color: #999988; font-style: italic">#session.commit()</span>
+    <span style="color: #999988">#session.commit()</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1882,7 +1882,7 @@ session<span style="color: #000000; font-weight: bold">.</span>add(u2)
 
 session<span style="color: #000000; font-weight: bold">.</span>begin_nested()
 session<span style="color: #000000; font-weight: bold">.</span>add(u3)
-session<span style="color: #000000; font-weight: bold">.</span>rollback() <span style="color: #999988; font-style: italic"># rolls back u3, keeps u1 and u2</span>
+session<span style="color: #000000; font-weight: bold">.</span>rollback() <span style="color: #999988"># rolls back u3, keeps u1 and u2</span>
 
 session<span style="color: #000000; font-weight: bold">.</span>commit()
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -2295,7 +2295,7 @@ ins <span style="color: #000000; font-weight: bold">=</span> session<span style=
     name <span style="color: #000000; font-weight: bold">=</span> Column(Unicode(<span style="color: #009999">32</span>), nullable<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">False</span>, server_default<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;&#39;</span>)
 
     accounts <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Account&#39;</span>)
-    <span style="color: #999988; font-style: italic">#balance = association_proxy(&#39;accounts&#39;, &#39;balance&#39;)</span>
+    <span style="color: #999988">#balance = association_proxy(&#39;accounts&#39;, &#39;balance&#39;)</span>
 
     <span style="color: #3c5d5d; font-weight: bold">@hybrid_property</span>
     <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">balance</span>(<span style="color: #999999">self</span>):
@@ -2328,7 +2328,7 @@ ins <span style="color: #000000; font-weight: bold">=</span> session<span style=
 <span style="color: #3c5d5d; font-weight: bold">@hybrid_property</span>
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">balance</span>(<span style="color: #999999">self</span>):
     <span style="color: #000000; font-weight: bold">return</span> select([func<span style="color: #000000; font-weight: bold">.</span>sum(Account<span style="color: #000000; font-weight: bold">.</span>balance)])<span style="color: #000000; font-weight: bold">.</span>where(Account<span style="color: #000000; font-weight: bold">.</span>user <span style="color: #000000; font-weight: bold">==</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>id)<span style="color: #000000; font-weight: bold">.</span>label(<span style="color: #dd1144">&#39;balance_v&#39;</span>)
-    <span style="color: #999988; font-style: italic">#return func.sum(Account.balance)</span>
+    <span style="color: #999988">#return func.sum(Account.balance)</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -2430,7 +2430,7 @@ ins <span style="color: #000000; font-weight: bold">=</span> session<span style=
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy</span> <span style="color: #000000; font-weight: bold">import</span> create_engine
 <span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">sqlalchemy.ext.declarative</span> <span style="color: #000000; font-weight: bold">import</span> declarative_base
@@ -2530,7 +2530,7 @@ parent_obj <span style="color: #000000; font-weight: bold">=</span> relationship
     parent <span style="color: #000000; font-weight: bold">=</span> Column(Integer, ForeignKey(<span style="color: #dd1144">&#39;node.id&#39;</span>), index<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>,
                     nullable<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">False</span>, server_default<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;0&#39;</span>)
 
-    children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>) <span style="color: #999988; font-style: italic"># 1 -&gt; N</span>
+    children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>) <span style="color: #999988"># 1 -&gt; N</span>
     parent_obj <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>, remote_side<span style="color: #000000; font-weight: bold">=</span>[<span style="color: #0086B3">id</span>])
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
@@ -2588,7 +2588,7 @@ n <span style="color: #000000; font-weight: bold">=</span> session<span style="c
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>, lazy<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;joined&#39;</span>, cascade<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;all&#39;</span>) <span style="color: #999988; font-style: italic"># 1 -&gt; N</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>, lazy<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;joined&#39;</span>, cascade<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;all&#39;</span>) <span style="color: #999988"># 1 -&gt; N</span>
 node <span style="color: #000000; font-weight: bold">=</span> session<span style="color: #000000; font-weight: bold">.</span>query(Node)<span style="color: #000000; font-weight: bold">.</span>filter(Node<span style="color: #000000; font-weight: bold">.</span>name <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">u&#39;一&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>first()
 session<span style="color: #000000; font-weight: bold">.</span>delete(node)
 session<span style="color: #000000; font-weight: bold">.</span>commit()
@@ -2601,7 +2601,7 @@ session<span style="color: #000000; font-weight: bold">.</span>commit()
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>, lazy<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;joined&#39;</span>, cascade<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;all, delete-orphan&#39;</span>) <span style="color: #999988; font-style: italic"># 1 -&gt; N</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">children <span style="color: #000000; font-weight: bold">=</span> relationship(<span style="color: #dd1144">&#39;Node&#39;</span>, lazy<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;joined&#39;</span>, cascade<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;all, delete-orphan&#39;</span>) <span style="color: #999988"># 1 -&gt; N</span>
 node <span style="color: #000000; font-weight: bold">=</span> session<span style="color: #000000; font-weight: bold">.</span>query(Node)<span style="color: #000000; font-weight: bold">.</span>filter(Node<span style="color: #000000; font-weight: bold">.</span>name <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">u&#39;一&#39;</span>)<span style="color: #000000; font-weight: bold">.</span>first()
 node<span style="color: #000000; font-weight: bold">.</span>children <span style="color: #000000; font-weight: bold">=</span> []
 session<span style="color: #000000; font-weight: bold">.</span>commit()
@@ -3086,17 +3086,15 @@ $(function(){
     
 
 <script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
 </script>
     
 
@@ -3113,7 +3111,7 @@ L+J9jupw7/fwc9YPwOzQUO0xAyIjSqpBsXEHAG4DtPkpuOibdoBJwspJ2FxZrdzbvfBQKgS3+Rrc
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
