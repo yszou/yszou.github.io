@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">D3学习笔记</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2016-03-03 01:35 更新</span>
+                <span>2016-04-02 01:34 更新</span>
             </div>
         </div>
 
@@ -47,6 +47,22 @@
     </ul>
   </li>
   <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">先尽量画一个柱状图</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">数据绑定</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">映射与插值</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">6.1. 线性数据映射</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">6.2. 更广义的映射</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">SVG</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none">7.1. 形状</a>
+    </li>
+    </ul>
   </li>
   </ol>
 
@@ -237,6 +253,9 @@ console.log(query);
 d3 的选择结果，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 方法映射一个数据集，映射之后，选择与数据的差异作为结果返回。这个差异里，有可能是“选择有，但是数据没有”的多余节点，也可能是“选择没有，但是数据有”的空节点占位符。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（注意，这里我们谈 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 时，只是以“数据”的方式来演示一些效果，但是别忘了，“函数”本身也是数据，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 接收一个列表的函数当然是没问题的，使用时正好与相应的回调函数形式对应，比如在设置样式时）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 看一个完整的例子：
 </p>
 
@@ -264,7 +283,8 @@ d3 的选择结果，可以通过 <code style="margin: auto 3px; color: #228b22;
           <span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;div.wrapper&#39;</span>).selectAll(<span style="color: #dd1144">&#39;.item&#39;</span>);
           <span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> query.data(item);
           <span style="color: #999988">//var bind = query.data(item, function(d){ return d });</span>
-          bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;item&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>).text(<span style="color: #000000; font-weight: bold">function</span>(d, i){<span style="color: #000000; font-weight: bold">return</span> d});
+          bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;item&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>).text(<span style="color: #000000; font-weight: bold">function</span>(d, i){<span style="color: #000000; font-weight: bold">return</span> d}); 
+                                                                         <span style="color: #000000; font-weight: bold">&lt;--</span> 这个 d 本身可以是函数哦
           bind.exit().remove();
         }
 
@@ -622,13 +642,16 @@ d3.selectAll(<span style="color: #dd1144">&#39;table&#39;</span>).selectAll(<spa
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 的数据形式可以是一个回调函数，这个回调函数接收的是父级节点的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__data__</code> ，而我们在绑定数据的时候，数据的形式是没有限制的。所以父节点中可以保存足够复制的数据来供给子节点进一步的展开。只需要记住，这个回调函数需要返回一个列表就可以了。
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 的数据形式可以是一个回调函数，这个回调函数接收的是父级节点的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__data__</code> ，而我们在绑定数据的时候，数据的形式是没有限制的。所以父节点中可以保存足够复杂的数据来供给子节点进一步的展开。只需要记住，这个回调函数需要返回一个列表就可以了。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 （突然想到，这个回调函数是不支持异步的，但愿不会碰到这种需求吧）
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 看上面的代码，多层的展开这点不论， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">table</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">td</code> 这种 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">selectAll()</code> 的结果先保存下来，最后再指定处理它们的样式，这种方式也非常漂亮。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里注意一下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 中传入的是函数的话， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 最后得到的结果是回调函数的返回值，那么，多次调用同一个函数时的状态控制方面，是可以有很多种玩法的（比如每调用一次就多一个值之类的）。
 </p>
 
 <a class="anchor" name="toc6"></a>
@@ -1243,6 +1266,762 @@ ease(<span style="color: #dd1144">&#39;elastic&#39;</span>, <span style="color: 
 我觉得这是一个不错的开始。
 </p>
 
+<a class="anchor" name="toc13"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 数据绑定</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+数据绑定虽然前面已经介绍过了，这里把它单独拿出来再说，是想在这里通过一个例子，把 d3 中的数据绑定很容易坑人的地方讲明白。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+数据绑定的基本形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">d3.selectAll(<span style="color: #dd1144">&#39;.note&#39;</span>).data(item, <span style="color: #000000; font-weight: bold">function</span>(d, i){});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">enter()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">exit()</code> 的事了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里特别有 2 点是很容易被人忽视的：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在一次“数据刷新”中，会被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 的第二个参数： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function(d, i){}</code> 运算的数据，不光是传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">item</code> ，还包括 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">selectAll('.note')</code> 选择的页面上已存在的节点的绑定数据。简单来说，如果你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">i</code> 这个参数打印出来看的话，你看到的不一定是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0, 1, 2, 3</code> 这样的结果，可能是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0, 1, 2, 3, 0, 1, 2, 3</code> 。
+</li>
+<li style="margin: 10px auto;">d3 的“数据绑定”只是从“数据” -&gt; “节点”的单向映射，并且，数据这层，是 <em style="color: #d75100; font-style: normal;">集合</em> 的概念，它是 <strong style="color: red; font-weight: normal;">无序</strong> 的。这点特别注意要把它与节点在页面上是 “有序” 的这个概念区分清楚。如果不能搞明白第一步的细节，那么就牢记： 页面上的节点是数据的反映，它在任何时候顺序是不定的。所以， <strong style="color: red; font-weight: normal;">不要把实现逻辑依赖到节点的顺序上</strong> 。这点在绘画的时候，通常不是大部分，因为一个点的出现位置是在于它的坐标数据，至于它是第一个出现，还是第二个出现，并不影响它的位置（想想“绝对定位”这类词吧）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里通过一个例子来说明上面的内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设我们要做一个数字翻动的效果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">         ^
+1  2  3  |
+     [4] |
+
+     [3]
+1  2  4
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+大概就是这个意思，数字从 N 变成 N + 1 时，是最低位的数字加 1，并且有一个从下往上的动画效果。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先从最简单的情况考虑，实现这个翻动的动画效果。 DOM 结构我考虑的是这样的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">class=</span><span style="color: #dd1144">&quot;wrapper&quot;</span> <span style="color: #008080">style=</span><span style="color: #dd1144">&quot;height: 50px; overflow: hidden; position: relative;&quot;</span><span style="color: #000080">&gt;</span>
+    <span style="color: #000080">&lt;div</span> <span style="color: #008080">class=</span><span style="color: #dd1144">&quot;bit&quot;</span> <span style="color: #008080">style=</span><span style="color: #dd1144">&quot;position: absolute; width: 50px; height: 50px; text-align: center; left: 0; bottom: 0;&quot;</span><span style="color: #000080">&gt;</span>1<span style="color: #000080">&lt;/div&gt;</span>
+<span style="color: #000080">&lt;/div&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“绝对定位”使动画效果更容易控制，“进入”时的动画，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bottom</code> 从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-50px</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> ，而“退出”时的动画，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bottom</code> 从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">50px</code> ，这点很好理解。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实现单位数的翻动效果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+<span style="color: #000080">&lt;html&gt;</span>
+  <span style="color: #000080">&lt;head&gt;</span>
+    <span style="color: #000080">&lt;meta</span> <span style="color: #008080">charset=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000080">/&gt;</span>
+    <span style="color: #000080">&lt;title&gt;</span>D3<span style="color: #000080">&lt;/title&gt;</span>
+    <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/jq/jquery.min.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+    <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/d3/d3.js&quot;</span><span style="color: #000080">&gt;&lt;/script&gt;</span>
+  <span style="color: #000080">&lt;/head&gt;</span>
+  <span style="color: #000080">&lt;body&gt;</span>
+
+    <span style="color: #000080">&lt;div</span> <span style="color: #008080">class=</span><span style="color: #dd1144">&quot;wrapper&quot;</span> <span style="color: #008080">style=</span><span style="color: #dd1144">&quot;height: 50px; overflow: hidden; position: relative;&quot;</span><span style="color: #000080">&gt;</span>
+    <span style="color: #000080">&lt;/div&gt;</span>
+
+
+    <span style="color: #000080">&lt;script </span><span style="color: #008080">type=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000080">&gt;</span>
+      $(<span style="color: #000000; font-weight: bold">function</span>(){
+
+        <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+        setInterval(<span style="color: #000000; font-weight: bold">function</span>(){
+          bit(n);
+          <span style="color: #000000; font-weight: bold">if</span>( n <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #009999">9</span>){n <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>}
+          <span style="color: #000000; font-weight: bold">else</span> { n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span> }
+        }, <span style="color: #009999">1000</span>);
+
+        <span style="color: #000000; font-weight: bold">function</span> bit(n){
+          <span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;.wrapper&#39;</span>).selectAll(<span style="color: #dd1144">&#39;.bit&#39;</span>);
+          <span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+
+          bind <span style="color: #000000; font-weight: bold">=</span> query.data([n], <span style="color: #000000; font-weight: bold">function</span>(d, i){
+            <span style="color: #000000; font-weight: bold">return</span> d;
+          });
+
+          bind.exit()
+          .transition()
+          .duration(<span style="color: #009999">300</span>)
+          .style({
+            bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+            opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0.2&#39;</span>
+          })
+          .remove();
+
+          bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;bit&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>)
+          .style({
+            height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+            width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+            <span style="color: #dd1144">&#39;line-height&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+            <span style="color: #dd1144">&#39;text-align&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;center&#39;</span>,
+            <span style="color: #dd1144">&#39;font-size&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+            <span style="color: #dd1144">&#39;font-weight&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;bold&#39;</span>,
+            position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>,
+            bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;-50px&#39;</span>,
+            opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0.2&#39;</span>
+          })
+          .text(<span style="color: #000000; font-weight: bold">function</span>(d){ <span style="color: #000000; font-weight: bold">return</span> d })
+          .transition()
+          .duration(<span style="color: #009999">300</span>)
+          .style({
+            bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0px&#39;</span>,
+            opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1&#39;</span>
+          });
+
+        }
+      });
+    <span style="color: #000080">&lt;/script&gt;</span>
+  <span style="color: #000080">&lt;/body&gt;</span>
+<span style="color: #000080">&lt;/html&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码应该是很容易理解的。我们实现了单位数的翻动效果。现在考虑如何把它扩展到任意位数的数字上。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一种思路是，创建 N 个上面的单位数版本的翻动，然后在外层去调度这 N 个“实例”，这当然是可以的。但是这里，我们为了演示数据绑定的一些“坑”与“实质”，我们考虑直接实现任意位数的数字翻动效果。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">100</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">101</code> 这样的变化，效果应该只有最后一位数的翻动，而不应该是整个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">100</code> 往上动。所以，最开始我们能想到的数据绑定的方式，就是把一个 N 位数，按阶打散。比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">100</code> 应该拆成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1, 0, 0</code> 这三个数字作为绑定数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这时，如果就把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[1, 0, 0]</code> 这样的结构扔去绑定，那么显示在信息的结构上还少了一层结构：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">data([<span style="color: #009999">1</span>, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>], <span style="color: #000000; font-weight: bold">function</span>(d, i){});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 需要的数据，本身是一个列表，所以上述代码的结果就是，我们能在页面上创建三个节点，它们的文本可以是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1, 0, 0</code> ，但是除此之外，我们并不能维护这三个节点之前的顺序信息，别忘了，我们的原始信息是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">100</code> 这个数字。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也许有人会说， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">functio(d, i){}</code> 里面的那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">i</code> 不就是表示的顺序吗？这就是 d3 中很容易坑人的地方， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">i</code> 是数据的顺序（我们使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">append()</code> 的话，数据总是往后追加的）， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">i</code> 不是节点的顺序。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+想想下面这个例子的显示效果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&lt;!</span>DOCTYPE html<span style="color: #000000; font-weight: bold">&gt;</span>
+<span style="color: #000000; font-weight: bold">&lt;</span>html<span style="color: #000000; font-weight: bold">&gt;</span>
+  <span style="color: #000000; font-weight: bold">&lt;</span>head<span style="color: #000000; font-weight: bold">&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>meta charset<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>title<span style="color: #000000; font-weight: bold">&gt;</span>D3<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/title&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/jq/jquery.min.js&quot;</span><span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;http://s.zys.me/js/d3/d3.js&quot;</span><span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+  <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/head&gt;</span>
+  <span style="color: #000000; font-weight: bold">&lt;</span>body<span style="color: #000000; font-weight: bold">&gt;</span>
+
+
+    <span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+      $(<span style="color: #000000; font-weight: bold">function</span>(){
+        process([<span style="color: #009999">1</span>, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>]);
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){ process([<span style="color: #009999">1</span>, <span style="color: #009999">0</span>, <span style="color: #009999">1</span>]) }, <span style="color: #009999">1000</span>);
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){ process([<span style="color: #009999">1</span>, <span style="color: #009999">0</span>, <span style="color: #009999">2</span>]) }, <span style="color: #009999">2000</span>);
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){ process([<span style="color: #009999">1</span>, <span style="color: #009999">1</span>, <span style="color: #009999">2</span>]) }, <span style="color: #009999">3000</span>);
+
+        <span style="color: #999988">//setTimeout(function(){ process([1, 3, 2]) }, 4000);</span>
+
+        <span style="color: #000000; font-weight: bold">function</span> process(item){
+          <span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).selectAll(<span style="color: #dd1144">&#39;.item&#39;</span>);
+          <span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> query.data(item, <span style="color: #000000; font-weight: bold">function</span>(d, i){
+            <span style="color: #000000; font-weight: bold">return</span> d <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> i;
+          });
+
+          bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;item&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>)
+          .text(<span style="color: #000000; font-weight: bold">function</span>(d, i){ <span style="color: #000000; font-weight: bold">return</span> d});
+
+          bind.exit().remove();
+        }
+
+      });
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+  <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/body&gt;</span>
+<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/html&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它的结果是我们期望的那样： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">100 -&gt; 101 -&gt; 102 -&gt; 112</code> 吗？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">112</code> 是看不到的，显示出来的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">121</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有兴趣的可以自己调整代码去试着找出其中的原因。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里把开始说的那 2 点再次列出来：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在一次“数据刷新”中，会被 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 的第二个参数： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function(d, i){}</code> 运算的数据，不光是传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">item</code> ，还包括 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">selectAll('.note')</code> 选择的页面上已存在的节点的绑定数据。简单来说，如果你把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">i</code> 这个参数打印出来看的话，你看到的不一定是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0, 1, 2, 3</code> 这样的结果，可能是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0, 1, 2, 3, 0, 1, 2, 3</code> 。
+</li>
+<li style="margin: 10px auto;">d3 的“数据绑定”只是从“数据” -&gt; “节点”的单向映射，并且，数据这层，是 <em style="color: #d75100; font-style: normal;">集合</em> 的概念，它是 <strong style="color: red; font-weight: normal;">无序</strong> 的。这点特别注意要把它与节点在页面上是 “有序” 的这个概念区分清楚。如果不能搞明白第一步的细节，那么就牢记： 页面上的节点是数据的反映，它在任何时候顺序是不定的。所以， <strong style="color: red; font-weight: normal;">不要把实现逻辑依赖到节点的顺序上</strong> 。这点在绘画的时候，通常不是大部分，因为一个点的出现位置是在于它的坐标数据，至于它是第一个出现，还是第二个出现，并不影响它的位置（想想“绝对定位”这类词吧）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在代码中加入一些调试信息：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> process(item){
+  console.log(<span style="color: #dd1144">&#39;------------&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).selectAll(<span style="color: #dd1144">&#39;.item&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> query.data(item, <span style="color: #000000; font-weight: bold">function</span>(d, i){
+    <span style="color: #000000; font-weight: bold">var</span> id <span style="color: #000000; font-weight: bold">=</span>  d <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;|&#39;</span> <span style="color: #000000; font-weight: bold">+</span> i;
+    console.log(i, <span style="color: #dd1144">&#39;-&gt;&#39;</span>, d, <span style="color: #dd1144">&#39;*&#39;</span>, id);
+    <span style="color: #000000; font-weight: bold">return</span> id;
+  });
+
+  bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;item&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>)
+  .text(<span style="color: #000000; font-weight: bold">function</span>(d, i){ <span style="color: #000000; font-weight: bold">return</span> d});
+
+  bind.exit().remove();
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们能看到这样的输出（引号我去掉了，并加上了相关信息）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">------------ A process([1, 0, 0])
+
+0 -&gt; 1 * 1|0
+1 -&gt; 0 * 0|1
+2 -&gt; 0 * 0|2
+
+------------ B process([1, 0, 1])
+
+0 -&gt; 1 * 1|0 
+1 -&gt; 0 * 0|1
+2 -&gt; 0 * 0|2     OUT --&gt; 1|0, 0|1
+0 -&gt; 1 * 1|0
+1 -&gt; 0 * 0|1
+2 -&gt; 1 * 1|2     IN --&gt; 1|0, 0|1, 1|2
+
+------------ C process([1, 0, 2])
+
+0 -&gt; 1 * 1|0
+1 -&gt; 0 * 0|1
+2 -&gt; 1 * 1|2     OUT --&gt; 1|0, 0|1
+0 -&gt; 1 * 1|0
+1 -&gt; 0 * 0|1
+2 -&gt; 2 * 2|2     IN --&gt; 1|0, 0|1, 2|2
+
+------------ D process([1, 1, 2])
+
+0 -&gt; 1 * 1|0
+1 -&gt; 0 * 0|1     OUT
+2 -&gt; 2 * 2|2         --&gt; 1|0, 2|2
+0 -&gt; 1 * 1|0
+1 -&gt; 1 * 1|1     IN
+2 -&gt; 2 * 2|2        --&gt; 1|0, 2|2, 1|1 --&gt; 1, 2, 1
+
+
+
+process([3, 2, 2]) ??
+
+0 -&gt; 1 * 1|0     OUT
+1 -&gt; 2 * 2|1     
+2 -&gt; 1 * 1|2     OUT --&gt; 2|1
+
+0 -&gt; 3 * 3|0     IN
+1 -&gt; 2 * 2|1     
+2 -&gt; 2 * 2|2     IN --&gt; 2|1, 3|0, 2|2 --&gt; 2, 3, 2
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过上面的输出加注解，我们很容易看出 d3 对数据绑定的处理流程了：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data(item, function(d, i){})</code> 第二参数，会有两组数据经过它。
+</li>
+<li style="margin: 10px auto;">第一组是当前页面中已存在的节点及对应的绑定数据， <strong style="color: red; font-weight: normal;">按节点顺序</strong> 。
+</li>
+<li style="margin: 10px auto;">第二组是调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data()</code> 时传入的数据， <strong style="color: red; font-weight: normal;">按数据结构的顺序</strong> 。
+</li>
+<li style="margin: 10px auto;">然后是对两组数据的比对， <strong style="color: red; font-weight: normal;">集合概念，无顺序</strong> 。
+</li>
+<li style="margin: 10px auto;">如果使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">append()</code> ，则最后的结构是多余的去掉，新增的追加到最后， <strong style="color: red; font-weight: normal;">所以最后的结构，顺序是不定的，跟你传入数据的顺序有关，但不完全由它决定</strong>。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的问题搞清楚之后，回到我们的例子中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">         ^
+1  2  3  |
+     [4] |
+
+     [3]
+1  2  4
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+剩下的问题就简单了。一维的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[1, 2, 3]</code> 因为缺少“顺序”信息，所以是不够用的，那我们可以在数据上再加一维嘛，我们自己维护的顺序就可靠了啊， 使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[ [1, 0], [2, 1], [3, 2] ]</code> 的结构就可以完整地描述我们的原始数字了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过这样还有一个问题，考虑 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1234</code> 这个数字，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[ [1, 0], [2, 1], [3, 2], [4, 3] ]</code>。这里有“位对齐”的问题，按我们的结构 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">123</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1234</code> 的区别，就是后面在尾部多了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">4</code> ，这在数字翻动的表现中显示是不对的，正确的区别应该是 前面多了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> ，变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1123</code> ，左起，第二位由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> ，第三位由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">3</code> ，第四位由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">3</code> 变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">4</code> 。要反映这种变化，我们的序号应该从右起：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">123  --&gt; [         [1, 2], [2, 1], [3, 0] ]
+1234 --&gt; [ [1, 3], [2, 2], [3, 1], [4, 0] ]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这跟每位上自己的“阶”是一致的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+数据结构定下来之后，再想想如果表现这种结构，根据前面的经验，最后的用于显示的数据，不一定是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[ [x, <span style="color: #009999">3</span>], [x, <span style="color: #009999">2</span>], [x, <span style="color: #009999">1</span>], [x, <span style="color: #009999">0</span>] ]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种刚好顺序正确的，也可能是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[ [x, <span style="color: #009999">1</span>], [x, <span style="color: #009999">3</span>], [x, <span style="color: #009999">0</span>], [x, <span style="color: #009999">1</span>] ]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样的。但是现在我们面对这种情况，就很容易处理了，正确的序号我们自己编码在其中的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后修正过的，支持任意位数数字的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bit(n)</code> 函数是这样的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> bit(n){
+  <span style="color: #000000; font-weight: bold">var</span> query <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;.wrapper&#39;</span>).selectAll(<span style="color: #dd1144">&#39;.bit&#39;</span>);
+  <span style="color: #000000; font-weight: bold">var</span> bind <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+  <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+
+  <span style="color: #000000; font-weight: bold">if</span>(n){
+    s <span style="color: #000000; font-weight: bold">=</span> n.toString().split(<span style="color: #dd1144">&#39;&#39;</span>);
+    s <span style="color: #000000; font-weight: bold">=</span> $.map(s, <span style="color: #000000; font-weight: bold">function</span>(d, i){
+      <span style="color: #000000; font-weight: bold">return</span> [[d, s.length <span style="color: #000000; font-weight: bold">-</span> i <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>, s.length]];   <span style="color: #999988">// 最后加入总长度是为了处理显示位置的需要</span>
+    });
+
+    bind <span style="color: #000000; font-weight: bold">=</span> query.data(s, <span style="color: #000000; font-weight: bold">function</span>(d, i){
+      <span style="color: #000000; font-weight: bold">var</span> t <span style="color: #000000; font-weight: bold">=</span> d[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #0086B3">Array</span>(d[<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>).join(<span style="color: #dd1144">&#39;0&#39;</span>) <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;L&#39;</span> <span style="color: #000000; font-weight: bold">+</span> d[<span style="color: #009999">2</span>];
+      <span style="color: #000000; font-weight: bold">return</span> t;
+    });
+  } <span style="color: #000000; font-weight: bold">else</span> {
+    bind <span style="color: #000000; font-weight: bold">=</span> query.data([]);
+  }
+
+  bind.exit()
+  .transition()
+  .duration(<span style="color: #009999">300</span>)
+  .style({
+    bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+    opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0.2&#39;</span>
+  })
+  .remove();
+
+  bind.enter().append(<span style="color: #dd1144">&#39;div&#39;</span>).classed(<span style="color: #dd1144">&#39;bit&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>)
+  .style({
+    height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+    width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+    <span style="color: #dd1144">&#39;line-height&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+    <span style="color: #dd1144">&#39;text-align&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;center&#39;</span>,
+    <span style="color: #dd1144">&#39;font-size&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;50px&#39;</span>,
+    <span style="color: #dd1144">&#39;font-weight&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;bold&#39;</span>,
+    position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>,
+    bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;-50px&#39;</span>,
+    opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0.2&#39;</span>
+  })
+  .each(<span style="color: #000000; font-weight: bold">function</span>(d, i){ d3.select(<span style="color: #000000; font-weight: bold">this</span>).style(<span style="color: #dd1144">&#39;left&#39;</span>, (d[<span style="color: #009999">2</span>] <span style="color: #000000; font-weight: bold">-</span> d[<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>) <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">50</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>)})
+  .text(<span style="color: #000000; font-weight: bold">function</span>(d){ <span style="color: #000000; font-weight: bold">return</span> d[<span style="color: #009999">0</span>] })
+  .transition()
+  .duration(<span style="color: #009999">300</span>)
+  .style({
+    bottom<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;0px&#39;</span>,
+    opacity<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1&#39;</span>
+  });
+
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">left</code> 值的计算，我们使用自己编码的数据结构中的值，这样即使顺序乱的，也不影响最后的显示（个位数可能放在第一个节点位置）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在可以一直跑了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> process(){
+  <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+  <span style="color: #000000; font-weight: bold">var</span> timer <span style="color: #000000; font-weight: bold">=</span> setInterval(<span style="color: #000000; font-weight: bold">function</span>(){
+    n <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>;
+    bit(n);
+  }, <span style="color: #009999">350</span>);
+}
+process();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意这里的“切换时间”上，要留够 消失/加入 动画的时间，否则节点还没有删除就开始下一轮的数据比对，结果就会有问题。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 映射与插值</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果说前面介绍数据绑定部分的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">enter()</code> / <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">exit()</code> 是 d3 的神来之笔，那这部分的 <em style="color: #d75100; font-style: normal;">插值</em> 运用，就是 d3 中的鬼斧神工了。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 线性数据映射</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里说的“映射”，大概的行为，就像“函数”一样。一个定义域，一个值域。而一个很直观的概念，就是坐标，本质上，也是一个比例尺。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+试想，一个 y 值为 100 的点，和一个 y 值为 200 的点，画出来的“物理”位置，其实就是一个“缩放”的过程。假如 100 的点画在 <em style="color: #d75100; font-style: normal;">css</em> 属性的 <em style="color: #d75100; font-style: normal;">top</em> 值为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X</code> 的地方，那么 200 的点，就应该是画在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X / 2</code> 的地方。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">    ---  ---
+     ^    ^
+     |    |
+          |    
+   X / 2  |
+               TOP
+     |    X
+     v
+          |
+     _    |
+    | |   |
+    | |   v
+    | |
+    | |   _ 
+    | |  | |
+    | |  | |
+    | |  | |
+    |_|  |_|
+    
+    
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，要转换成 svg 的坐标系也是类似的关系。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那么这些数据上的关系，在 d3 中就可以它的 <em style="color: #d75100; font-style: normal;">scale</em> 机制来专门处理，比如我们定义一个数值的线性映射关系：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> linear <span style="color: #000000; font-weight: bold">=</span> d3.scale.linear().domain([<span style="color: #009999">0</span>, <span style="color: #009999">10</span>]).range([<span style="color: #009999">0</span>, <span style="color: #009999">100</span>]);
+console.log(linear(<span style="color: #009999">5</span>)); <span style="color: #999988">// 50</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的最后结果是输出 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">50</code> ，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">linear()</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">domain()</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">range()</code> 这一串的调用定义了一个从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[0, 10]</code> 这个定义域到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[0, 100]</code> 值域的，线性的映射关系。那么自然， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">5</code> 对应的映射结果就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">50</code> 了，函数式 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">f(x) = x * 10</code> ，很容易看出来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">domain([0, 10])</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">range([0, 100])</code> 这两个数据换个角度看，其实也就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(0, 0)</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(10, 100)</code> 这两个点，两点就能确定一条直线嘛。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+$$ \frac{y - 0}{x - 0} = \frac{100 - 0}{10 - 0} \Longrightarrow f(x) = 10x $$
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+纯数字方面的，除了线性映射， d3 还提供了对数映射，幂映射等现成的实现：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> pow <span style="color: #000000; font-weight: bold">=</span> d3.scale.pow().exponent(<span style="color: #009999">2</span>); <span style="color: #999988">// n ^ 2</span>
+console.log(pow(<span style="color: #009999">4</span>)); <span style="color: #999988">// 16</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面是一个幂映射。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 更广义的映射</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面介绍的数值上的映射看起来也许像是简单的一元函数的小把戏，现在我们就更进一步，看一下 d3 中的非单纯数值的映射。
+</p>
+
+<a class="anchor" name="toc17"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. SVG</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于 SVG 具体的内容这里不详细介绍了，这块不关注 SVG 自己的细节，有用到的地方再说。根据 d3 的文档，提几点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">SVG 本身提供了一些“形状”的现成实现，额外的更通用的“路径”，可以使用 <em style="color: #d75100; font-style: normal;">path</em> 。
+</li>
+<li style="margin: 10px auto;">对 SVG 的“形状”，或者被 <em style="color: #d75100; font-style: normal;">g</em> 包起来的“形状集”，可以使用 <em style="color: #d75100; font-style: normal;">transform</em> 对其进行几何变换。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">fill</em> 和 <em style="color: #d75100; font-style: normal;">stroke</em> 是描边和填充属性，可以直接作用标签属性，但更推荐在 css 中使用它们。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+html 中的标签是有“名字空间”概念的，比如对于 svg 中的矩形，它们的“完整名称”应该是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">svg:rect</code> ， d3 对一些已知的名字空间有做预处理 <a href="https://github.com/mbostock/d3/wiki/Namespaces#prefix" style="color: #0184b7; text-decoration: none">https://github.com/mbostock/d3/wiki/Namespaces#prefix</a> ，所以我们在创建了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">svg</code> 节点之后，我们不需要额外关注名字空间的问题。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.1. 形状</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<a href="https://github.com/mbostock/d3/wiki/SVG-Shapes" style="color: #0184b7; text-decoration: none">https://github.com/mbostock/d3/wiki/SVG-Shapes</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+矩形：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:rect x=&quot;0&quot; y=&quot;0&quot; width=&quot;0&quot; height=&quot;0&quot; rx=&quot;0&quot; ry=&quot;0&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;rect&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;x&#39;</span>, <span style="color: #dd1144">&#39;0&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;y&#39;</span>, <span style="color: #dd1144">&#39;0&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;rx&#39;</span>, <span style="color: #dd1144">&#39;10&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;ry&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;50&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+圆：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:circle cx=&quot;0&quot; cy=&quot;0&quot; r=&quot;0&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;circle&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;cx&#39;</span>, <span style="color: #dd1144">&#39;20&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;cy&#39;</span>, <span style="color: #dd1144">&#39;20&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;r&#39;</span>, <span style="color: #dd1144">&#39;10&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+椭圆：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:ellipse cx=&quot;0&quot; cy=&quot;0&quot; rx=&quot;0&quot; ry=&quot;0&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;ellipse&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;cx&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;cy&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;rx&#39;</span>, <span style="color: #dd1144">&#39;10&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;ry&#39;</span>, <span style="color: #dd1144">&#39;50&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+连线：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:line x1=&quot;0&quot; y1=&quot;0&quot; x2=&quot;0&quot; y2=&quot;0&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;line&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;x1&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;y1&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;x2&#39;</span>, <span style="color: #dd1144">&#39;10&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;y2&#39;</span>, <span style="color: #dd1144">&#39;50&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多线段（非闭合）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:polyline points=&quot;&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;polyline&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;points&#39;</span>, <span style="color: #dd1144">&#39;0,0 100,10 80,200 300,50&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多边形（闭合）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:polygon points=&quot;&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;polygon&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;points&#39;</span>, <span style="color: #dd1144">&#39;0,0 100,10 80,200 300,50&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+文本（这里还会有基线对齐之类的机制）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">// svg:text x=&quot;0&quot; y=&quot;0&quot; dx=&quot;0&quot; dy=&quot;0&quot; text-anchor=&quot;start&quot;</span>
+
+<span style="color: #000000; font-weight: bold">var</span> sharp <span style="color: #000000; font-weight: bold">=</span> d3.select(<span style="color: #dd1144">&#39;body&#39;</span>).append(<span style="color: #dd1144">&#39;svg&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>).attr(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #dd1144">&#39;1000px&#39;</span>)
+              .append(<span style="color: #dd1144">&#39;text&#39;</span>);
+
+sharp
+.attr(<span style="color: #dd1144">&#39;x&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;y&#39;</span>, <span style="color: #dd1144">&#39;100&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;dx&#39;</span>, <span style="color: #dd1144">&#39;0&#39;</span>)
+.attr(<span style="color: #dd1144">&#39;dy&#39;</span>, <span style="color: #dd1144">&#39;0&#39;</span>)
+.text(<span style="color: #dd1144">&#39;哈哈哈&#39;</span>)
+.style({
+  fill<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>,
+  stroke<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;blue&#39;</span>
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+任意路径： <em style="color: #d75100; font-style: normal;">path</em> ， <a href="https://www.w3.org/TR/SVG/paths.html#PathData" style="color: #0184b7; text-decoration: none">https://www.w3.org/TR/SVG/paths.html#PathData</a>
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">d</code> 属性
+</li>
+<li style="margin: 10px auto;">小写是相对位置，大写是绝对位置
+</li>
+<li style="margin: 10px auto;">Mm , move 移动
+</li>
+<li style="margin: 10px auto;">Ll , line 连线
+</li>
+<li style="margin: 10px auto;">Hh, 水平连线
+</li>
+<li style="margin: 10px auto;">Vv, 垂直连线
+</li>
+<li style="margin: 10px auto;">Z , close 关闭
+</li>
+<li style="margin: 10px auto;">各种曲线...
+</li>
+</ul>
+
+
 <style type="text/css">
 body.z { background-color: #eff3fa; }
 body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
@@ -1255,7 +2034,7 @@ body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-ind
 </style>
     
 
-<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
 <script type="text/javascript">
 
 $(function(){
@@ -1541,30 +2320,61 @@ $(function(){
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'd3';
-  var disqus_url = 'http://zouyesheng.com/d3.html';
+  var disqus_url = 'https://www.zouyesheng.com/d3.html';
   var disqus_title = 'D3学习笔记';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>
 <noscript>评论功能需要javascript的支持</noscript>
     
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    styles: {
+        '.MathJax': {
+            'color': '#6D3333'
+        },
+        '.MathJax_SVG': {
+            'outline': 'none'
+        },
+        ".MathJax_SVG svg > g, .MathJax_SVG_Display svg > g":  { 
+          fill: "#6D3333", 
+          stroke: "#333" 
+        } 
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_SVG">
+</script>
+    
+
 <script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
 </script>
     
 
@@ -1581,7 +2391,7 @@ jv3HG9UPV8YDk+iLgLAAAAAASUVORK5CYII=
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

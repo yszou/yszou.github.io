@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">使用 Python 实现 LDAP 交互的例子</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛 2013-3-27</span>
-                <span>2015-09-30 15:12 更新</span>
+                <span>2016-01-10 16:55 更新</span>
             </div>
         </div>
 
@@ -31,52 +31,52 @@ Python 上有现成的 ldap 模块，在 <a href="http://www.python-ldap.org/" s
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988; font-style: italic"># -*- coding: utf-8 -*-</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
 
 
-import sys
-import ldap
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">sys</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">ldap</span>
 
-ldap.set_option(ldap.OPT_REFERRALS, <span style="color: #009999">0</span>)    <span style="color: #000000; font-weight: bold">&lt;---</span> 不加这个访问不到MS的服务
-con <span style="color: #000000; font-weight: bold">=</span> ldap.initialize(<span style="color: #dd1144">&#39;server&#39;</span>) 
-con.simple_bind_s( <span style="color: #dd1144">&#39;user&#39;</span>, <span style="color: #dd1144">&#39;password&#39;</span> )
+ldap<span style="color: #000000; font-weight: bold">.</span>set_option(ldap<span style="color: #000000; font-weight: bold">.</span>OPT_REFERRALS, <span style="color: #009999">0</span>)    <span style="color: #000000; font-weight: bold">&lt;---</span> <span style="color: #a61717; background-color: #e3d2d2">不加这个访问不到</span>MS<span style="color: #a61717; background-color: #e3d2d2">的服务</span>
+con <span style="color: #000000; font-weight: bold">=</span> ldap<span style="color: #000000; font-weight: bold">.</span>initialize(<span style="color: #dd1144">&#39;server&#39;</span>) 
+con<span style="color: #000000; font-weight: bold">.</span>simple_bind_s( <span style="color: #dd1144">&#39;user&#39;</span>, <span style="color: #dd1144">&#39;password&#39;</span> )
 
 base_dn <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;dc=xxx,dc=com&#39;</span>
-scope <span style="color: #000000; font-weight: bold">=</span> ldap.SCOPE_SUBTREE
+scope <span style="color: #000000; font-weight: bold">=</span> ldap<span style="color: #000000; font-weight: bold">.</span>SCOPE_SUBTREE
 
-input <span style="color: #000000; font-weight: bold">=</span> sys.argv[<span style="color: #009999">1</span>]
+<span style="color: #0086B3">input</span> <span style="color: #000000; font-weight: bold">=</span> sys<span style="color: #000000; font-weight: bold">.</span>argv[<span style="color: #009999">1</span>]
 
-filter <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;(&amp;(|(cn=*%(input)s*)(mail=*%(input)s*))(mail=*))&quot;</span> <span style="color: #000000; font-weight: bold">% {&#39;input&#39;: input}</span>
+<span style="color: #0086B3">filter</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;(&amp;(|(cn=*%(input)s*)(mail=*%(input)s*))(mail=*))&quot;</span> <span style="color: #000000; font-weight: bold">%</span> {<span style="color: #dd1144">&#39;input&#39;</span>: <span style="color: #0086B3">input</span>}
 
-<span style="color: #000000; font-weight: bold">attrs = [&#39;mail&#39;, &#39;givenName&#39;, &#39;sn&#39;, &#39;department&#39;, &#39;telephoneNumber&#39;, &#39;displayName&#39;]</span>
+attrs <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #dd1144">&#39;mail&#39;</span>, <span style="color: #dd1144">&#39;givenName&#39;</span>, <span style="color: #dd1144">&#39;sn&#39;</span>, <span style="color: #dd1144">&#39;department&#39;</span>, <span style="color: #dd1144">&#39;telephoneNumber&#39;</span>, <span style="color: #dd1144">&#39;displayName&#39;</span>]
 
-<span style="color: #000000; font-weight: bold">result = []</span>
-<span style="color: #000000; font-weight: bold">for i in con.search_s(base_dn, scope, filter, None):</span>
-<span style="color: #000000; font-weight: bold">    if i[0]:</span>
-<span style="color: #000000; font-weight: bold">        d = {}</span>
-<span style="color: #000000; font-weight: bold">        for k in i[1]:</span>
-<span style="color: #000000; font-weight: bold">            d[k] = i[1][k][0]</span>
+result <span style="color: #000000; font-weight: bold">=</span> []
+<span style="color: #000000; font-weight: bold">for</span> i <span style="color: #000000; font-weight: bold">in</span> con<span style="color: #000000; font-weight: bold">.</span>search_s(base_dn, scope, <span style="color: #0086B3">filter</span>, <span style="color: #999999">None</span>):
+    <span style="color: #000000; font-weight: bold">if</span> i[<span style="color: #009999">0</span>]:
+        d <span style="color: #000000; font-weight: bold">=</span> {}
+        <span style="color: #000000; font-weight: bold">for</span> k <span style="color: #000000; font-weight: bold">in</span> i[<span style="color: #009999">1</span>]:
+            d[k] <span style="color: #000000; font-weight: bold">=</span> i[<span style="color: #009999">1</span>][k][<span style="color: #009999">0</span>]
 
-<span style="color: #000000; font-weight: bold">        if &#39;telephoneNumber&#39; not in d:</span>
-<span style="color: #000000; font-weight: bold">            d[&#39;telephoneNumber&#39;] = &#39;(无电话)&#39;</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #dd1144">&#39;telephoneNumber&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d:
+            d[<span style="color: #dd1144">&#39;telephoneNumber&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;(无电话)&#39;</span>
 
-<span style="color: #000000; font-weight: bold">        if &#39;department&#39; not in d:</span>
-<span style="color: #000000; font-weight: bold">            d[&#39;department&#39;] = &#39;(无部门)&#39;</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #dd1144">&#39;department&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d:
+            d[<span style="color: #dd1144">&#39;department&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;(无部门)&#39;</span>
 
-<span style="color: #000000; font-weight: bold">        if &#39;sn&#39; not in d and &#39;givenName&#39; not in d:</span>
-<span style="color: #000000; font-weight: bold">            d[&#39;givenName&#39;] = d.get(&#39;displayName&#39;, &#39;&#39;)</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #dd1144">&#39;sn&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d <span style="color: #000000; font-weight: bold">and</span> <span style="color: #dd1144">&#39;givenName&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d:
+            d[<span style="color: #dd1144">&#39;givenName&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> d<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;displayName&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>)
 
-<span style="color: #000000; font-weight: bold">        if &#39;sn&#39; not in d:</span>
-<span style="color: #000000; font-weight: bold">            d[&#39;sn&#39;] = &#39;&#39;</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #dd1144">&#39;sn&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d:
+            d[<span style="color: #dd1144">&#39;sn&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>
 
-<span style="color: #000000; font-weight: bold">        if &#39;givenName&#39; not in d:</span>
-<span style="color: #000000; font-weight: bold">            d[&#39;givenName&#39;] = &#39;&#39;</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #dd1144">&#39;givenName&#39;</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">in</span> d:
+            d[<span style="color: #dd1144">&#39;givenName&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>
 
-<span style="color: #000000; font-weight: bold">        result.append(d)</span>
+        result<span style="color: #000000; font-weight: bold">.</span>append(d)
 
-<span style="color: #000000; font-weight: bold">print &#39;共找到结果 %</span>s 条<span style="color: #dd1144">&#39; % (len(result))</span>
-<span style="color: #dd1144">for d in result:</span>
-<span style="color: #dd1144">    print &#39;</span><span style="color: #000000; font-weight: bold">%(mail)s\t%</span>(sn)s<span style="color: #000000; font-weight: bold">%(givenName)s\t%</span>(telephoneNumber)s <span style="color: #000000; font-weight: bold">%(department)s&#39; %</span> d
+<span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;共找到结果 %s 条&#39;</span> <span style="color: #000000; font-weight: bold">%</span> (<span style="color: #0086B3">len</span>(result))
+<span style="color: #000000; font-weight: bold">for</span> d <span style="color: #000000; font-weight: bold">in</span> result:
+    <span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;%(mail)s\t%(sn)s%(givenName)s\t%(telephoneNumber)s %(department)s&#39;</span> <span style="color: #000000; font-weight: bold">%</span> d
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -105,7 +105,7 @@ body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-ind
 </style>
     
 
-<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
 <script type="text/javascript">
 
 $(function(){
@@ -391,12 +391,12 @@ $(function(){
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'ldap-python-example';
-  var disqus_url = 'http://zouyesheng.com/ldap-python-example.html';
+  var disqus_url = 'https://www.zouyesheng.com/ldap-python-example.html';
   var disqus_title = '使用 Python 实现 LDAP 交互的例子';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>
@@ -404,17 +404,15 @@ $(function(){
     
 
 <script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
 </script>
     
 
@@ -431,7 +429,7 @@ rkJggg==
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2015 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
