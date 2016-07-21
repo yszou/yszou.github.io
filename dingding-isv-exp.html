@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>钉钉 ISV 应用开发的一些心得 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">钉钉 ISV 应用开发的一些心得</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-07-21 14:18 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">背景</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">做一个套与做 N 个套件没区别</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">使用 SSH 远程转发调试后端</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">为各个环境创建利于前端调试的应用</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 背景</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前段时间从前到后完整地做完了一个简单的钉钉上的 ISV 应用 —— 猿活动。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最开始想做这么一个小工具，是想到，平时部门中经常会组织一些分享活动，但是这些分享活动却没有一个比较直观的“站点”来记录一次又一次的，很多人的努力的付出，这是很可惜的事。同时，在做这些活动的时候，也缺少一些互动的手段，比如现场签到，打赏什么的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好吧，刚开始的时候是这样想的，当然，在做的过程中，也发现钉钉的基于“组织”的应用场景，在某些情况下限制挻大的（比如现场的交互，因为到现场的人并不一定是某个“企业”的成员），所以功能上也简化了很多。（其实真相是只有 3 个周末时间，只能先搞出目前这些简单功能了）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+中间在做的过程中碰到了另一个朋友，他有一些想法，并且自己也尽力做了很多工作，就差个程序员。我见功能很简单（就是最简单的文章呈现功能），就帮他做出来了。之后，我也随便把他的这块内容管理功能，及我之前想的活动相关的功能，合在一起，变成了现在这个应用的样子了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<a href="http://ape.fgt.im" style="color: #0184b7; text-decoration: none">http://ape.fgt.im</a> 这个页面中的 5 张图就把这个小东西的功能说完了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/ape-qr.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有兴趣的，可以扫描上面的二维码安装试试看（需要企业管理员权限才能安装应用）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+技术方面，前后端是完全分离的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后端用 Python 写的，一套东西是 tornado 和 sqlalchemy 。代码在：TODO
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前端是 AngularJS 那套，代码在：TODO （前端代码目前跟我工作上的业务代码是一起的，对外就不方便了哈，以后有机会拆出来我再回来补吧）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实还有另外一套东西，扫码登录的那个简单后台，也是一个单独的前端项目（配合约定的后端服务的格式工作），代码在：TODO （代码目前跟我工作上的业务代码是一起的，对外就不方便了哈，以后有机会拆出来我再回来补吧）
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 做一个套与做 N 个套件没区别</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先说第一点心得。这方面你应该已经理解 ISV 中的套件是如何工作的了，如果不清楚，可以先看看：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">钉钉手机端应用获取当前用户信息流程 <a href="https://www.zouyesheng.com/dingding-userinfo.html" style="color: #0184b7; text-decoration: none">https://www.zouyesheng.com/dingding-userinfo.html</a>
+</li>
+<li style="margin: 10px auto;">钉钉 ISV 接入流程 <a href="https://www.zouyesheng.com/dingding-isv.html" style="color: #0184b7; text-decoration: none">https://www.zouyesheng.com/dingding-isv.html</a>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一般我们最开始来做一个套件时，会习惯性地把套件相关信息（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_secret</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">token</code> 等）作为配置写到配置文件当中。最开始我也是这样干的。但是在对接流程时，这样我经常会有非常别扭的感觉。原因是，除了套件本身的信息，在 ISV 的授权流程当中，企业相关的信息，你还是得作一般化的，比较正式的持久化处理，因为会有 N 个企业用到你的套件，每个企业都有自己的一套“配置信息”。简单来说，企业这套信息你要放到关系数据库的表中保存。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再者钉钉的应用场景一般是基于“组织”的，也就是说你的业务数据模型中，“企业”一定是一个独立的实体（很多业务的实体表中，都会有一个“企业”的外键）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在，“企业”已经是一个连接业务流程，跟钉钉授权流程的一个中间角色了。再细想钉钉的授权流程，企业的授权对象，是“套件”，而企业的授权状态本身有多种，这也是一个需要在记录的东西。到这里，其实已经能看出来，如果在数据模型中没有“套件”这个实体，已经会让人不舒服了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更进一步，套件本身还有近 10 个属性，而且有几个属性还是动态的。（这跟你接一个统一的用户系统，只在相关表中记一个用户 ID 完全不是一回事了）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与其在配置文件中写死套件的几属性，再搞个缓存系统什么的去维护这个套件另外几个属性，同时忍受数据模型中因为没有“套件”这个实体的不完整感：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">你就专门为套件建一个表，每个套件作为一条记录来维护相关信息，是一个更直观，更经济，更灵活的处理方式。</strong>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而多出“套件”这个维度的代价，仅仅受限在 ISV 授权流程中，并不会蔓延到你的业务流程中去，因为你的业务流程只关注这是哪个企业的数据，而不关心它到底是从哪个应用来的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我用 5 张表处理 ISV 授权的流程数据：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-isv-table.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dingding_isv_corp_relieve</code> 是企业取消授权时的一个历史记录。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dingding_isv_corp_app_agent</code> 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code> 与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 的对应关系，这在获取企业授权之后，通过服务端服务可以查询到，并且在激活应用时需要用到相关信息，在 jsapi 签名响应时也需要响应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent_id</code> 信息。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dingding_isv_agent</code> 这个记录企业中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agent</code> 的状态。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把套件作为单独是的实体在系统中处理之后，创建套件本身就是一个随手的事了。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">新建一条记录，填上新建套件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">token</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">aes_key</code> 。
+</li>
+<li style="margin: 10px auto;">新建套件的回调地址中，需要标识套件。（用参数或写在路径中，我是写在路径中的，比如 <a href="http://ape.fgt.im/dingding-isv-callback/SUITE" style="color: #0184b7; text-decoration: none">http://ape.fgt.im/dingding-isv-callback/SUITE</a>）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+成功创建套之后，再把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">suite_key</code> 等信息补到数据库中就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一步开发出的，随时随手创建套件的能力，为之后我们的调试提供了巨大的方便。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整个流程的视频演示：
+</p>
+<iframe height=498 width=510 src="http://player.youku.com/embed/XMTY1MjI4ODMzMg==" frameborder=0 allowfullscreen></iframe>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 使用 SSH 远程转发调试后端</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这算是所有跟公网回调相关的场景的标准处理方式了吧，以前做微信的公众号开发时就这样干的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说，像钉钉的推送这种，它需要访问公网机器，并且之后的调试你也不方便在手机上作静态的 DNS 设置，这在开发时是比较不方便的，直接登录服务器写代码毕竟没有自己本地机器舒服。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以我们想到的一个办法，就是通过代理把远端服务器上的访问导到本机。而这种远端转发的能力，是 SSH 自带的。两步就可以了：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sshd</code> 的配置中（比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/etc/ssh/sshd_config</code>）添加：
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">GatewayPorts clientspecified
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+这让客户端可以指定转发端口。
+</li>
+<li style="margin: 10px auto;">然后本机启：
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">ssh -R 0.0.0.0:9000:localhost:8888 root@host
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+就是把到达远端任意网卡的 9000 端口访问都转到本机的 8888 端口上来。这样我们本机服务启到 8888 上就可以正常响应钉钉服务器对公网机器的访问了。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更多的细节可以参考： <a href="http://www.ibm.com/developerworks/cn/linux/l-cn-sshforward/" style="color: #0184b7; text-decoration: none">http://www.ibm.com/developerworks/cn/linux/l-cn-sshforward/</a>
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 为各个环境创建利于前端调试的应用</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为是前后端代码完全分离的结构，所以前端的调试上需要稍微单独设计一下。前后完全分离，就是后端除了渲染一个页面（里面会加载前端资源）之外，剩下的全是响应 json 的服务。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+之前开发 PC 上的页面是，我们的做法是本地启一个静态 Web 服务就好了，后端资源的地址前端随意控制的。这样我改前端代码，直接在浏览器刷新就能看到效果，调试很方便。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是换到做钉钉的移动端页面时，情况有点不同，就是登录流程及钉钉的 jsapi 部分。业务上的登录流程需要在钉钉环境才能完成，单独的浏览器环境无法登录（当然你可以单独做另一套登录机制）。钉钉的 jsapi 部分在单独的浏览器上更没办法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，我们需要在钉钉上调试。这方面，最简单直接的办法就是让钉钉扫二维码来打开指定页面（同网内部地址都可以）。不过在登录上有个小问题，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">corp_id</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app_id</code> 这些参数，为了登录流程正常完成，你可能总是需要自己把这些参数写死加上之后，再生成二维码让钉钉来扫。（而为了找这些参数，可能你总是需要多次登录管理后台，相信我，这事一点也不有趣）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“开发体验”对心情的影响是很重要的，也效率的影响也是极大的，我希望的环境是打开电脑写完代码就能看到结果，还要去找参数，还去拼地址，还去生成二维码，还去扫码，太麻烦。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我现在的作法是，直接创建一个为开发调试而用的套件，里面又为各个前端环境创建不同的应用（比如CDN测试环境，公司时的本机环境，家里时的本机环境）。这样，我只需要本机启一个静态 Web 服务器（本机 IP 相对是固定的），改完前端代码，在钉钉中直接打开相应的应用就可以了，其它事都不用管，世界清静了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/dingding-test-suite.jpg" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'dingding-isv-exp';
+  var disqus_url = 'https://www.zouyesheng.com/dingding-isv-exp.html';
+  var disqus_title = '钉钉 ISV 应用开发的一些心得';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoklEQVR4nN2XPZKjMBSEvze4Ss7E
+DeAiiy9mD0wRzLEWDRcRNxCZqML0BuON1ptZwe7L1EF39dP7kUz8GdvbExD+PTSY2TnUcP5arTUz
+awuqmSQuiQX8jpP2oo5Xa/nio4V1gGBD8fyqriI/GhdfzPsXdB2atUr3tqwaCpLc4ffGHdA4aW9y
+OW8yM+ZlgDld2cxOJb1Jkg4/yk1U36di3tBEJRckZaiiJq7lMokmP8bceUUdAFby3h5VEiRp4gqW
+qnKZfEN2Ind8mPUJ9LPZyk6uW3sONaD6U9v7OsaCaqpZMusoZg2LDyo4ldFBLyz10U2Am6BklRx+
+jBkvuaC9yReNJatkXnb8tA7L+r4OC1+v4n0aOuiloKHhoh2pZAegoFGYpGxSpKMvqaZURYVE4w6/
+I6Wiaoff4ZIqAVegsLfvoVXJTVwbTSU74PHmuiSg8yfO+KKzxCSB3yzbspMtvYj3afwuEMXc+R0o
+ud8e6Lzc2vOcPqOml/I+R1VXcncbmq1PZdW8IqZbm+d0b1Hjim4cM0M2BjpY3PQq3mdh//GP6hd2
+DhFRE33AXQAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
