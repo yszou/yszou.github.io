@@ -108,7 +108,7 @@ var DIRECTIVE_NAME = 'testFirst';
 - 选择一种模板引擎。
 
 
-这些问题后面一个一个来搞定。
+当然，在过程中还有一些零碎的小问题，这些都后面一个一个来搞定。
 
 
 
@@ -238,10 +238,270 @@ console.log(buff.length); // 3
 
 
 
+# 命令行参数 #
+
+使用：
+
+```javascript
+process.argv
+```
+
+可以获取当前命令行的所有参数，注意，这里的“所有参数”包括了执行程序 ``node`` 与目标文件路径，比如：
+
+```javascript
+[ '/opt/node/bin/node', '/home/zys/temp/demo.js' ]
+```
+
+这个样式，是一个列表。
+
+
+把 js 文件处理成 Linux 风格的可执行文件对命令行参数没有影响。比如对于文件：
+
+```javascript
+#!/opt/node/bin/node
+console.log(process.argv);
+```
+
+通过 ``chmod +x`` 之后，直接 ``./demo.js`` 结果还是：
+
+```javascript
+[ '/opt/node/bin/node', '/home/zys/temp/demo.js' ]
+```
+
+
+# 文件IO #
+
+
+这个标题本来只是我个人随便起来，没想到在 nodejs 的 API 中，“文件”跟“IO”还真弄在一起了，一般来说“文件”是操作系统级别的一组 API ，而“IO”则是上层的逻辑性操作，混在一起略有些不优雅啊。
+
+
+从官方的文档上看，文件IO这一组的功能，是放在 ``fs`` 这个模块中的，它包括的内容大概有：
+
+- 文件系统的操作，比如创建文件，创建目录，创建链接等。
+- 针对“文件”的高层操作，包括同步，异步两套。
+- 针对 *fd* 的低层操作，包括同步，异步两套。
+
+
+这里，我记得在 Linux 下文件类型的 *fd* 是不支持异步的，所有针对“文件”的异步操作没意义吧。
+
+
+## 文件同步读写 ##
+
+``fs.readFileSync`` 和 ``fs.writeFileSync`` 。
+
+``fs.writeFileSync`` 的使用方法是：
+
+```javascript
+var fs = require('fs')
+fs.writeFileSync('/home/zys/temp/demo.txt', 'data here', { encoding: 'utf8', flag: 'w', mode: 0o666 });
+```
+
+参数当中：
+
+- ``encoding`` 这个应该是指定编码，不过好像 nodejs 目前只支持 *utf8* 。
+- ``flag`` 是模式，常用的有 ``w`` 和 ``a`` ，前者是替换旧内容，后者是在旧内容后面追加。
+- ``mode`` 是文件的权限，这个只在针对新文件时才有效，已存在文件只是替换内容，原文件的权限不会更改。
+
+
+``fs.readFileSync`` 的使用方法是：
+
+```javascript
+var fs = require('fs')
+var content = fs.readFileSync('/home/zys/temp/demo.txt', { encoding: null, flag: 'r'});
+console.log(content.toString());
+```
+
+``encoding`` 和 ``flag`` 这两个参数在这里等于都是写死的，因为我不知道还能是其它哪些值。
+
+注意一点就是， ``fs.readFileSync`` 返回结果的类型不是字符串，而是 ``Buffer`` 。
 
 
 
+## 完整的模式 ##
+
+就记一下，反正多半用不到。
+
+- *r* - 打开文件准备读，如果文件不存在会抛出异常。
+- *r+* - 打开文件，可读可写，如果文件不存在会抛出异常。
+- *rs* - 以同步模式打开文件，准备读，并尝试让操作系统不处理本地文件缓存。
+
+这个模式的主要用于处理 NFS 的挂载，因为它可以避免可能存在的缓存影响。但是它对 IO 性能的影响很大，所以，不要轻易使用它，除非你知道你在干什么。
+
+注意，“同步模式打开”不等于 ``fs.open()`` 的调用变成同步形式的了，它跟 ``fs.openSync()`` 还是不同的。
+
+- *rs+* - 同上，只是打开的文件可读可定。
+- *w* - 打开文件准备写，如果文件存在则替换内容，如果不存在则新建。
+- *wx* - 跟 *w* 一样，只是如果文件存在则会抛出异常。
+- *w+* - 打开文件，可读可写。无则新建，有则替换内容。
+- *wx+* - 同上，如果文件存在则会抛出异常。
+- *a* - 打开文件，以“追加”方式写。如果文件不存在会新建。
+- *ax* - 同上，如果文件存在会抛出异常。
+- *a+* - 打开文件，可读可写。无则新建，有则替换内容。
+- *ax+* - 同上，如果文件存在会抛出异常。
+
+
+## fd 读写 ##
+
+首先， ``fs.open()`` 和 ``fs.openSync()`` 可以打开指定的 ``path`` ，并返回一个 *fd* 用于接下来的操作。但是这里再拿文件 fd 说事就没什么感觉了。用一个命名管道试试吧。
+
+我不知道在 nodejs 中怎么创建命名管道，所以拿 Python 先创建上（“命名管道”在非 Linux 环境下不一定能用）：
+
+```python
+import os
+os.mkfifo('/tmp/pipe')
+```
+
+让 nodejs 的程序准备读：
+
+```javascript
+var fs = require('fs')
+var fd = fs.openSync('/tmp/pipe', 'r');
+var buff = new Buffer(3); // 3个字节
+var length = fs.readSync(fd, buff, 0, 3, null); // 从buff的0个字节开始写, 读3个字节, 从当前文件位置开始读
+console.log(length); // 读了多少个字节
+console.log(buff.toString());
+```
+
+运行之后，发看到程序一直未响应，因为管道中还没有内容可读。
+
+我们在终端中直接写入一点东西：
+
+```bash
+$ echo '123' > /tmp/pipe
+```
+
+这样， nodejs 的标准输出就会有：
+
+```text
+3
+123
+```
+
+的显示了。
+
+除文件外，其它对 *fd* 的操作，异步可能还更自然一些：
+
+```javascript
+var fs = require('fs')
+
+fs.open('/tmp/pipe', 'r', function(err, fd){
+  var buff = new Buffer(3);
+  var length = fs.read(fd, buff, 0, 3, null, function(err, length, b){
+    console.log(length);
+    console.log(b.toString());
+  });
+});
+```
+
+
+# 当前主模块判断 #
+
+这是在写代码中想到的一个问题。因为是动态语言，所以我习惯边写边运行，而最常用的一种代码组织方式，就是在尾部添加一些代码，它的功能是如果当前文件是“主模块”，则运行。而如果当前文件是作为非主模块被其它引用的，则不运行。
+
+就是 Python 中的：
+
+```python
+if __name__ == '__main__':
+    run()
+```
+
+nodejs 中的实现方式是：
+
+```javascript
+function run() {
+  console.log('here');
+}
+
+if(module === require.main){
+  run()
+  console.log(__filename);
+}
+```
 
 
 
+# 使用 cheerio 解析 html #
+
+找了一圈，没找到即支持 xpath 又能宽容 html 的实现， *cheerio* 光用来处理 html 很方便，它的 api 是类 jQuery 风格的，直接就可以上手了。
+
+```javascript
+var cheerio = require('cheerio');
+var $ = cheerio.load('<a><b>123</b>kk</a>');
+console.log($('a > b').text());
+console.log($.html('b'));
+```
+
+
+# 模板引擎 #
+
+模板引擎我选择的是 *nunjucks* ， http://mozilla.github.io/nunjucks/ ，因为它是照着 Python 中的 *jinja* 做的 ，那个双大括号 ``{{ }}`` 我非常熟悉。
+
+
+```javascript
+var nunjucks = require('nunjucks');
+var template = '{{ a }}';
+var s = nunjucks.renderString(template, {a: '123'});
+console.log(s);
+```
+
+# 多行字符串与占位符功能 #
+
+多行字符串指的是 Python 中的三引号：
+
+```python
+s = '''
+a
+b
+c
+'''
+```
+
+占位符功指的是 Python 中的：
+
+```python
+print 'create {}/src/{}/{}/app.js'.format(INFO['root'], project, name)
+```
+
+或：
+
+```python
+print 'create %s/src/%s/%s/app.js' % (INFO['root'], project, name)
+```
+
+
+这两个机制， nodejs 中 es6 语法“模板字符串”提供了类似实现。
+
+*模板字符串* 使用反引号，可以跨行：
+
+```javascript
+var s = `
+a
+b
+c
+${a}
+`
+```
+
+里面可以使用 ``${a}`` 的形式直接嵌入求值表达式。
+
+但是注意，“模板字符串”不支持“传参”，嵌入的求值表达式里的变量需要事先定义好。
+
+
+# 总结 #
+
+上面各点了解之后，剩下的就可以对着之前的 Python 代码直接翻写一遍了。
+
+- 使用“模板字符串”处理多行文本。
+- 使用“模板字符串”作占位符式的模板处理，很方便。
+- ``__filename`` 和 ``__dirname`` 分别是当前文件的路径与目录。
+- ``if(module === require.main)`` 判断当前文件是否为“主模块”。
+- ``path.resolve()`` 可以把相对路径转成绝对路径。
+- ``process.argv`` 是命令行参数。
+- ``process.exit(0)`` 退出当前程序。
+- ``fs.readFileSync()`` 和 ``fs.writeFileSync()`` 以同步方式读写文件（读出的内容是 ``buffer`` 类型，需要 ``buff.toString()``）。
+- 判断目录，文件是否存在使用 ``fs.statSync()`` 或 ``fs.accessSync()`` ，但是不存在时，这两个同步形式的方法是抛出异常，这点比较蛋疼了，自己封装一个 ``isFileExists(path)`` 吧。
+- ``cheerio`` 模块用来解析 HTML 其 API 是 jQuery 风格的。
+- ``nunjucks`` 是一个类 *jinja* 的模板引擎。
+- ``request`` 是 HTTP 客户端的上层封装实现。
+- ``node-sass`` 是 nodejs 下对 *libsass* 的封装。
 
