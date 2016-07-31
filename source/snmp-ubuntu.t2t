@@ -1,0 +1,67 @@
+SNMP 服务在 Ubuntu 上的安装与配置
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/snmp-ubuntu.html
+%!format: !email
+%%toc
+
+
+# SNMP是什么 #
+
+SNMP 协议意思为“简单网络管理协议”，简单来说，为网络中各种设备的管理指令分发提供了一套标准协议。这个协议的内容实现了“读”，“设置”，“告警”三部分功能。
+
+我不是搞网络或者运维的，会接触到这东西是因为“监控”。目前市面上的各种监控服务应该都会支持 SNMP 协议，以实现对服务器状态的监控。（感觉这可比自己做数据采集器往上提交状态数据要漂亮，毕竟是一套标准协议）
+
+
+# 安装 #
+
+```bash
+sudo apt-get install snmp snmpd
+```
+
+服务启动：
+
+```bash
+service snmpd start
+```
+
+# 配置 #
+
+端口与用户，在 ``/etc/snmp/snmpd.conf`` 文件中：
+
+- ``agentAddress`` 是端口，如果需要外网访问记得放到 ``0.0.0.0`` 上。
+- 在最后添加一行：
+```text
+rouser zys auth
+```
+意思是，名为 *zys* 的只读用户，需要验证。
+
+
+接下来需要创建用户了，这个过程有点不同。
+
+- 首先把服务停掉。
+- 在 ``/var/lib/snmp/snmpd.conf`` 最后添加一行：
+```text
+createUser zys SHA xxxx
+```
+- 重启服务。（之后 ``/var/lib/snmp/snmp.conf`` 文件会被重置，但是用户已经创建了）
+
+
+最后，可以使用一个命令行工具验证一下：
+
+```bash
+snmpwalk -v 3 -l authNoPriv -a SHA -u 'zys' -A 'xxxx' '127.0.0.1:161'
+```
+
+如果成功，你可以看到一大串的内容输出。然后你就可以在一些监控类产品的后台配置相关信息了。
+
+
+# 参考 #
+
+- http://blog.zheezes.com/ubuntu-setup-configure-snmp-service.html
+- http://freeloda.blog.51cto.com/2033581/1306743
+- http://blog.csdn.net/shanzhizi/article/details/11606767
+
+

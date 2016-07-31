@@ -2,7 +2,7 @@
 <html lang="zh-cmn-Hans">
 <head>
     <meta charset="UTF-8" />
-    <title>全站 HTTPS 改造 - YS.Zou</title>
+    <title>SNMP 服务在 Ubuntu 上的安装与配置 - YS.Zou</title>
     <meta name="generator" content="http://txt2tags.org" />
     <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
 </head>
@@ -10,156 +10,126 @@
 <body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
     <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
         <div class="header">
-            <h1 style="text-align: center; font-size: 26px; margin: 0;">全站 HTTPS 改造</h1>
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">SNMP 服务在 Ubuntu 上的安装与配置</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
-                <span>2016-08-01 01:16:38 更新</span>
+                <span>邹业盛</span>
+                <span>2016-08-01 01:16 更新</span>
             </div>
         </div>
 
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">SNMP是什么</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">配置</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">参考</a>
+  </li>
+  </ol>
+
+</div>
 
 <a class="anchor" name="toc1"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 版权</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. SNMP是什么</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-除特殊说明外，本站所有文章均为原创。对于原创文章，在 <em style="color: #d75100; font-style: normal;">保留署名</em> 及 <em style="color: #d75100; font-style: normal;">原文链接</em> 的前提下可以自由用于非商业用途。
+SNMP 协议意思为“简单网络管理协议”，简单来说，为网络中各种设备的管理指令分发提供了一套标准协议。这个协议的内容实现了“读”，“设置”，“告警”三部分功能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我不是搞网络或者运维的，会接触到这东西是因为“监控”。目前市面上的各种监控服务应该都会支持 SNMP 协议，以实现对服务器状态的监控。（感觉这可比自己做数据采集器往上提交状态数据要漂亮，毕竟是一套标准协议）
 </p>
 
 <a class="anchor" name="toc2"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 项目</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 安装</h1>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="vimim-wubi.html" style="color: #0184b7; text-decoration: none">VIM内置输入法vimim_wubi</a>
-</li>
-</ul>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo apt-get install snmp snmpd
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+服务启动：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">service snmpd start
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
 
 <a class="anchor" name="toc3"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 目录</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 配置</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+端口与用户，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/etc/snmp/snmpd.conf</code> 文件中：
+</p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="phantomjs.html" style="color: #0184b7; text-decoration: none">PhantomJS的使用</a>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">agentAddress</code> 是端口，如果需要外网访问记得放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.0.0.0</code> 上。
 </li>
-<li style="margin: 10px auto;"><a href="sass.html" style="color: #0184b7; text-decoration: none">SASS学习参考</a>
-</li>
-<li style="margin: 10px auto;"><a href="cefpython.html" style="color: #0184b7; text-decoration: none">使用CEFPython打造自己的浏览器视图</a>
-</li>
-<li style="margin: 10px auto;"><a href="rabbitmq.html" style="color: #0184b7; text-decoration: none">RabbitMQ使用参考</a>
-</li>
-<li style="margin: 10px auto;"><a href="sqlalchemy.html" style="color: #0184b7; text-decoration: none">SQLAlchemy参考</a>
-</li>
-<li style="margin: 10px auto;"><a href="docker.html" style="color: #0184b7; text-decoration: none">Docker简单使用</a>
-</li>
-<li style="margin: 10px auto;"><a href="angular.html" style="color: #0184b7; text-decoration: none">AngularJS学习笔记</a>
-</li>
-<li style="margin: 10px auto;"><a href="jquery.html" style="color: #0184b7; text-decoration: none">jQuery学习笔记</a>
-</li>
-<li style="margin: 10px auto;"><a href="ip.html" style="color: #0184b7; text-decoration: none">IP地址概念</a>
-</li>
-<li style="margin: 10px auto;"><a href="spf.html" style="color: #0184b7; text-decoration: none">SPF参考</a>
-</li>
-<li style="margin: 10px auto;"><a href="imagemagick.html" style="color: #0184b7; text-decoration: none">ImageMagick命令行使用方法</a>
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<li style="margin: 10px auto;">在最后添加一行：
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">rouser zys auth
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+意思是，名为 <em style="color: #d75100; font-style: normal;">zys</em> 的只读用户，需要验证。
 </li>
 </ul>
 
-<hr style="border-top: 1px solid #888; margin: 35px auto;" />
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接下来需要创建用户了，这个过程有点不同。
+</p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="vimim-wubi.html" style="color: #0184b7; text-decoration: none">VIM内置输入法vimim_wubi</a>
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<li style="margin: 10px auto;">首先把服务停掉。
+</li>
+<li style="margin: 10px auto;">在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/var/lib/snmp/snmpd.conf</code> 最后添加一行：
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">createUser zys SHA xxxx
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+</li>
+<li style="margin: 10px auto;">重启服务。（之后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/var/lib/snmp/snmp.conf</code> 文件会被重置，但是用户已经创建了）
 </li>
 </ul>
 
-<hr style="border-top: 1px solid #888; margin: 35px auto;" />
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，可以使用一个命令行工具验证一下：
+</p>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="snmp-ubuntu.html" style="color: #0184b7; text-decoration: none">SNMP 服务在 Ubuntu 上的安装与配置</a>
-</li>
-<li style="margin: 10px auto;"><a href="dingding-isv-exp.html" style="color: #0184b7; text-decoration: none">钉钉 ISV 应用开发的一些心得</a>
-</li>
-<li style="margin: 10px auto;"><a href="dingding-isv.html" style="color: #0184b7; text-decoration: none">钉钉 ISV 接入流程</a>
-</li>
-<li style="margin: 10px auto;"><a href="dingding-userinfo.html" style="color: #0184b7; text-decoration: none">钉钉手机端应用获取当前用户信息流程</a>
-</li>
-<li style="margin: 10px auto;"><a href="js-generator.html" style="color: #0184b7; text-decoration: none">使用生成器展平异步回调结构，JS篇</a>
-</li>
-<li style="margin: 10px auto;"><a href="dnd.html" style="color: #0184b7; text-decoration: none">浏览器中的拖放API</a>
-</li>
-<li style="margin: 10px auto;"><a href="byte-char-unicode.html" style="color: #0184b7; text-decoration: none">字节，字符，Unicode及Web编码</a>
-</li>
-<li style="margin: 10px auto;"><a href="js-context.html" style="color: #0184b7; text-decoration: none">Javascript 中的上下文，我的认识的三个阶段</a>
-</li>
-<li style="margin: 10px auto;"><a href="paginator.html" style="color: #0184b7; text-decoration: none">做分页器时的一点感触</a>
-</li>
-<li style="margin: 10px auto;"><a href="sae-channel.html" style="color: #0184b7; text-decoration: none">SAE上的Channel服务演示</a>
-</li>
-<li style="margin: 10px auto;"><a href="sae-wx.html" style="color: #0184b7; text-decoration: none">SAE上微信公众账号开发参考</a>
-</li>
-<li style="margin: 10px auto;"><a href="live-with-email-client.html" style="color: #0184b7; text-decoration: none">使用邮件客户端整合日常信息</a>
-</li>
-<li style="margin: 10px auto;"><a href="context-in-async-env.html" style="color: #0184b7; text-decoration: none">异步调用中的上下文控制Tornado_stack_context</a>
-</li>
-<li style="margin: 10px auto;"><a href="generator-for-async.html" style="color: #0184b7; text-decoration: none">使用生成器展平异步回调结构</a>
-</li>
-<li style="margin: 10px auto;"><a href="oauth-sina.html" style="color: #0184b7; text-decoration: none">新浪微博OAuth详解以Python为例</a>
-</li>
-<li style="margin: 10px auto;"><a href="captcha.html" style="color: #0184b7; text-decoration: none">在Python中用PIL做验证码</a>
-</li>
-<li style="margin: 10px auto;"><a href="solution-in-solution.html" style="color: #0184b7; text-decoration: none">方案中的方案</a>
-</li>
-<li style="margin: 10px auto;"><a href="reusable-webui-component.html" style="color: #0184b7; text-decoration: none">对构建可复用WebUI组件的思考</a>
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
-</li>
-</ul>
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">snmpwalk -v <span style="color: #009999">3</span> -l authNoPriv -a SHA -u <span style="color: #dd1144">&#39;zys&#39;</span> -A <span style="color: #dd1144">&#39;xxxx&#39;</span> <span style="color: #dd1144">&#39;127.0.0.1:161&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
-<hr style="border-top: 1px solid #888; margin: 35px auto;" />
+</div>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="proc-status.html" style="color: #0184b7; text-decoration: none">proc进程信息字段解释</a>
-</li>
-<li style="margin: 10px auto;"><a href="install-grub-on-udisk.html" style="color: #0184b7; text-decoration: none">在U盘上安装GRUB2直接引导ISO</a>
-</li>
-<li style="margin: 10px auto;"><a href="ldap-python-example.html" style="color: #0184b7; text-decoration: none">使用 Python 实现 LDAP 交互的例子</a>
-</li>
-<li style="margin: 10px auto;"><a href="python-module-c.html" style="color: #0184b7; text-decoration: none">使用C写Python的模块</a>
-</li>
-<li style="margin: 10px auto;"><a href="xmodmap-usage.html" style="color: #0184b7; text-decoration: none">xmodmap使用指南</a>
-</li>
-<li style="margin: 10px auto;"><a href="django-orm-in-tornado.html" style="color: #0184b7; text-decoration: none">在Tornado中使用Django的ORM的注意事项</a>
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
-</li>
-</ul>
-
-<hr style="border-top: 1px solid #888; margin: 35px auto;" />
-
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="pmp.html" style="color: #0184b7; text-decoration: none">PMP备考经验</a>
-</li>
-<li style="margin: 10px auto;"><a href="corp-recruitment.html" style="color: #0184b7; text-decoration: none">企业面试官</a>
-</li>
-<li style="margin: 10px auto;"><a href="six-hats.html" style="color: #0184b7; text-decoration: none">六顶思考帽——平行思维方式</a>
-</li>
-</ul>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果成功，你可以看到一大串的内容输出。然后你就可以在一些监控类产品的后台配置相关信息了。
+</p>
 
 <a class="anchor" name="toc4"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 提示</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 参考</h1>
 
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-推荐使用 <a href="http://www.mozilla.org/en-US/firefox" style="color: #0184b7; text-decoration: none">Firefox</a>， <a href="http://chrome.google.com" style="color: #0184b7; text-decoration: none">Chrome</a> 浏览器。 IE 是 SB。
-</p>
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><a href="http://blog.zheezes.com/ubuntu-setup-configure-snmp-service.html" style="color: #0184b7; text-decoration: none">http://blog.zheezes.com/ubuntu-setup-configure-snmp-service.html</a>
+</li>
+<li style="margin: 10px auto;"><a href="http://freeloda.blog.51cto.com/2033581/1306743" style="color: #0184b7; text-decoration: none">http://freeloda.blog.51cto.com/2033581/1306743</a>
+</li>
+<li style="margin: 10px auto;"><a href="http://blog.csdn.net/shanzhizi/article/details/11606767" style="color: #0184b7; text-decoration: none">http://blog.csdn.net/shanzhizi/article/details/11606767</a>
+</li>
+</ul>
 
-<a class="anchor" name="toc5"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 联系我</h1>
-
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-yeshengzou ## gmail.com
-</p>
-
-<a class="anchor" name="toc6"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 关于我</h1>
-
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-<a href="about.html" style="color: #0184b7; text-decoration: none">关于</a>
-</p>
 
 <style type="text/css">
 body.z { background-color: #eff3fa; }
@@ -458,9 +428,9 @@ $(function(){
 <div id="disqus_thread" style="width: 800px; margin: auto; "></div>
 <script type="text/javascript">
   var disqus_shortname = 'zys';
-  var disqus_identifier = 'index';
-  var disqus_url = 'https://www.zouyesheng.com/index.html';
-  var disqus_title = '全站 HTTPS 改造';
+  var disqus_identifier = 'snmp-ubuntu';
+  var disqus_url = 'https://www.zouyesheng.com/snmp-ubuntu.html';
+  var disqus_title = 'SNMP 服务在 Ubuntu 上的安装与配置';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -484,19 +454,15 @@ ga('send', 'pageview');
 </script>
     
 
-<div style="display: none;">
-<script src="https://s11.cnzz.com/z_stat.php?id=1259459872&web_id=1259459872" language="JavaScript"></script>
-</div>
-    
-
-<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
-AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
-ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
-2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
-8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
-vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
-cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
-SUVORK5CYII=
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsElEQVR4nN2XMW7jMBBF31gGqK2o
+G1DAniNWrhVAWctwDibFF5FOEKqTAFl/iyTVZrtMscvyF/PxZ/jnkyb+POvhCxD+PXQws1LVvV4f
+5yNmZrUb2xETlLd8obS4ERbuPz0Vz1Yj6wj36lIzWOfe3xPFOBeTxm+u+zV600ap6l77sqFBUujj
+VcuJQkHa0uKnTWaGTWsdr/mpXs2OntokSX3cknZIkiQ3baiPV9Hk84hJwnLhykahpcmFNGgj7NF1
+bsS1jpeqnUp4AeYwOu4S5iPLDzGtj29S+fo9df/qgNwmGm1oBzjFzq+T73OTMilIXZLy2fOWSFsK
+Q25TGLRBk/HUNuSWpckt737r49VT206bsFxIe+zQ7sl2gBgG3auW8jZJpeUnvzQ9cMtQ3jIsD9W9
+npvqxXlPjuopxImzguTogAOvXBp7jM8WBpmth1l+u+QzAyBpUJc0eDrg480FTKhqKYlXT22DpKAM
+mDZnbWjIpLBTCOIGRMc0/XwFZSYN+SWFHkcHfKAPqaNUdR4X5tXT3USNvEKaf83PNSbHNEU9EPq4
+oT5uLCbHPWn/8Y/qN/+NEkPC5vorAAAAAElFTkSuQmCC
 " title="本文二维码网址" /></div>
     
 
