@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>记一次用 Node.js 重写工具的过程 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">记一次用 Node.js 重写工具的过程</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-07-31 21:31 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">要做什么</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">先要解决什么问题</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">标准输入输出</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">Node.js 中的字节与字符</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">命令行参数</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">文件IO</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 文件同步读写</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 完整的模式</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. fd 读写</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">当前主模块判断</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">使用 cheerio 解析 html</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">模板引擎</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">多行字符串与占位符功能</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">总结</a>
+  </li>
+  </ol>
+
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+之前用 Python 做了一个方便项目开发的脚手架工具，这个工具中用到了 Python 的 C 绑定形式的模块， 于是在安装时就需要机器中有相应的编译环境，比如 OS X 上先装 <em style="color: #d75100; font-style: normal;">ports</em> 然后用它装一些库。如果事先没有这套编译环境，第一次安装时还是比较折腾的，虽然我已经尽可能详尽地写文档了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+稳定用了一段时间之后，我现在考虑用 Node.js 来把这个工具重新实现一下，这样在环境方面应该就会友好很多了，毕竟 Node.js 的环境肯定是事先就准备好了的。（不过，我好像记得 Node.js 的某些模块也是需要编译环境的）
+</p>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 要做什么</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">z.py</code> 的文件，它目前的功能有 5 个：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python z.py init</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python z.py project PROJECT_NAME</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python z.py app PROJECT_NAME APP_NAME</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python z.py sass SASS_FILE_ABSOLUTE_PATH</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python z.py html HTML_FILE_ABSOLUTE_PATH</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">init</code> 会创建一个代码库的初始目录结构，当然这个功能几乎不会用到（我所有项目都放一个代码库）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">project</code> 是在代码库中创建一个“项目”的目录结构，大概长这样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">test
+├── common
+│   ├── app.sass
+│   └── app.sass.css
+├── config.js
+├── iconfont
+│   ├── app.sass
+│   └── app.sass.css
+├── index
+│   ├── app.js
+│   ├── demo.html
+│   └── _index.html
+├── page-index
+│   ├── app.html
+│   ├── app.html.js
+│   ├── app.js
+│   ├── app.sass
+│   ├── app.sass.css
+│   └── demo.html
+└── service
+    └── app.js
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，这个项目名字是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test</code> ，所以里面的一些文件中的名字是跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test</code> 有关的（一些约定）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app</code> 跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">project</code> 相似，不过它是创建一个“组件”的目录结构，这是平时使用最多的功能（为此会在 IDE 中专门为它配置“快捷方式”），一个组件大概长这样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">test/first
+├── app.html
+├── app.html.js
+├── app.js
+├── app.sass
+├── app.sass.css
+└── demo.html
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同理，这个组件是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test</code> 项目中的名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">first</code> 的组件，那么上面文件中的一些内容，是跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">first</code> 这些词有关的。比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test/first/app.js</code> 中会有：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> MODULE_NAME <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;test/first&#39;</span>;
+<span style="color: #000000; font-weight: bold">var</span> DIRECTIVE_NAME <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;testFirst&#39;</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sass</code> 的功能是把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.sass</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.sass.js</code> ，就是普通的 <em style="color: #d75100; font-style: normal;">sass</em> 转换行为。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">html</code> 的功能是把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.html</code> 变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.html.js</code> ，这个功能简单来说是把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.html</code> 中的 html 片段（注意只是片段）以一个字符串形式放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.html.js</code> 中（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.html.js</code> 中的内容是 AMD 形式的）。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">init</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">project</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sass</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">html</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+5 个功能，对我这个没正经写过 Node.js 的人来说，我预估还是要花些时间的。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 先要解决什么问题</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我之所以想把这次重写的过程记录下来，是因为我觉得目前面对的这个问题，算是“一个有经验的人如何去学习使用一种新语言”的典型场景。换句话说，即使选择的不是 Node.js 来重写这个工具，而是其它的 A 语言，X 语言，我接下来要做的事也没有什么不同。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要完成这个工具，我认为我首先要学会使用 Node.js 处理以下场景：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">标准输入输出在 Node.js 中如何处理。
+</li>
+<li style="margin: 10px auto;">字节与字符，编码，等问题在 Node.js 中是怎样的。
+</li>
+<li style="margin: 10px auto;">如何处理命令行参数。
+</li>
+<li style="margin: 10px auto;">文件 IO。
+</li>
+<li style="margin: 10px auto;">找个解析 HTML 的方法。
+</li>
+<li style="margin: 10px auto;">选择一种模板引擎。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，在过程中还有一些零碎的小问题，这些都后面一个一个来搞定。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 标准输入输出</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.log</code> 似乎就是标准输出，但是，显示这只是一个“别名”才对，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console</code> 这个名字作为标准输出太不专业了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我刚开始为标准输入输出而去翻官方文档时，整个人是懵逼的，找不到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">system</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">io</code> 这类东西啊，后来通过 Google 才知道标准输入输出是放在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">process</code> 这个名字空间下的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+标准输出除了用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.log</code> 外，它比较“正式”的名字应该是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">process.stdout()</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> stdout <span style="color: #000000; font-weight: bold">=</span> process.stdout;
+stdout.write(<span style="color: #dd1144">&#39;ok&#39;</span>);
+stdout.write(<span style="color: #dd1144">&#39;ok&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里注意一下，跟其它语言类似， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.log</code> 是加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\n</code> 的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+标准输出有了，随便猜一下，标准错误应该是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">process.stderr</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.error</code> 吧：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> stderr <span style="color: #000000; font-weight: bold">=</span> process.stderr;
+stderr.write(<span style="color: #dd1144">&#39;error\n&#39;</span>);
+console.error(<span style="color: #dd1144">&#39;console&#39;</span>);
+console.log(<span style="color: #dd1144">&#39;stdout&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接看看不出区别的，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bash</code> 中稍处理一下（假设上面几行代码在文件 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">test.js</code> 中）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>node <span style="color: #0086B3">test </span>1&gt;/dev/null
+error
+console
+
+<span style="color: #008080">$ </span>node <span style="color: #0086B3">test </span>2&gt;/dev/null
+stdout
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看起来没问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后是标准输入， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">prcess.stdin</code> ，这里就涉及几个读的操作了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> stdin <span style="color: #000000; font-weight: bold">=</span> process.stdin;
+<span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> [];
+
+stdin.on(<span style="color: #dd1144">&#39;readable&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(){
+  <span style="color: #000000; font-weight: bold">var</span> chunk <span style="color: #000000; font-weight: bold">=</span> stdin.read();
+  <span style="color: #000000; font-weight: bold">if</span>(chunk <span style="color: #000000; font-weight: bold">!==</span> <span style="color: #000000; font-weight: bold">null</span>){
+    buff.push(chunk);
+  }
+});
+
+stdin.on(<span style="color: #dd1144">&#39;end&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(){
+  console.log(buff.join(<span style="color: #dd1144">&#39;\n&#39;</span>));
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在终端中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span><span style="color: #0086B3">echo</span> <span style="color: #dd1144">&quot;123&quot;</span>|node test.js
+123
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">stdin</code> 的 api 就是 <em style="color: #d75100; font-style: normal;">Node.js</em> 的异步IO 那套，这个地方事件倒是比 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">while 1</code> 的死循环好看些。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. Node.js 中的字节与字符</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我对 Node.js 中的字符中的细节是没有任何概念的，先从这里着手吧（我源文件是 UTF-8 编码）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">console.log((<span style="color: #dd1144">&#39;中文&#39;</span>).length);
+<span style="color: #999988">// 2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+能看到输出的结果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> ，当然，这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> 可能真的是表示 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">'中文'</code> 这个字符串是 2 个字符，但是也不排除 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">length</code> 这个方法实现上的处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+暂且认为字符串在 Node.js 中是“字符”的概念，那么接下来，把文件的源码改成 GBK 看看会发生什么：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ iconv demo.js <span style="color: #000000; font-weight: bold">-</span>f utf8 <span style="color: #000000; font-weight: bold">-</span>t gbk <span style="color: #000000; font-weight: bold">&gt;</span> demo.gbk.js
+$ node demo.gbk.js
+<span style="color: #009999">4</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">4</code> ， WTF …… ，这不被坑成猪头才怪。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 google 之后，目前我对 Node.js 的概念是，Node.js 中的字符串是“字符”的概念，但是，它的源文件只能是 utf8 ，换句话说，“编译”时就假定“字符串”中的“字节”是 UTF-8 的编码。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要处理“字节”的话，Node.js 有提供 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Buffer</code> 这个对象，它初始化时接收的数组可以看作是“字节序列”，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">toString(encoding)</code> 方法可以转成“字符”，从最简单的 ASCII 开始：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Buffer([<span style="color: #009999">65</span>]);
+console.log(buff.toString());
+<span style="color: #999988">// A</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+给个“中”字的 UTF-8 的三字节：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Buffer([<span style="color: #009999">0xe4</span>, <span style="color: #009999">0xb8</span>, <span style="color: #009999">0xad</span>]);
+console.log(buff.toString());
+<span style="color: #999988">// 中</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看来 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">toString()</code> 的默认行为就是按 UTF-8 进行“解码”啊。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Buffer</code> 还有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hex</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">base64</code> 这两个比较常用的编码方式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Buffer([<span style="color: #009999">0xe4</span>, <span style="color: #009999">0xb8</span>, <span style="color: #009999">0xad</span>]);
+console.log(buff.toString(<span style="color: #dd1144">&#39;hex&#39;</span>));
+console.log(buff.toString(<span style="color: #dd1144">&#39;base64&#39;</span>));
+console.log(buff.length); <span style="color: #999988">// 3</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Buffer.length</code> 方法得到的就是字节长度了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从 api 层面考虑的话， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">buff.toString('gbk')</code> 应该是按 GBK 编码进行“解码”了，不过，坏消息是目前实现的只有 UTF-8 一种编码。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，在 Node.js 中如果涉及到除 UTF-8 之外的其它“字节串”的话，只能借助额外的模块能力来处理，比如 <a href="https://github.com/bnoordhuis/node-iconv" style="color: #0184b7; text-decoration: none">https://github.com/bnoordhuis/node-iconv</a> 。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 命令行参数</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">process.argv
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以获取当前命令行的所有参数，注意，这里的“所有参数”包括了执行程序 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">node</code> 与目标文件路径，比如：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[ <span style="color: #dd1144">&#39;/opt/node/bin/node&#39;</span>, <span style="color: #dd1144">&#39;/home/zys/temp/demo.js&#39;</span> ]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个样式，是一个列表。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 js 文件处理成 Linux 风格的可执行文件对命令行参数没有影响。比如对于文件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988">#!/opt/node/bin/node</span>
+console.log(process.argv);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">chmod +x</code> 之后，直接 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">./demo.js</code> 结果还是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[ <span style="color: #dd1144">&#39;/opt/node/bin/node&#39;</span>, <span style="color: #dd1144">&#39;/home/zys/temp/demo.js&#39;</span> ]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 文件IO</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个标题本来只是我个人随便起来，没想到在 nodejs 的 API 中，“文件”跟“IO”还真弄在一起了，一般来说“文件”是操作系统级别的一组 API ，而“IO”则是上层的逻辑性操作，混在一起略有些不优雅啊。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从官方的文档上看，文件IO这一组的功能，是放在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs</code> 这个模块中的，它包括的内容大概有：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">文件系统的操作，比如创建文件，创建目录，创建链接等。
+</li>
+<li style="margin: 10px auto;">针对“文件”的高层操作，包括同步，异步两套。
+</li>
+<li style="margin: 10px auto;">针对 <em style="color: #d75100; font-style: normal;">fd</em> 的低层操作，包括同步，异步两套。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，我记得在 Linux 下文件类型的 <em style="color: #d75100; font-style: normal;">fd</em> 是不支持异步的，所有针对“文件”的异步操作没意义吧。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 文件同步读写</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.readFileSync</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.writeFileSync</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.writeFileSync</code> 的使用方法是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>)
+fs.writeFileSync(<span style="color: #dd1144">&#39;/home/zys/temp/demo.txt&#39;</span>, <span style="color: #dd1144">&#39;data here&#39;</span>, { encoding<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;utf8&#39;</span>, flag<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;w&#39;</span>, mode<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>o666 });
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+参数当中：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encoding</code> 这个应该是指定编码，不过好像 nodejs 目前只支持 <em style="color: #d75100; font-style: normal;">utf8</em> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flag</code> 是模式，常用的有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">w</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> ，前者是替换旧内容，后者是在旧内容后面追加。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mode</code> 是文件的权限，这个只在针对新文件时才有效，已存在文件只是替换内容，原文件的权限不会更改。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.readFileSync</code> 的使用方法是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>)
+<span style="color: #000000; font-weight: bold">var</span> content <span style="color: #000000; font-weight: bold">=</span> fs.readFileSync(<span style="color: #dd1144">&#39;/home/zys/temp/demo.txt&#39;</span>, { encoding<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">null</span>, flag<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;r&#39;</span>});
+console.log(content.toString());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encoding</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flag</code> 这两个参数在这里等于都是写死的，因为我不知道还能是其它哪些值。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意一点就是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.readFileSync</code> 返回结果的类型不是字符串，而是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Buffer</code> 。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 完整的模式</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就记一下，反正多半用不到。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">r</em> - 打开文件准备读，如果文件不存在会抛出异常。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">r+</em> - 打开文件，可读可写，如果文件不存在会抛出异常。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">rs</em> - 以同步模式打开文件，准备读，并尝试让操作系统不处理本地文件缓存。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+这个模式的主要用于处理 NFS 的挂载，因为它可以避免可能存在的缓存影响。但是它对 IO 性能的影响很大，所以，不要轻易使用它，除非你知道你在干什么。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+注意，“同步模式打开”不等于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.open()</code> 的调用变成同步形式的了，它跟 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.openSync()</code> 还是不同的。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">rs+</em> - 同上，只是打开的文件可读可定。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">w</em> - 打开文件准备写，如果文件存在则替换内容，如果不存在则新建。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">wx</em> - 跟 <em style="color: #d75100; font-style: normal;">w</em> 一样，只是如果文件存在则会抛出异常。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">w+</em> - 打开文件，可读可写。无则新建，有则替换内容。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">wx+</em> - 同上，如果文件存在则会抛出异常。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">a</em> - 打开文件，以“追加”方式写。如果文件不存在会新建。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ax</em> - 同上，如果文件存在会抛出异常。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">a+</em> - 打开文件，可读可写。无则新建，有则替换内容。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ax+</em> - 同上，如果文件存在会抛出异常。
+</li>
+</ul>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. fd 读写</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.open()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.openSync()</code> 可以打开指定的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> ，并返回一个 <em style="color: #d75100; font-style: normal;">fd</em> 用于接下来的操作。但是这里再拿文件 fd 说事就没什么感觉了。用一个命名管道试试吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我不知道在 nodejs 中怎么创建命名管道，所以拿 Python 先创建上（“命名管道”在非 Linux 环境下不一定能用）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">os</span>
+os<span style="color: #000000; font-weight: bold">.</span>mkfifo(<span style="color: #dd1144">&#39;/tmp/pipe&#39;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+让 nodejs 的程序准备读：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>)
+<span style="color: #000000; font-weight: bold">var</span> fd <span style="color: #000000; font-weight: bold">=</span> fs.openSync(<span style="color: #dd1144">&#39;/tmp/pipe&#39;</span>, <span style="color: #dd1144">&#39;r&#39;</span>);
+<span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Buffer(<span style="color: #009999">3</span>); <span style="color: #999988">// 3个字节</span>
+<span style="color: #000000; font-weight: bold">var</span> length <span style="color: #000000; font-weight: bold">=</span> fs.readSync(fd, buff, <span style="color: #009999">0</span>, <span style="color: #009999">3</span>, <span style="color: #000000; font-weight: bold">null</span>); <span style="color: #999988">// 从buff的0个字节开始写, 读3个字节, 从当前文件位置开始读</span>
+console.log(length); <span style="color: #999988">// 读了多少个字节</span>
+console.log(buff.toString());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+运行之后，发看到程序一直未响应，因为管道中还没有内容可读。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们在终端中直接写入一点东西：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span><span style="color: #0086B3">echo</span> <span style="color: #dd1144">&#39;123&#39;</span> &gt; /tmp/pipe
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样， nodejs 的标准输出就会有：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">3
+123
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+的显示了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除文件外，其它对 <em style="color: #d75100; font-style: normal;">fd</em> 的操作，异步可能还更自然一些：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>)
+
+fs.open(<span style="color: #dd1144">&#39;/tmp/pipe&#39;</span>, <span style="color: #dd1144">&#39;r&#39;</span>, <span style="color: #000000; font-weight: bold">function</span>(err, fd){
+  <span style="color: #000000; font-weight: bold">var</span> buff <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Buffer(<span style="color: #009999">3</span>);
+  <span style="color: #000000; font-weight: bold">var</span> length <span style="color: #000000; font-weight: bold">=</span> fs.read(fd, buff, <span style="color: #009999">0</span>, <span style="color: #009999">3</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #000000; font-weight: bold">function</span>(err, length, b){
+    console.log(length);
+    console.log(b.toString());
+  });
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 当前主模块判断</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是在写代码中想到的一个问题。因为是动态语言，所以我习惯边写边运行，而最常用的一种代码组织方式，就是在尾部添加一些代码，它的功能是如果当前文件是“主模块”，则运行。而如果当前文件是作为非主模块被其它引用的，则不运行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就是 Python 中的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">if</span> __name__ <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    run()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+nodejs 中的实现方式是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> run() {
+  console.log(<span style="color: #dd1144">&#39;here&#39;</span>);
+}
+
+<span style="color: #000000; font-weight: bold">if</span>(module <span style="color: #000000; font-weight: bold">===</span> require.main){
+  run()
+  console.log(__filename);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 使用 cheerio 解析 html</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+找了一圈，没找到即支持 xpath 又能宽容 html 的实现， <em style="color: #d75100; font-style: normal;">cheerio</em> 光用来处理 html 很方便，它的 api 是类 jQuery 风格的，直接就可以上手了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> cheerio <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cheerio&#39;</span>);
+<span style="color: #000000; font-weight: bold">var</span> $ <span style="color: #000000; font-weight: bold">=</span> cheerio.load(<span style="color: #dd1144">&#39;&lt;a&gt;&lt;b&gt;123&lt;/b&gt;kk&lt;/a&gt;&#39;</span>);
+console.log($(<span style="color: #dd1144">&#39;a &gt; b&#39;</span>).text());
+console.log($.html(<span style="color: #dd1144">&#39;b&#39;</span>));
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc12"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. 模板引擎</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+模板引擎我选择的是 <em style="color: #d75100; font-style: normal;">nunjucks</em> ， <a href="http://mozilla.github.io/nunjucks/" style="color: #0184b7; text-decoration: none">http://mozilla.github.io/nunjucks/</a> ，因为它是照着 Python 中的 <em style="color: #d75100; font-style: normal;">jinja</em> 做的 ，那个双大括号 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ }}</code> 我非常熟悉。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> nunjucks <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;nunjucks&#39;</span>);
+<span style="color: #000000; font-weight: bold">var</span> template <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;{{ a }}&#39;</span>;
+<span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> nunjucks.renderString(template, {a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;123&#39;</span>});
+console.log(s);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc13"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 多行字符串与占位符功能</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多行字符串指的是 Python 中的三引号：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;&#39;</span>
+<span style="color: #dd1144">a</span>
+<span style="color: #dd1144">b</span>
+<span style="color: #dd1144">c</span>
+<span style="color: #dd1144">&#39;&#39;&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+占位符功指的是 Python 中的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;create {}/src/{}/{}/app.js&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(INFO[<span style="color: #dd1144">&#39;root&#39;</span>], project, name)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+或：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">print</span> <span style="color: #dd1144">&#39;create %s/src/%s/%s/app.js&#39;</span> <span style="color: #000000; font-weight: bold">%</span> (INFO[<span style="color: #dd1144">&#39;root&#39;</span>], project, name)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这两个机制， nodejs 中 es6 语法“模板字符串”提供了类似实现。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">模板字符串</em> 使用反引号，可以跨行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">`</span>
+a
+b
+c
+${a}
+<span style="color: #a61717; background-color: #e3d2d2">`</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+里面可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">${a}</code> 的形式直接嵌入求值表达式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是注意，“模板字符串”不支持“传参”，嵌入的求值表达式里的变量需要事先定义好。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. 总结</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面各点了解之后，剩下的就可以对着之前的 Python 代码直接翻写一遍了。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">使用“模板字符串”处理多行文本。
+</li>
+<li style="margin: 10px auto;">使用“模板字符串”作占位符式的模板处理，很方便。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__filename</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__dirname</code> 分别是当前文件的路径与目录。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">if(module === require.main)</code> 判断当前文件是否为“主模块”。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path.resolve()</code> 可以把相对路径转成绝对路径。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">process.argv</code> 是命令行参数。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">process.exit(0)</code> 退出当前程序。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.readFileSync()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.writeFileSync()</code> 以同步方式读写文件（读出的内容是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">buffer</code> 类型，需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">buff.toString()</code>）。
+</li>
+<li style="margin: 10px auto;">判断目录，文件是否存在使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.statSync()</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs.accessSync()</code> ，但是不存在时，这两个同步形式的方法是抛出异常，这点比较蛋疼了，自己封装一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">isFileExists(path)</code> 吧。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cheerio</code> 模块用来解析 HTML 其 API 是 jQuery 风格的。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nunjucks</code> 是一个类 <em style="color: #d75100; font-style: normal;">jinja</em> 的模板引擎。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 是 HTTP 客户端的上层封装实现。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">node-sass</code> 是 nodejs 下对 <em style="color: #d75100; font-style: normal;">libsass</em> 的封装。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</li>
+</ul>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'nodejs-rework';
+  var disqus_url = 'https://www.zouyesheng.com/nodejs-rework.html';
+  var disqus_title = '记一次用 Node.js 重写工具的过程';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABvUlEQVR4nN2XMa7bMBBE31oGpI4E
+0qSjLmKrSy6lIAJsIGWukJtEsk7xO+sAAaiOAmhNivwu+anMImFDYIpd7s7MYmni97Md/gDCv4ai
+Eah3l6GLlQBCKvcGk4Qtx8DNDdRSLlrxai2T70lngMmGctmOv64zX7LZmp8W96/ZLH4lffB8K5sN
+TZLq3UnJIqGWckmVyMyYl0+tG+nZzI4lVdJJSvIsa+dBku5F/daDxequ0WVqxc8q1skjuPr+/iME
+LD5A4Uf7Uq6T5zXjvoe8NADJlqK8zfHRJotXONkQzMKlJG+7y2DK1DvA2Q0lHQAEjVxDmpVDPa5F
+5+S8XKZGnoWTryZMRXnDDSHZktkOq3Vp8lU53g7IP9pGob6Dy0vTxUdbUCXSENKZSpJyoIt9SZXc
+1kxjsaeRh6RQkDe0U91TF6u7dneRdncpObnm+C40ie0oeBi2PyXum5PLZdKNK80cCRpXK6eSA5OZ
+NaxDSPLQKAwlazNJQL9wXjPJYlG/sVoL7sh2cMNinX9W3LfRk69UjxA0lXT3K3pbt5Yuwtb5vvjO
+NQLgctCkgn573blwAxq5Ltb5gp20//hH9RPxwutL1Q/jhAAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
