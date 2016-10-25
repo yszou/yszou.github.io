@@ -13,7 +13,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">Docker简单使用</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2016-01-10 16:55 更新</span>
+                <span>2016-10-25 22:15 更新</span>
             </div>
         </div>
 
@@ -51,45 +51,55 @@
 </p>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">更新内核:
+<li style="margin: 10px auto;">更新工具:
 </li>
 </ul>
 
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-get update
-<span style="color: #008080">$ </span>sudo apt-get install linux-image-generic-lts-raring linux-headers-generic-lts-raring
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-get update
+$ sudo apt-get install apt-transport-https ca-certificates
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">重启系统.
-</li>
 <li style="margin: 10px auto;">添加软件源的 KEY:
 </li>
 </ul>
 
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-                   --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 \
+                   --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
 <li style="margin: 10px auto;">添加软件源:
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
 </li>
 </ul>
 
-
-<div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo sh -c \
-  <span style="color: #dd1144">&quot;echo deb https://get.docker.io/ubuntu docker main &gt; /etc/apt/sources.list.d/docker.list&quot;</span>
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-</div>
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Ubuntu version</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Repository</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">Precise 12.04 (LTS)</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-precise main</code></td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">Trusty 14.04 (LTS)</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-trusty main</code></td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">Xenial 16.04 (LTS)</td>
+<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-xenial main</code></td>
+</tr>
+</table>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
 <li style="margin: 10px auto;">更新源列表并安装:
@@ -98,8 +108,8 @@
 
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo apt-get update
-<span style="color: #008080">$ </span>sudo apt-get install lxc-docker
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-get update
+$ sudo apt-get install docker-engine
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -108,16 +118,8 @@
 安装完成之后, 有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 命令可供使用. 同时, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 的服务默认监听在一个 <em style="color: #d75100; font-style: normal;">sock</em> 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-权限方面, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sudo</code> 用, 要么把当前用户加入到 docker 组:
+权限方面, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">docker</code> 的功能限制于 root 用户, docker 用户组.
 </p>
-
-<div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">$ </span>sudo groupadd docker
-<span style="color: #008080">$ </span>sudo gpasswd -a zys docker
-</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
-
-</div>
-
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 重启一下系统吧.
 </p>
@@ -551,7 +553,7 @@ ssh root@realip -p5000
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -576,7 +578,7 @@ ssh root@realip -p5000
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test </span>zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -714,7 +716,7 @@ body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-ind
 </style>
     
 
-<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
 <script type="text/javascript">
 
 $(function(){
@@ -1000,12 +1002,12 @@ $(function(){
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'docker';
-  var disqus_url = 'https://www.zouyesheng.com/docker.html';
+  var disqus_url = 'http://zouyesheng.com/docker.html';
   var disqus_title = 'Docker简单使用';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>
@@ -1013,15 +1015,17 @@ $(function(){
     
 
 <script type="text/javascript">
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
-ga('require', 'linkid');
-ga('set', 'dimension1', (new Date()).getDay().toString());
-ga('send', 'pageview');
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29492100-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
 </script>
     
 
@@ -1038,7 +1042,7 @@ VgZDfG0AAAAASUVORK5CYII=
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->

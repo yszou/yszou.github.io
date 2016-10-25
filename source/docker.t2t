@@ -14,48 +14,44 @@ Docker简单使用
 
 一般就是:
 
-- 更新内核:
+- 更新工具:
 
 
 ```bash
 $ sudo apt-get update
-$ sudo apt-get install linux-image-generic-lts-raring linux-headers-generic-lts-raring
+$ sudo apt-get install apt-transport-https ca-certificates
 ```
 
-- 重启系统.
+
 - 添加软件源的 KEY:
 
 
 ```bash
-$ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-                   --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+$ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 \
+                   --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 ```
+
 
 - 添加软件源:
 
+|| Ubuntu version | Repository ||
+| Precise 12.04 (LTS) | ``deb https://apt.dockerproject.org/repo ubuntu-precise main`` |
+| Trusty 14.04 (LTS) | ``deb https://apt.dockerproject.org/repo ubuntu-trusty main`` |
+| Xenial 16.04 (LTS) | ``deb https://apt.dockerproject.org/repo ubuntu-xenial main`` |
 
-```bash
-$ sudo sh -c \
-  "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
-```
+
 
 - 更新源列表并安装:
 
 
 ```bash
 $ sudo apt-get update
-$ sudo apt-get install lxc-docker
+$ sudo apt-get install docker-engine
 ```
-
 
 安装完成之后, 有一个 ``docker`` 命令可供使用. 同时, ``docker`` 的服务默认监听在一个 *sock* 文件上(这样除了命令行工具, 各语言的 API 都很容易实现了).
 
-权限方面, ``docker`` 的功能限制于 root 用户, docker 用户组. 所以, 你要么带着 ``sudo`` 用, 要么把当前用户加入到 docker 组:
-
-```bash
-$ sudo groupadd docker
-$ sudo gpasswd -a zys docker
-```
+权限方面, ``docker`` 的功能限制于 root 用户, docker 用户组.
 
 重启一下系统吧.
 
