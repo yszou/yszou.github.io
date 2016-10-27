@@ -1,0 +1,34 @@
+pgadmin4的安装
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+来源：http://askubuntu.com/questions/788457/how-to-install-pgadmin-4-in-server-mode-on-ubuntu-16-04
+
+```bash
+sudo pip install virtualenvwrapper
+
+cd ~
+virtualenv pgadmin
+cd pgadmin
+source bin/activate
+
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev libgmp3-dev
+sudo pip install cryptography pyopenssl ndg-httpsclient pyasn1 
+
+wget https://ftp.postgresql.org/pub/pgadmin3/pgadmin4/v1.0/pip/pgadmin4-1.0-py2-none-any.whl
+pip install pgadmin4-1.0-py2-none-any.whl
+
+find . -wholename "*pgadmin4/config.py"
+
+cp ./lib/python2.7/site-packages/pgadmin4/config.py ./lib/python2.7/site-packages/pgadmin4/config_local.py
+python  ./lib/python2.7/site-packages/pgadmin4/pgAdmin4.py
+```
+
+The webapp is now running at http://localhost:5050
+
