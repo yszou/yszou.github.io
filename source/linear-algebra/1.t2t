@@ -1,0 +1,240 @@
+线性代数笔记（一），方程组的几何解释
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus --mathjax
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+视频：http://open.163.com/movie/2010/11/7/3/M6V0BQC4M_M6V29E773.html
+
+# 方程组，行视图 #
+
+从一次方程组引入线性代数相关概念。
+
+对于：
+
+\[
+\begin{alignat}{2}
+2x & -{} &  y & = 0 \\
+-x & +{} & 2y & = 3
+\end{alignat}
+\]
+
+按『行』去理解的话，那么每个等式在二维坐标系中就是一条直线，方程的解，即是每条直线的交点。
+
+```gnuplot-svg
+set xzeroaxis lt -1 lw .5
+set yzeroaxis lt -1 lw .5
+set xrange [-5:5]
+set yrange [-5:5] 
+set xtics axis -5,1,5
+set ytics axis -5,1,5 
+unset border
+set arrow 1 from graph 0,first 0 to graph 1,first 0  lt -1 lw .5
+set arrow 2 from first 0,graph 0 to first 0,graph 1  lt -1 lw .5
+
+f(x) = 2 * x
+g(x) = (3 + x) / 2
+set label '(1,2)' at 1+0.2,2-0.4 
+plot f(x) title '2x -y = 0', g(x) title '-x + 2y = 3',  '+' using (1):(2) pt 7 ps 1.3 notitle
+```
+
+# 方程组，列视图 #
+
+按『列』去理解的话，方程组可以看成『列向量』的形式：
+
+\[
+\begin{bmatrix} 2 \\ -1 \end{bmatrix}
+x +
+\begin{bmatrix} -1 \\ 2 \end{bmatrix}
+y =
+\begin{bmatrix} 0 \\ 3 \end{bmatrix}
+\]
+
+问题就变成了 $\bigl[ \begin{smallmatrix} 2 \\ -1 \end{smallmatrix} \bigr]$ 和 $\bigl[ \begin{smallmatrix}  -1 \\ 2 \end{smallmatrix} \bigr]$ 这两个向量，通过怎样的组合，可以得到 $\bigl[ \begin{smallmatrix} 0 \\ 3 \end{smallmatrix} \bigr]$ 这个向量。
+
+```gnuplot-svg
+set xzeroaxis lt -1 lw .5
+set yzeroaxis lt -1 lw .5
+set xrange [-5:5]
+set yrange [-5:5] 
+set xtics axis -5,1,5
+set ytics axis -5,1,5
+unset border
+set arrow from graph 0,first 0 to graph 1,first 0  lt -1 lw .5
+set arrow from first 0,graph 0 to first 0,graph 1  lt -1 lw .5
+
+set arrow from 0, 0 to 2, -1 lt 1 lw 2
+set arrow from 0, 0 to -1, 2 lt 2 lw 2
+set arrow from 0, 0 to 0, 3  lt 3 lw 6
+
+set arrow from 2, -1 to 1, 1  lt 2 lw 1 dt (5, 5, 0, 0)
+set arrow from 1, 1 to 0, 3  lt 2 lw 1 dt (5, 5, 0, 0)
+
+plot '+' using (0):(0) notitle
+```
+
+很容易看出, $ 1 $ 个 $\bigl[ \begin{smallmatrix} 2 \\ -1 \end{smallmatrix} \bigr]$ 加上 $ 2 $ 个 $\bigl[ \begin{smallmatrix}  -1 \\ 2 \end{smallmatrix} \bigr]$ 就得到 $\bigl[ \begin{smallmatrix} 0 \\ 3 \end{smallmatrix} \bigr]$ 了。事实上，$\bigl[ \begin{smallmatrix} 2 \\ -1 \end{smallmatrix} \bigr]$ 和 $\bigl[ \begin{smallmatrix}  -1 \\ 2 \end{smallmatrix} \bigr]$ 这两个向量的组合，可以『到达任何一个点』。
+
+
+自然，对于矩阵乘向量：
+
+\[
+\begin{bmatrix}
+2 & -1 \\
+-1 & 2
+\end{bmatrix}
+\begin{bmatrix}
+x \\ y
+\end{bmatrix}
+=
+\begin{bmatrix}
+2 \\ -1
+\end{bmatrix} x +
+\begin{bmatrix}
+-1 \\ 2
+\end{bmatrix} y
+=
+\begin{bmatrix}
+2 \times x \\
+-1 \times x
+\end{bmatrix} +
+\begin{bmatrix}
+-1 \times y \\
+2 \times y
+\end{bmatrix}
+\]
+
+这也是从『列』角度去理解的。
+
+
+# 三个维度场景 #
+
+当然，这些只是『二维』的情况，不过『多维』场景下，所有法则都是一样的，没什么不同，只是图不好画了而已。
+
+比如：
+
+\[
+\begin{alignat}{3}
+3x & -{} &  y  &     &    & = 1 \\
+-x & +{} &  2y & -{} & z  & = 1 \\
+   &     & -3y & +{} & 4z & = 2
+\end{alignat}
+\]
+
+就是：
+
+\[
+\begin{bmatrix} 3 \\ -1 \\ 0 \end{bmatrix} x +
+\begin{bmatrix} -1 \\ 2 \\ -3 \end{bmatrix} y +
+\begin{bmatrix} 0 \\ -1 \\ 4 \end{bmatrix} z =
+\begin{bmatrix} 1 \\ 1 \\ 2 \end{bmatrix}
+\]
+
+```gnuplot-svg
+set xrange [-2:2]
+set yrange [-5:5] 
+set zrange [-4:4] 
+set arrow from 0,0,0 to 3,-1,0 lt 2 lw 2
+set arrow from 0,0,0 to -1,2,-3 lt 3 lw 2
+set arrow from 0,0,0 to 0,-1,4 lt 4 lw 2
+set arrow from 0,0,0 to 1,1,2 lt 5 lw 6
+
+set arrow from 3,-1,0 to 3-1,-1+2,0-3 lt 3 dt (5,5,0,0)
+set arrow from 2,1,-3 to 2-1,1+2,-3-3 lt 3 dt (5,5,0,0)
+set arrow from 1,3,-6 to 1+0,3-1,-6+4 lt 4 dt (5,5,0,0)
+set arrow from 1,2,-2 to 1+0,2-1,-2+4 lt 4 dt (5,5,0,0)
+
+set view 70,230
+splot '+' using (0):(0):(0) pt 7 notitle
+```
+
+表现的是： $\bigl[ \begin{smallmatrix}x \\ y \\ z \end{smallmatrix} \bigr] = \bigl[ \begin{smallmatrix} 1 \\ 2 \\ 2 \end{smallmatrix} \bigr]$ 的结果。
+
+
+
+# 更多维度 #
+
+
+为了让我们可以更好地去理解更高维度的情况，我们换个方式来重新审视上面这个『三维』的例子，你会发现，『坐标系』本身是一个很特殊的场景，『三维空间』也是一个很特殊的场景，矩阵中的数字，与这些场景本来是没有直接关系的，我们也不必一定要在这些特殊的场景中去理解矩阵中的，数字。
+
+仍然是：
+
+\[
+\begin{bmatrix} 3 \\ -1 \\ 0 \end{bmatrix} x +
+\begin{bmatrix} -1 \\ 2 \\ -3 \end{bmatrix} y +
+\begin{bmatrix} 0 \\ -1 \\ 4 \end{bmatrix} z =
+\begin{bmatrix} 1 \\ 1 \\ 2 \end{bmatrix}
+\]
+
+我们给原来的向量另外一套解释：
+
+\[
+\begin{bmatrix}
+3 \\ -1 \\ 0
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+    \begin{bmatrix} 3 \\ -1 \end{bmatrix} \\ 0
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix} M \\ A \end{bmatrix}
+\]
+
+假设，『你』现在站在平面坐标的 $ 0, 0 $ 的位置，上面的 $ M $ 表示你可以移动的位置（的向量表示）， $ A $ 表示这个移动中你能捡到的钱。 $ \bigl[ \begin{smallmatrix} 1 \\ 1 \\ 2 \end{smallmatrix} \bigr] $ 就是目标，需要你最终站在 $ 1, 1 $ 这个位置，并且身上要有 $ 2 $ 元钱。
+
+这个问题的难度，在于你能有的选择，显然，如果你有如下三个选择的话，那么这是一道送分题：
+
+\[
+\begin{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} \\ 0 \end{bmatrix}
+\begin{bmatrix} \begin{bmatrix} 0 \\ 1 \end{bmatrix} \\ 0 \end{bmatrix}
+\begin{bmatrix} \begin{bmatrix} 0 \\ 0 \end{bmatrix} \\ 1 \end{bmatrix}
+\]
+
+这种情况下，再远的位置，再多的钱，也难不到『一只蚂蚁』。
+
+不幸的是，现在你的选择是：
+
+\[
+\begin{bmatrix} \begin{bmatrix} 3 \\ -1 \end{bmatrix} \\ 0 \end{bmatrix}
+\begin{bmatrix} \begin{bmatrix} -1 \\ 2 \end{bmatrix} \\ -3 \end{bmatrix}
+\begin{bmatrix} \begin{bmatrix} 0 \\ -1 \end{bmatrix} \\ 4 \end{bmatrix}
+\]
+
+看起来是，你只有在『往下走一步』的这个选择中，才能捡到 $ 4 $ 元钱，另外两个选择要么捡不到钱，要么还要丢  $ 3 $ 元钱。
+
+当然，怎么走，我们前面已经解出来了的：
+
+```gnuplot-svg
+set xzeroaxis lt -1 lw .5
+set yzeroaxis lt -1 lw .5
+set xrange [-5:5]
+set yrange [-5:5] 
+set xtics axis -5,1,5
+set ytics axis -5,1,5
+unset border
+set arrow from graph 0,first 0 to graph 1,first 0  lt -1 lw .5
+set arrow from first 0,graph 0 to first 0,graph 1  lt -1 lw .5
+
+set arrow from 0, 0 to 3, -1 lt 1 lw 2
+set label '0 + 0 = 0 RMB' at 3 + 0.2, -1 - 0.2
+
+set arrow from 3, -1 to 3-1, -1+2 lt 2 lw 2
+set label '0 - 3 = -3 RMB' at 2 + 0.3, 1
+
+set arrow from 3-1, -1+2 to 2-1, 1+2 lt 2 lw 2
+set label '-3 - 3 = -6 RMB' at 1 + 0.3, 3
+
+set arrow from 1, 3 to 1+0, 3-1 lt 3 lw 2
+set arrow from 1, 2 to 1, 2-1 lt 3 lw 2
+set label '-6 + 4 + 4 = 2' at 1, 1-0.3 center
+
+plot '+' using (1):(1) pt 7 lt 4 notitle
+```
+
+这里有意思的一点是，在只有三种走法可选的情况下，我们只有这一套方案吗？
+
+好了，现在不管是『四维』，还是『五维』，其实我们要解释，都是很容易的事。
