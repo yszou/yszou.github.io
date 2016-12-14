@@ -1,0 +1,246 @@
+线性代数笔记（一），矩阵消元与变换
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus --mathjax
+%!qr: http://www.zouyesheng.com/linear-algebra/2.html
+%!format: !email
+%%toc
+
+
+视频：http://open.163.com/movie/2010/11/P/P/M6V0BQC4M_M6V29EGPP.html
+
+
+
+仍然看方程组：
+
+
+\[
+\begin{alignat}{3}
+ x & +{} &  2y & +{} & z & = 2  \\
+3x & +{} &  8y & +{} & z & = 12 \\
+   &     &  4y & +{} & z & = 2
+\end{alignat}
+\]
+
+
+写成矩阵的形式：
+
+\[
+\begin{equation*}
+Ax = b
+\end{equation*}
+\]
+
+即：
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\ 0 & 4 & 1
+\end{bmatrix}
+\begin{bmatrix} x \\  y \\ x \end{bmatrix} =
+\begin{bmatrix} 2 \\ 12 \\ 2 \end{bmatrix}
+\]
+
+
+解方程组的基本思想，是『消元』，除了直观地先求出 $ x = f(y, z), y = g(z), x = f(g(z), z) $ ，然后替换之后解出 $ z $ 之外，还可以把不同的方程直接相加减（相当于等号两边同时加减一个数），比如把上面的第二行：
+
+\[
+\begin{equation*}
+3x + 8y + z = 12
+\end{equation*}
+\]
+
+它的等号两边同时减 $ 3 $ 倍的第一行，也就是：
+
+\[
+ (3x + 8y + z) - 3(x + 2y + z) = 12 - 3(x + 2y + z) = 12 - 3 \times 2
+\]
+
+可以得到：
+
+\[
+2y - 2z = 6
+\]
+
+这样就把 $ x $ 『消』掉了。
+
+用矩阵来表示也是一样的（写起来方便多了）：
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 & 2 \\
+3 & 8 & 1 & 12 \\
+{}0 & 4 & 1 & 2
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 1 & 2 \\
+{}0 & 2 & -2 & 6 \\
+{}0 & 4 & 1 & 2
+\end{bmatrix}
+\]
+
+上面的消元步骤可以迭代进行（一般在处理上，我们先不考虑右侧的 $ b $ 向量，只计算左侧的 $ A $ 矩阵），目前是为了得到一个倒三角的矩阵 $ U $ ：
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 0 & 5
+\end{bmatrix}
+\]
+
+这样，回过去看方程，最后一行就是 $ 5z = N $ ，就可以解出 $ z $ 了，然后把 $ z $ 代入 $ \bigl[ \begin{smallmatrix} 0  & 2 & -2 \end{smallmatrix} \bigr] $ 这一行，就可以解出 $ y $ ，同样的，再把 $ z $ 和 $ y $ 代入第一行，就解出了 $ x $ ，这是一个倒着的『反代』的过程。
+
+
+上面的『消元』 与『反代』就是解一元方程组的一般方法了。
+
+现在我们考虑，如何用矩阵把每一步的消元过程描述出来，用矩阵描述一个『运动过程』。
+
+前面说过，矩阵乘以向量的『列视图』理解方式：
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\begin{bmatrix} x \\  y \\ z \end{bmatrix} =
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}x +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}y +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}z = 
+\begin{bmatrix}
+1x + 2y + 1z \\
+3x + 8y + 1z \\
+0x + 4y + 1z
+\end{bmatrix}
+\]
+
+把中间部分省掉，就可以反着想一下『行视图』的理解了。
+
+
+如何变成矩阵乘矩阵呢？
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x & i \\
+y & j \\
+z & k
+\end{bmatrix}
+\]
+
+
+其实就是两个向量了嘛：
+
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x & i \\
+y & j \\
+z & k
+\end{bmatrix} =
+\begin{bmatrix}
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}x +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}y +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}z \quad
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}i +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}j +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}k
+\end{bmatrix}
+\]
+
+（上面的写法只是为了便于理解）
+
+最后的结果就是：
+
+\[
+\begin{bmatrix}
+1x + 2y + 1z, 1i + 2j + 1k \\
+3x + 8y + 1z, 3i + 8j + 1k \\
+0x + 4y + 1z, 0i + 4j + 1k
+\end{bmatrix}
+\]
+
+这就是矩阵的乘法的运算方式。（ $ 3 \times 3 $ 的矩阵乘以 $ 3 \times 2 $ 的矩阵，结果一个是 $ 3 \times 2 $ 的矩阵哈，『取头取尾』嘛）
+
+『列』看左侧矩阵，『行』应该看右侧矩阵：
+
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x & i \\
+y & j \\
+z & k
+\end{bmatrix} =
+\begin{bmatrix}
+1x + 2y + 1z, 1i + 2j + 1k \\
+3x + 8y + 1z, 3i + 8j + 1k \\
+0x + 4y + 1z, 0i + 4j + 1k
+\end{bmatrix} =
+\begin{bmatrix}
+1 \times \bigl[\begin{smallmatrix} x & i \end{smallmatrix} \bigr] +
+2 \times \bigl[\begin{smallmatrix} y & j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z & k \end{smallmatrix} \bigr]
+\\
+3 \times \bigl[\begin{smallmatrix} x & i \end{smallmatrix} \bigr] +
+8 \times \bigl[\begin{smallmatrix} y & j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z & k \end{smallmatrix} \bigr]
+\\
+{}0 \times \bigl[\begin{smallmatrix} x & i \end{smallmatrix} \bigr] +
+4 \times \bigl[\begin{smallmatrix} y & j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z & k \end{smallmatrix} \bigr]
+\end{bmatrix}
+\]
+
+（上面的写法只是为了便于理解）
+
+『行视图』就是行的线性组合。
+
+
