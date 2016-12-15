@@ -1,4 +1,4 @@
-线性代数笔记（一），矩阵消元与变换
+线性代数笔记（二），矩阵消元与变换
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
@@ -242,5 +242,241 @@ z & k
 （上面的写法只是为了便于理解）
 
 『行视图』就是行的线性组合。
+
+有了乘法的概念之后，矩阵的变化就可以被描述成原矩阵乘以另外一个『变换矩阵』，或者变换矩阵乘以原矩阵（矩阵的乘法是对顺序敏感的），比如行一加上行二这个『变化』，就可以是：
+
+\[
+\begin{bmatrix}
+1 & 0 & 0 \\
+1 & 1 & 0 \\
+{}0 & 0 & 1 \\
+\end{bmatrix} \times
+\begin{bmatrix}
+a_1 & a_2 & a_3 \\
+b_1 & b_2 & b_3 \\
+c_1 & c_2 & c_3
+\end{bmatrix} =
+\begin{bmatrix}
+a_1 & a_2 & a_3 \\
+a_1 + b_1 & a_2 + b_2 & a_3 + b_3 \\
+c_1 & c_2 & c_3
+\end{bmatrix}
+\]
+
+
+其它的各种变化也是同理，用不同的矩阵乘，或者被乘就好了。
+
+回到之前我们解方程组的过程，其实就是矩阵的变化过程：
+
+
+\[
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 0 & 5
+\end{bmatrix}
+\]
+
+
+第一步：
+
+
+\[
+E_{21} \times 
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\]
+
+
+第二步：
+
+\[
+E_{32} \times
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 4 & 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+{}0 & 0 & 5
+\end{bmatrix}
+\]
+
+
+结合上面两步，也就是：
+
+\[
+E_{32} \times
+\biggl(
+E_{21} \times 
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+{}0 & 4 & 1
+\end{bmatrix}
+\biggr)
+=
+\begin{bmatrix}
+1 & 2 & 1    \\
+{}0 & 2 & -2 \\
+0 & 0 & 5
+\end{bmatrix}
+\]
+
+
+$ E_{21} $ 描述的是『行二减去 $ 3 $ 倍行一』，对应的『变换矩阵』也就是：
+
+\[
+E_{21} = 
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+\]
+
+$ E_{32} $ 描述的是『行三减去 $ 2 $ 倍行二』：
+
+\[
+E_{32} = 
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & -2 & 1
+\end{bmatrix}
+\]
+
+上面的过程就可以写成：
+
+\[
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & -2 & 1
+\end{bmatrix}
+\biggl(
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+0 & 4 & 1
+\end{bmatrix}
+\biggr)
+=
+\begin{bmatrix}
+1 & 2 & 1    \\
+0 & 2 & -2 \\
+0 & 0 & 5
+\end{bmatrix}
+\]
+
+有点叼爆了的感觉哈（这种整体的替换，并且精确描述变化的数学方式，你如果像我一样，是在复制整块的 $ \LaTeX $ 代码，你会有尤为强烈的感觉的）。
+
+把上面的矩阵抽象一下，就是：
+
+\[
+E_{32}(E_{21}A) = U
+\]
+
+我们的目的是 $ A \rightarrow U $，那么应该有一个『一步到位』的变换矩阵可以直接达到目的：
+
+\[
+?A = U
+\]
+
+这里直接运用矩阵乘法的『结合律』*Associative Law*，把括号去掉就可以了：
+
+\[
+E_{32}(E_{21}A) = (E_{32}E_{21})A = EA = U
+\]
+
+我已经迫不急待想要计算这个一步到位的 $ E $ 了：
+
+\[
+E_{32}E_{21}
+=
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & -2 & 1
+\end{bmatrix}
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+6 & -2 & 1
+\end{bmatrix}
+\]
+
+我们可以验算一下：
+
+\[
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+6 & -2 & 1
+\end{bmatrix}
+\begin{bmatrix}
+1 & 2 & 1 \\
+3 & 8 & 1 \\
+0 & 4 & 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 2 & -2 \\
+0 & 0 & 5
+\end{bmatrix}
+\]
+
+如果我们要解完整的方程组，只需要把常数列加到矩阵中，跟着一起变就可以了：
+
+\[
+\begin{bmatrix}
+1 & 0 & 0 \\
+-3 & 1 & 0 \\
+6 & -2 & 1
+\end{bmatrix}
+\begin{bmatrix}
+1 & 2 & 1 & 2 \\
+3 & 8 & 1 & 12\\
+0 & 4 & 1 & 2
+\end{bmatrix} =
+\begin{bmatrix}
+1 & 2 & 1 & 2 \\
+0 & 2 & -2 & 6\\
+0 & 0 & 5 & -10
+\end{bmatrix}
+\]
 
 
