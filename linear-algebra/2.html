@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>线性代数笔记（二），矩阵消元与变换 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">线性代数笔记（二），矩阵消元与变换</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-12-17 22:36 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">消元</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">使用矩阵来描述操作</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">逆矩阵</a>
+  </li>
+  </ol>
+
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+视频：<a href="http://open.163.com/movie/2010/11/P/P/M6V0BQC4M_M6V29EGPP.html" style="color: #0184b7; text-decoration: none">http://open.163.com/movie/2010/11/P/P/M6V0BQC4M_M6V29EGPP.html</a>
+</p>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 消元</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+仍然看方程组：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{alignat}{3}
+ x &amp; +{} &amp;  2y &amp; +{} &amp; z &amp; = 2  \\
+3x &amp; +{} &amp;  8y &amp; +{} &amp; z &amp; = 12 \\
+   &amp;     &amp;  4y &amp; +{} &amp; z &amp; = 2
+\end{alignat}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+写成矩阵的形式：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+Ax = b
+\end{equation*}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+即：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\ 0 &amp; 4 &amp; 1
+\end{bmatrix}
+\begin{bmatrix} x \\  y \\ x \end{bmatrix} =
+\begin{bmatrix} 2 \\ 12 \\ 2 \end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+解方程组的基本思想，是『消元』，除了直观地先求出 $ x = f(y, z), y = g(z), x = f(g(z), z) $ ，然后替换之后解出 $ z $ 之外，还可以把不同的方程直接相加减（相当于等号两边同时加减一个数），比如把上面的第二行：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+3x + 8y + z = 12
+\end{equation*}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它的等号两边同时减 $ 3 $ 倍的第一行，也就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+ (3x + 8y + z) - 3(x + 2y + z) = 12 - 3(x + 2y + z) = 12 - 3 \times 2
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以得到：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+2y - 2z = 6
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就把 $ x $ 『消』掉了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用矩阵来表示也是一样的（写起来方便多了）：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 &amp; 2 \\
+3 &amp; 8 &amp; 1 &amp; 12 \\
+{}0 &amp; 4 &amp; 1 &amp; 2
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 &amp; 2 \\
+{}0 &amp; 2 &amp; -2 &amp; 6 \\
+{}0 &amp; 4 &amp; 1 &amp; 2
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的消元步骤可以迭代进行（一般在处理上，我们先不考虑右侧的 $ b $ 向量，只计算左侧的 $ A $ 矩阵），目前是为了得到一个倒三角的矩阵 $ U $ ：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，回过去看方程，最后一行就是 $ 5z = N $ ，就可以解出 $ z $ 了，然后把 $ z $ 代入 $ \bigl[ \begin{smallmatrix} 0  &amp; 2 &amp; -2 \end{smallmatrix} \bigr] $ 这一行，就可以解出 $ y $ ，同样的，再把 $ z $ 和 $ y $ 代入第一行，就解出了 $ x $ ，这是一个倒着的『反代』的过程。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的『消元』 与『反代』就是解一元方程组的一般方法了。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 使用矩阵来描述操作</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在我们考虑，如何用矩阵把每一步的消元过程描述出来，用矩阵描述一个『运动过程』。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说过，矩阵乘以向量的『列视图』理解方式：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\begin{bmatrix} x \\  y \\ z \end{bmatrix} =
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}x +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}y +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}z = 
+\begin{bmatrix}
+1x + 2y + 1z \\
+3x + 8y + 1z \\
+0x + 4y + 1z
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把中间部分省掉，就可以反着想一下『行视图』的理解了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如何变成矩阵乘矩阵呢？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+x &amp; i \\
+y &amp; j \\
+z &amp; k
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实就是两个向量了嘛：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+x &amp; i \\
+y &amp; j \\
+z &amp; k
+\end{bmatrix} =
+\begin{bmatrix}
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}x +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}y +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}z \quad
+\begin{bmatrix}
+1 \\ 3 \\ 0
+\end{bmatrix}i +
+\begin{bmatrix}
+2 \\ 8 \\ 4
+\end{bmatrix}j +
+\begin{bmatrix}
+1 \\ 1 \\ 1
+\end{bmatrix}k
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（上面的写法只是为了便于理解）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后的结果就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1x + 2y + 1z, 1i + 2j + 1k \\
+3x + 8y + 1z, 3i + 8j + 1k \\
+0x + 4y + 1z, 0i + 4j + 1k
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这就是矩阵的乘法的运算方式。（ $ 3 \times 3 $ 的矩阵乘以 $ 3 \times 2 $ 的矩阵，结果一个是 $ 3 \times 2 $ 的矩阵哈，『取头取尾』嘛）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+『列』看左侧矩阵，『行』应该看右侧矩阵：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+x &amp; i \\
+y &amp; j \\
+z &amp; k
+\end{bmatrix} =
+\begin{bmatrix}
+1x + 2y + 1z, 1i + 2j + 1k \\
+3x + 8y + 1z, 3i + 8j + 1k \\
+0x + 4y + 1z, 0i + 4j + 1k
+\end{bmatrix} =
+\begin{bmatrix}
+1 \times \bigl[\begin{smallmatrix} x &amp; i \end{smallmatrix} \bigr] +
+2 \times \bigl[\begin{smallmatrix} y &amp; j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z &amp; k \end{smallmatrix} \bigr]
+\\
+3 \times \bigl[\begin{smallmatrix} x &amp; i \end{smallmatrix} \bigr] +
+8 \times \bigl[\begin{smallmatrix} y &amp; j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z &amp; k \end{smallmatrix} \bigr]
+\\
+{}0 \times \bigl[\begin{smallmatrix} x &amp; i \end{smallmatrix} \bigr] +
+4 \times \bigl[\begin{smallmatrix} y &amp; j \end{smallmatrix} \bigr] +
+1 \times \bigl[\begin{smallmatrix} z &amp; k \end{smallmatrix} \bigr]
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（上面的写法只是为了便于理解）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+『行视图』就是行的线性组合。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有了乘法的概念之后，矩阵的变化就可以被描述成原矩阵乘以另外一个『变换矩阵』，或者变换矩阵乘以原矩阵（矩阵的乘法是对顺序敏感的），比如行一加上行二这个『变化』，就可以是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+1 &amp; 1 &amp; 0 \\
+{}0 &amp; 0 &amp; 1 \\
+\end{bmatrix} \times
+\begin{bmatrix}
+a_1 &amp; a_2 &amp; a_3 \\
+b_1 &amp; b_2 &amp; b_3 \\
+c_1 &amp; c_2 &amp; c_3
+\end{bmatrix} =
+\begin{bmatrix}
+a_1 &amp; a_2 &amp; a_3 \\
+a_1 + b_1 &amp; a_2 + b_2 &amp; a_3 + b_3 \\
+c_1 &amp; c_2 &amp; c_3
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其它的各种变化也是同理，用不同的矩阵乘，或者被乘就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到之前我们解方程组的过程，其实就是矩阵的变化过程：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\rightarrow
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第一步：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{21} \times 
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第二步：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32} \times
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+{}0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结合上面两步，也就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32} \times
+\biggl(
+E_{21} \times 
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+{}0 &amp; 4 &amp; 1
+\end{bmatrix}
+\biggr)
+=
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+{}0 &amp; 2 &amp; -2 \\
+0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+$ E_{21} $ 描述的是『行二减去 $ 3 $ 倍行一』，对应的『变换矩阵』也就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{21} = 
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+$ E_{32} $ 描述的是『行三减去 $ 2 $ 倍行二』：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32} = 
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 \\
+0 &amp; -2 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的过程就可以写成：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 \\
+0 &amp; -2 &amp; 1
+\end{bmatrix}
+\biggl(
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+0 &amp; 4 &amp; 1
+\end{bmatrix}
+\biggr)
+=
+\begin{bmatrix}
+1 &amp; 2 &amp; 1    \\
+0 &amp; 2 &amp; -2 \\
+0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有点叼爆了的感觉哈（这种整体的替换，并且精确描述变化的数学方式，你如果像我一样，是在复制整块的 $ \LaTeX $ 代码，你会有尤为强烈的感觉的）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把上面的矩阵抽象一下，就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32}(E_{21}A) = U
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们的目的是 $ A \rightarrow U $，那么应该有一个『一步到位』的变换矩阵可以直接达到目的：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+?A = U
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里直接运用矩阵乘法的『结合律』<em style="color: #d75100; font-style: normal;">Associative Law</em>，把括号去掉就可以了：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32}(E_{21}A) = (E_{32}E_{21})A = EA = U
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我已经迫不急待想要计算这个一步到位的 $ E $ 了：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E_{32}E_{21}
+=
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 \\
+0 &amp; -2 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 1
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+6 &amp; -2 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们可以验算一下：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+6 &amp; -2 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 8 &amp; 1 \\
+0 &amp; 4 &amp; 1
+\end{bmatrix} =
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+0 &amp; 2 &amp; -2 \\
+0 &amp; 0 &amp; 5
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们要解完整的方程组，只需要把常数列加到矩阵中，跟着一起变就可以了：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+6 &amp; -2 &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 &amp; 2 \\
+3 &amp; 8 &amp; 1 &amp; 12\\
+0 &amp; 4 &amp; 1 &amp; 2
+\end{bmatrix} =
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 &amp; 2 \\
+0 &amp; 2 &amp; -2 &amp; 6\\
+0 &amp; 0 &amp; 5 &amp; -10
+\end{bmatrix}
+\]
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 逆矩阵</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在再看一下我们的处理过程：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+EA = U
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+$ A $ 变成了 $ U $，自然地， $ U $ 通过某种变换 $ X $，也应该可以变回 $ A $：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+XU = A
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也就是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+E(XU) = EA
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+两个矩阵都作一样的变换，结果肯定还是一样嘛。再使用前面说过的『结合律』：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+(EX)U = EA =U  \Rightarrow EX = I
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这表示，这个让 $ U $ 变回 $ A $ 的变换矩阵，被 $ E $ 乘之后，结果是『单位矩阵』。这里的 $ X $ 就是 $ E $ 的『逆矩阵』 <em style="color: #d75100; font-style: normal;">Inverse</em> ，意为『相反的变化』，一般记为 $ E^{-1} $ ，叫 <em style="color: #d75100; font-style: normal;">E inverse</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+-3 &amp; 1 &amp; 0 \\
+6 &amp; -2 &amp; 1
+\end{bmatrix} E^{-1} = 
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如何求得这个 $ E^{-1} $ 还不是一个容易的事，因为矩阵可没有除法。不过，至此，倒是可以以『相反的形式』去考虑，比如前面第一步是『行二减去 $ 3 $ 倍行一』，它相反的操作，自然就是『行二加上 $ 3 $ 倍行一』。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = '2';
+  var disqus_url = 'https://www.zouyesheng.com/2.html';
+  var disqus_title = '线性代数笔记（二），矩阵消元与变换';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    styles: {
+        '.MathJax': {
+            'color': '#6D3333'
+        },
+        '.MathJax_SVG': {
+            'outline': 'none'
+        },
+        ".MathJax_SVG svg > g, .MathJax_SVG_Display svg > g":  { 
+          fill: "#6D3333", 
+          stroke: "#333" 
+        } 
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_SVG">
+</script>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsklEQVR4nN2XMW7cQAxFH6UFpG6U
+E4wuYm2uZWANT7J7jxQ5SCT5ItIBAowqj4Bd/xTrVHEZFgnLX8wHyf9Jjok/Y68+AOHfQycza2dY
+rdoSZma9GxuaJDWTEhohNtI1Fi+2A2xdRN3Pb+0rwPT55F/fLa17nevlb7/7IToAqHvsfdkOEEQ7
+U6t9/dQs7VG37465ycywfOt5Wfd+Nzv45YbukWuVAaIkyU2TFVN3sxYeewiJ/ejrtzGcF03SUuBZ
+AH5+q7D82NuTpbswi+nq2rf8rDKEayxALKbkmdscnvrW8oXmjdPKQL04OuChu6Avdl2tol7aqbv5
+qkRioFY55lPE8smzkgOXVV/DU9+qg2YMju6usEy05zUB4bCWh861bzMnyhzOC2xa2pfs2LeKYUuE
+kZsxA0Xm7DcohBSbMUiNfP02dcQwZQButlvnuLvfd8CU66UAUZPnXfJ+cz3EBENItLLkmdv95src
+56TG4Ljf0JSJzSSpeQsJnKcyAMN2YK82LWXYHB3wGw1p5Zih+dFdXNmCFuYtxaJox3YOyVMlI9BM
+mai3cKWYzn4qsf/4R/ULniDw0MHlTEgAAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
