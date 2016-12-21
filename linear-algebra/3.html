@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>线性代数笔记（三），矩阵乘法与求逆 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">线性代数笔记（三），矩阵乘法与求逆</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2016-12-22 01:42 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">乘法：基本方法</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">乘法：列视图</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">乘法：行视图</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">乘法：交叉视图</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">乘法：分块视图</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">逆矩阵</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 乘法：基本方法</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+乘法前面已经有涉及了，这里只是把它再系统地说一下，后面能看到，计算两个矩阵的乘法，有不同的『视角』的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最基本的计算方式，就是依次计算矩阵的每一个成员的值，比如：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+a_{11} &amp; a_{12} &amp; a_{13} &amp; \dotsm \\ 
+a_{21} &amp; a_{22} &amp; a_{23} &amp; \dotsm \\
+a_{31} &amp; a_{32} &amp; a_{33} &amp; \dotsm \\
+\dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+\begin{bmatrix}
+b_{11} &amp; b_{12} &amp; b_{13} &amp; \dotsm \\ 
+b_{21} &amp; b_{22} &amp; b_{23} &amp; \dotsm \\
+b_{31} &amp; b_{32} &amp; b_{33} &amp; \dotsm \\
+\dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+=
+\begin{bmatrix}
+c_{11} &amp; c_{12} &amp; c_{13} &amp; \dotsm \\ 
+c_{21} &amp; c_{22} &amp; c_{23} &amp; \dotsm \\
+c_{31} &amp; c_{32} &amp; c_{33} &amp; \dotsm \\
+\dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先， $ C $ 中的结果成员，计算时只涉及 $ A $ 中的行，及 $ B $ 中的列：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+\color{red}{a_{11}} &amp; \color{red}{a_{12}} &amp; \color{red}{a_{13}} &amp; \color{red}{\dotsm} \\ 
+\color{blue}{a_{21}} &amp; \color{blue}{a_{22}} &amp; \color{blue}{a_{23}} &amp; \color{blue}{\dotsm} \\
+a_{31} &amp; a_{32} &amp; a_{33} &amp; \dotsm \\
+\dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+\begin{bmatrix}
+\color{red}{b_{11}} &amp; \color{blue}{b_{12}} &amp; b_{13} &amp; \dotsm \\ 
+\color{red}{b_{21}} &amp; \color{blue}{b_{22}} &amp; b_{23} &amp; \dotsm \\
+\color{red}{b_{31}} &amp; \color{blue}{b_{32}} &amp; b_{33} &amp; \dotsm \\
+\color{red}{\dotsm}  &amp; \color{blue}{\dotsm} &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+=
+\begin{bmatrix}
+\color{red}{c_{11}} &amp; c_{12} &amp; c_{13} &amp; \dotsm \\ 
+c_{21} &amp; \color{blue}{c_{22}} &amp; c_{23} &amp; \dotsm \\
+c_{31} &amp; c_{32} &amp; c_{33} &amp; \dotsm \\
+\dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+具体的计算规则为：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+\begin{split}
+c_{11} &amp; = a_{11}b_{11} + a_{12}b_{21} + a_{13}b_{31} + \dotsb \\
+       &amp; = \sum_{k=1}^{n}a_{1k}b_{k1}
+\end{split}
+\end{equation*}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一般化为：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+\begin{split}
+c_{ij} &amp; = a_{i1}b_{1j} + a_{i2}b_{2j} + a_{i3}b_{3j} + \dotsb \\
+       &amp; = \sum_{k=1}^{n}a_{ik}b_{kj}
+\end{split}
+\end{equation*}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从上面的规则也可以看出，两个矩阵要能相乘，需要满足的一个前提，就是 <em style="color: #d75100; font-style: normal;">『$ A $ 的列数等于 $ B $ 的行数』</em>，结果矩阵的尺寸，是 $ A $ 的行数， $ B $ 的列数。即：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+{}\\
+{} &amp; m \times n &amp; {} \\
+{}
+\end{bmatrix}
+\begin{bmatrix}
+{}\\
+{} &amp; n \times p &amp; {} \\
+{}
+\end{bmatrix}
+=
+\begin{bmatrix}
+{} \\
+{} &amp; m \times p &amp; {} \\
+{}
+\end{bmatrix}
+\]
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 乘法：列视图</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+列视图的乘法理解，这其实是最开始讲方程组时的情景，『矩阵乘以列，得到列，并且得到的列就是矩阵中各列的线性组合』。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+    \begin{split}
+        {
+        \color{blue}
+        \begin{bmatrix}
+            a_{11} &amp; a_{12} &amp; a_{13} &amp; \dotsm \\ 
+            a_{21} &amp; a_{22} &amp; a_{23} &amp; \dotsm \\
+            a_{31} &amp; a_{32} &amp; a_{33} &amp; \dotsm \\
+            \dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        }
+        \begin{bmatrix}
+            \color{red}{b_{11}} &amp; b_{12} &amp; b_{13} &amp; \dotsm \\ 
+            \color{red}{b_{21}} &amp; b_{22} &amp; b_{23} &amp; \dotsm \\
+            \color{red}{b_{31}} &amp; b_{32} &amp; b_{33} &amp; \dotsm \\
+            \color{red}{\dotsm}  &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        &amp;=
+        \begin{bmatrix}
+            \color{red}{c_{11}} &amp; c_{12} &amp; c_{13} &amp; \dotsm \\ 
+            \color{red}{c_{21}} &amp; c_{22} &amp; c_{23} &amp; \dotsm \\
+            \color{red}{c_{31}} &amp; c_{32} &amp; c_{33} &amp; \dotsm \\
+            \color{red}{\dotsm} &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        \\
+        &amp; \color{red} \Rightarrow
+        \begin{bmatrix}
+            {\color{blue}
+                \begin{bmatrix}
+                a_{11} \\ a_{21} \\ a_{31} \\ \dotsm
+                \end{bmatrix} \color{red}b_{11}
+            }
+            {}+
+            {\color{blue}
+                \begin{bmatrix}
+                a_{12} \\ a_{22} \\ a_{32} \\ \dotsm
+                \end{bmatrix} \color{red}b_{21}
+            }
+            {}+
+            {\color{blue}
+                \begin{bmatrix}
+                a_{13} \\ a_{23} \\ a_{33} \\ \dotsm
+                \end{bmatrix} \color{red}b_{23}
+            }
+        \end{bmatrix}
+    \end{split}
+\end{equation*}
+\]
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 乘法：行视图</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+行视图，与列视图类似，$ C $ 中的一行，相当于 $ B $ 中所有行的线性组合。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+    \begin{split}
+        \begin{bmatrix}
+            \color{red}{a_{11}} &amp; \color{red}{a_{12}} &amp; \color{red}{a_{13}} &amp; \color{red}{\dotsm} \\ 
+            a_{21} &amp; a_{22} &amp; a_{23} &amp; \dotsm \\
+            a_{31} &amp; a_{32} &amp; a_{33} &amp; \dotsm \\
+            \dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        {\color{blue}
+        \begin{bmatrix}
+            b_{11} &amp; b_{12} &amp; b_{13} &amp; \dotsm \\ 
+            b_{21} &amp; b_{22} &amp; b_{23} &amp; \dotsm \\
+            b_{31} &amp; b_{32} &amp; b_{33} &amp; \dotsm \\
+            \dotsm  &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        }
+        &amp;=
+        \begin{bmatrix}
+            \color{red}{c_{11}} &amp; \color{red}{c_{12}} &amp; \color{red}{c_{13}} &amp; \color{red}{\dotsm} \\ 
+            c_{21} &amp; c_{22} &amp; c_{23} &amp; \dotsm \\
+            c_{31} &amp; c_{32} &amp; c_{33} &amp; \dotsm \\
+            \dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+        \end{bmatrix}
+        \\
+        &amp; \color{red} \Rightarrow
+        \begin{bmatrix}
+        a_{11} {\color{blue} \begin{bmatrix} b_{11} &amp; b_{12} &amp; b_{13} &amp; \dotsm \end{bmatrix}} \\
+        {} + \\
+        a_{12} {\color{blue} \begin{bmatrix} b_{21} &amp; b_{22} &amp; b_{23} &amp; \dotsm \end{bmatrix}} \\
+        {} + \\
+        a_{13} {\color{blue} \begin{bmatrix} b_{31} &amp; b_{32} &amp; b_{33} &amp; \dotsm \end{bmatrix}}
+        \end{bmatrix}
+    \end{split}
+\end{equation*}
+\]
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 乘法：交叉视图</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+『交叉视图』，这是我自己想的名字。前面说了『列』，也说了『行』，还有一种方法，是一个矩阵取『列』，另一个矩阵取『行』，这其实就是一个 $ m \times 1 $ 的矩阵乘一个 $ 1 \times p$ 的矩阵，结果应该是一个 $ m \times p $ 的矩阵：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+2 \\ 3 \\ 6
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 6
+\end{bmatrix}
+=
+\begin{bmatrix}
+2 &amp; 12 \\
+3 &amp; 18 \\
+6 &amp; 36
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再看一般化的例子：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+\begin{split}
+    \color{gray}
+    \begin{bmatrix}
+        \color{red}{a_{11}} &amp; \color{blue}{a_{12}} &amp; a_{13} &amp; \dotsm \\ 
+        \color{red}{a_{21}} &amp; \color{blue}{a_{22}} &amp; a_{23} &amp; \dotsm \\
+        \color{red}{a_{31}} &amp; \color{blue}{a_{32}} &amp; a_{33} &amp; \dotsm \\
+        \color{red}{\dotsm}  &amp; \color{blue}{\dotsm} &amp; \dotsm &amp; \dotsm
+    \end{bmatrix}
+    \begin{bmatrix}
+        \color{red}{b_{11}} &amp; \color{red}{b_{12}} &amp; \color{red}{b_{13}} &amp; \color{red}{\dotsm} \\ 
+        \color{blue}{b_{21}} &amp; \color{blue}{b_{22}} &amp; \color{blue}{b_{23}} &amp; \color{blue}{\dotsm} \\
+        b_{31} &amp; b_{32} &amp; b_{33} &amp; \dotsm \\
+        \dotsm  &amp; \dotsm &amp; \dotsm &amp; \dotsm
+    \end{bmatrix}
+    =
+    &amp; \color{red}
+    \begin{bmatrix}
+    a_{11}b_{11} &amp; a_{11}b_{12} &amp; a_{11}b_{13} &amp; \dotsm \\
+    a_{21}b_{11} &amp; a_{21}b_{12} &amp; a_{21}b_{13} &amp; \dotsm \\
+    a_{31}b_{11} &amp; a_{31}b_{12} &amp; a_{31}b_{13} &amp; \dotsm \\
+    \dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+    \end{bmatrix}
+    \color{gray}{+} \\
+    &amp; \color{blue}
+    \begin{bmatrix}
+    a_{12}b_{21} &amp; a_{12}b_{22} &amp; a_{12}b_{23} &amp; \dotsm \\
+    a_{22}b_{21} &amp; a_{22}b_{22} &amp; a_{22}b_{23} &amp; \dotsm \\
+    a_{32}b_{21} &amp; a_{32}b_{22} &amp; a_{32}b_{23} &amp; \dotsm \\
+    \dotsm &amp; \dotsm &amp; \dotsm &amp; \dotsm
+    \end{bmatrix}
+    \color{gray}{+} \\
+    &amp;
+    \begin{bmatrix}
+    {} \\
+    {} &amp; \dotsm &amp; {} \\
+    {}
+    \end{bmatrix}
+\end{split}
+\end{equation*}
+\]
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 乘法：分块视图</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，还有一种计算矩阵乘法的方法，准确地说，这不能单独算一种方法，只是矩阵的一个性质吧，就是『分块矩阵』。简单来说，之前我们讲到的运算中，里面每一个 $ a_{mn} $ ，除了是一个数字之外，还可以是一个矩阵，比如：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+A_1 &amp; A_2 \\
+A_3 &amp; A_4
+\end{bmatrix}
+\begin{bmatrix}
+B_1 &amp; B_2 \\
+B_3 &amp; B_4
+\end{bmatrix}
+=
+\begin{bmatrix}
+A_1B_1 + A_2B_3 &amp; A_1B_2 + A_2B_4 \\
+A_3B_1 + A_4B_3 &amp; A_3B_2 + A_4B_4
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+矩阵乘法的计算就是这么多了。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 逆矩阵</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+逆矩阵前面提到过的，对于任意一个矩阵 $ A $，你可以把它看成表示的是某种变换，也可以看成是变换的结果，进一步，可以看成是 $ I $ 经过 $ A $ 的变换，得到了 $ A $ ，这样一来， $ A $ 的逆 $ A ^{-1} $ 就是把 $ A $ 变回 $ I $ 的那个矩阵，也就是（准确地说，这算是『左逆』，同时也有『右逆』，对于方阵，它们两个是相同的，非方阵，它们两个不同）：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{equation*}
+A^{-1}A = I
+\end{equation*}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+$ A^{-1} $ 不一定总是存在的， 因为 $ I $ 又不是能变成所有矩阵， $ I $ 变不成的矩阵，你也不可能把它变回成 $ I $ 啊。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于逆存在的情况，把 $ A $ 变回 $ I $ 的这个过程，就是 $ A^{-1} $ 。我们当然可以像最开始解方程组那个，一个 $ E $ 一个 $ E $ 地求，也可以直接把 $ A $ 和 $ I $ 写在一起，同时『变』，这样， $ A $ 的每一步变换都被 $ I $ 『记录』下来了，当 $ A $ 变成 $ I $ 的时候，右侧记录了完整过程的 $ I $ 也就变成了 $ A^{-1} $。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如对于 $ \bigl[ \begin{smallmatrix}1 &amp; 3 \\ 2 &amp; 7 \end{smallmatrix} \bigr]$ 这个矩阵，我们要求它的逆：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+a &amp; b \\ c &amp; d
+\end{bmatrix}
+\begin{bmatrix}
+1 &amp; 3 \\ 
+2 &amp; 7
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+根据矩阵乘法的计算方法，我们可以得到一个方程组：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{align}
+a + 2b &amp;= 1 \\
+3a + 7b &amp;= 0 \\
+c + 2d &amp;= 0 \\
+3c + 7d &amp;= 1
+\end{align}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前两个方程，跟后两个方程完全没有未知数上的关系，所以可以简化成两个 $ 2 $ 元的方程组，从矩阵乘法的『行视图』也可以想明白这点， $ A^{-1} A = I $ 中， $ I $ 的某一行是 $ A $ 的每一行的线性组合结果，只与 $ A^{-1} $ 的对应行有关，与 $ A^{-1} $ 的其它行无关。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{align}
+a + 2b &amp;= 1  &amp; c + 2d &amp;= 0 \\
+3a + 7b &amp;= 0 &amp; 3c + 7d &amp;= 1
+\end{align}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+两个方程组对应的增广矩阵是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 \\
+3 &amp; 7 &amp; 0
+\end{bmatrix}
+\qquad
+\begin{bmatrix}
+1 &amp; 2 &amp; 0 \\
+3 &amp; 7 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当我们变换完成，解出方程组的时候：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp; r_1 \\
+0 &amp; 1 &amp; r_2
+\end{bmatrix}
+\qquad
+\begin{bmatrix}
+1 &amp; 0 &amp; r_3 \\
+0 &amp; 1 &amp; r_4
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就正好对应了： $ a=r_1 , b=r_2, c=r_3, d=r_4 $ 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+又因为两个方程组的系数矩阵完全一致（这不是巧合，前面从行的线性组合角度作了说明），那么求解过程中的变换也是一致的，所以我们就可以把两个矩阵弄在一起变换：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 2 &amp; 1 &amp; 0 \\
+3 &amp; 7 &amp; 0 &amp; 1
+\end{bmatrix}
+\Rightarrow
+\begin{bmatrix}
+1 &amp; 0 &amp; r_1 &amp; r_3 \\
+0 &amp; 1 &amp; r_2 &amp; r_4
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 &amp; 0 &amp; a &amp; c \\
+0 &amp; 1 &amp; b &amp; d
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+剩下的就是解方程组的过程了，『消元』，然后『反代』，最后得到：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 0 &amp;  7 &amp; -2 \\
+0 &amp; 1 &amp; -3 &amp; 1
+\end{bmatrix}
+\Rightarrow
+a = 7, b=-3, c=-2, d=1
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+A^{-1} = 
+\begin{bmatrix}
+7 &amp; -3 \\
+-2 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们直接看：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 3 \\
+2 &amp; 7
+\end{bmatrix}
+\Rightarrow
+\begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+拼在一起变：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+\[
+\begin{bmatrix}
+1 &amp; 3 &amp; 1 &amp; 0 \\
+2 &amp; 7 &amp; 0 &amp; 1
+\end{bmatrix}
+\Rightarrow
+\begin{bmatrix}
+1 &amp; 0 &amp; 7 &amp; -3 \\
+0 &amp; 1 &amp; -2 &amp; 1
+\end{bmatrix}
+\]
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也是同样的结果。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = '3';
+  var disqus_url = 'https://www.zouyesheng.com/3.html';
+  var disqus_title = '线性代数笔记（三），矩阵乘法与求逆';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    TeX: {
+      extensions: ["color.js"]
+    },
+    styles: {
+        '.MathJax': {
+            'color': '#6D3333'
+        },
+        '.MathJax_SVG': {
+            'outline': 'none'
+        },
+        ".MathJax_SVG svg > g, .MathJax_SVG_Display svg > g":  { 
+          fill: "#6D3333", 
+          stroke: "#333" 
+        } 
+    },
+    tex2jax: {
+        inlineMath: [ ['$','$'], ]
+      , displayMath: [ ['$$','$$'], ['\\[','\\]'] ]
+      , processEscapes: true
+      , processEnvironments: true
+      , preview: "TeX"
+      , skipTags: ["script","noscript","style","textarea","pre","code"]
+      , ignoreClass: "tex2jax_ignore"
+      , processClass: "tex2jax_process"
+    }});
+</script>
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_SVG">
+</script>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABwUlEQVR4nN2XMY7bMBRE35cF0B19
+AwrIOSLvDXKWlAE2ay28QI6Rc6QT1yfIDaQuJdnJAKVJ4TJGKrNIpiHwiyE/yZkhTfyJa3OnCP9a
+FY2A23wJHNNOAGGptwaTxCW9Ab7gpFK142wdsgF0eO2INlTf357dhM2aHsx7v3pRmYmHtas7G4qS
+3OjPomcnJ5Wat0Rmhs3Xzp3Tl+5q1tbsTZI0+hKWHoIkqVpvaPRncUyn6aYFS7t6szXYXOblnTfc
+yGpuDdeu2k62KKTZr80pAG9AdqWiT9o8sJiG+fqSJd4fxXsX2ngGU7k5Jr0faioA3waNuQ0cNQTF
+WVNVdZ8nF1WCpALHVDUDAPITzGbWBr2Gc73eGmQl+C23gd4PM/2jeO9Cmx9Y4CS3eVX2yZZLWr/7
+rVlN72n9kI8/P9dMnJ5vMTe+DXsddpOP6UG8d6F4e43sJkkDWDrVdOVbBvCMixqCYl0FRDPbAwFy
+YY+vqgCTRO9dzC/AQv5aLwNQTAS3cZrc6Avgz/XOrb0NFzEvpNfw68enh/D+tfrRrNvDaVrIFdO0
+Aa+JS4Jsh7XD5Or6pBkKkttgvj49ivce7D/+Uf0GnEj+yzWpxKsAAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
