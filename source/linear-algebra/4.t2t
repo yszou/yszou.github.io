@@ -1,0 +1,104 @@
+线性代数笔记（四），A 的 LU 分解
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus --mathjax
+%!qr: http://www.zouyesheng.com/linear-algebra/4.html
+%!format: !email
+%%toc
+
+
+回顾一下前面讲消元的内容，对于线性方程组：
+
+\[
+Ax = b
+\]
+
+
+我们需要一步一步地，把 $ A $ 变成下三角形
+'''
+<span style="font-size: 25px; display: inline-block; transform: rotate(180deg);">◣</span>
+'''
+的 $ U $ 的：
+
+\[
+EA = U
+\]
+
+把 $ E $ 弄到右边去：
+
+\[
+E^{-1}EA = E^{-1}U
+\]
+
+也就变成了：
+
+\[
+A = E^{-1}U = LU
+\]
+
+
+这个：
+
+\[
+A = LU
+\]
+
+就是本节要考虑的东西，它是最基础的『矩阵分解』。
+
+先看简单的关于 $ I $ 的一些东西，对于一个方阵 $ A $，它的『左逆』和『右逆』是相同的，也就有：
+
+\[
+AA^{-1} = I = A^{-1}A
+\]
+
+两个矩阵相乘的话：
+
+\[
+AB \times B^{-1}A^{-1} = I
+\]
+
+因为有『结合律』：
+
+\[
+A(BB^{-1})A^{-1} = AIA^{-1} = A(IA^{-1}) = AA^{-1} = I
+\]
+
+再看转置，前面已经有：
+
+\[
+(AB)^{\mathrm T} = B^{\mathrm T}A^{\mathrm T}
+\]
+
+对于：
+
+\[
+AA^{-1} = I
+\]
+
+两边转置（ $ I $ 的转置还是 $ I $）：
+
+\[
+(AA^{-1})^{\mathrm T} = I^{\mathrm T} = I
+\]
+
+得到：
+
+\[
+(A^{-1})^{\mathrm T}A^{\mathrm T} = I
+\]
+
+同样也有的：
+
+\[
+(A^{\mathrm T})^{-1}A^{\mathrm T} = I
+\]
+
+
+所以：
+
+\[
+(A^{-1})^{\mathrm T} = (A^{\mathrm T})^{-1}
+\]
+
+就是说，对于 $ A $ 的『逆』和『转置』这一套变化，顺序无所谓。
