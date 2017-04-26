@@ -8,7 +8,7 @@ SVG 学习
 %%toc
 
 
-# 从简单的开始 #
+# 简单认识 #
 
 ## 基本的样式 ##
 
@@ -80,6 +80,7 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
     <line x1="30" y1="110" x2="70" y2="100" style="stroke: black;" />
 </g>
 <use xlink:href="#whiskers" transform="scale(-1 1) translate(-180 0)" />
+<text x="0" y="25" style="stroke: none; fill: red; font-size: 16px;">随便画的</text>
 
 </svg>
 '''
@@ -112,6 +113,7 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
     <line x1="30" y1="110" x2="70" y2="100" style="stroke: black;" />
 </g>
 <use xlink:href="#whiskers" transform="scale(-1 1) translate(-180 0)" />
+<text x="0" y="25" style="stroke: none; fill: red; font-size: 16px;">随便画的</text>
 
 </svg>
 ```
@@ -122,6 +124,7 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
 - 鼻子是使用 *路径* 画的， ``d`` 属性中的数据，是 *路径* 专门的表达式，后面细讲。（这里的 ``M 95 95 L 85 95 A ...`` 意思是先移动到 ``(95,95)`` 然后画线到 ``(85,95)`` 再曲线到 ``(95,95)`` 封闭）
 - 嘴使用 *多边形* ， ``points`` 属性即是多边形的点，连起来封闭就是了。
 - 胡子复杂一些，还是使用两个 ``line`` 画了左边的胡子，然后使用 ``<g>`` 把它包起来，并给了一个 ``id`` 。之后，再引用（复制）这个 ``id`` 的内容，然后进行坐标变换。 ``scale(-1 1)`` 即是水平翻转（注意，参照线是 ``x=0`` 那根纵轴），翻了之后的右边胡子的位置就跑到 ``(-30,90)`` 那边去了（图上看不到了），然后再用 ``transform(-180 0)`` 把它往右挪到正确的位置（因为之前已经 ``scale(-1 1)`` 了，所以这里的 ``-180`` 实际上就是原始状态的 ``180`` ）。
+- 最后的 ``<text>`` 是放置文本，这里注意，默认情况下，文本的“定位点”在块的左下角。
 
 
 从这个例子可以看出：
@@ -135,4 +138,131 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
 SVG 绘制部分的内容，大概重点就是这些吧。
 
 
+## 在 HTML 中使用 SVG ##
+
+在 HTML 中使用 SVG 的方式有多种。
+
+首先，可以把 SVG 文件就看成是一个图片，可以用图片的地方（ ``img`` ``background-image``）都可以直接用 SVG 图片的地址，但是使用时，一定记得指定宽度（或宽高，可以破坏比例）。虽说 SVG 本身有“默认”尺寸，但是考虑到它是矢量图，所以实际展示出来的尺寸才是有意义的。
+
+``background-size`` 可以指定背景图大小。
+
+``img`` 或 ``background-image`` 显示出 SVG 图时，你可以理解成浏览器已经把它转成位图了。
+
+
+另外，可以使用 ``<object>`` 来引用 SVG ， ``type`` 设置为 ``image/svg+xml`` ：
+
+```html
+<object data="./demo.svg" type="image/svg+xml" title="hello" alt="svg" />
+```
+
+这种方式引入的 SVG ，浏览器会按原始的 XML 标签渲染（不是位图，文本都还可以被选中），并且 SVG 还能与父级的 HTML 上下文通信（后面细讲）。
+
+
+当然，直接在 HTML 中写 SVG 也是被支持的， ``svg`` 标签写清楚名字空间就可以了，同时 CSS 还可以共同作用。
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>SVG</title>
+<style type="text/css">
+  svg { width: 100px; height: 100px; }
+</style>
+</head>
+<body>
+<svg width="180" height="180"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Demo</title>
+<desc>Hello World</desc>
+
+<!-- face -->
+<circle cx="90" cy="90" r="50" style="stroke: black; fill: none;" />
+
+<!-- eyes -->
+<circle cx="70" cy="80" r="5" style="stroke: black; fill: #339933;" />
+<circle cx="110" cy="80" r="5" style="stroke: black; fill: #339933;" />
+
+<!-- nose -->
+<path d="M 95 95 L 85 95 A 5 10 0  0 0 95 95 " style="stroke: black; fill: #ffcccc;" />
+
+<!-- mouth -->
+<polyline points="60 110, 70 120, 110 120, 120 110" style="stroke: black; fill: none;" />
+
+<!-- whiskers -->
+<g id="whiskers">
+    <line x1="30" y1="90" x2="70" y2="100" style="stroke: black;" />
+    <line x1="30" y1="110" x2="70" y2="100" style="stroke: black;" />
+</g>
+<use xlink:href="#whiskers" transform="scale(-1 1) translate(-180 0)" />
+<text x="0" y="25" style="stroke: none; fill: red; font-size: 16px;">随便画的</text>
+
+</svg>
+</body>
+</html>
+```
+
+
+##  SVG 中使用 HTML ##
+
+得益于 XML 本身的机制，在 SVG 中使用 HTML 也是很直接的事，只需要指定清楚名字空间就可以了，使用 ``<foreignObject>`` 。
+
+
+'''
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+<title>Demo</title>
+<desc>Hello World</desc>
+<foreignObject x="0" y="0" width="180px" height="180px"
+               requiredFeatures="https://www.w3.org/TR/SVG11/feature#Extensibility">
+    <body xmlns="http://www.w3.org/1999/xhtml">
+    <style type="text/css">h1#in-svg{color: red;}</style>
+        <h1 id="in-svg">大标题</h1>
+    </body>
+</foreignObject>
+</svg>
+'''
+
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+<title>Demo</title>
+<desc>Hello World</desc>
+<foreignObject x="0" y="0" width="180px" height="180px"
+               requiredFeatures="https://www.w3.org/TR/SVG11/feature#Extensibility">
+    <body xmlns="http://www.w3.org/1999/xhtml">
+    <style type="text/css">h1#in-svg{color: red;}</style>
+        <h1 id="in-svg">大标题</h1>
+    </body>
+</foreignObject>
+</svg>
+```
+
+当然，因为 SVG 使用时是需要指定尺寸的，中间的 HTML 的显示效果其实不太好把握。并且，中间的 HTML 也不是隔离的环境，页面的 CSS 都会作用到的（这点还真是遗憾啊）。
+
+同时，我们要想到， SVG 不一定是在浏览器环境查看的，那么非浏览器环境是否能正常 ``xhtml`` 的名字空间，那不一定。这时，如果要作兼容处理，或兼容提示的话，可以使用 ``<switch>`` 标签：
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
+<title>Demo</title>
+<desc>Hello World</desc>
+<switch>
+    <foreignObject x="0" y="0" width="180px" height="180px"
+                   requiredFeatures="https://www.w3.org/TR/SVG11/feature#Extensibility">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+        <style type="text/css">h1#in-svg{color: red;}</style>
+            <h1 id="in-svg">大标题</h1>
+        </body>
+    </foreignObject>
+    <text x="0" y="20%">显示不了 HTML</text>
+</switch>
+</svg>
+```
 
