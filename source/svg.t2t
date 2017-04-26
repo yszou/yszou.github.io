@@ -1,0 +1,138 @@
+SVG 学习
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 从简单的开始 #
+
+## 基本的样式 ##
+
+SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 *XML* 来描述失量信息，一个最简单的 ``demo.svg`` 如下：
+
+'''
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="140" height="170" xmlns="http://www.w3.org/2000/svg">
+<title>Demo</title>
+<desc>Hello World</desc>
+<circle cx="70" cy="95" r="50" style="stroke: black; fill: red;" />
+</svg>
+'''
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="140" height="170" xmlns="http://www.w3.org/2000/svg">
+<title>Demo</title>
+<desc>Hello World</desc>
+<circle cx="70" cy="95" r="50" style="stroke: black; fill: red;" />
+</svg>
+```
+
+
+这里面：
+
+- ``<?xml version="1.0"?>`` 是 XML 文件的头。
+- ``<!DOCTYPE ...>`` 是文件类型描述，跟 HTML5 文件类似。只是这里是完整的，还指明了 *DTD* 。
+- ``<svg width="140" height="170" xmlns="...">`` 是 SVG 的根节点，需要标注宽，高，及名字空间（对于 *名字空间* 可以这样来简单理解， SVG 和 HTML 它们的“合法标签”是不同的，如果在 HTML 中使用了 SVG ，当浏览器看到一个 ``title`` 标签时，它怎么知道这是 HTML 的 ``title`` ，还是 SVG 的 ``title`` 呢？这就需要使用 *名字空间* 来确切地标识了）。
+- ``<title>`` 和 ``<desc>`` 是 SVG 中的标签， ``<desc>`` 的内容不会在浏览器显示出来的。
+- ``<circle>`` 是一个预定义的图形标签，它可以画出一个圆。 
+
+
+``<circle>`` 中的 ``style`` 属性，类似 HTML 中的 CSS ，甚至如果你在 HTML 中使用 SVG 的话，都可以按 HTML 中的 CSS 的处理方式，使用相同的选择器规则，来定义 SVG 中的指定元素的样式。但是注意，SVG 支持的样式，与 HTML 的 CSS 样式，并不是完全一致的。比如这里的 ``stroke`` 是“描边样式”， ``fill`` 是“填充样式”，类比于 CSS 中的 ``border`` 和 ``background-color`` 吧。所以搞清楚了，形式或者 ``style`` 这个属性名碰巧一样，不代表里面的具体的样式名也跟 HTML 的 CSS 一样。
+
+
+
+## 复杂一点的例子 ##
+
+再来看一个，复杂点的包括了更多机制的例子：
+
+'''
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="180"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Demo</title>
+<desc>Hello World</desc>
+
+<!-- face -->
+<circle cx="90" cy="90" r="50" style="stroke: black; fill: none;" />
+
+<!-- eyes -->
+<circle cx="70" cy="80" r="5" style="stroke: black; fill: #339933;" />
+<circle cx="110" cy="80" r="5" style="stroke: black; fill: #339933;" />
+
+<!-- nose -->
+<path d="M 95 95 L 85 95 A 5 10 0  0 0 95 95 " style="stroke: black; fill: #ffcccc;" />
+
+<!-- mouth -->
+<polyline points="60 110, 70 120, 110 120, 120 110" style="stroke: black; fill: none;" />
+
+<!-- whiskers -->
+<g id="whiskers">
+    <line x1="30" y1="90" x2="70" y2="100" style="stroke: black;" />
+    <line x1="30" y1="110" x2="70" y2="100" style="stroke: black;" />
+</g>
+<use xlink:href="#whiskers" transform="scale(-1 1) translate(-180 0)" />
+
+</svg>
+'''
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="180"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Demo</title>
+<desc>Hello World</desc>
+
+<!-- face -->
+<circle cx="90" cy="90" r="50" style="stroke: black; fill: none;" />
+
+<!-- eyes -->
+<circle cx="70" cy="80" r="5" style="stroke: black; fill: #339933;" />
+<circle cx="110" cy="80" r="5" style="stroke: black; fill: #339933;" />
+
+<!-- nose -->
+<path d="M 95 95 L 85 95 A 5 10 0  0 0 95 95 " style="stroke: black; fill: #ffcccc;" />
+
+<!-- mouth -->
+<polyline points="60 110, 70 120, 110 120, 120 110" style="stroke: black; fill: none;" />
+
+<!-- whiskers -->
+<g id="whiskers">
+    <line x1="30" y1="90" x2="70" y2="100" style="stroke: black;" />
+    <line x1="30" y1="110" x2="70" y2="100" style="stroke: black;" />
+</g>
+<use xlink:href="#whiskers" transform="scale(-1 1) translate(-180 0)" />
+
+</svg>
+```
+
+
+- 这个图整个过程，我都是在手动在计算坐标位置的。图先，就从在中心带一个圆开始。 ``cx / cy`` 定圆心，所以在 ``180x180`` 的画布中，中心当然是一半的 ``(90,90)`` 了。
+- 眼睛部分也是圆，所以，我也先是在中心画一个圆，然后复制一个。把第一个往上往左调，另一个往上往右调。
+- 鼻子是使用 *路径* 画的， ``d`` 属性中的数据，是 *路径* 专门的表达式，后面细讲。（这里的 ``M 95 95 L 85 95 A ...`` 意思是先移动到 ``(95,95)`` 然后画线到 ``(85,95)`` 再曲线到 ``(95,95)`` 封闭）
+- 嘴使用 *多边形* ， ``points`` 属性即是多边形的点，连起来封闭就是了。
+- 胡子复杂一些，还是使用两个 ``line`` 画了左边的胡子，然后使用 ``<g>`` 把它包起来，并给了一个 ``id`` 。之后，再引用（复制）这个 ``id`` 的内容，然后进行坐标变换。 ``scale(-1 1)`` 即是水平翻转（注意，参照线是 ``x=0`` 那根纵轴），翻了之后的右边胡子的位置就跑到 ``(-30,90)`` 那边去了（图上看不到了），然后再用 ``transform(-180 0)`` 把它往右挪到正确的位置（因为之前已经 ``scale(-1 1)`` 了，所以这里的 ``-180`` 实际上就是原始状态的 ``180`` ）。
+
+
+从这个例子可以看出：
+
+- 圆，矩形，线，多边形等基本图形，及文本来处理“现成”的元素。
+- 路径处理非规则场景。
+- ``<g>`` 作编组，用以引用，或隔离坐标系。
+- 坐标系各种变换来灵活控制整个系统的构建。
+
+
+SVG 绘制部分的内容，大概重点就是这些吧。
+
+
+
