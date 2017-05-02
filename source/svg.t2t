@@ -315,7 +315,7 @@ SVG 默认的坐标系统是以 *左上角* 为原点，向右向下为正向。
 上例中，第一条线，长 ``10`` ，单位还是 ``px`` 的。
 
 
-## 指定单位长度 ##
+## 用户坐标系 ##
 
 前面说的，在使用尺寸时，如果数字后面没有单位，那么默认会按 ``px`` 处理。但是这个行为是可以被改变的，SVG 允许你自定义一个 *单位长度* ，这种情况下，数字后面没有单位，则会按设置的 *单位长度* 来处理了。
 
@@ -333,196 +333,104 @@ SVG 默认的坐标系统是以 *左上角* 为原点，向右向下为正向。
 
 意义就变成了这条线长是 *10个单位* ，换算过来就是 ``10cm / 20 * 10 = 5cm`` 长。
 
-换个角度看， ``viewBox`` 可以看成是画布边上的比例尺寸，X 轴就是 1 和 3 两个参数， Y 轴就是 2 和 4 两个参数。考虑：
-
-```svg
-<svg width="400px" height="400px" viewBox="10 10 20 20"></svg>
-```
-
-它表示的画布是这样的：
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="500px" height="500px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
-
-    <text x="40" y="20">10</text>
-    <text x="80" y="20">11</text>
-    <text x="120" y="20">12</text>
-    <text x="160" y="20">13</text>
-    <text x="200" y="20">14</text>
-    <text x="240" y="20">15</text>
-    <text x="280" y="20">16</text>
-    <text x="320" y="20">17</text>
-    <text x="360" y="20">18</text>
-    <text x="400" y="20">19</text>
-    <text x="440" y="20">20</text>
-
-    <line x1="40" y1="30" x2="460" y2="30" style="stroke: black;" />
-    <line x1="40" y1="30" x2="40" y2="460" style="stroke: black;" />
-
-    <text x="0" y="40">10</text>
-    <text x="0" y="80">11</text>
-    <text x="0" y="120">12</text>
-    <text x="0" y="160">13</text>
-    <text x="0" y="200">14</text>
-    <text x="0" y="240">15</text>
-    <text x="0" y="280">16</text>
-    <text x="0" y="320">17</text>
-    <text x="0" y="360">18</text>
-    <text x="0" y="400">19</text>
-    <text x="0" y="440">20</text>
-
-</svg>
-'''
-
-继续考虑 ``viewBox`` ，前面讲的都是长和宽比例相同的情况，如果比例不同呢？
-
-```svg
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"></svg>
-```
-
-
-我们先以一个正方形为例，看看不同数据下的显示结果：
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 20">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 20">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
--------------------------
-
-
-'''
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 20">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-'''
-
-```svg
-<?xml version="1.0"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="200px" height="200px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 20">
-    <rect x="25" y="25" width="100" height="100" style="stroke: black; fill: none;" />
-</svg>
-```
-
-
-看完上面的这些例子，发现像之前仅仅是把 ``viewBox`` 看成是画布边的比例尺已经不够了，上面的结果无法解释啊。所以，我们要重新以更完整的方式去理解 ``viewBox`` 了。
+当然， ``viewBox`` 这东西实际上要复杂得多的，它的四个参数的含义是 ``xMin yMin width height`` ，这四个参数值与 *svg* 的 ``width`` 和 ``height`` 共同作用，会有很多种情况。
 
 在 https://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html 这里，有人做了一个即时交互的工具，可以直观地看到在不同设置项下， ``viewBox`` 具体的效果。
 
 本质上， ``svg`` 的 ``width`` 和 ``height`` 创建了一个坐标系，就叫 *标准坐标系* 吧，而 ``viewBox`` 则是被手动创建了另外一个坐标系，就叫 *用户坐标系* 了。如果没有设置过 ``viewBox`` ，那么可以理解成这两个坐标系是完全重合的状态。SVG 的绘制总是在用户坐标系进行，之后，再把用户坐标系按 ``viewBox`` 配置的方式进行“揉捏缩放”，最后放到标准坐标系上进行显示。以何种方式放置用户坐标系，就是 ``preserveAspectRatio`` 属性要处理的。
 
+先看一维的情况：
+
+```text
+a                b
+|________________|
+
+va                                   vb
+|____________________________________|
+
+va'     vb'
+|_______|
+
+```
+
+这里， ``C(a, b)`` 假设是标准坐标系， ``C(va, vb)`` 和 ``C(va', vb')`` 分别是两个用户坐标系。显示，当我们想把 ``C(va, vb)`` 的东西放到 ``C(a, b)`` 里完整显示的话，就需要把 ``C(va, vb)`` 缩小些，同理，也需要把 ``C(va', vb')`` 放大一点，变化之后就是：
+
+```text
+
+a                b
+|________________|
+
+va               vb              <-- vb
+|________________|__ __ __ __ __ __ _|
+
+va'     vb' -->  vb'
+|_______|__ __ __|
+
+```
+
+这种缩放的处理，在二维情况下，如果考虑维持比例（ ``preserveAspectRatio`` 值为 ``meet``），那么用户坐标系的 ``x`` 或 ``y`` 会被自动拉长，这时多余的“留白”如何处理是 ``preserveAspectRatio`` 第一个参数控制的，默认是 ``xMidYMid`` ，所以 ``preserveAspectRatio`` 默认值完整地为： ``xMidYMid meet`` 。
+
+具体的其它情况，请使用上面的地址中的演示工具自己多体会吧：
+
+- ``用户坐标系`` 的 ``width`` 变大，则画布变扁，此时 ``YMin / YMid / YMax`` 发生作用。
+- ``用户坐标系`` 的 ``height`` 变大，则画布变细，此时 ``XMin / XMid / XMax`` 发生作用。
+
+
+如果 ``preserveAspectRatio`` 的值为 ``none`` 的话，就是不考虑比例，直接把用户坐标系缩放到标准坐标系，这种情况是最简单的。
+
+还有一种情况，就是 ``preserveAspectRatio`` 的值为 ``slice`` 的时候，这种设置，比例也不会变，但是用户坐标系不会去“添加留白适应比例”，而是无法显示的部分直接切割掉。
+
+
+
+## 坐标系嵌套 ##
+
+``svg`` 定义了一个系统坐标系， ``svg`` 标签本身是可以嵌套的，所以你可以在 ``svg`` 中再出现很多个 ``svg`` ，每一个 ``svg`` 都有自己独立的坐标系的。
+
+
+'''
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+<rect x="100" y="100" width="150" height="120" style="stroke: blue; fill: none;" />
+</svg>
+'''
+
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+    <rect x="100" y="100" width="150" height="120" style="stroke: blue; fill: none;" />
+</svg>
+```
+
+
+比如想在上面的矩形中再画个圆，可以很容易地这样做：
+
+'''
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+    <rect x="100" y="100" width="150" height="120" style="stroke: blue; fill: none;" />
+    <svg x="100" y="100" width="150" height="120" viewBox="-60 -60 150 120">
+        <circle cx="0" cy="0" r="60" style="stroke: red; fill: none;" />
+    </svg>
+</svg>
+'''
+
+```svg
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+    <rect x="100" y="100" width="150" height="120" style="stroke: blue; fill: none;" />
+    <svg x="100" y="100" width="150" height="120" viewBox="-60 -60 150 120">
+        <circle cx="0" cy="0" r="60" style="stroke: red; fill: none;" />
+    </svg>
+</svg>
+```
+
+
+# 基本形状 #
 
 
 
