@@ -433,8 +433,110 @@ va'     vb' -->  vb'
 # 基本形状 #
 
 
+## 线及描边样式 ##
+
+线本身是很简单的， ``line`` 标签，连接两个点 ``x1, y1`` 和 ``x2, y2`` ：
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="0" x2="300" y2="80" stroke="red" />
+    <line x1="50" y1="60" x2="380" y2="20" stroke="blue" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="0" x2="300" y2="80" stroke="red" />
+    <line x1="50" y1="60" x2="380" y2="20" stroke="blue" />
+</svg>
+```
 
 
+描边样式的内容有下面这些样式属性：
+
+- 粗细， ``stroke-width`` 。
+- 颜色， ``stroke`` ，这里注意一下， ``rgba()`` 的形式虽然可能在浏览器中能正常工作，但是它不是 *svg 1.1* 的标准。 ``currentColor`` 这个关键词，可以从 HTML 中继承颜色。
+- 透明度， ``stroke-opacity`` 。
+- 虚线定义， ``stroke-dasharray`` ，格式是 ``线长, 间隔`` ，可以有多组，比如 ``"9, 5"`` ， ``"9, 3, 5, 2"`` 。
+
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="10" x2="390" y2="10" stroke="red" stroke-width="5" stroke-opacity="0.5" />
+    <line x1="10" y1="30" x2="390" y2="30" stroke="blue" stroke-width="3" stroke-dasharray="9, 5" />
+    <line x1="10" y1="50" x2="390" y2="50" stroke="rgb(45, 21, 89)" stroke-width="2" stroke-dasharray="9, 3, 5, 2" />
+    <line x1="10" y1="70" x2="390" y2="70" stroke="#008923" stroke-width="9" stroke-dasharray="9, 3, 5" />
+    <line x1="10" y1="90" x2="390" y2="90" stroke="yellow" stroke-width="9" stroke-dasharray="9, 3, 5, 9, 3, 5" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="10" x2="390" y2="10" stroke="red" stroke-width="5" stroke-opacity="0.5" />
+    <line x1="10" y1="30" x2="390" y2="30" stroke="blue" stroke-width="3" stroke-dasharray="9, 5" />
+    <line x1="10" y1="50" x2="390" y2="50" stroke="rgb(45, 21, 89)" stroke-width="2" stroke-dasharray="9, 3, 5, 2" />
+    <line x1="10" y1="70" x2="390" y2="70" stroke="#008923" stroke-width="9" stroke-dasharray="9, 3, 5" />
+    <line x1="10" y1="90" x2="390" y2="90" stroke="yellow" stroke-width="9" stroke-dasharray="9, 3, 5, 9, 3, 5" />
+</svg>
+```
+
+
+
+## 矩形与填充样式 ##
+
+矩形是最简单的一种图形，使用“左上角-长宽”的方式来定义。
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="50" stroke="black" fill="green" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="50" stroke="black" fill="green" />
+</svg>
+```
+
+对于一个矩形，除了用之前的“描边样式”来处理它的边之外，还可以使用“填充样式”来处理里面的颜色：
+
+- ``fill`` ，填充色，格式与 ``stroke`` 相同。
+- ``fill-opacity`` ，填充透明度，格式与 ``stroke-opacity`` 相同。
+
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" />
+    <rect x="10" y="60" width="300" height="30" stroke="black" stroke-opacity="0.3" stroke-width="10" fill="green" fill-opacity="0.5" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" />
+    <rect x="10" y="60" width="300" height="30" stroke="black" stroke-opacity="0.3" stroke-width="10"
+          fill="green" fill-opacity="0.5" />
+</svg>
+```
+
+上面第二个矩阵，它的边看上去有两个颜色，是因为宽为 10 的边，有一半在矩形外，一半在矩形内，矩形外的那部分颜色没有问题，但是矩形内的那部分，因为颜色有透明度，受矩形填充色的作用，看起来就像是另外一个颜色了。
+
+矩阵 ``rect`` 标签，还有一组圆角属性， ``rx`` 和 ``ry`` （只设置一个的话，另一个会默认相同，它们的最大值都是长宽的一半）：
+
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" rx="50" ry="10" />
+    <rect x="10" y="60" width="300" height="30" stroke="black" fill="violet" fill-opacity="0.5" rx="20" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" rx="50" ry="10" />
+    <rect x="10" y="60" width="300" height="30" stroke="black" fill="violet" fill-opacity="0.5" rx="20" />
+</svg>
+```
 
 
 
