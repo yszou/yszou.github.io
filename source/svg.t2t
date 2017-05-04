@@ -482,7 +482,7 @@ va'     vb' -->  vb'
 
 
 
-## 矩形与填充样式 ##
+## 矩形，圆，椭圆与填充样式 ##
 
 矩形是最简单的一种图形，使用“左上角-长宽”的方式来定义。
 
@@ -537,6 +537,96 @@ va'     vb' -->  vb'
     <rect x="10" y="60" width="300" height="30" stroke="black" fill="violet" fill-opacity="0.5" rx="20" />
 </svg>
 ```
+
+
+圆，椭圆与矩阵差不多的，圆 ``circle`` 是需要确定圆心和半径，椭圆 ``ellipse`` 是需要确定圆心与长短轴。
+
+'''
+<svg width="400" height="150" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="20" fill="green" />
+    <circle cx="120" cy="50" r="20" fill="green" stroke="blue" stroke-width="10" stroke-opacity="0.8" />
+    <ellipse cx="220" cy="50" rx="40" ry="20" fill="violet" />
+    <ellipse cx="320" cy="50" rx="30" ry="50" fill="chocolate" stroke="skyblue" stroke-width="20" stroke-opacity="0.3" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="150" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="20" fill="green" />
+    <circle cx="120" cy="50" r="20" fill="green" stroke="blue" stroke-width="10" stroke-opacity="0.8" />
+    <ellipse cx="220" cy="50" rx="40" ry="20" fill="violet" />
+    <ellipse cx="320" cy="50" rx="30" ry="50" fill="chocolate" stroke="skyblue" stroke-width="20" stroke-opacity="0.3" />
+</svg>
+```
+
+
+## 多边形和折线 ##
+
+多边形 ``polygon`` 和折线 ``polyline`` 都是通过连接多个点形成的图形，不同的是，多边形是『封闭』的（即使它是自动封闭的）。
+
+
+'''
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="15,40 300,10 160,100" fill="chocolate" stroke="none" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="15, 40 300, 10 160, 100" fill="chocolate" stroke="none" />
+</svg>
+```
+
+``points`` 的值需要两个两个地给，用逗号或空格分割都是一样的。
+
+
+'''
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon  points="15,40 300,10 160,100" fill="none" stroke="blue" stroke-width="3" />
+    <polyline points="115,40 380,10 260,100" fill="none" stroke="violet" stroke-width="3" />
+</svg>
+'''
+
+``polyline`` 只是不会自动封闭而已。
+
+
+
+对于多边形 ``polygon`` 还有一个特殊的属性 ``fill-rule`` ，用于控制当多边形的线出现相交情况时，的填充规则（其实是如何算一块区域是否在多边形内的问题）。
+
+
+'''
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="nonezero" stroke="green" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="nonezero" stroke="green" />
+</svg>
+```
+
+
+'''
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="evenodd" stroke="green" />
+</svg>
+'''
+
+```svg
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="evenodd" stroke="green" />
+</svg>
+```
+
+上面分别是 ``fill-rule`` 取值为 ``nonezero`` 和 ``evenodd`` 时的效果，具体的算法规则可以参见： http://blog.csdn.net/freshforiphone/article/details/8273023
+
+
+
+
+
+
+
 
 
 
