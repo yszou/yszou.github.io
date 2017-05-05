@@ -24,7 +24,7 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
 </svg>
 '''
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="140" height="170" xmlns="http://www.w3.org/2000/svg">
@@ -85,7 +85,7 @@ SVG 是浏览器可支持的，应用广泛的失量图标准方案，它使用 
 </svg>
 '''
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="180" height="180"
@@ -227,7 +227,7 @@ SVG 绘制部分的内容，大概重点就是这些吧。
 '''
 
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
@@ -247,7 +247,7 @@ SVG 绘制部分的内容，大概重点就是这些吧。
 
 同时，我们要想到， SVG 不一定是在浏览器环境查看的，那么非浏览器环境是否能正常 ``xhtml`` 的名字空间，那不一定。这时，如果要作兼容处理，或兼容提示的话，可以使用 ``<switch>`` 标签：
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="180" height="180" xmlns="http://www.w3.org/2000/svg">
@@ -276,7 +276,7 @@ SVG 默认的坐标系统是以 *左上角* 为原点，向右向下为正向。
 
 在根节点上需要设置当前视图 *Viewport* 的尺寸，即 ``svg`` 标签的 ``width`` 和 ``height`` 属性，这个值，是有 *单位* 概念的。
 
-```svg
+```xml
 <svg width="180px" height="180px" xmlns="http://www.w3.org/2000/svg"></svg>
 ```
 
@@ -303,7 +303,7 @@ SVG 默认的坐标系统是以 *左上角* 为原点，向右向下为正向。
 </svg>
 '''
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="1cm" height="1cm" xmlns="http://www.w3.org/2000/svg">
@@ -321,13 +321,13 @@ SVG 默认的坐标系统是以 *左上角* 为原点，向右向下为正向。
 
 设置的方法，是使用 ``viewBox`` 属性：
 
-```svg
+```xml
 <svg width="10cm" height="10cm" viewBox="0 0 20 20"></svg>
 ```
 
 上面的设置，意义是把一个 长 10cm 划成了 20 个单位，高 10cm 也划成了 20 个单位。这时再画线：
 
-```svg
+```xml
 <line x1="0" y1="0" x2="10" y2="0" />
 ```
 
@@ -396,7 +396,7 @@ va'     vb' -->  vb'
 '''
 
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
@@ -418,7 +418,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <?xml version="1.0"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
@@ -444,7 +444,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
     <line x1="0" y1="0" x2="300" y2="80" stroke="red" />
     <line x1="50" y1="60" x2="380" y2="20" stroke="blue" />
@@ -470,7 +470,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
     <line x1="10" y1="10" x2="390" y2="10" stroke="red" stroke-width="5" stroke-opacity="0.5" />
     <line x1="10" y1="30" x2="390" y2="30" stroke="blue" stroke-width="3" stroke-dasharray="9, 5" />
@@ -479,6 +479,8 @@ va'     vb' -->  vb'
     <line x1="10" y1="90" x2="390" y2="90" stroke="yellow" stroke-width="9" stroke-dasharray="9, 3, 5, 9, 3, 5" />
 </svg>
 ```
+
+``stroke`` 可用的颜色名字，可以从 https://www.w3.org/TR/SVG/types.html#ColorKeywords 查询。
 
 
 
@@ -492,7 +494,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
     <rect x="10" y="10" width="300" height="50" stroke="black" fill="green" />
 </svg>
@@ -511,7 +513,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
     <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" />
     <rect x="10" y="60" width="300" height="30" stroke="black" stroke-opacity="0.3" stroke-width="10"
@@ -531,7 +533,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
     <rect x="10" y="10" width="300" height="40" stroke="black" fill="green" fill-opacity="0.5" rx="50" ry="10" />
     <rect x="10" y="60" width="300" height="30" stroke="black" fill="violet" fill-opacity="0.5" rx="20" />
@@ -550,7 +552,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="150" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="20" fill="green" />
     <circle cx="120" cy="50" r="20" fill="green" stroke="blue" stroke-width="10" stroke-opacity="0.8" />
@@ -571,7 +573,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
     <polygon points="15, 40 300, 10 160, 100" fill="chocolate" stroke="none" />
 </svg>
@@ -600,7 +602,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
     <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="nonezero" stroke="green" />
 </svg>
@@ -613,7 +615,7 @@ va'     vb' -->  vb'
 </svg>
 '''
 
-```svg
+```xml
 <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
     <polygon points="30,100 330,100 180,180 100,30 370,180" fill="chocolate" fill-rule="evenodd" stroke="green" />
 </svg>
@@ -623,7 +625,91 @@ va'     vb' -->  vb'
 
 
 
+## 线段端点和折点 ##
 
+对于 ``line`` 和 ``polyline`` ，可以通过 ``stroke-linecap`` 属性来设置端点的样式，可以是方的或是圆的：
+
+- ``butt`` ，无头
+- ``round`` ，圆头
+- ``square`` ，方头
+
+
+下面是效果演示：
+
+'''
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="10" x2="100" y2="10" stroke="chocolate" stroke-width="10" />
+    <line x1="10" y1="30" x2="100" y2="30" stroke="chocolate" stroke-width="10" stroke-linecap="butt" />
+    <line x1="10" y1="50" x2="100" y2="50" stroke="chocolate" stroke-width="10" stroke-linecap="round" />
+    <line x1="10" y1="70" x2="100" y2="70" stroke="chocolate" stroke-width="10" stroke-linecap="square" />
+
+    <line x1="130" y1="30" x2="200" y2="30" stroke="violet" stroke-width="10" stroke-linecap="butt" />
+    <line x1="130" y1="30" x2="180" y2="80" stroke="violet" stroke-width="10" stroke-linecap="butt" />
+
+    <line x1="230" y1="30" x2="300" y2="30" stroke="skyblue" stroke-width="10" stroke-linecap="round" />
+    <line x1="230" y1="30" x2="280" y2="80" stroke="skyblue" stroke-width="10" stroke-linecap="round" />
+
+    <line x1="330" y1="30" x2="400" y2="30" stroke="forestgreen" stroke-width="10" stroke-linecap="square" />
+    <line x1="330" y1="30" x2="380" y2="80" stroke="forestgreen" stroke-width="10" stroke-linecap="square" />
+</svg>
+'''
+
+
+
+```xml
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="10" x2="100" y2="10" stroke="chocolate" stroke-width="10" />
+    <line x1="10" y1="30" x2="100" y2="30" stroke="chocolate" stroke-width="10" stroke-linecap="butt" />
+    <line x1="10" y1="50" x2="100" y2="50" stroke="chocolate" stroke-width="10" stroke-linecap="round" />
+    <line x1="10" y1="70" x2="100" y2="70" stroke="chocolate" stroke-width="10" stroke-linecap="square" />
+
+    <line x1="130" y1="30" x2="200" y2="30" stroke="violet" stroke-width="10" stroke-linecap="butt" />
+    <line x1="130" y1="30" x2="180" y2="80" stroke="violet" stroke-width="10" stroke-linecap="butt" />
+
+    <line x1="230" y1="30" x2="300" y2="30" stroke="skyblue" stroke-width="10" stroke-linecap="round" />
+    <line x1="230" y1="30" x2="280" y2="80" stroke="skyblue" stroke-width="10" stroke-linecap="round" />
+
+    <line x1="330" y1="30" x2="400" y2="30" stroke="forestgreen" stroke-width="10" stroke-linecap="square" />
+    <line x1="330" y1="30" x2="380" y2="80" stroke="forestgreen" stroke-width="10" stroke-linecap="square" />
+</svg>
+```
+
+
+上面的例子中，可以看出两根线如果宽度很大，它们相交的点是不“圆滑”的，对于 *折线折点* 的样式，可以通过 ``stroke-linejoin`` 属性设置：
+
+- ``miter`` ，尖
+- ``round`` ，圆
+- ``bevel`` ，平
+
+
+'''
+<svg width="500" height="100" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="200,30 130,30 180,80" fill="none" stroke="violet" stroke-width="20"
+              stroke-linecap="butt" stroke-linejoin="miter" />
+    <polyline points="300,30 230,30 280,80" fill="none" stroke="skyblue" stroke-width="20"
+              stroke-linecap="round" stroke-linejoin="round" />
+    <polyline points="400,30 330,30 380,80" fill="none" stroke="forestgreen" stroke-width="20"
+              stroke-linecap="square" stroke-linejoin="bevel" />
+    <polyline points="500,30 450,30 480,80" fill="none" stroke="chocolate" stroke-width="20"
+              stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2" />
+</svg>
+'''
+
+
+```xml
+<svg width="400" height="100" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="200,30 130,30 180,80" fill="none" stroke="violet" stroke-width="20"
+              stroke-linecap="butt" stroke-linejoin="miter" />
+    <polyline points="300,30 230,30 280,80" fill="none" stroke="skyblue" stroke-width="20"
+              stroke-linecap="round" stroke-linejoin="round" />
+    <polyline points="400,30 330,30 380,80" fill="none" stroke="skyblue" stroke-width="20"
+              stroke-linecap="square" stroke-linejoin="bevel" />
+    <polyline points="500,30 450,30 480,80" fill="none" stroke="chocolate" stroke-width="20"
+              stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="2" />
+</svg>
+```
+
+四个角中的最后一个角，虽然样式是 ``miter`` ，但是因为通过 ``stroke-miterlimit`` 设置了一个 *限度* ，图中的角超过了这个限度，就不会按尖角处理了，具体的解释可见： http://www.oxxostudio.tw/articles/201409/svg-16-storke-miterlimit.html 。
 
 
 
