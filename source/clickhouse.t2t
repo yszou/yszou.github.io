@@ -1,0 +1,211 @@
+ClickHouse 使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 简介与安装 #
+
+*ClickHouse* 是俄罗斯的 Yandex https://www.yandex.com/ （跟 Google 一样做搜索的）开源的一套针对数据仓库场景的多维数据存储与检索工具，它通过针对性的设计力图解决海量多维度数据的查询性能问题。
+
+
+安装 *ClickHouse* 在 Ubuntu 下是比较简单的，因为官方直接提供了源， https://clickhouse.yandex/reference_en.html#System%20requirements 直接 ``apt-get`` 就可以了。（我没有自己编译安装过）
+
+
+安装完之后，会自动添加一个名为 *clickhouse* 的 service ，这个脚本里面的内容除了控制服务的启停，还会调整系统的一些配置。
+
+```bash
+sudo service clickhouse-server start
+```
+
+也可以手动启动：
+
+```bash
+clickhouse-server --config-file=/etc/clickhouse-server/config.xml
+```
+
+服务端启动之后，就可以使用官方的客户端工具 ``clickhouse-client`` 连接上去看看了，之后的交互，类似 *MySQL* （连里面的命令都像）。
+
+
+# 访问接口 #
+
+*ClickHouse* 自己的 ``clickhouse-client`` 使用的是“原生”的 TCP 连接来完成与服务端的交互，而在应用中用它的话，它有实现一个 HTTP 的访问接口，把 SQL 语句通过 HTTP 发送到服务端，就可以得到响应数据了（其实不用担心效率问题，数仓场景下，这种传输成本相较于大数据量下的聚合计算挑战，直接就忽略吧）。
+
+默认配置下， HTTP 的服务是在 *8123* 端口上的，直接访问的话，可以得到一个 ``ok`` 的响应。（如果要外部访问，记得把配置中的 ``listen_host`` 加一个 ``0.0.0.0`` ）。
+
+HTTP 服务，查询的话， *GET* 或 *POST* 都可以，修改和创建，只能用 *POST* ：
+
+```bash
+GET "http://172.17.0.2:8123?query=select 2"
+```
+
+```bash
+echo 'CREATE TABLE t (a UInt8) ENGINE = Memory' | POST 'http://172.17.0.2:8123/'
+echo 'insert into t (a) values (10)' | POST 'http://172.17.0.2:8123/'
+GET "http://172.17.0.2:8123?query=select * from t"
+echo 'drop table t' | POST 'http://172.17.0.2:8123/'
+```
+
+
+访问地址中，可以通过请求参数，或者头，来指定一些环境配置项，比如 ``database`` ，用户名密码什么的。
+
+- ``database``  ，数据库
+- ``user`` ， 登录用户
+- ``password`` ， 登录密码
+- https://clickhouse.yandex/reference_en.html#Settings 其它配置项
+
+
+另外，对于用户名和密码，也可以通过 ``X-ClickHouse-User`` 和 ``X-ClickHouse-Key`` 这两个头来设置与传递。
+
+
+# 查询语言 #
+
+*ClickHouse* 中有两种类型的解析器， *full parser* 和 *data format parser* ，前者是一个完整的 SQL 解析器，后者是一个高性能的流解析器。当语句被发到 *ClickHouse* 时，默认配置下前 1 MB 字节的数据会使用 *full parser* 来处理，剩下的数据就交给 *data format parser* 了，所以，像 ``insert`` 这类语句，即使整个语句再长，也不会有问题。
+
+语法细节，整体上跟 MySQL 是一样的，当然， *ClickHouse* 在一些地方有自己特别实现。
+
+比如，对于别名 *Synonyms* ， *ClickHouse* 中的限制就少很多：
+
+```sql
+select ((select 1) as n), n
+```
+
+这种语句，在 *ClickHouse* 中都是被允许的。
+
+
+## CREATE TABLE ##
+
+建表语句除了基本形式外，还有两个扩展形式：
+
+```sql
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] [db.]name
+(
+ name1 [type1] [DEFAULT | MATERIALIZED | ALIAS expr1],
+ name2 [type2] [DEFAULT | MATERIALIZED | ALIAS expr2],
+ ...
+) ENGINE = engine
+```
+
+这是基本形式，如果引擎支持索引的话，索引可以在 ``ENGINE`` 的地方额外设置。
+
+
+```sql
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] [db.]name AS [db2.]name2 [ENGINE = engine]
+```
+
+第一种扩展形式，可以创建一个跟指定表完全一样的表，但是可以更换不同的引擎。
+
+```sql
+CREATE [TEMPORARY] TABLE [IF NOT EXISTS] [db.]name ENGINE = engine AS SELECT ...
+```
+
+这种形式是“建表并填充”，表字段会自动根据 ``SELECT`` 的返回内容设置，并且，返回内容会作为新表内容填充进去。
+
+试一下：
+
+```sql
+create table t (id UInt16, name String) ENGINE = Memory;
+insert into t(id, name) values (1, 'abc'), (2, 'xxx');
+```
+
+各种引擎后面会专门介绍，这里就用 ``Memory`` 来演示了。
+
+
+```sql
+create table t2 as t;
+insert into t2(id, name) values (1, 'abc'), (2, 'xxx');
+```
+
+
+```sql
+create table t3 ENGINE = Memory as select * from t;
+```
+
+
+### 默认值 ###
+
+*默认值* 的处理方面， *ClickHouse* 中，默认值总是有的，如果没有显示式指定的话，会按字段类型处理：
+
+- 数字类型， ``0`` 。
+- 字符串，空字符串。
+- 数组，空数组。
+- 日期， ``0000-00-00`` 。
+- 时间， ``0000-00-00 00:00:00`` 。
+
+
+``NULLs`` 是不支持的。
+
+
+同时，在字段类型方面，如果没有明确指定字段类型，但是指定了默认值，则默认值表达式的返回值类型，作为字段类型。如果即指定了字段类型，也指定了默认值表达式，那么对开默认值表达式的结果，相当于会有一个类型转换。
+
+
+
+### 物化列 ###
+
+指定 ``MATERIALIZED`` 表达式，即将一个列作为 *物化列* 处理了，这意味着这个列的值不能从 ``insert`` 语句获取，只能是自己计算出来的。同时， *物化列* 也不会出现在 ``select *`` 的结果中：
+
+```sql
+create table t (a MATERIALIZED (b+1), b UInt16) ENGINE = Memory;
+insert into t(b) values (1);
+select * from t;
+select a, b from t;
+```
+
+
+### 表达式列 ###
+
+``ALIAS`` 表达式列某方面跟物化列相同，就是它的值不能从 ``insert`` 语句获取。不同的是， *物化列* 是会真正保存数据（这样查询时不需要再计算），而 *表达式列* 不会保存数据（这样查询时总是需要计算），只是在查询时返回表达式的结果。
+
+
+```sql
+create table t (a ALIAS (b+1), b UInt16) ENGINE = Memory;
+insert into t(b) values (1);
+select * from t;
+select a, b from t;
+```
+
+
+
+
+## SELECT ##
+
+这个 *ClickHouse* 中独特的地方涉及其它的机制，所以 ``SELECT`` 放到后面再说。
+
+
+
+
+# 引擎 #
+
+
+引擎就是在创建表时，最后的那个 ``ENGINE`` 选项指定的东西，这部分我觉得算是 *ClickHouse* 最精华的部分了，它很多针对数据仓库场景的设计与优化，是基于特定的引擎实现的，特别是 *MergeTree* 这一类引擎。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
