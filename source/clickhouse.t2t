@@ -247,32 +247,30 @@ insert into t (a, b) values (1, 'abc');
 
 ## Merge ##
 
-一个工具引擎，本身不保存数据，只用于把指定库中的指定多个表链在一起。
+一个工具引擎，本身不保存数据，只用于把指定库中的指定多个表链在一起。这样，读取操作可以并发执行，同时也可以利用原表的索引，但是，此引擎不支持写操作。
 
+指定引擎的同时，需要指定要链接的库及表，库名可以使用一个表达式，表名可以使用正则表达式指定。
 
+```sql
+create t1 (id UInt16, name String) ENGINE=TinyLog;
+create t2 (id UInt16, name String) ENGINE=TinyLog;
+create t3 (id UInt16, name String) ENGINE=TinyLog;
 
+insert into t1(id, name) values (1, 'first');
+insert into t2(id, name) values (2, 'xxxx');
+insert into t3(id, name) values (12, 'i am in t3');
 
+create table t (id UInt16, name String) ENGINE=Merge(currentDatabase(), '^t');
+```
 
+上面先建了 ``t1`` ， ``t2`` ， ``t3`` ，三个表，然后用 ``Merge`` 引擎的 ``t`` 表再把它们链接起来。
 
+这样，查询的时候，就能同时取到三个表的数据了：
 
+```bash
+echo 'select _table,* from t order by id desc'|POST 'http://172.17.0.2:8123'
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+``select`` 中， ``_table`` 这个列，是因为使用了 ``Merge`` 多出来的一个的一个 *虚拟列* ，它表示原始数据的来源表，它不会出现在 ``show table`` 的结果当中，同时， ``select *`` 不会包含它。
 
 
