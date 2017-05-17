@@ -274,3 +274,107 @@ echo 'select _table,* from t order by id desc'|POST 'http://172.17.0.2:8123'
 ``select`` 中， ``_table`` 这个列，是因为使用了 ``Merge`` 多出来的一个的一个 *虚拟列* ，它表示原始数据的来源表，它不会出现在 ``show table`` 的结果当中，同时， ``select *`` 不会包含它。
 
 
+
+## Distributed ##
+
+前面说的 *Merge* 可以看成是单机版的 *Distributed* ，而真正的 *Distributed* 具备跨服务器能力，当然，机器地址的配置依赖配置文件中的信息。
+
+与 *Merge* 类似， *Distributed* 也是通过一个逻辑表，去访问各个物理表，设置引擎时的样子是：
+
+```sql
+Distributed(remote_group, database, table [, sharding_key])
+```
+
+其中：
+
+- *remote_group* 是配置文件（默认在 ``/etc/clickhouse-server/config.xml`` ）中的 ``remote_servers`` 一节的配置信息。
+- *database* 是各服务器中的库名。
+- *table* 是表名。
+- *sharding_key* 是一个 *寻址表达式* ，可以是一个列名，也可以是像 ``rand()`` 之类的函数调用，它与 ``remote_servers`` 中的 ``weight`` 共同作用，决定在 *写* 时往哪个 *shard* 写。
+
+
+
+下面的重点，就是配置文件中的 ``remote_servers`` 了：
+
+```xml
+<remote_servers>
+    <log>
+        <shard>
+            <weight>1</weight>
+            <internal_replication>false</internal_replication>
+            <replica>
+                <host>172.17.0.3</host>
+                <port>9000</port>
+            </replica>
+        </shard>
+
+        <shard>
+            <weight>2</weight>
+            <internal_replication>false</internal_replication>
+            <replica>
+                <host>172.17.0.4</host>
+                <port>9000</port>
+            </replica>
+        </shard>
+    </log>
+</remote_servers>
+```
+
+- ``log`` 是某个 shard 组的名字，就是上面的 *remote_group* 的值。
+- ``shard`` 是固定标签。
+- ``weight`` 是权重，前面说的 *sharding_key* 与这个有关。简单来说，上面的配置，理论上来看，第一个 shard “被选中”的概率是 ``1 / 1 + 2`` ，第二个是 ``2 / 1 + 2`` ，这很容易理解。但是， *sharding_key* 的工作情况，是按实际数字的“命中区间”算的，即第一个的区间是 ``[0, 1)`` 的周期，第二个区间是 ``[1, 1+2)`` 的周期。比如把 *sharding_key* 设置成 ``id`` ，当 ``id=0`` 或 ``id=3`` 时，一定是写入到第一个 shard 中，如果把 *sharding_key* 设置成 ``rand()`` ，那系统会对应地自己作一般化转换吧，这种时候就是一种概率场景了。
+- ``internal_replication`` 是定义针对多个 *replica* 时的写入行为的。如果为 ``false`` ，则会往所有的 *replica* 中写入数据，但是并不保证数据写入的一致性，所以这种情况时间一长，各 *replica* 的数据很可能出现差异。如果为 ``true`` ，则只会往第一个可写的 *replica* 中写入数据（剩下的事“物理表”自己处理）。
+- ``replica`` 就是定义各个冗余副本的，选项有 ``host`` ， ``port`` ， ``user`` ， ``password`` 这些。
+
+
+看一个实际的例子，我们先在 B 和 C 两台机器上创建好“物理表”：
+
+```sql
+create table t(id UInt16, name String) ENGINE=TinyLog;
+```
+
+然后两台机器可以随便 ``insert`` 一些数据进去：
+
+```sql
+insert into t(id, name) values (0, 'hahaha');
+insert into t(id, name) values (2, 'xxxx');
+```
+
+之后，再在 A 机器上，在 ``config.xml`` 中配置好 ``remote_servers`` 的情况下，再创建“逻辑表”：
+
+```
+create table t(id UInt16, name String) ENGINE=Distributed(log, default, t, id);
+```
+
+然后，针对这个逻辑表，就可以直接随便 ``insert`` 一些数据，再看看这些数据具体落在哪个物理表上了：
+
+```sql
+insert into t(id, name) values (0, 'main');
+insert into t(id, name) values (1, 'main');
+insert into t(id, name) values (2, 'main');
+```
+
+最后，针对逻辑表的查询，其实是没什么特殊之处了， *ClickHouse* 自己会分发请求，聚合计算之类的也是在各个物理表上分别进行的：
+
+```sql
+select name,sum(id),count(id) from t group by name;
+```
+
+![](./img/clickhouse-distributed.jpg)
+
+
+注意，逻辑表中的写入操作是异步的，会先缓存在本机的文件系统上，并且，对于物理表的不可访问状态，并没有严格控制，所以写入失败丢数据的情况是可能发生的。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
