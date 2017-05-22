@@ -366,6 +366,80 @@ select name,sum(id),count(id) from t group by name;
 注意，逻辑表中的写入操作是异步的，会先缓存在本机的文件系统上，并且，对于物理表的不可访问状态，并没有严格控制，所以写入失败丢数据的情况是可能发生的。
 
 
+## MergeTree ##
+
+这个引擎是 *ClickHouse* 的重头戏，它支持一个日期和一组主键的两层式索引，还可以实时更新数据。同时，索引的粒度可以自定义，外加直接支持采样功能。
+
+使用这个引擎的形式如下：
+
+```sql
+MergeTree(EventDate, (CounterID, EventDate), 8192)
+MergeTree(EventDate, intHash32(UserID), (CounterID, EventDate, intHash32(UserID)), 8192)
+```
+
+
+- ``EventDate`` 一个日期的列名。
+- ``intHash32(UserID)`` 采样表达式。
+- ``(CounterID, EventDate)`` 主键组（里面除了列名，也支持表达式），也可以是一个表达式。
+- ``8123`` 主键索引的粒度。
+
+
+细节稍后再看，先建表看看文件系统那层大概是个什么样：
+
+```sql
+create table t (gmt  Date, id UInt16, name String, point UInt16) ENGINE=MergeTree(gmt, (id, name), 10);
+```
+
+先不管采样机制，创建一个四列的表。然后插入几条数据：
+
+```sql
+insert into t(gmt, id, name, point) values ('2017-04-01', 1, 'zys', 10);
+insert into t(gmt, id, name, point) values ('2017-06-01', 4, 'abc', 10);
+insert into t(gmt, id, name, point) values ('2017-04-03', 5, 'zys', 11);
+```
+
+这里注意一下，日期的格式，好像必须是 ``yyyy-mm-dd`` 。
+
+在插入了三条数据之后，在 ``/var/lib/clickhouse/data/default/t`` 下可以看到这样的结构：
+
+```text
+├── 20170401_20170401_2_2_0
+│   ├── checksums.txt
+│   ├── columns.txt
+│   ├── gmt.bin
+│   ├── gmt.mrk
+│   ├── id.bin
+│   ├── id.mrk
+│   ├── name.bin
+│   ├── name.mrk
+│   ├── point.bin
+│   ├── point.mrk
+│   └── primary.idx
+├── 20170403_20170403_6_6_0
+│   └── ...
+├── 20170601_20170601_4_4_0
+│   └── ...
+└── detached
+```
+
+
+从上面看的话：
+
+- 最外层的目录，是根据日期列的范围，作了切分的。目前看来，三条数据，并没有使系统执行 *merge* 操作（还是有三个目录），后面使用更多的数据看看表现。
+- 最外层的目录，除了开头像是日期范围，后面的数字，可能与主键有关。
+- 最外层还有一个 ``detached`` ，不知道干什么的。
+- 目录内， ``primary.idx`` 应该就是主键组索引了。
+- 目录内其它的文件，看起来跟 *Log* 引擎的差不多，就是按列保存，额外的 ``mrk`` 文件保存一下块偏移量。
+
+
+简单三条数据，有很多东西还是看不出来的，所以我打算使用更多的数据来看这个引擎的表现。
+
+（在等了不知道多少时间后，三个目录会被合成两个目录，变成 ``20170401_20170403_2_6_1`` 和 ``20170601_20170601_4_4_0`` 了）
+
+
+
+
+
 
 
 
