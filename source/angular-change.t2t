@@ -1,0 +1,120 @@
+AngularJS 版本变化
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+这里只对可能对我个人的代码造成影响的变动，作一个摘要记录。
+
+因为我自己用 AngularJS 本来就只用它的 *directive* 的一小部分能力，所以下面的内容并不多。
+
+
+# 1.0 到 1.2 #
+
+除 ``img`` 外， ``src`` ``ng-src`` 的值只能是单个表达式。
+
+下面的代码不被允许。
+
+```html
+<iframe src="{{ a }} / {{ b }}"></iframe>
+```
+
+--------------------------
+
+指令的名字，不能以 ``-start`` 或 ``-end`` 结尾。这是为了不与“多元素指令”功能冲突。
+
+```html
+<table>
+  <tr ng-repeat-start="item in list">I get repeated</tr>
+  <tr ng-repeat-end>I also get repeated</tr>
+</table>
+```
+
+--------------------------
+
+同优先级 ``priority`` 指令， ``postLink`` 函数的执行顺序。
+
+现在指令的渲染顺序，以 ``priority`` 高低来看：
+
+
+|| # | 步骤 | 顺序 ||
+| 1 | compile | 高 -> 低 |
+| 2 | compile 子节点 |  |
+| 3 | preLink | 高 -> 低 |
+| 4 | link 子节点 |  |
+| 5 | postLink | 低 -> 高 |
+
+
+# 1.2 到 1.3 #
+
+``Controller`` 的定义，不再允许使用全局函数。
+
+下面的定义方式不再被支持。
+
+```javascript
+function MyController() {}
+```
+
+
+-----------------------------
+
+*jQuery* 的 ``detach()`` 不再会触发 ``$destory`` 事件，如果需要触发，请使用 ``remove()`` 。
+
+-----------------------------
+
+不再支持 IE8
+
+
+# 1.3 到 1.4 #
+
+
+*ngAnimate* 改动大。
+
+-----------------------------
+
+
+``filter`` 过滤器对应的函数，必须返回列表类型。
+
+
+
+# 1.4 到 1.5 #
+
+
+引入了 *Component* ，算是乞丐版的指令吧。
+
+-----------------------------
+
+
+# 1.5 到 1.6 #
+
+
+*jqLite* 适配了 jQuery 3.x 。
+
+-----------------------------
+
+表达式沙盒被去掉了，所以，项目中的表达式内容， **特别小心其中是否有用户输入内容**。
+
+-----------------------------
+
+``ngBind`` 的行为和 ``$interpolate`` 完全一样了。
+
+- ``null`` ``undefined`` 显示成空字符串。
+- 非 ``Array`` ``Number`` ``Date`` 对象，如果有 ``toString()`` 方法，会显示这个方法的返回值。
+- 其它情况，使用 ``JSON.stringify()`` 的结果。（不会显示 ``[object Object]`` 这种东西了）
+
+-----------------------------
+
+``link`` 的 ``href`` 属性，表达式的值，会有限制，默认情况下只能使用同域同协议的地址。如果使用其它地址，需要用 ``$sce.trustAsResourceUrl(url)`` 来处理一下。
+
+
+
+
+
+
+
+
+
