@@ -59,4 +59,43 @@ React 学习笔记
 
 当然，这里的重点，不是 ``React.createElement`` ，而是它返回的那个 ``instance`` ，事实上，从源码 https://unpkg.com/react@16.2.0/umd/react.development.js 中看的话，可以看出它返回的是一个 ``ReactElement`` ，这个 ``ReactElement`` 就是整个 *React* 体系于众不同的地方，否则它直接返回一个 DOM Element 就好了。
 
+最后一行的 ``ReactDOM.render`` 就是处理 ``ReactElement`` 的， ``ReactDOM`` 的源码在 https://unpkg.com/react-dom@16.2.0/umd/react-dom.development.js ， 这个东西自己实现了一套挂节点的树结构（所谓的 *Virtual DOM*），中间隔了一层再去处理真实的 DOM 渲染。这么做的好处是，因为自己有一套完整的树结构的，所以，可以在上面实现很多在原始 DOM 结构上不能做，或者不方便做的事。比如，异构渲染之类的。当然，局限的地方也很明显，本质上还是“节点”，其实没有一个往上的抽象，暴露的细节还是很多的，这种情况下，东西可以做得比较细，但是付出的成本也比较大，我是这样预测的。
+
+
+# ReactElement 的定义 #
+
+最开始，已经简单演示了针对像 ``a`` ``h1`` 这类原生 DOM 元素的 ``ReactElement`` 定义， 自然，“能接受一个确定值的地方也应该可以接受一个函数”是 js 的一个惯例吧：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/javascript">
+    function Component(props) {
+      if(props.tag === 'h1') {
+        return React.createElement('h1', null, '大标题');
+      } else {
+        return React.createElement('span', null, '普通文本');
+      }
+    }
+    var instance = React.createElement(Component, {tag: 'h1'});
+    ReactDOM.render(instance, $('div')[0]);
+  </script>
+</body>
+</html>
+```
+
+
+上面代码的过程，大概是：
+
+- ``React.createElement(type, config, children)`` 。
+- ``ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props)`` ，上面 ``config`` 的一些东西，会补为这里的几个参数，及 ``props`` 里的东西。
 
