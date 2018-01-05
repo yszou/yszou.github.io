@@ -1,0 +1,62 @@
+React 学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/react.html
+%!format: !email
+%%toc
+
+
+
+
+# React 长什么样 #
+
+*React* 是 facebook 开源出来的一套前端方案，官网在 https://reactjs.org 。
+
+先看一个简单的样子：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <h1>Hello</h1>
+  <div id="place"></div>
+  <script type="text/javascript">
+    var attribute = {
+      className: 'text',
+      style: {color: 'red'},
+      id: 'me',
+      href: 'http://' + 's.zys.me'
+    };
+    var inner = React.createElement('a', attribute, 'React');
+    var instance = React.createElement('h1', null, '字符串在中间', inner);
+    ReactDOM.render(instance, $('#place')[0]);
+  </script>
+</body>
+</html>
+```
+
+从上面可以看出，它的使用其实跟其它很多框架的方式差不多，即，找到一个 DOM 节点，然后在这个节点上做事，类似 jQuery 的 ``$(dom).xxx({})`` 。
+
+在 ``React.createElement`` 中，第一个参数是标签名，第二个是 *config* ，其中包括了节点属性（``class`` 因为关键词问题改用 ``className``） ，第三个及以后，是子级节点，或者说子级元素。
+
+上面两个 ``createElement`` 得到的最终结果，是：
+
+```html
+<h1>
+    字符串在中间
+    <a class="text" style="color: red" id="me" href="http://s.zys.me">React</a>
+</h1>
+```
+
+当然，这里的重点，不是 ``React.createElement`` ，而是它返回的那个 ``instance`` ，事实上，从源码 https://unpkg.com/react@16.2.0/umd/react.development.js 中看的话，可以看出它返回的是一个 ``ReactElement`` ，这个 ``ReactElement`` 就是整个 *React* 体系于众不同的地方，否则它直接返回一个 DOM Element 就好了。
+
+
