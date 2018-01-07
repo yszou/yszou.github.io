@@ -23,8 +23,8 @@ React 学习笔记
 <meta charset="utf-8" />
 <title>React</title>
 <script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
-<script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
 </head>
 <body>
   <h1>Hello</h1>
@@ -96,6 +96,49 @@ React 学习笔记
 
 上面代码的过程，大概是：
 
-- ``React.createElement(type, config, children)`` 。
+- ``React.createElement(type, config, children)`` 返回 ``ReactElement()`` 。
 - ``ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props)`` ，上面 ``config`` 的一些东西，会补为这里的几个参数，及 ``props`` 里的东西。
+- ``ReactElement()`` 的调用会返回一个 ``element`` ，这是一个比较单纯的结构体，里面会有 ``type`` ``key`` ``ref`` ``props`` ``_owner`` ``$$typeof`` 等内容。
+- ``ReactDOM.render(element, container, callback)`` 是对 ``renderSubtreeIntoContainer(parentComponent, children, container, forceHydrate, callback)`` 的调用， ``element`` 也转为 ``children`` 的统一概念了。
+- 然后是到 ``DOMRender`` （从 ``reactReconciler`` 来） 的 ``updateContainer(element, container, parentComponent, callback)`` ，最外层的调用， ``container`` 就是一个 ``newRoot`` ，前面的 ``children`` 概念这里又变成 ``element`` 了。
+- 上面会处理一下 ``container`` ，接着到 ``scheduleTopLevelUpdate(current, element, callback)`` ， ``current`` 是从 ``container`` 里取的。
+- ``scheduleTopLevelUpdate`` 是会作 ``scheduleWork(current, expirationTime)`` ，应该是处理一些同步的事。还有 构造一个 ``update`` 的结构体，然后  ``insertUpdateIntoFiber(current, update)`` ， ``element`` 被放到 ``update`` 中的 ``partialState: { element: element }`` 。
+- ``insertUpdateIntoFiber(fiber, update)`` ， 新的 ``element`` 在 ``update`` 中，而 ``fiber`` 是 ``container`` 的范畴。这里只是处理“两个队列”的状态，干活的还是在 ``scheduleWork()`` 中。
+- 这个地方开始， ``current`` 和 ``element`` 就分开了，``current`` 继续进入 ``scheduleWork(fiber, expirationTime)`` 进行下一步处理。而 ``element`` 只在 ``insertUpdateIntoFiber`` 中更新于队列状态。
+- ``scheduleWork()`` 里实际上会用 ``scheduleWorkImpl(fiber, expirationTime, isErrorRecovery)`` ，这里开始迭代 ``fiber`` ，离真实的节点创建还有一半的路要走吧，中间又各种处理，最后 ``createInstance()`` 会创建真实的节点。
+
+
+反正，我从源码中找了一长串，还是没搞明白 ``createElement()`` 第一个参数的 ``type`` 可以是，应该是一个什么东西。
+
+从官方的文档来看 https://reactjs.org/docs/react-api.html#createelement ，这个 ``type`` 可以是三类东西：
+
+- 原生类节点，的标签字符串，比如 ``div`` ， ``span`` 。
+- ``React component`` ， React 组件，后面单独说。
+- ``React fragment`` ，这好像是 v16.2.0 加入的新机制，简单来说它使 React 可以支持直接渲染“一串”节点，而之前，只能直接渲染“一个”节点，如果是一串的需求，那么在外面需要包一个节点。我理解大概就是下面这个样子吧：
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/javascript">
+    function Component(props) {
+      return ['1', React.createElement('h1', null, props.text)];
+    }
+    var instance = React.createElement(Component, {text: '啊啊啊'});
+    ReactDOM.render(instance, $('div')[0]);
+  </script>
+</body>
+</html>
+```
+
+
 
