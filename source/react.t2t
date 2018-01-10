@@ -481,8 +481,109 @@ React 自己的事件，是“驼峰式”的名字，比如 ``onClick`` ，而 
 
 试试各个过程的表现吧：
 
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+    class MyComponent extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {name: '初始化'};
+        let that = this;
+        setTimeout(function(){
+          console.log('2s go ...');
+          that.setState({name: '修改了的'});
+        }, 2000);
+        console.log('constructor');
+      }
+
+      componentWillMount(){
+        console.log('componentWillMount');
+      }
+
+      componentDidMount(){
+        console.log('componentDidMount');
+      }
+
+      componentWillReceiveProps(nextProps){
+        console.log('componentWillReceiveProps');
+      }
+
+      shouldComponentUpdate(nextProps, nextState){
+        console.log('shouldComponentUpdate');
+        return true;
+      }
+
+      componentWillUpdate(nextProps, nextSate){
+        console.log('componentWillUpdate');
+      }
+
+      componentDidUpdate(prevProps, prevState){
+        console.log('componentDidUpdate');
+      }
+
+      componentWillUnmount(){
+        console.log('componentWillUnmount');
+      }
+
+      componentDidCatch(error, info){
+        console.log('componentDidCatch');
+      }
+
+      render(){
+        console.log('render');
+        if(this.props.error){throw Error()};
+        return <h1>{this.state.name}</h1>;
+      }
+
+    }
+    ReactDOM.render(<MyComponent />, $('div')[0]);
+
+    setTimeout(function(){
+      console.log('5s go ...');
+      ReactDOM.render(<MyComponent />, $('div')[0]);
+    }, 5000);
+
+    setTimeout(function(){
+      console.log('10s go ...');
+      ReactDOM.render(null, $('div')[0]);
+    }, 10000);
+
+  </script>
+</body>
+</html>
 ```
 
+上面的代码会输出：
+
+```text
+constructor
+componentWillMount
+render
+componentDidMount
+2s go ...
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+5s go ...
+componentWillReceiveProps
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+10s go ...
+componentWillUnmount
 ```
 
 
