@@ -206,7 +206,7 @@ ReactDOM.render(instance, $('#place')[0]);
 
 看起来是比较麻烦的，于 React 中引入了一个新的东西，JSX ，即 JavaScript XML ，简单来说，就是 javascript 和 XML  的混写，上面的代码可以写成：
 
-```jsx
+```javascript
 var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
 var instance = <h1>字符串在中间 {inner}</h1>;
 ReactDOM.render(instance, $('#place')[0]);
@@ -214,7 +214,7 @@ ReactDOM.render(instance, $('#place')[0]);
 
 甚至是：
 
-```jsx
+```javascript
 var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
 ReactDOM.render(<h1>字符串在中间 {inner}</h1>, $('#place')[0]);
 ```
@@ -350,10 +350,139 @@ ReactDOM.render(<MyComponent name="哈哈" />, $('#place')[0]);
 ```
 
 
+# 事件处理 #
+
+
+React 自己维护了一个节点状态的树结构，并且，同时也自己实现了一套事件机制，只是这套事件，跟浏览器自身的区别不是很大：
+
+
+```javascript
+class MyComponent extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {date: (new Date()).valueOf()};
+      setInterval(() => this.setState((prevState, props) => ({date: prevState.date + 1000})), 1000);
+  }
+
+  handleClick = () => {
+      console.log(this);
+  }
+
+  render(){
+      return <h1 onClick={this.handleClick}>Hello {this.props.name} {this.state.date}</h1>;
+  }
+
+}
+
+ReactDOM.render(<MyComponent name="哈哈" />, $('#place')[0]);
+```
+
+
+注意那个 ``handleClick`` 的写法：
+
+```javascript
+handleClick = () => {
+    console.log(this);
+}
+```
+
+如果不用“箭头函数”把 ``this`` 固定住了，那么在使用时就需要显式绑定：
+
+```javascript
+handlerClick(){
+    console.log(this);
+}
+
+render(){
+    return <h1 onClick={this.handleClick.bind(this)}>Hello {this.props.name} {this.state.date}</h1>;
+}
+```
+
+React 自己的事件，是“驼峰式”的名字，比如 ``onClick`` ，而 ``onclick`` 则是浏览器自己的事件了。
+
+其它支持的完整的事件列表，见： https://reactjs.org/docs/events.html
+
+
+# 列表与 key #
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+</head>
+<body>
+  <div id="place"></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      constructor(props) {
+          super(props);
+          this.state = {itemList: [{name: 'abc', id: 'a'}, {name: 'oiii', id: 'b'}] };
+      }
+
+      handleClick(o){
+        return (e) => {
+          console.log(o);
+        }
+      }
+
+      render(){
+        return <div>
+          {this.state.itemList.map( (o) => (<div key={o.id} onClick={this.handleClick(o)}>{o.name}</div>) ) }
+          </div>
+      }
+
+    }
+
+    ReactDOM.render(<MyComponent name="哈哈" />, $('#place')[0]);
+  </script>
+</body>
+</html>
+```
+
+对于列表的渲染， React 要求节点上需要添加 ``key`` 属性，否则，会报 *warn* （是的，不会报错）。如果没有明确的 id 之类的标识，可以使用序列的索引值 *index* 。这个 ``key`` 属性的作用， React 会用于标识节点，以便在数据变更时，对应地可以追踪到节点的变更情况。
 
 
 
+# 组件的各状态 Hook （生命周期） #
+
+对于一个 React 组件，准备说，“类组件”，它在渲染及销毁过程中，每个状态转换时， React 都预留了相关的 Hook 函数，这些函数，一共 10 个，可以分成 4 类：
+
+- 渲染时
+    - ``constructor(props)``
+    - ``componentWillMount()``
+    - ``render()``
+    - ``componentDidMount()`` ，从这里开始， ``setState()`` 会触发重新的 ``render()`` 。
+- 修改时
+    - ``componentWillReceiveProps(nextProps)`` ， *props* 改变时触发，可以由于父组件的变化引起。 ``setState()`` 一般不会触发这个过程。
+    - ``shouldComponentUpdate(nextProps, nextState)`` ，如果返回 ``false`` ，则使 React “尽量” 不要重新渲染组件，注意，只是 “尽量” 而已。如果渲染上有性能问题，则应该考虑其它解决方案。
+    - ``componentWillUpdate(nextProps, nextState)`` ，上面的 ``shouldComponentUpdate()`` 如果返回 ``false`` ，则这个过程一定不会触发，现时，第一次初始化不会触发这个过程。
+    - ``render()``
+    - ``componentDidUpdate(prevProps, prevState)`` ，第一次初始化不会触发这个过程。
+- 销毁时
+    - ``componentWillUnmount()``
+- 出错时
+    - ``componentDidCatch(error, info)``
 
 
+
+除了上面讲的过程 Hook 函数，及前面用过的 ``setState()`` ，组件还有一个 ``forceUpdate(callback)`` 方法，它的调用可以触发 ``render()`` ，并且跳过 ``shouldComponentUpdate()`` 。
+
+
+另外，在“类”层面，有两个属性， ``defaultProps`` 用于定义默认的 *props* ， ``displayName`` ，用于定义调试时显示的名字。
+
+
+试试各个过程的表现吧：
+
+```
+
+```
 
 
