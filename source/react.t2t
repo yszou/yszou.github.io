@@ -291,6 +291,65 @@ ReactDOM.render(React.createElement(
 
 
 
+# 使用 state 处理数据单向绑定 #
+
+前面已经提到过 *props* 了， *props* 一般处理初始化后就不改变的数据，对于一个组件中要变化的数据，需要放在 *state* 中处理，因为 React 专门设计了组件的 ``setState()`` 来维护 *state* （不要直接更改 *state* ，而是使用 ``setState()``） ，同时 ``setState()`` 还处理节点渲染相关的事，通过函数调用，来实现“数据到展现”的单向绑定。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+</head>
+<body>
+  <div id="place"></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      constructor(props) {
+          super(props);
+          this.state = {date: (new Date()).valueOf()};
+          setInterval(() => this.setState({date: (new Date()).valueOf()}), 1000);
+      }
+
+      render(){
+        return <h1>Hello {this.props.name} {this.state.date}</h1>;
+      }
+
+    }
+
+    ReactDOM.render(<MyComponent name="哈哈" />, $('#place')[0]);
+  </script>
+</body>
+</html>
+```
+
+
+``setState()`` 也可以接受一个函数，这个函数的参数第一个是当前的 *state* ，另一个是 *props* ：
+
+```javascript
+class MyComponent extends React.Component {
+  constructor(props) {
+      super(props);
+      this.state = {date: (new Date()).valueOf()};
+      setInterval(() => this.setState((prevState, props) => ({date: prevState.date + 1000})), 1000);
+  }
+
+  render(){
+    return <h1>Hello {this.props.name} {this.state.date}</h1>;
+  }
+
+}
+
+ReactDOM.render(<MyComponent name="哈哈" />, $('#place')[0]);
+```
+
+
 
 
 
