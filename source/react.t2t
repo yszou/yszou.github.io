@@ -179,5 +179,122 @@ function Component(props) {
 ```
 
 
+# createElement 的 DSL 方案 JSX #
+
+前面提过，如果你想通过 ``createElement`` 构造一个类似：
+
+```html
+<h1>
+    字符串在中间
+    <a class="text" style="color: red" id="me" href="http://s.zys.me">React</a>
+</h1>
+```
+
+那么你需要的 js 大概是：
+
+```javascript
+var attribute = {
+  className: 'text',
+  style: {color: 'red'},
+  id: 'me',
+  href: 'http://' + 's.zys.me'
+};
+var inner = React.createElement('a', attribute, 'React');
+var instance = React.createElement('h1', null, '字符串在中间', inner);
+ReactDOM.render(instance, $('#place')[0]);
+```
+
+看起来是比较麻烦的，于 React 中引入了一个新的东西，JSX ，即 JavaScript XML ，简单来说，就是 javascript 和 XML  的混写，上面的代码可以写成：
+
+```jsx
+var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
+var instance = <h1>字符串在中间 {inner}</h1>;
+ReactDOM.render(instance, $('#place')[0]);
+```
+
+甚至是：
+
+```jsx
+var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
+ReactDOM.render(<h1>字符串在中间 {inner}</h1>, $('#place')[0]);
+```
+
+可以看出，比原来直接写 ``createElement`` 的方式要简洁得多， JSX 除了支持直接写 XML 风格的标签，还可以使用 ``{}`` 处理表达式。不过， JSX 并不是浏览器的标准，要让它跑在浏览器，需要在发布前专门编译到纯 js ，平时测试，也可以直接用 *babel* 来跑：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+</head>
+<body>
+  <h1>Hello</h1>
+  <div id="place"></div>
+  <script type="text/babel">
+    var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
+    ReactDOM.render(<h1>字符串在中间 {inner}</h1>, $('#place')[0]);
+  </script>
+</body>
+</html>
+```
+
+注意，上在的 ``script`` 的 ``type`` 写的是 ``text/babel`` 哦。
+
+*babel* 也有命令行的工具，先安装：
+
+```bash
+npm install -g babel
+npm install -g babel-cli
+npm install -g babel-preset-react
+```
+
+然后对于一个 ``demo.jsx`` ：
+
+```
+var inner = <a className="text" style={ {color: 'red'} } id="me" href={'http://' + 's.zys.me'}>React</a>;
+ReactDOM.render(<h1>字符串在中间 {inner}</h1>, $('#place')[0]);
+```
+
+可以使用 *babel* 编译它：
+
+```bash
+babel --presets=react demo.jsx
+```
+
+就可以看到标准的 js 输出了：
+
+```javascript
+var inner = React.createElement(
+  "a",
+  { className: "text", style: { color: 'red' }, id: "me", href: 'http://' + 's.zys.me' },
+  "React"
+);
+ReactDOM.render(React.createElement(
+  "h1",
+  null,
+  "\u5B57\u7B26\u4E32\u5728\u4E2D\u95F4 ",
+  inner
+), $('#place')[0]);
+```
+
+*babel* 默认输出的到标准输出，可以通过 ``-o`` 输出到指定文件。
+
+平时的前端项目，一般把 *babel* 和 *webpack* 结合使用，在构建过程处理 JSX 格式。
+
+
+**提示一下， JSX 不是模板，它的行为，更像是“宏”。本质，还是 js 代码。**
+
+
+
+
+
+
+
+
 
 
