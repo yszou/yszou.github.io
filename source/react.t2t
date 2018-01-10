@@ -113,7 +113,7 @@ React 学习笔记
 从官方的文档来看 https://reactjs.org/docs/react-api.html#createelement ，这个 ``type`` 可以是三类东西：
 
 - 原生类节点，的标签字符串，比如 ``div`` ， ``span`` 。
-- ``React component`` ， React 组件，后面单独说。
+- ``React component`` ， React 组件。
 - ``React fragment`` ，这好像是 v16.2.0 加入的新机制，简单来说它使 React 可以支持直接渲染“一串”节点，而之前，只能直接渲染“一个”节点，如果是一串的需求，那么在外面需要包一个节点。我理解大概就是下面这个样子吧：
 
 
@@ -139,6 +139,45 @@ React 学习笔记
 </body>
 </html>
 ```
+
+
+React 组件有两种类型，一种是简单的“函数式组件”，另一种是复杂点的“类组件”。
+
+函数式组件就是接受 ``props`` ，然后返回一个 ``React element`` ：
+
+```javascript
+function Component(props) {
+  return React.createElement('h1', null, props.text);
+}
+```
+
+类组件，是继承 ``React.Component`` ，然后重写一些方法：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16.2.0/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16.2.0/umd/react-dom.development.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/javascript">
+    class MyComponent extends React.Component {
+      render(){
+        return React.createElement('h1', null, this.props.text);
+      }
+    }
+    var instance = React.createElement(MyComponent, {text: '哈哈'});
+    ReactDOM.render(instance, $('div')[0]);
+  </script>
+</body>
+</html>
+```
+
 
 
 
