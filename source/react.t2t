@@ -293,7 +293,32 @@ ReactDOM.render(React.createElement(
 平时的前端项目，一般把 *babel* 和 *webpack* 结合使用，在构建过程处理 JSX 格式。
 
 
-**提示一下， JSX 不是模板，它的行为，更像是“宏”。本质，还是 js 代码。**
+## JSX 中的名字 ##
+
+JSX 中的名字，如果是自定义组件，名字开头需要大写，小写的是 DOM 标签。
+
+名字中，可以带名字空间：
+
+```javascript
+<MyComponent.A.B />
+```
+
+也可以是变量值：
+
+
+```javascript
+let My = [MyComponent][0];
+return <My />
+```
+
+但是，不能带表达式（下面是错误的）：
+
+```javascript
+<[MyComponent][0] />
+```
+
+
+**提示一下， JSX 不是模板，它的行为，更像是“宏”。本质，还是 js 代码。** 宏是没有运行时能力的，自然无法求值表达式。
 
 
 
@@ -833,6 +858,106 @@ label 标签的 ``for`` 属性，在 React 中可以使用 ``htmlFor`` 代替。
 ```
 
 ``ref`` 可以用于控制焦点，或者在节点上使用浏览器的其它一些 API ，比如音频，视频等。
+
+
+# 测试工具 #
+
+React 因为有自己的一套树状态，所以，理论上它在测试方面有着得天独厚的优势，因为即使是在浏览器环境，不涉及 DOM 相关 API 的行为，只需要在那个树状态中的去操作，并检查操作后的状态就可以达到测试目的。当然，我们也不用关心 React 的一些实现细节，现在说测试，会有两方面的内容。一方面是 React 提供一些测试相关的工具方法，只是工具方法，如果你要建立完整的测试体系，还需要自己解决断言库，测试用例组件与调度等问题。另一方面，是看看非浏览器的渲染，如果可以完全摆脱浏览器环境，完成大部分的测试工作，那将是很美好的一件事。
+
+
+# 测试 API #
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom-test-utils.development.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {n: 0};
+      }
+
+      clickHandler = () => {
+        this.setState((s) => ({n: s.n + 1}));
+      }
+
+      render(){
+        return <h1 onClick={this.clickHandler}>{ this.state.n }</h1>
+      }
+
+    }
+
+    let component = ReactTestUtils.renderIntoDocument(<MyComponent />);
+    console.log(component);
+    let node = ReactDOM.findDOMNode(component)
+    console.log(component.state);
+    ReactTestUtils.Simulate.click(node);
+    console.log(component.state);
+
+    console.log(ReactTestUtils.isElement(<MyComponent />));
+    console.log(ReactTestUtils.isElementOfType(<MyComponent />, MyComponent));
+    console.log(ReactTestUtils.isDOMComponent(ReactTestUtils.renderIntoDocument(<h1>xx</h1>)));
+    console.log(ReactTestUtils.isCompositeComponent(component));
+    console.log(ReactTestUtils.isCompositeComponentWithType(component, MyComponent));
+    console.log(ReactTestUtils.findRenderedDOMComponentWithTag(component, 'h1'));
+    console.log(ReactTestUtils.findRenderedComponentWithType(component, MyComponent));
+
+  </script>
+</body>
+</html>
+```
+
+引入额外的资源文件，相关的方法在浏览器是完全可以用的。
+
+不过，完成的测试体系的话，还需要搭配其它工具来完成， React 的相关 API 只是提供了获取信息的方法。
+
+
+## 非浏览器渲染 ##
+
+在 nodejs 环境，可以使用 ``react-test-renderer`` 来完成对相关组件的处理，并按树结构遍历结果：
+
+```javascript
+const React = require('react');
+const TestRenderer = require('react-test-renderer');
+
+class MyComponent extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {number: 0};
+  }
+  render(){
+    return <h1 onClick={ () => {this.setState((s) => ({number: s.number + 1}))} }>{this.state.number}</h1>;
+  }
+}
+
+
+const testRenderer = TestRenderer.create(<MyComponent />);
+testRenderer.root.findByType('h1').props.onClick();
+console.log(testRenderer.root.findByType('h1').children);
+console.log(testRenderer.root.instance.state);
+```
+
+这部分完整的 API 在 https://reactjs.org/docs/test-renderer.html 。
+
+在非浏览器环境下，“模拟点击”这种操作是没有意义的，但是 ``onClick`` 本身并没有说一定是“点击”，它只是指明了一个回调函数而已，浏览环境下是点击触发，那么纯编程环境下，直接调用即可。
+
+
+
+
+
+
 
 
 
