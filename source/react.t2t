@@ -143,6 +143,10 @@ React 学习笔记
 
 React 组件有两种类型，一种是简单的“函数式组件”，另一种是复杂点的“类组件”。
 
+
+## 函数式组件 ##
+
+
 函数式组件就是接受 ``props`` ，然后返回一个 ``React element`` ：
 
 ```javascript
@@ -150,6 +154,8 @@ function Component(props) {
   return React.createElement('h1', null, props.text);
 }
 ```
+
+## 类组件 ##
 
 类组件，是继承 ``React.Component`` ，然后重写一些方法：
 
@@ -330,6 +336,9 @@ ReactDOM.render(React.createElement(
 ```
 
 
+## setState ##
+
+
 ``setState()`` 也可以接受一个函数，这个函数的参数第一个是当前的 *state* ，另一个是 *props* ：
 
 ```javascript
@@ -385,6 +394,10 @@ handleClick = () => {
     console.log(this);
 }
 ```
+
+
+## this 的问题 ##
+
 
 如果不用“箭头函数”把 ``this`` 固定住了，那么在使用时就需要显式绑定：
 
@@ -585,5 +598,245 @@ componentDidUpdate
 10s go ...
 componentWillUnmount
 ```
+
+上面过程看起来都很好理解的。
+
+
+少的那个 ``componentDidCatch`` 是用来抓子组件错误的：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+    class ErrorWrapper extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {error: null};
+      }
+
+      componentDidCatch(error, info){
+        console.log('componentDidCatch');
+        console.log(error, info);
+        this.setState({error: {error: error, info: info}});
+      }
+
+      render(){
+        if(!!this.state.error) {
+          return <h1>Error Here</h1>
+        } else {
+          return this.props.children || '';
+        }
+      }
+    }
+
+    class MyComponent extends React.Component {
+      render(){
+        throw Error();
+      }
+    }
+
+    ReactDOM.render(<ErrorWrapper><MyComponent /></ErrorWrapper>, $('div')[0]);
+
+  </script>
+</body>
+</html>
+```
+
+上面代码占， ``MyComponent`` 的错误，会触发 ``ErrorWrapper`` 的 ``componentDidCatch`` ，参数中的 ``error`` 是一串调用栈字符串， ``info`` 是一个结构，里面有一个 ``componentStack`` 字符串记录了组件序列。 
+
+
+# 外围函数 #
+
+React 对于 Component 的处理，前面介绍得差不多了，这里说的外围函数，是指还没有脱离 DOM 的那几个工具，比如前面用到的 ``ReactDOM.render(child, container)`` 就是一个典型。
+
+- ``ReactDOM.unmountComponentAtNode(container)``  ， 从一个节点中删除组件。
+- ``ReactDOM.findDOMNode(component)`` ，找到组件“渲染的内容”所在的 DOM 节点，注意，不是组件自己所在的节点。
+- ``ReactDOM.createPortal(child, container)`` ，在 ``render()`` 中，取代返回 ``ReactElement`` ，而在一个确认的位置渲染出组件。（比如“弹层”的那种情况）
+
+
+前 2 个方法是比较好理解的：
+
+```javascript
+class MyComponent extends React.Component {
+  render(){
+    return <h1 onClick={this.clickHandler}>哈哈哈</h1>;
+  }
+
+  clickHandler = () => {
+    var dom = ReactDOM.findDOMNode(this);
+    console.log(dom);
+    ReactDOM.unmountComponentAtNode($('div')[0]);
+  }
+}
+
+ReactDOM.render(<MyComponent />, $('div')[0]);
+```
+
+
+## ReactDOM.createPortal ##
+
+
+``ReactDOM.createPortal(child, container)`` 一般用在需要自己创建并维护真实 DOM 节点的地方：
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      constructor(props){
+        super(props);
+        this.dom = document.createElement('div');
+      }
+
+      componentDidMount(){
+        $('body').append($(this.dom));
+      }
+
+      componentWillUnmount(){
+        $(this.dom).remove();
+      }
+
+      clickHandler = () => {
+        var dom = ReactDOM.findDOMNode(this);
+        console.log(dom);
+        ReactDOM.unmountComponentAtNode($('div')[0]);
+      }
+      
+      render(){
+        return ReactDOM.createPortal(<div onClick={this.clickHandler}>{this.props.children}</div>, this.dom);
+      }
+
+    }
+
+    ReactDOM.render(<MyComponent><h1>弹出来的东西</h1></MyComponent>, $('div')[0]);
+
+  </script>
+</body>
+</html>
+```
+
+上面的代码演示了 ``ReactDOM.createPortal`` 的使用，需要注意的是，即使一个组件的 ``render()`` 实现，不是 ``ReactElement`` 而是 ``ReactDOM.createPortal`` ，组件本身，还是需要依附于父组件，或者 ``ReactDOM.render()`` 的，即坑位在占住，这种时候，就有点“它在那里，它又不在那里”的感觉。
+
+
+
+# DOM 元素自己的那些东西 #
+
+React 的实现的基础是自己实现的一套“树状节点结构”，然后再把这个结构放到浏览器中用真实的 DOM 展现出来。那么这中间，自己搞的一套，与浏览器环境下的一套，之间肯定会有少许的差异的，虽然 React 连事件这种都自己实现了一遍。
+
+首先，对于节点的属性来说， React 的属性都是“驼峰式”的名字，与 DOM 自己的一些全小写属性名不同，比如， ``onclick`` 变成了 ``onClick`` ， ``tabindex`` 变成了 ``tabIndex`` ， SVG 中的属性 React 也支持。
+
+
+属性名中的 *class* ，因为关键词因素，在 React 中变成了 *className* 。
+
+*style* 在 React 中作了扩展实现的，给它一个对象值的话，可以得到正确的样式。
+
+*onChange* 事件在 React 中的实现也作了增强，可以实时触发相应的回调。
+
+label 标签的 ``for`` 属性，在 React 中可以使用 ``htmlFor`` 代替。
+
+
+## dangerouslySetInnerHTML ##
+
+``dangerouslySetInnerHTML`` 是一个特殊的属性，可以用于直接添加原始 HTML 内容：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      getHtml = () => {
+        return {__html: '<h1 style="color: red">哈哈哈</h1>'};
+      }
+      
+      render(){
+        return <div dangerouslySetInnerHTML={this.getHtml()} />
+      }
+
+    }
+
+    ReactDOM.render(<MyComponent />, $('div')[0]);
+
+  </script>
+</body>
+</html>
+```
+
+## ref ##
+
+
+``ref`` 也是 React 中的一个特殊属性，用于回调真实 DOM 节点的引用：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div></div>
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+      clickHandler = () => {
+        console.log(this.h1);
+      }
+
+      render(){
+        return <h1 ref={(node) => {this.h1 = node}} onClick={this.clickHandler}>哈哈</h1>
+      }
+
+    }
+
+    ReactDOM.render(<MyComponent />, $('div')[0]);
+
+  </script>
+</body>
+</html>
+```
+
+``ref`` 可以用于控制焦点，或者在节点上使用浏览器的其它一些 API ，比如音频，视频等。
+
+
+
+
+
 
 
