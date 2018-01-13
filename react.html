@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>React 学习笔记 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">React 学习笔记</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2018-01-11 23:07 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">React 长什么样</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">ReactElement 的定义</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">2.1. 函数式组件</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">2.2. 类组件</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">createElement 的 DSL 方案 JSX</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">3.1. JSX 中的名字</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">使用 state 处理数据单向绑定</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">4.1. setState</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">事件处理</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">5.1. this 的问题</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">列表与 key</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">组件的各状态 Hook （生命周期）</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">外围函数</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">8.1. ReactDOM.createPortal</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">DOM 元素自己的那些东西</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">9.1. dangerouslySetInnerHTML</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">9.2. ref</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none">测试工具</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none">测试 API</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none">11.1. 非浏览器渲染</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. React 长什么样</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">React</em> 是 facebook 开源出来的一套前端方案，官网在 <a href="https://reactjs.org" style="color: #0184b7; text-decoration: none">https://reactjs.org</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先看一个简单的样子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">h1</span>&gt;Hello&lt;/<span style="color: #000080">h1</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;place&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> attribute <span style="color: #000000; font-weight: bold">=</span> {
+      className<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;text&#39;</span>,
+      style<span style="color: #000000; font-weight: bold">:</span> {color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>},
+      id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;me&#39;</span>,
+      href<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span>
+    };
+    <span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> React.createElement(<span style="color: #dd1144">&#39;a&#39;</span>, attribute, <span style="color: #dd1144">&#39;React&#39;</span>);
+    <span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #dd1144">&#39;字符串在中间&#39;</span>, inner);
+    ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从上面可以看出，它的使用其实跟其它很多框架的方式差不多，即，找到一个 DOM 节点，然后在这个节点上做事，类似 jQuery 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$(dom).xxx({})</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React.createElement</code> 中，第一个参数是标签名，第二个是 <em style="color: #d75100; font-style: normal;">config</em> ，其中包括了节点属性（<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">class</code> 因为关键词问题改用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">className</code>） ，第三个及以后，是子级节点，或者说子级元素。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面两个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">createElement</code> 得到的最终结果，是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">h1</span>&gt;
+    字符串在中间
+    &lt;<span style="color: #000080">a</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text&quot;</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;color: red&quot;</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;me&quot;</span> <span style="color: #008080">href</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;http://s.zys.me&quot;</span>&gt;React&lt;/<span style="color: #000080">a</span>&gt;
+&lt;/<span style="color: #000080">h1</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，这里的重点，不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React.createElement</code> ，而是它返回的那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">instance</code> ，事实上，从源码 <a href="https://unpkg.com/react@16.2.0/umd/react.development.js" style="color: #0184b7; text-decoration: none">https://unpkg.com/react@16.2.0/umd/react.development.js</a> 中看的话，可以看出它返回的是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> ，这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> 就是整个 <em style="color: #d75100; font-style: normal;">React</em> 体系于众不同的地方，否则它直接返回一个 DOM Element 就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后一行的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.render</code> 就是处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> 的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM</code> 的源码在 <a href="https://unpkg.com/react-dom@16.2.0/umd/react-dom.development.js" style="color: #0184b7; text-decoration: none">https://unpkg.com/react-dom@16.2.0/umd/react-dom.development.js</a> ， 这个东西自己实现了一套挂节点的树结构（所谓的 <em style="color: #d75100; font-style: normal;">Virtual DOM</em>），中间隔了一层再去处理真实的 DOM 渲染。这么做的好处是，因为自己有一套完整的树结构的，所以，可以在上面实现很多在原始 DOM 结构上不能做，或者不方便做的事。比如，异构渲染之类的。当然，局限的地方也很明显，本质上还是“节点”，其实没有一个往上的抽象，暴露的细节还是很多的，这种情况下，东西可以做得比较细，但是付出的成本也比较大，我是这样预测的。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. ReactElement 的定义</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最开始，已经简单演示了针对像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">h1</code> 这类原生 DOM 元素的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> 定义， 自然，“能接受一个确定值的地方也应该可以接受一个函数”是 js 的一个惯例吧：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.production.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.production.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">function</span> Component(props) {
+      <span style="color: #000000; font-weight: bold">if</span>(props.tag <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;h1&#39;</span>) {
+        <span style="color: #000000; font-weight: bold">return</span> React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #dd1144">&#39;大标题&#39;</span>);
+      } <span style="color: #000000; font-weight: bold">else</span> {
+        <span style="color: #000000; font-weight: bold">return</span> React.createElement(<span style="color: #dd1144">&#39;span&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #dd1144">&#39;普通文本&#39;</span>);
+      }
+    }
+    <span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> React.createElement(Component, {tag<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;h1&#39;</span>});
+    ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码的过程，大概是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React.createElement(type, config, children)</code> 返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement()</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props)</code> ，上面 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config</code> 的一些东西，会补为这里的几个参数，及 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 里的东西。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement()</code> 的调用会返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> ，这是一个比较单纯的结构体，里面会有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">key</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ref</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">_owner</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$$typeof</code> 等内容。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.render(element, container, callback)</code> 是对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">renderSubtreeIntoContainer(parentComponent, children, container, forceHydrate, callback)</code> 的调用， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 也转为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">children</code> 的统一概念了。
+</li>
+<li style="margin: 10px auto;">然后是到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DOMRender</code> （从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reactReconciler</code> 来） 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">updateContainer(element, container, parentComponent, callback)</code> ，最外层的调用， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">container</code> 就是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">newRoot</code> ，前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">children</code> 概念这里又变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 了。
+</li>
+<li style="margin: 10px auto;">上面会处理一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">container</code> ，接着到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleTopLevelUpdate(current, element, callback)</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">current</code> 是从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">container</code> 里取的。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleTopLevelUpdate</code> 是会作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleWork(current, expirationTime)</code> ，应该是处理一些同步的事。还有 构造一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">update</code> 的结构体，然后  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insertUpdateIntoFiber(current, update)</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 被放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">update</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">partialState: { element: element }</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insertUpdateIntoFiber(fiber, update)</code> ， 新的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">update</code> 中，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fiber</code> 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">container</code> 的范畴。这里只是处理“两个队列”的状态，干活的还是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleWork()</code> 中。
+</li>
+<li style="margin: 10px auto;">这个地方开始， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">current</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 就分开了，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">current</code> 继续进入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleWork(fiber, expirationTime)</code> 进行下一步处理。而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">element</code> 只在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insertUpdateIntoFiber</code> 中更新于队列状态。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleWork()</code> 里实际上会用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheduleWorkImpl(fiber, expirationTime, isErrorRecovery)</code> ，这里开始迭代 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fiber</code> ，离真实的节点创建还有一半的路要走吧，中间又各种处理，最后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">createInstance()</code> 会创建真实的节点。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+反正，我从源码中找了一长串，还是没搞明白 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">createElement()</code> 第一个参数的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> 可以是，应该是一个什么东西。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从官方的文档来看 <a href="https://reactjs.org/docs/react-api.html#createelement" style="color: #0184b7; text-decoration: none">https://reactjs.org/docs/react-api.html#createelement</a> ，这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> 可以是三类东西：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">原生类节点，的标签字符串，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">div</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">span</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React component</code> ， React 组件。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React fragment</code> ，这好像是 v16.2.0 加入的新机制，简单来说它使 React 可以支持直接渲染“一串”节点，而之前，只能直接渲染“一个”节点，如果是一串的需求，那么在外面需要包一个节点。我理解大概就是下面这个样子吧：
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">function</span> Component(props) {
+      <span style="color: #000000; font-weight: bold">return</span> [<span style="color: #dd1144">&#39;1&#39;</span>, React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, props.text)];
+    }
+    <span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> React.createElement(Component, {text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;啊啊啊&#39;</span>});
+    ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 组件有两种类型，一种是简单的“函数式组件”，另一种是复杂点的“类组件”。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. 函数式组件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+函数式组件就是接受 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> ，然后返回一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React element</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> Component(props) {
+  <span style="color: #000000; font-weight: bold">return</span> React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, props.text);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. 类组件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+类组件，是继承 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">React.Component</code> ，然后重写一些方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16.2.0/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16.2.0/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #000000; font-weight: bold">this</span>.props.text);
+      }
+    }
+    <span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> React.createElement(MyComponent, {text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;哈哈&#39;</span>});
+    ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. createElement 的 DSL 方案 JSX</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面提过，如果你想通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">createElement</code> 构造一个类似：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">h1</span>&gt;
+    字符串在中间
+    &lt;<span style="color: #000080">a</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text&quot;</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;color: red&quot;</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;me&quot;</span> <span style="color: #008080">href</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;http://s.zys.me&quot;</span>&gt;React&lt;/<span style="color: #000080">a</span>&gt;
+&lt;/<span style="color: #000080">h1</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那么你需要的 js 大概是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> attribute <span style="color: #000000; font-weight: bold">=</span> {
+  className<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;text&#39;</span>,
+  style<span style="color: #000000; font-weight: bold">:</span> {color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>},
+  id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;me&#39;</span>,
+  href<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span>
+};
+<span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> React.createElement(<span style="color: #dd1144">&#39;a&#39;</span>, attribute, <span style="color: #dd1144">&#39;React&#39;</span>);
+<span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> React.createElement(<span style="color: #dd1144">&#39;h1&#39;</span>, <span style="color: #000000; font-weight: bold">null</span>, <span style="color: #dd1144">&#39;字符串在中间&#39;</span>, inner);
+ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看起来是比较麻烦的，于 React 中引入了一个新的东西，JSX ，即 JavaScript XML ，简单来说，就是 javascript 和 XML  的混写，上面的代码可以写成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;</span>a className<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text&quot;</span> style<span style="color: #000000; font-weight: bold">=</span>{ {color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>} } id<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;me&quot;</span> href<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span>}<span style="color: #000000; font-weight: bold">&gt;</span>React<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/a&gt;;</span>
+<span style="color: #000000; font-weight: bold">var</span> instance <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>字符串在中间 {inner}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+ReactDOM.render(instance, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+甚至是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;</span>a className<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text&quot;</span> style<span style="color: #000000; font-weight: bold">=</span>{ {color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>} } id<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;me&quot;</span> href<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span>}<span style="color: #000000; font-weight: bold">&gt;</span>React<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/a&gt;;</span>
+ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>字符串在中间 {inner}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;, $(&#39;#place&#39;)[0]);</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看出，比原来直接写 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">createElement</code> 的方式要简洁得多， JSX 除了支持直接写 XML 风格的标签，还可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{}</code> 处理表达式。不过， JSX 并不是浏览器的标准，要让它跑在浏览器，需要在发布前专门编译到纯 js ，平时测试，也可以直接用 <em style="color: #d75100; font-style: normal;">babel</em> 来跑：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">h1</span>&gt;Hello&lt;/<span style="color: #000080">h1</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;place&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;</span>a className<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text&quot;</span> style<span style="color: #000000; font-weight: bold">=</span>{ {color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>} } id<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;me&quot;</span> href<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span>}<span style="color: #000000; font-weight: bold">&gt;</span>React<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/a&gt;;</span>
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>字符串在中间 {inner}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;, $(&#39;#place&#39;)[0]);</span>
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意，上在的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">script</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> 写的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">text/babel</code> 哦。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">babel</em> 也有命令行的工具，先安装：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">npm install -g babel
+npm install -g babel-cli
+npm install -g babel-preset-react
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后对于一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.jsx</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">var inner = <span style="color: #000080">&lt;a</span> <span style="color: #008080">className=</span><span style="color: #dd1144">&quot;text&quot;</span> <span style="color: #008080">style=</span><span style="color: #dd1144">{</span> <span style="color: #a61717; background-color: #e3d2d2">{color:</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;red&#39;}</span> <span style="color: #a61717; background-color: #e3d2d2">}</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;me&quot;</span> <span style="color: #008080">href=</span><span style="color: #dd1144">{&#39;http://&#39;</span> <span style="color: #a61717; background-color: #e3d2d2">+</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;s.zys.me&#39;}</span><span style="color: #000080">&gt;</span>React<span style="color: #000080">&lt;/a&gt;</span>;
+ReactDOM.render(<span style="color: #000080">&lt;h1&gt;</span>字符串在中间 {inner}<span style="color: #000080">&lt;/h1&gt;</span>, $(&#39;#place&#39;)[0]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以使用 <em style="color: #d75100; font-style: normal;">babel</em> 编译它：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">babel --presets<span style="color: #000000; font-weight: bold">=</span>react demo.jsx
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就可以看到标准的 js 输出了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> inner <span style="color: #000000; font-weight: bold">=</span> React.createElement(
+  <span style="color: #dd1144">&quot;a&quot;</span>,
+  { className<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;text&quot;</span>, style<span style="color: #000000; font-weight: bold">:</span> { color<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span> }, id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;me&quot;</span>, href<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;http://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;s.zys.me&#39;</span> },
+  <span style="color: #dd1144">&quot;React&quot;</span>
+);
+ReactDOM.render(React.createElement(
+  <span style="color: #dd1144">&quot;h1&quot;</span>,
+  <span style="color: #000000; font-weight: bold">null</span>,
+  <span style="color: #dd1144">&quot;\u5B57\u7B26\u4E32\u5728\u4E2D\u95F4 &quot;</span>,
+  inner
+), $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">babel</em> 默认输出的到标准输出，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-o</code> 输出到指定文件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+平时的前端项目，一般把 <em style="color: #d75100; font-style: normal;">babel</em> 和 <em style="color: #d75100; font-style: normal;">webpack</em> 结合使用，在构建过程处理 JSX 格式。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. JSX 中的名字</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+JSX 中的名字，如果是自定义组件，名字开头需要大写，小写的是 DOM 标签。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+名字中，可以带名字空间：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&lt;</span>MyComponent.A.B <span style="color: #000000; font-weight: bold">/&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以是变量值：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">let</span> My <span style="color: #000000; font-weight: bold">=</span> [MyComponent][<span style="color: #009999">0</span>];
+<span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>My <span style="color: #000000; font-weight: bold">/&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是，不能带表达式（下面是错误的）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&lt;</span>[MyComponent][<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">/&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">提示一下， JSX 不是模板，它的行为，更像是“宏”。本质，还是 js 代码。</strong> 宏是没有运行时能力的，自然无法求值表达式。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 使用 state 处理数据单向绑定</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面已经提到过 <em style="color: #d75100; font-style: normal;">props</em> 了， <em style="color: #d75100; font-style: normal;">props</em> 一般处理初始化后就不改变的数据，对于一个组件中要变化的数据，需要放在 <em style="color: #d75100; font-style: normal;">state</em> 中处理，因为 React 专门设计了组件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 来维护 <em style="color: #d75100; font-style: normal;">state</em> （不要直接更改 <em style="color: #d75100; font-style: normal;">state</em> ，而是使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code>） ，同时 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 还处理节点渲染相关的事，通过函数调用，来实现“数据到展现”的单向绑定。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;place&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props) {
+          <span style="color: #000000; font-weight: bold">super</span>(props);
+          <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
+          setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState({date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()}), <span style="color: #009999">1000</span>);
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>Hello {<span style="color: #000000; font-weight: bold">this</span>.props.name} {<span style="color: #000000; font-weight: bold">this</span>.state.date}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+      }
+
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent name<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;哈哈&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. setState</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 也可以接受一个函数，这个函数的参数第一个是当前的 <em style="color: #d75100; font-style: normal;">state</em> ，另一个是 <em style="color: #d75100; font-style: normal;">props</em> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  constructor(props) {
+      <span style="color: #000000; font-weight: bold">super</span>(props);
+      <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
+      setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) <span style="color: #000000; font-weight: bold">=&gt;</span> ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
+  }
+
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>Hello {<span style="color: #000000; font-weight: bold">this</span>.props.name} {<span style="color: #000000; font-weight: bold">this</span>.state.date}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+  }
+
+}
+
+ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent name<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;哈哈&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc9"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 事件处理</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 自己维护了一个节点状态的树结构，并且，同时也自己实现了一套事件机制，只是这套事件，跟浏览器自身的区别不是很大：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  constructor(props) {
+      <span style="color: #000000; font-weight: bold">super</span>(props);
+      <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
+      setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) <span style="color: #000000; font-weight: bold">=&gt;</span> ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
+  }
+
+  handleClick <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+      console.log(<span style="color: #000000; font-weight: bold">this</span>);
+  }
+
+  render(){
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.handleClick}<span style="color: #000000; font-weight: bold">&gt;</span>Hello {<span style="color: #000000; font-weight: bold">this</span>.props.name} {<span style="color: #000000; font-weight: bold">this</span>.state.date}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+  }
+
+}
+
+ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent name<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;哈哈&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">handleClick</code> 的写法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">handleClick <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+    console.log(<span style="color: #000000; font-weight: bold">this</span>);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. this 的问题</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果不用“箭头函数”把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this</code> 固定住了，那么在使用时就需要显式绑定：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">handlerClick(){
+    console.log(<span style="color: #000000; font-weight: bold">this</span>);
+}
+
+render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.handleClick.bind(<span style="color: #000000; font-weight: bold">this</span>)}<span style="color: #000000; font-weight: bold">&gt;</span>Hello {<span style="color: #000000; font-weight: bold">this</span>.props.name} {<span style="color: #000000; font-weight: bold">this</span>.state.date}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 自己的事件，是“驼峰式”的名字，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onClick</code> ，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onclick</code> 则是浏览器自己的事件了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其它支持的完整的事件列表，见： <a href="https://reactjs.org/docs/events.html" style="color: #0184b7; text-decoration: none">https://reactjs.org/docs/events.html</a>
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 列表与 key</h1>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;place&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props) {
+          <span style="color: #000000; font-weight: bold">super</span>(props);
+          <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {itemList<span style="color: #000000; font-weight: bold">:</span> [{name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;abc&#39;</span>, id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;a&#39;</span>}, {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;oiii&#39;</span>, id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;b&#39;</span>}] };
+      }
+
+      handleClick(o){
+        <span style="color: #000000; font-weight: bold">return</span> (e) <span style="color: #000000; font-weight: bold">=&gt;</span> {
+          console.log(o);
+        }
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+          {<span style="color: #000000; font-weight: bold">this</span>.state.itemList.map( (o) <span style="color: #000000; font-weight: bold">=&gt;</span> (<span style="color: #000000; font-weight: bold">&lt;</span>div key<span style="color: #000000; font-weight: bold">=</span>{o.id} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.handleClick(o)}<span style="color: #000000; font-weight: bold">&gt;</span>{o.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;) ) }</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent name<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;哈哈&quot;</span> <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;#place&#39;</span>)[<span style="color: #009999">0</span>]);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于列表的渲染， React 要求节点上需要添加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">key</code> 属性，否则，会报 <em style="color: #d75100; font-style: normal;">warn</em> （是的，不会报错）。如果没有明确的 id 之类的标识，可以使用序列的索引值 <em style="color: #d75100; font-style: normal;">index</em> 。这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">key</code> 属性的作用， React 会用于标识节点，以便在数据变更时，对应地可以追踪到节点的变更情况。
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 组件的各状态 Hook （生命周期）</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于一个 React 组件，准备说，“类组件”，它在渲染及销毁过程中，每个状态转换时， React 都预留了相关的 Hook 函数，这些函数，一共 10 个，可以分成 4 类：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">渲染时
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">constructor(props)</code>
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillMount()</code>
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code>
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidMount()</code> ，从这里开始， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 会触发重新的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code> 。
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">修改时
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillReceiveProps(nextProps)</code> ， <em style="color: #d75100; font-style: normal;">props</em> 改变时触发，可以由于父组件的变化引起。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 一般不会触发这个过程。
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">shouldComponentUpdate(nextProps, nextState)</code> ，如果返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code> ，则使 React “尽量” 不要重新渲染组件，注意，只是 “尽量” 而已。如果渲染上有性能问题，则应该考虑其它解决方案。
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillUpdate(nextProps, nextState)</code> ，上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">shouldComponentUpdate()</code> 如果返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code> ，则这个过程一定不会触发，现时，第一次初始化不会触发这个过程。
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code>
+    </li>
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidUpdate(prevProps, prevState)</code> ，第一次初始化不会触发这个过程。
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">销毁时
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillUnmount()</code>
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">出错时
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidCatch(error, info)</code>
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了上面讲的过程 Hook 函数，及前面用过的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> ，组件还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">forceUpdate(callback)</code> 方法，它的调用可以触发 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code> ，并且跳过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">shouldComponentUpdate()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外，在“类”层面，有两个属性， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">defaultProps</code> 用于定义默认的 <em style="color: #d75100; font-style: normal;">props</em> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">displayName</code> ，用于定义调试时显示的名字。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+试试各个过程的表现吧：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;初始化&#39;</span>};
+        <span style="color: #000000; font-weight: bold">let</span> that <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+          console.log(<span style="color: #dd1144">&#39;2s go ...&#39;</span>);
+          that.setState({name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;修改了的&#39;</span>});
+        }, <span style="color: #009999">2000</span>);
+        console.log(<span style="color: #dd1144">&#39;constructor&#39;</span>);
+      }
+
+      componentWillMount(){
+        console.log(<span style="color: #dd1144">&#39;componentWillMount&#39;</span>);
+      }
+
+      componentDidMount(){
+        console.log(<span style="color: #dd1144">&#39;componentDidMount&#39;</span>);
+      }
+
+      componentWillReceiveProps(nextProps){
+        console.log(<span style="color: #dd1144">&#39;componentWillReceiveProps&#39;</span>);
+      }
+
+      shouldComponentUpdate(nextProps, nextState){
+        console.log(<span style="color: #dd1144">&#39;shouldComponentUpdate&#39;</span>);
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">true</span>;
+      }
+
+      componentWillUpdate(nextProps, nextSate){
+        console.log(<span style="color: #dd1144">&#39;componentWillUpdate&#39;</span>);
+      }
+
+      componentDidUpdate(prevProps, prevState){
+        console.log(<span style="color: #dd1144">&#39;componentDidUpdate&#39;</span>);
+      }
+
+      componentWillUnmount(){
+        console.log(<span style="color: #dd1144">&#39;componentWillUnmount&#39;</span>);
+      }
+
+      componentDidCatch(error, info){
+        console.log(<span style="color: #dd1144">&#39;componentDidCatch&#39;</span>);
+      }
+
+      render(){
+        console.log(<span style="color: #dd1144">&#39;render&#39;</span>);
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.props.error){<span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>()};
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.state.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+      }
+
+    }
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+
+    setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+      console.log(<span style="color: #dd1144">&#39;5s go ...&#39;</span>);
+      ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+    }, <span style="color: #009999">5000</span>);
+
+    setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+      console.log(<span style="color: #dd1144">&#39;10s go ...&#39;</span>);
+      ReactDOM.render(<span style="color: #000000; font-weight: bold">null</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+    }, <span style="color: #009999">10000</span>);
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码会输出：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">constructor
+componentWillMount
+render
+componentDidMount
+2s go ...
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+5s go ...
+componentWillReceiveProps
+shouldComponentUpdate
+componentWillUpdate
+render
+componentDidUpdate
+10s go ...
+componentWillUnmount
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面过程看起来都很好理解的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+少的那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidCatch</code> 是用来抓子组件错误的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> ErrorWrapper <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {error<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">null</span>};
+      }
+
+      componentDidCatch(error, info){
+        console.log(<span style="color: #dd1144">&#39;componentDidCatch&#39;</span>);
+        console.log(error, info);
+        <span style="color: #000000; font-weight: bold">this</span>.setState({error<span style="color: #000000; font-weight: bold">:</span> {error<span style="color: #000000; font-weight: bold">:</span> error, info<span style="color: #000000; font-weight: bold">:</span> info}});
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!this</span>.state.error) {
+          <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #0086B3">Error</span> Here<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+        } <span style="color: #000000; font-weight: bold">else</span> {
+          <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.props.children <span style="color: #000000; font-weight: bold">||</span> <span style="color: #dd1144">&#39;&#39;</span>;
+        }
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      render(){
+        <span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>();
+      }
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>ErrorWrapper<span style="color: #000000; font-weight: bold">&gt;&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/ErrorWrapper&gt;, $(&#39;div&#39;)[0]);</span>
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码占， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MyComponent</code> 的错误，会触发 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ErrorWrapper</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidCatch</code> ，参数中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">error</code> 是一串调用栈字符串， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">info</code> 是一个结构，里面有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentStack</code> 字符串记录了组件序列。 
+</p>
+
+<a class="anchor" name="toc13"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 外围函数</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 对于 Component 的处理，前面介绍得差不多了，这里说的外围函数，是指还没有脱离 DOM 的那几个工具，比如前面用到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.render(child, container)</code> 就是一个典型。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.unmountComponentAtNode(container)</code>  ， 从一个节点中删除组件。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.findDOMNode(component)</code> ，找到组件“渲染的内容”所在的 DOM 节点，注意，不是组件自己所在的节点。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.createPortal(child, container)</code> ，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code> 中，取代返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> ，而在一个确认的位置渲染出组件。（比如“弹层”的那种情况）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前 2 个方法是比较好理解的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>哈哈哈<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+  }
+
+  clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+    <span style="color: #000000; font-weight: bold">var</span> dom <span style="color: #000000; font-weight: bold">=</span> ReactDOM.findDOMNode(<span style="color: #000000; font-weight: bold">this</span>);
+    console.log(dom);
+    ReactDOM.unmountComponentAtNode($(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+  }
+}
+
+ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">8.1. ReactDOM.createPortal</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.createPortal(child, container)</code> 一般用在需要自己创建并维护真实 DOM 节点的地方：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&#39;div&#39;</span>);
+      }
+
+      componentDidMount(){
+        $(<span style="color: #dd1144">&#39;body&#39;</span>).append($(<span style="color: #000000; font-weight: bold">this</span>.dom));
+      }
+
+      componentWillUnmount(){
+        $(<span style="color: #000000; font-weight: bold">this</span>.dom).remove();
+      }
+
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">var</span> dom <span style="color: #000000; font-weight: bold">=</span> ReactDOM.findDOMNode(<span style="color: #000000; font-weight: bold">this</span>);
+        console.log(dom);
+        ReactDOM.unmountComponentAtNode($(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+      }
+      
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> ReactDOM.createPortal(<span style="color: #000000; font-weight: bold">&lt;</span>div onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;, this.dom);</span>
+      }
+
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent<span style="color: #000000; font-weight: bold">&gt;&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>弹出来的东西<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;&lt;/MyComponent&gt;, $(&#39;div&#39;)[0]);</span>
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码演示了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.createPortal</code> 的使用，需要注意的是，即使一个组件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code> 实现，不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactElement</code> 而是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.createPortal</code> ，组件本身，还是需要依附于父组件，或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ReactDOM.render()</code> 的，即坑位在占住，这种时候，就有点“它在那里，它又不在那里”的感觉。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. DOM 元素自己的那些东西</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 的实现的基础是自己实现的一套“树状节点结构”，然后再把这个结构放到浏览器中用真实的 DOM 展现出来。那么这中间，自己搞的一套，与浏览器环境下的一套，之间肯定会有少许的差异的，虽然 React 连事件这种都自己实现了一遍。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，对于节点的属性来说， React 的属性都是“驼峰式”的名字，与 DOM 自己的一些全小写属性名不同，比如， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onclick</code> 变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onClick</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tabindex</code> 变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tabIndex</code> ， SVG 中的属性 React 也支持。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+属性名中的 <em style="color: #d75100; font-style: normal;">class</em> ，因为关键词因素，在 React 中变成了 <em style="color: #d75100; font-style: normal;">className</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">style</em> 在 React 中作了扩展实现的，给它一个对象值的话，可以得到正确的样式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">onChange</em> 事件在 React 中的实现也作了增强，可以实时触发相应的回调。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+label 标签的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">for</code> 属性，在 React 中可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">htmlFor</code> 代替。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.1. dangerouslySetInnerHTML</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dangerouslySetInnerHTML</code> 是一个特殊的属性，可以用于直接添加原始 HTML 内容：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      getHtml <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">return</span> {__html<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;&lt;h1 style=&quot;color: red&quot;&gt;哈哈哈&lt;/h1&gt;&#39;</span>};
+      }
+      
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div dangerouslySetInnerHTML<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getHtml()} <span style="color: #000000; font-weight: bold">/&gt;</span>
+      }
+
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.2. ref</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ref</code> 也是 React 中的一个特殊属性，用于回调真实 DOM 节点的引用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        console.log(<span style="color: #000000; font-weight: bold">this</span>.h1);
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 ref<span style="color: #000000; font-weight: bold">=</span>{(node) <span style="color: #000000; font-weight: bold">=&gt;</span> {<span style="color: #000000; font-weight: bold">this</span>.h1 <span style="color: #000000; font-weight: bold">=</span> node}} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>哈哈<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+      }
+
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, $(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ref</code> 可以用于控制焦点，或者在节点上使用浏览器的其它一些 API ，比如音频，视频等。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 测试工具</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+React 因为有自己的一套树状态，所以，理论上它在测试方面有着得天独厚的优势，因为即使是在浏览器环境，不涉及 DOM 相关 API 的行为，只需要在那个树状态中的去操作，并检查操作后的状态就可以达到测试目的。当然，我们也不用关心 React 的一些实现细节，现在说测试，会有两方面的内容。一方面是 React 提供一些测试相关的工具方法，只是工具方法，如果你要建立完整的测试体系，还需要自己解决断言库，测试用例组件与调度等问题。另一方面，是看看非浏览器的渲染，如果可以完全摆脱浏览器环境，完成大部分的测试工作，那将是很美好的一件事。
+</p>
+
+<a class="anchor" name="toc19"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. 测试 API</h1>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom-test-utils.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {n<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>};
+      }
+
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">this</span>.setState((s) <span style="color: #000000; font-weight: bold">=&gt;</span> ({n<span style="color: #000000; font-weight: bold">:</span> s.n <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}));
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>{ <span style="color: #000000; font-weight: bold">this</span>.state.n }<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+      }
+
+    }
+
+    <span style="color: #000000; font-weight: bold">let</span> component <span style="color: #000000; font-weight: bold">=</span> ReactTestUtils.renderIntoDocument(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>);
+    console.log(component);
+    <span style="color: #000000; font-weight: bold">let</span> node <span style="color: #000000; font-weight: bold">=</span> ReactDOM.findDOMNode(component)
+    console.log(component.state);
+    ReactTestUtils.Simulate.click(node);
+    console.log(component.state);
+
+    console.log(ReactTestUtils.isElement(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>));
+    console.log(ReactTestUtils.isElementOfType(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, MyComponent));
+    console.log(ReactTestUtils.isDOMComponent(ReactTestUtils.renderIntoDocument(<span style="color: #000000; font-weight: bold">&lt;</span>h1<span style="color: #000000; font-weight: bold">&gt;</span>xx<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;)));</span>
+    console.log(ReactTestUtils.isCompositeComponent(component));
+    console.log(ReactTestUtils.isCompositeComponentWithType(component, MyComponent));
+    console.log(ReactTestUtils.findRenderedDOMComponentWithTag(component, <span style="color: #dd1144">&#39;h1&#39;</span>));
+    console.log(ReactTestUtils.findRenderedComponentWithType(component, MyComponent));
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+引入额外的资源文件，相关的方法在浏览器是完全可以用的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过，完成的测试体系的话，还需要搭配其它工具来完成， React 的相关 API 只是提供了获取信息的方法。
+</p>
+
+<a class="anchor" name="toc20"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">11.1. 非浏览器渲染</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 nodejs 环境，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">react-test-renderer</code> 来完成对相关组件的处理，并按树结构遍历结果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> React <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;react&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> TestRenderer <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;react-test-renderer&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  constructor(props){
+    <span style="color: #000000; font-weight: bold">super</span>(props);
+    <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {number<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>};
+  }
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{ () <span style="color: #000000; font-weight: bold">=&gt;</span> {<span style="color: #000000; font-weight: bold">this</span>.setState((s) <span style="color: #000000; font-weight: bold">=&gt;</span> ({number<span style="color: #000000; font-weight: bold">:</span> s.number <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}))} }<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.state.number}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+  }
+}
+
+
+<span style="color: #000000; font-weight: bold">const</span> testRenderer <span style="color: #000000; font-weight: bold">=</span> TestRenderer.create(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>);
+testRenderer.root.findByType(<span style="color: #dd1144">&#39;h1&#39;</span>).props.onClick();
+console.log(testRenderer.root.findByType(<span style="color: #dd1144">&#39;h1&#39;</span>).children);
+console.log(testRenderer.root.instance.state);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这部分完整的 API 在 <a href="https://reactjs.org/docs/test-renderer.html" style="color: #0184b7; text-decoration: none">https://reactjs.org/docs/test-renderer.html</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在非浏览器环境下，“模拟点击”这种操作是没有意义的，但是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onClick</code> 本身并没有说一定是“点击”，它只是指明了一个回调函数而已，浏览环境下是点击触发，那么纯编程环境下，直接调用即可。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'react';
+  var disqus_url = 'https://www.zouyesheng.com/react.html';
+  var disqus_title = 'React 学习笔记';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABmUlEQVR4nN2XMQ7bMAxFH+MAyibf
+QLlI41yl93BhFy3QpYeymovYN1A2GXD9OyRAUTRjOLQcOZAi/ufnl4m/Yz28SMK/lkUTELLGBAwC
+SNXvDSYJ2baEPY4EafOcLRdSUCFxiVKY6D1ne8Yww/34/rp/xLN+vjYfQ75/P/t2O0DUjGlMNbdA
+p9Gzm8wM7uv5ZAVWs6MnSyTpQZVcSJIkR5ZkG5eT2iFDHBc78Pnsitun7n4F1q4lcXlb3ZfZrnzL
+UTqmClBlrtu906d6iZqVC4TsiRvaaQRxpHalT0Ha/LQE7fRU4pYqcYSuuKryrTTzqVvG5WSlEUqO
+uB248LOrSscU9vtq9Vaa2fW+DXOYoubHkbtEV9xU+lS7MsxYgbB7XlM0MQgrjaoVkCsnD3Qyq5e4
+LRA1r1d8cYtjgjiirA2IXzy3W5I0xS3VTluSq1N4eq6dHohbCtlXS7Kk8Pu+TdFVJ5+ea5gfJsF8
+Ofno2QI/gKr2nXVfZ286pvrBRkIuX909l2xbsAJr1w6+OglhAqrJm5P2H/+ofgHF+wTHBWcnUQAA
+AABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2018 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
