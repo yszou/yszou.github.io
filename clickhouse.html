@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8" />
+    <title>ClickHouse 使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">ClickHouse 使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2018-01-15 22:02 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">简介与安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">访问接口</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">查询语言</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">3.1. CREATE TABLE</a>
+      <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+      <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">3.1.1. 默认值</a>
+      </li>
+      <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">3.1.2. 物化列</a>
+      </li>
+      <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">3.1.3. 表达式列</a>
+      </li>
+      </ul>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">3.2. SELECT</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">引擎</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">4.1. TinyLog</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">4.2. Log</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">4.3. Memory</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">4.4. Merge</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none">4.5. Distributed</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none">4.6. Null</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none">4.7. Buffer</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none">4.8. Set</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none">4.9. Join</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none">4.10. MergeTree</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none">4.11. ReplacingMergeTree</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none">4.12. SummingMergeTree</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none">4.13. AggregatingMergeTree</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none">4.14. CollapsingMergeTree</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none">TODO</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 简介与安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ClickHouse</em> 是俄罗斯的 Yandex <a href="https://www.yandex.com/" style="color: #0184b7; text-decoration: none">https://www.yandex.com/</a> （跟 Google 一样做搜索的）开源的一套针对数据仓库场景的多维数据存储与检索工具，它通过针对性的设计力图解决海量多维度数据的查询性能问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 在 Ubuntu 下是比较简单的，因为官方直接提供了源， <a href="https://clickhouse.yandex/reference_en.html#System%20requirements" style="color: #0184b7; text-decoration: none">https://clickhouse.yandex/reference_en.html#System%20requirements</a> 直接 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">apt-get</code> 就可以了。（我没有自己编译安装过）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装完之后，会自动添加一个名为 <em style="color: #d75100; font-style: normal;">clickhouse</em> 的 service ，这个脚本里面的内容除了控制服务的启停，还会调整系统的一些配置。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo service clickhouse-server start
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以手动启动：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">clickhouse-server --config-file<span style="color: #000000; font-weight: bold">=</span>/etc/clickhouse-server/config.xml
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+服务端启动之后，就可以使用官方的客户端工具 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">clickhouse-client</code> 连接上去看看了，之后的交互，类似 <em style="color: #d75100; font-style: normal;">MySQL</em> （连里面的命令都像）。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 访问接口</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ClickHouse</em> 自己的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">clickhouse-client</code> 使用的是“原生”的 TCP 连接来完成与服务端的交互，而在应用中用它的话，它有实现一个 HTTP 的访问接口，把 SQL 语句通过 HTTP 发送到服务端，就可以得到响应数据了（其实不用担心效率问题，数仓场景下，这种传输成本相较于大数据量下的聚合计算挑战，直接就忽略吧）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+默认配置下， HTTP 的服务是在 <em style="color: #d75100; font-style: normal;">8123</em> 端口上的，直接访问的话，可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ok</code> 的响应。（如果要外部访问，记得把配置中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">listen_host</code> 加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0.0.0.0</code> ）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+HTTP 服务，查询的话， <em style="color: #d75100; font-style: normal;">GET</em> 或 <em style="color: #d75100; font-style: normal;">POST</em> 都可以，修改和创建，只能用 <em style="color: #d75100; font-style: normal;">POST</em> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">GET <span style="color: #dd1144">&quot;http://172.17.0.2:8123?query=select 2&quot;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #0086B3">echo</span> <span style="color: #dd1144">&#39;CREATE TABLE t (a UInt8) ENGINE = Memory&#39;</span> | POST <span style="color: #dd1144">&#39;http://172.17.0.2:8123/&#39;</span>
+<span style="color: #0086B3">echo</span> <span style="color: #dd1144">&#39;insert into t (a) values (10)&#39;</span> | POST <span style="color: #dd1144">&#39;http://172.17.0.2:8123/&#39;</span>
+GET <span style="color: #dd1144">&quot;http://172.17.0.2:8123?query=select * from t&quot;</span>
+<span style="color: #0086B3">echo</span> <span style="color: #dd1144">&#39;drop table t&#39;</span> | POST <span style="color: #dd1144">&#39;http://172.17.0.2:8123/&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+访问地址中，可以通过请求参数，或者头，来指定一些环境配置项，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">database</code> ，用户名密码什么的。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">database</code>  ，数据库
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">user</code> ， 登录用户
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">password</code> ， 登录密码
+</li>
+<li style="margin: 10px auto;"><a href="https://clickhouse.yandex/reference_en.html#Settings" style="color: #0184b7; text-decoration: none">https://clickhouse.yandex/reference_en.html#Settings</a> 其它配置项
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外，对于用户名和密码，也可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X-ClickHouse-User</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X-ClickHouse-Key</code> 这两个头来设置与传递。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 查询语言</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ClickHouse</em> 中有两种类型的解析器， <em style="color: #d75100; font-style: normal;">full parser</em> 和 <em style="color: #d75100; font-style: normal;">data format parser</em> ，前者是一个完整的 SQL 解析器，后者是一个高性能的流解析器。当语句被发到 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 时，默认配置下前 1 MB 字节的数据会使用 <em style="color: #d75100; font-style: normal;">full parser</em> 来处理，剩下的数据就交给 <em style="color: #d75100; font-style: normal;">data format parser</em> 了，所以，像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insert</code> 这类语句，即使整个语句再长，也不会有问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+语法细节，整体上跟 MySQL 是一样的，当然， <em style="color: #d75100; font-style: normal;">ClickHouse</em> 在一些地方有自己特别实现。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，对于别名 <em style="color: #d75100; font-style: normal;">Synonyms</em> ， <em style="color: #d75100; font-style: normal;">ClickHouse</em> 中的限制就少很多：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> ((<span style="color: #000000; font-weight: bold">select</span> <span style="color: #009999">1</span>) <span style="color: #000000; font-weight: bold">as</span> n), n
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种语句，在 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 中都是被允许的。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. CREATE TABLE</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+建表语句除了基本形式外，还有两个扩展形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">CREATE</span> [<span style="color: #000000; font-weight: bold">TEMPORARY</span>] <span style="color: #000000; font-weight: bold">TABLE</span> [<span style="color: #000000; font-weight: bold">IF</span> <span style="color: #000000; font-weight: bold">NOT</span> <span style="color: #000000; font-weight: bold">EXISTS</span>] [db.]name
+(
+ name1 [type1] [<span style="color: #000000; font-weight: bold">DEFAULT</span> <span style="color: #000000; font-weight: bold">|</span> MATERIALIZED <span style="color: #000000; font-weight: bold">|</span> <span style="color: #000000; font-weight: bold">ALIAS</span> expr1],
+ name2 [type2] [<span style="color: #000000; font-weight: bold">DEFAULT</span> <span style="color: #000000; font-weight: bold">|</span> MATERIALIZED <span style="color: #000000; font-weight: bold">|</span> <span style="color: #000000; font-weight: bold">ALIAS</span> expr2],
+ ...
+) ENGINE <span style="color: #000000; font-weight: bold">=</span> engine
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是基本形式，如果引擎支持索引的话，索引可以在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ENGINE</code> 的地方额外设置。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">CREATE</span> [<span style="color: #000000; font-weight: bold">TEMPORARY</span>] <span style="color: #000000; font-weight: bold">TABLE</span> [<span style="color: #000000; font-weight: bold">IF</span> <span style="color: #000000; font-weight: bold">NOT</span> <span style="color: #000000; font-weight: bold">EXISTS</span>] [db.]name <span style="color: #000000; font-weight: bold">AS</span> [db2.]name2 [ENGINE <span style="color: #000000; font-weight: bold">=</span> engine]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第一种扩展形式，可以创建一个跟指定表完全一样的表，但是可以更换不同的引擎。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">CREATE</span> [<span style="color: #000000; font-weight: bold">TEMPORARY</span>] <span style="color: #000000; font-weight: bold">TABLE</span> [<span style="color: #000000; font-weight: bold">IF</span> <span style="color: #000000; font-weight: bold">NOT</span> <span style="color: #000000; font-weight: bold">EXISTS</span>] [db.]name ENGINE <span style="color: #000000; font-weight: bold">=</span> engine <span style="color: #000000; font-weight: bold">AS</span> <span style="color: #000000; font-weight: bold">SELECT</span> ...
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种形式是“建表并填充”，表字段会自动根据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SELECT</code> 的返回内容设置，并且，返回内容会作为新表内容填充进去。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+试一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (id UInt16, name String) ENGINE <span style="color: #000000; font-weight: bold">=</span> Memory;
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;abc&#39;</span>), (<span style="color: #009999">2</span>, <span style="color: #dd1144">&#39;xxx&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+各种引擎后面会专门介绍，这里就用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Memory</code> 来演示了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t2 <span style="color: #000000; font-weight: bold">as</span> t;
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t2(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;abc&#39;</span>), (<span style="color: #009999">2</span>, <span style="color: #dd1144">&#39;xxx&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t3 ENGINE <span style="color: #000000; font-weight: bold">=</span> Memory <span style="color: #000000; font-weight: bold">as</span> <span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h3 style="font-size: 16px; margin: 25px auto;">3.1.1. 默认值</h3>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">默认值</em> 的处理方面， <em style="color: #d75100; font-style: normal;">ClickHouse</em> 中，默认值总是有的，如果没有显示式指定的话，会按字段类型处理：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">数字类型， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 。
+</li>
+<li style="margin: 10px auto;">字符串，空字符串。
+</li>
+<li style="margin: 10px auto;">数组，空数组。
+</li>
+<li style="margin: 10px auto;">日期， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0000-00-00</code> 。
+</li>
+<li style="margin: 10px auto;">时间， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0000-00-00 00:00:00</code> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">NULLs</code> 是不支持的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时，在字段类型方面，如果没有明确指定字段类型，但是指定了默认值，则默认值表达式的返回值类型，作为字段类型。如果即指定了字段类型，也指定了默认值表达式，那么对开默认值表达式的结果，相当于会有一个类型转换。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h3 style="font-size: 16px; margin: 25px auto;">3.1.2. 物化列</h3>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+指定 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MATERIALIZED</code> 表达式，即将一个列作为 <em style="color: #d75100; font-style: normal;">物化列</em> 处理了，这意味着这个列的值不能从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insert</code> 语句获取，只能是自己计算出来的。同时， <em style="color: #d75100; font-style: normal;">物化列</em> 也不会出现在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select *</code> 的结果中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (a MATERIALIZED (b<span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>), b UInt16) ENGINE <span style="color: #000000; font-weight: bold">=</span> Memory;
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t;
+<span style="color: #000000; font-weight: bold">select</span> a, b <span style="color: #000000; font-weight: bold">from</span> t;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h3 style="font-size: 16px; margin: 25px auto;">3.1.3. 表达式列</h3>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ALIAS</code> 表达式列某方面跟物化列相同，就是它的值不能从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insert</code> 语句获取。不同的是， <em style="color: #d75100; font-style: normal;">物化列</em> 是会真正保存数据（这样查询时不需要再计算），而 <em style="color: #d75100; font-style: normal;">表达式列</em> 不会保存数据（这样查询时总是需要计算），只是在查询时返回表达式的结果。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (a <span style="color: #000000; font-weight: bold">ALIAS</span> (b<span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>), b UInt16) ENGINE <span style="color: #000000; font-weight: bold">=</span> Memory;
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t;
+<span style="color: #000000; font-weight: bold">select</span> a, b <span style="color: #000000; font-weight: bold">from</span> t;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. SELECT</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 中独特的地方涉及其它的机制，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SELECT</code> 放到后面再说。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 引擎</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+引擎就是在创建表时，最后的那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ENGINE</code> 选项指定的东西，这部分我觉得算是 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 最精华的部分了，它很多针对数据仓库场景的设计与优化，是基于特定的引擎实现的，特别是 <em style="color: #d75100; font-style: normal;">MergeTree</em> 这一类引擎。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. TinyLog</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最简单的一种引擎，每一列保存为一个文件，里面的内容是压缩过的，不支持索引。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种引擎没有并发控制，所以，当你需要在读，又在写时，读会出错。并发写，内容都会坏掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，它的应用场景，基本上就是那种只写一次，然后就是只读的场景。同时，它也不适用于处理量大的数据，官方推荐，使用这种引擎的表最多 100 万行的数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为这种引擎的实现非常简单，所以当你有很多很多的小表数据要处理时，使用它是比较合适的，最基本的，它在磁盘上的文件量很少，读一列数据只需要打开一个文件就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <em style="color: #d75100; font-style: normal;">Yandex.Metrica</em> 产品中，这种引擎用于小批量的中间数据处理上。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (a UInt16, b String) ENGINE <span style="color: #000000; font-weight: bold">=</span> TinyLog;
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;abc&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面创建一张表 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> ，它有 2 个字段，然后插入了一条数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+之后，我们在保存数据的目录（默认在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/var/lib/clickhouse/data/default/t</code>）可以看到这样的目录结构：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">├── a.bin
+├── b.bin
+└── sizes.json
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.bin</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">b.bin</code> 是压缩过的对应的列的数据， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sizes.json</code> 中记录了每个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*.bin</code> 文件的大小：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{<span style="color: #000080">&quot;yandex&quot;</span>:{<span style="color: #000080">&quot;a%2Ebin&quot;</span>:{<span style="color: #000080">&quot;size&quot;</span>:<span style="color: #dd1144">&quot;28&quot;</span>},<span style="color: #000080">&quot;b%2Ebin&quot;</span>:{<span style="color: #000080">&quot;size&quot;</span>:<span style="color: #dd1144">&quot;30&quot;</span>}}}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. Log</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种引擎跟 <em style="color: #d75100; font-style: normal;">TinyLog</em> 基本一致，它的改进点，是加了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__marks.mrk</code> 文件，里面记录了每个数据块的偏移，这种做的一个用处，就是可以准确地切分读的范围，从而使用并发读取成为可能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是，它是不能支持并发写的，一个写操作会阻塞其它读写操作。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Log</em> 不支持索引，同时因为有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__marks.mrk</code> 的冗余数据，所以在写入数据时，一旦出现问题，这个表就废了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同 <em style="color: #d75100; font-style: normal;">TinyLog</em> 差不多，它适用的场景也是那种写一次之后，后面就是只读的场景，临时数据用它保存也可以。
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. Memory</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+内存引擎，数据以未压缩的原始形式直接保存在内存当中，服务器重启数据就会消失。可以并行读，读写互斥锁的时间也非常短。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不支持索引，简单查询下有非常非常高的性能表现。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一般用到它的地方不多，除了用来测试，就是在需要非常高的性能，同时数据量又不太大（上限大概 1 亿行）的场景。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+系统运行时也会在 <em style="color: #d75100; font-style: normal;">外部数据条件</em> ， <em style="color: #d75100; font-style: normal;">GLOBAL IN</em> 等机制中用到它。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（TODO，数据空间占用与内存占用的大概量）
+</p>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.4. Merge</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个工具引擎，本身不保存数据，只用于把指定库中的指定多个表链在一起。这样，读取操作可以并发执行，同时也可以利用原表的索引，但是，此引擎不支持写操作。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+指定引擎的同时，需要指定要链接的库及表，库名可以使用一个表达式，表名可以使用正则表达式指定。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> t1 (id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=</span>TinyLog;
+<span style="color: #000000; font-weight: bold">create</span> t2 (id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=</span>TinyLog;
+<span style="color: #000000; font-weight: bold">create</span> t3 (id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=</span>TinyLog;
+
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t1(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;first&#39;</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t2(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">2</span>, <span style="color: #dd1144">&#39;xxxx&#39;</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t3(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">12</span>, <span style="color: #dd1144">&#39;i am in t3&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=</span>Merge(currentDatabase(), <span style="color: #dd1144">&#39;^t&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面先建了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t1</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t2</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t3</code> ，三个表，然后用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Merge</code> 引擎的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 表再把它们链接起来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，查询的时候，就能同时取到三个表的数据了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #0086B3">echo</span> <span style="color: #dd1144">&#39;select _table,* from t order by id desc&#39;</span>|POST <span style="color: #dd1144">&#39;http://172.17.0.2:8123&#39;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select</code> 中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">_table</code> 这个列，是因为使用了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Merge</code> 多出来的一个的一个 <em style="color: #d75100; font-style: normal;">虚拟列</em> ，它表示原始数据的来源表，它不会出现在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">show table</code> 的结果当中，同时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select *</code> 不会包含它。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.5. Distributed</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说的 <em style="color: #d75100; font-style: normal;">Merge</em> 可以看成是单机版的 <em style="color: #d75100; font-style: normal;">Distributed</em> ，而真正的 <em style="color: #d75100; font-style: normal;">Distributed</em> 具备跨服务器能力，当然，机器地址的配置依赖配置文件中的信息。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与 <em style="color: #d75100; font-style: normal;">Merge</em> 类似， <em style="color: #d75100; font-style: normal;">Distributed</em> 也是通过一个逻辑表，去访问各个物理表，设置引擎时的样子是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">Distributed(remote_group, <span style="color: #000000; font-weight: bold">database</span>, <span style="color: #000000; font-weight: bold">table</span> [, sharding_key])
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其中：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">remote_group</em> 是配置文件（默认在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/etc/clickhouse-server/config.xml</code> ）中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">remote_servers</code> 一节的配置信息。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">database</em> 是各服务器中的库名。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">table</em> 是表名。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">sharding_key</em> 是一个 <em style="color: #d75100; font-style: normal;">寻址表达式</em> ，可以是一个列名，也可以是像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rand()</code> 之类的函数调用，它与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">remote_servers</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">weight</code> 共同作用，决定在 <em style="color: #d75100; font-style: normal;">写</em> 时往哪个 <em style="color: #d75100; font-style: normal;">shard</em> 写。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面的重点，就是配置文件中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">remote_servers</code> 了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;remote_servers&gt;</span>
+    <span style="color: #000080">&lt;log&gt;</span>
+        <span style="color: #000080">&lt;shard&gt;</span>
+            <span style="color: #000080">&lt;weight&gt;</span>1<span style="color: #000080">&lt;/weight&gt;</span>
+            <span style="color: #000080">&lt;internal_replication&gt;</span>false<span style="color: #000080">&lt;/internal_replication&gt;</span>
+            <span style="color: #000080">&lt;replica&gt;</span>
+                <span style="color: #000080">&lt;host&gt;</span>172.17.0.3<span style="color: #000080">&lt;/host&gt;</span>
+                <span style="color: #000080">&lt;port&gt;</span>9000<span style="color: #000080">&lt;/port&gt;</span>
+            <span style="color: #000080">&lt;/replica&gt;</span>
+        <span style="color: #000080">&lt;/shard&gt;</span>
+
+        <span style="color: #000080">&lt;shard&gt;</span>
+            <span style="color: #000080">&lt;weight&gt;</span>2<span style="color: #000080">&lt;/weight&gt;</span>
+            <span style="color: #000080">&lt;internal_replication&gt;</span>false<span style="color: #000080">&lt;/internal_replication&gt;</span>
+            <span style="color: #000080">&lt;replica&gt;</span>
+                <span style="color: #000080">&lt;host&gt;</span>172.17.0.4<span style="color: #000080">&lt;/host&gt;</span>
+                <span style="color: #000080">&lt;port&gt;</span>9000<span style="color: #000080">&lt;/port&gt;</span>
+            <span style="color: #000080">&lt;/replica&gt;</span>
+        <span style="color: #000080">&lt;/shard&gt;</span>
+    <span style="color: #000080">&lt;/log&gt;</span>
+<span style="color: #000080">&lt;/remote_servers&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">log</code> 是某个 shard 组的名字，就是上面的 <em style="color: #d75100; font-style: normal;">remote_group</em> 的值。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">shard</code> 是固定标签。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">weight</code> 是权重，前面说的 <em style="color: #d75100; font-style: normal;">sharding_key</em> 与这个有关。简单来说，上面的配置，理论上来看，第一个 shard “被选中”的概率是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1 / 1 + 2</code> ，第二个是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 / 1 + 2</code> ，这很容易理解。但是， <em style="color: #d75100; font-style: normal;">sharding_key</em> 的工作情况，是按实际数字的“命中区间”算的，即第一个的区间是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[0, 1)</code> 的周期，第二个区间是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[1, 1+2)</code> 的周期。比如把 <em style="color: #d75100; font-style: normal;">sharding_key</em> 设置成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">id</code> ，当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">id=0</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">id=3</code> 时，一定是写入到第一个 shard 中，如果把 <em style="color: #d75100; font-style: normal;">sharding_key</em> 设置成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rand()</code> ，那系统会对应地自己作一般化转换吧，这种时候就是一种概率场景了。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">internal_replication</code> 是定义针对多个 <em style="color: #d75100; font-style: normal;">replica</em> 时的写入行为的。如果为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code> ，则会往所有的 <em style="color: #d75100; font-style: normal;">replica</em> 中写入数据，但是并不保证数据写入的一致性，所以这种情况时间一长，各 <em style="color: #d75100; font-style: normal;">replica</em> 的数据很可能出现差异。如果为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">true</code> ，则只会往第一个可写的 <em style="color: #d75100; font-style: normal;">replica</em> 中写入数据（剩下的事“物理表”自己处理）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">replica</code> 就是定义各个冗余副本的，选项有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">host</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">port</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">user</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">password</code> 这些。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看一个实际的例子，我们先在 B 和 C 两台机器上创建好“物理表”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t(id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=</span>TinyLog;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后两台机器可以随便 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insert</code> 一些数据进去：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;hahaha&#39;</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">2</span>, <span style="color: #dd1144">&#39;xxxx&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+之后，再在 A 机器上，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.xml</code> 中配置好 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">remote_servers</code> 的情况下，再创建“逻辑表”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">create table t(id UInt16, name String) ENGINE=Distributed(log, default, t, id);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后，针对这个逻辑表，就可以直接随便 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">insert</code> 一些数据，再看看这些数据具体落在哪个物理表上了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;main&#39;</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;main&#39;</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">2</span>, <span style="color: #dd1144">&#39;main&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，针对逻辑表的查询，其实是没什么特殊之处了， <em style="color: #d75100; font-style: normal;">ClickHouse</em> 自己会分发请求，聚合计算之类的也是在各个物理表上分别进行的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> name,<span style="color: #000000; font-weight: bold">sum</span>(id),<span style="color: #000000; font-weight: bold">count</span>(id) <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> name;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="./img/clickhouse-distributed.jpg" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意，逻辑表中的写入操作是异步的，会先缓存在本机的文件系统上，并且，对于物理表的不可访问状态，并没有严格控制，所以写入失败丢数据的情况是可能发生的。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.6. Null</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+空引擎，写入的任何数据都会被忽略，读取的结果一定是空。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是注意，虽然数据本身不会被存储，但是结构上的和数据格式上的约束还是跟普通表一样是存在的，同时，你也可以在这个引擎上创建视图。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.7. Buffer</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Buffer</em> 引擎，像是 <em style="color: #d75100; font-style: normal;">Memory</em> 存储的一个上层应用似的（磁盘上也是没有相应目录的）。它的行为是一个缓冲区，写入的数据先被放在缓冲区，达到一个阈值后，这些数据会自动被写到指定的另一个表中。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时，说它像 <em style="color: #d75100; font-style: normal;">Memory</em> 的另一个原因，是它也跟 <em style="color: #d75100; font-style: normal;">Memory</em> 一样，有很多的限制，比如没有索引什么的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Buffer</em> 是接在其它表前面的一层，对它的读操作，也会自动应用到后面表，但是因为前面说到的限制的原因，一般我们读数据，就直接从源表读就好了，缓冲区的这点数据延迟，只要配置得当，影响不大的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Buffer</em> 后面也可以不接任何表，这样的话，当数据达到阈值，就会被丢弃掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用时，先把源表建好：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (gmt  <span style="color: #0086B3">Date</span>, id UInt16, name String, point UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>MergeTree(gmt, (id, name), <span style="color: #009999">10</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后建 <em style="color: #d75100; font-style: normal;">Buffer</em> 的表：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t_buffer <span style="color: #000000; font-weight: bold">as</span> t ENGINE<span style="color: #000000; font-weight: bold">=</span>Buffer(<span style="color: #000000; font-weight: bold">default</span>, t, <span style="color: #009999">16</span>, <span style="color: #009999">3</span>, <span style="color: #009999">20</span>, <span style="color: #009999">2</span>, <span style="color: #009999">10</span>, <span style="color: #009999">1</span>, <span style="color: #009999">10000</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看起来参数有点多：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">Buffer(database, table, num_layers, min_time, max_time, min_rows, max_rows, min_bytes, max_bytes)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">database</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">table</code> 不用多说了，就是指源表，这里除了字符串常量，也可以使用变量的。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">num_layers</code> 是类似“分区”的概念，每个分区的后面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">min / max</code> 是独立计算的，官方推荐的值是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">16</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">min / max</code> 这组配置荐，就是设置阈值的，分别是 时间（秒），行数，空间（字节）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+阈值的规则，是“所有的 min 条件都满足， <strong style="color: red; font-weight: normal;">或</strong> 至少一个 max 条件满足”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果按上面我们的建表来说，所有的 min 条件就是：过了 3秒，2条数据，1 Byte。一个 max 条件是：20秒，或 10 条数据，或有 10K 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">20</span>)
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t_buffer (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #009999">10</span>)
+<span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t
+<span style="color: #000000; font-weight: bold">select</span> <span style="color: #dd1144">&#39;------&#39;</span>
+<span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t_buffer
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的查询，可以在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 中查出 1 条数据，从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_buffer</code> 中查出 2 条数据（它会自己从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 中取数）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+过了 20 秒后（至少一个 max 条件），就可以从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 中查出 2 条数据了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于 <em style="color: #d75100; font-style: normal;">Buffer</em> 的其它一些点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">如果一次写入的数据太大或太多，超过了 max 条件，则会直接写入源表。
+</li>
+<li style="margin: 10px auto;">删源表或改源表的时候，建议 <em style="color: #d75100; font-style: normal;">Buffer</em> 表删了重建。
+</li>
+<li style="margin: 10px auto;">“友好重启”时， <em style="color: #d75100; font-style: normal;">Buffer</em> 数据会先落到源表，“暴力重启”， <em style="color: #d75100; font-style: normal;">Buffer</em> 表中的数据会丢失。
+</li>
+<li style="margin: 10px auto;">即使使用了 <em style="color: #d75100; font-style: normal;">Buffer</em> ，多次的小数据写入，对比一次大数据写入，也 <strong style="color: red; font-weight: normal;">慢得多</strong> （几千行与百万行的差距）。
+</li>
+</ul>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.8. Set</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Set</em> 这个引擎有点特殊，因为它只用在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">IN</code> 操作符右侧，你不能对它 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> <span style="color: #000000; font-weight: bold">scope</span>(id UInt16, name String) ENGINE<span style="color: #000000; font-weight: bold">=Set</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+创建了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scope</code> 表之后，是不能： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select * from scope</code> 的，会报错。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> <span style="color: #000000; font-weight: bold">scope</span>(id, name) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;hello&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">IN</code> 右侧使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scope</code> 时，要求 列数量，及每列的类型都必须匹配，所以直接地：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">where</span> (<span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;hello&#39;</span>) <span style="color: #000000; font-weight: bold">in</span> <span style="color: #000000; font-weight: bold">scope</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也会报错，原因是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> 这个量，这里会自动处理成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UInt8</code> ，与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scope</code> 的列定义的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UInt16</code> 不匹配。这时，只能手动显式做一个类型转换了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">where</span> (toUInt16(<span style="color: #009999">1</span>), <span style="color: #dd1144">&#39;hello&#39;</span>) <span style="color: #000000; font-weight: bold">in</span> <span style="color: #000000; font-weight: bold">scope</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Set</em> 引擎表，是全内存运行的，但是相关数据会落到磁盘上保存，启动时会加载到内存中。所以，意外中断或暴力重启，是可能产生数据丢失问题的。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.9. Join</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+跟 <em style="color: #d75100; font-style: normal;">Set</em> 类似，用在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">JOIN</code> 的右边，还没搞懂怎么用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+TODO
+</p>
+
+<a class="anchor" name="toc19"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.10. MergeTree</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个引擎是 <em style="color: #d75100; font-style: normal;">ClickHouse</em> 的重头戏，它支持一个日期和一组主键的两层式索引，还可以实时更新数据。同时，索引的粒度可以自定义，外加直接支持采样功能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而且，以这个引擎为基础，后面几种引擎都是在其基础之上附加某种特定功能而实现的“变种”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用这个引擎的形式如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">MergeTree(EventDate, (CounterID, EventDate), <span style="color: #009999">8192</span>)
+MergeTree(EventDate, intHash32(UserID), (CounterID, EventDate, intHash32(UserID)), <span style="color: #009999">8192</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EventDate</code> 一个日期的列名。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">intHash32(UserID)</code> 采样表达式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(CounterID, EventDate)</code> 主键组（里面除了列名，也支持表达式），也可以是一个表达式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">8123</code> 主键索引的粒度。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+细节稍后再看，先建表看看文件系统那层大概是个什么样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (gmt  <span style="color: #0086B3">Date</span>, id UInt16, name String, point UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>MergeTree(gmt, (id, name), <span style="color: #009999">10</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先不管采样机制，创建一个四列的表。然后插入几条数据：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-04-01&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;zys&#39;</span>, <span style="color: #009999">10</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-06-01&#39;</span>, <span style="color: #009999">4</span>, <span style="color: #dd1144">&#39;abc&#39;</span>, <span style="color: #009999">10</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t(gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-04-03&#39;</span>, <span style="color: #009999">5</span>, <span style="color: #dd1144">&#39;zys&#39;</span>, <span style="color: #009999">11</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里注意一下，日期的格式，好像必须是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">yyyy-mm-dd</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在插入了三条数据之后，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/var/lib/clickhouse/data/default/t</code> 下可以看到这样的结构：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">├── 20170401_20170401_2_2_0
+│   ├── checksums.txt
+│   ├── columns.txt
+│   ├── gmt.bin
+│   ├── gmt.mrk
+│   ├── id.bin
+│   ├── id.mrk
+│   ├── name.bin
+│   ├── name.mrk
+│   ├── point.bin
+│   ├── point.mrk
+│   └── primary.idx
+├── 20170403_20170403_6_6_0
+│   └── ...
+├── 20170601_20170601_4_4_0
+│   └── ...
+└── detached
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从上面看的话：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">最外层的目录，是根据日期列的范围，作了切分的。目前看来，三条数据，并没有使系统执行 <em style="color: #d75100; font-style: normal;">merge</em> 操作（还是有三个目录），后面使用更多的数据看看表现。
+</li>
+<li style="margin: 10px auto;">最外层的目录，除了开头像是日期范围，后面的数字，可能与主键有关。
+</li>
+<li style="margin: 10px auto;">最外层还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">detached</code> ，不知道干什么的。
+</li>
+<li style="margin: 10px auto;">目录内， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">primary.idx</code> 应该就是主键组索引了。
+</li>
+<li style="margin: 10px auto;">目录内其它的文件，看起来跟 <em style="color: #d75100; font-style: normal;">Log</em> 引擎的差不多，就是按列保存，额外的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mrk</code> 文件保存一下块偏移量。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单三条数据，有很多东西还是看不出来的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（在等了不知道多少时间后，或者手动使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">optimize table t</code> 触发 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">merge</code> 行为，三个目录会被合成两个目录，变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">20170401_20170403_2_6_1</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">20170601_20170601_4_4_0</code> 了）
+</p>
+
+<a class="anchor" name="toc20"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.11. ReplacingMergeTree</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个引擎是在 <em style="color: #d75100; font-style: normal;">MergeTree</em> 的基础上，添加了“处理重复数据”的功能，简直就是在多维数据加工流程中，为“最新值”，“实时数据”场景量身打造的一个引擎啊。这些场景下，如果重复数据不处理，你自己当然可以通过时间倒排，取最新的一条数据来达到目的，但是，至少这样会浪费很多的存储空间。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+相比 <em style="color: #d75100; font-style: normal;">MergeTree</em> ， <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 在最后加一个“版本列”，它跟时间列配合一起，用以区分哪条数据是“新的”，并把旧的丢掉（这个过程是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">merge</code> 时处理，不是数据写入时就处理了的，平时重复的数据还是保存着的，并且查也是跟平常一样会查出来的，所以在 SQL 上排序过滤 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Limit</code> 什么的该写还是要写的）。同时，主键列组用于区分重复的行。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (gmt  <span style="color: #0086B3">Date</span>, id UInt16, name String, point UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>ReplacingMergeTree(gmt, (name), <span style="color: #009999">10</span>, point);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+像上面一样，“版本列”允许的类型是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UInt</code> 一族的整数，或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Date</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DateTime</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">20</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">30</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">20</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">30</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, id, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">10</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+插入这些数据，用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">optimize table t</code> 手动触发一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">merge</code> 行为，然后查询：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果就只有一条：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌────────gmt─┬─id─┬─name─┬─point─┐
+│ 2017-07-11 │  1 │ a    │    30 │
+└────────────┴────┴──────┴───────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc21"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.12. SummingMergeTree</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 是替换数据， <em style="color: #d75100; font-style: normal;">SummingMergeTree</em> 就是在 <em style="color: #d75100; font-style: normal;">merge</em> 阶段把数据加起来了，当然，哪些列要加（一般是针对可加的指标）可以配置，不可加的列，会取一个最先出现的值。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+建表：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t (gmt <span style="color: #0086B3">Date</span>, name String, a UInt16, b UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>SummingMergeTree(gmt, (gmt, name), <span style="color: #009999">8192</span>, (a))
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+插入数据：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #009999">2</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #009999">2</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #009999">3</span>, <span style="color: #009999">8</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #009999">3</span>, <span style="color: #009999">8</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #009999">3</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, name, a, b) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-12&#39;</span>, <span style="color: #dd1144">&#39;c&#39;</span>, <span style="color: #009999">1</span>, <span style="color: #009999">3</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OPTIMIZE TABLE</code> 后查询的结果为：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌────────gmt─┬─name─┬─a─┬─b─┐
+│ 2017-07-10 │ a    │ 1 │ 2 │
+│ 2017-07-10 │ b    │ 2 │ 1 │
+│ 2017-07-11 │ a    │ 3 │ 1 │
+│ 2017-07-11 │ b    │ 6 │ 8 │
+│ 2017-07-12 │ c    │ 1 │ 3 │
+└────────────┴──────┴───┴───┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">11, b</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 列，相加了， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">b</code> 列取了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">8</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个引擎要注意的一个地方是，可加列不能是主键中的列，并且如果某行数据可加列都是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">null</code> ，则这行会被删除。
+</p>
+
+<a class="anchor" name="toc22"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.13. AggregatingMergeTree</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> 是在 <em style="color: #d75100; font-style: normal;">MergeTree</em> 基础之上，针对聚合函数结果，作增量计算优化的一个设计，（ <em style="color: #d75100; font-style: normal;">clickhouse</em> 中说的是状态，我个人猜，应该就是为增量计算保存的一些中间数据）。它会在 <em style="color: #d75100; font-style: normal;">merge</em> 时，针对主键预处理聚合的数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在讲具体的用法之前，要先讲明白两个问题，一是聚合数据的预计算，二是进一步，聚合数据的增量计算的情况。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+聚合数据的预计算，实现上，算是一种“空间换时间”的权衡，并且是以减少维度为代价的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设原始有三个维度，一个需要 <em style="color: #d75100; font-style: normal;">count</em> 的指标：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D1</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D3</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">M1</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">乙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">丙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">丙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">丁</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">丁</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们可以通过减少一个维度的方式，来以 <em style="color: #d75100; font-style: normal;">count</em> 函数聚合一次 M ，减少维度要达到目的，结果的行数应该要减少的。以上面数据来说，如果我们把 <em style="color: #d75100; font-style: normal;">D1</em> 去掉，按 <em style="color: #d75100; font-style: normal;">D2</em> 和 <em style="color: #d75100; font-style: normal;">D3</em> 聚合的话，结果就是：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D3</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">count(M1)</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">count(M1)</code> 的值有多少大于 1 的，就可以反映这一步聚合有多少效果，因为它减少了数据的行数了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过这一步，我们从原来的三个维度，减少到两个维度，数据从 8 行减少到 5 行。当然，剩下的两个维度，在实际使用中，还是可以自由控制的了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在实际中，如果是记录网站访问之类的数据，原始数据中一般都有一个“用户ID”的维度，但是在输出数据时，是不会精确到人的，那么这就是一个可以去掉的维度，至于去掉这个维度之后，数据行数能减少多少，实际上跟减少的那个维度的数据是完全没有关系的，只跟剩下的维度有关，剩下的维度值越集中，数据行数就越少。不过，去掉“用户ID”之后，好像我们就没有办法计算像 UV 这样的数据了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接着说去掉一个维度后的情况，前面说当去掉“用户ID”之后，剩下的数据其实我们是没有办法再计算 UV 这样的指标了的，那么在之前，我们可以就把相关的指标算好。比如我们在前面的数据上加一个 UV 指标：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D3</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">count(M1)</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">UV by D2 and D3</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在又有新的问题了，现在虽然还剩下 2 个维度，但是像 UV 这类数据即不可加，也不是复合指标，对于这个指标而言，维度不能再改变了。（从上方的数据中，你无法再按 <em style="color: #d75100; font-style: normal;">D2</em> 这一个维度聚合 UV，因为 <em style="color: #d75100; font-style: normal;">D1</em> 已经没了），如果只看 <em style="color: #d75100; font-style: normal;">D2</em> 这一个维度的 UV 值，那么我们想要的结果是：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">UV by D2</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> 也许能解决这个问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">clickhouse</em> 中，对于聚合函数的实现，实现上是有三套的，除了普通的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sum</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniq</code> 这些，应用于 <em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> 上的，还有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sumState</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniqState</code> ，及 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sumMerge</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniqMerge</code> 这两组，而一个 <em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> 的表，里面的聚合函数，只能使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sumState</code> 这一组，对应于，查询时，只能使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sumMerge</code> 这一组。（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sumState</code> 这一组的输出，是无法查看的二进制数据）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外，对于 <em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> 引擎的表，不能使用普通的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">INSERT</code> 去添加数据，那怎么办？一方面可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">INSERT SELECT</code> 来插入数据，更常用的，是可以创建一个物化视图。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们还是按上面的例子，先创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 表：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t(gmt <span style="color: #0086B3">Date</span>, D1 String, D2 String, D3 String, M1 UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>MergeTree(gmt, (gmt, D1, D2, D3), <span style="color: #009999">8192</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+原始数据放进去：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;甲&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;甲&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;甲&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;2&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;乙&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;3&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;丙&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;2&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;丙&#39;</span>, <span style="color: #dd1144">&#39;c&#39;</span>, <span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;丁&#39;</span>, <span style="color: #dd1144">&#39;c&#39;</span>, <span style="color: #dd1144">&#39;2&#39;</span>, <span style="color: #009999">1</span>);
+<span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (gmt, D1, D2, D3, M1) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #dd1144">&#39;2017-07-10&#39;</span>, <span style="color: #dd1144">&#39;丁&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #009999">1</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+按 <em style="color: #d75100; font-style: normal;">D2</em> 和 <em style="color: #d75100; font-style: normal;">D3</em> 聚合 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">count(M1)</code> 就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> D2, D3, <span style="color: #000000; font-weight: bold">count</span>(M1) <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> D2, D3;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+只按 <em style="color: #d75100; font-style: normal;">D2</em> 聚合 UV 是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> D2, uniq(D1) <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> D2;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这些都没有什么特殊的地方。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接下来，我们创建一个物化视图，使用 <em style="color: #d75100; font-style: normal;">AggregatingMergeTree</em> ，把 <em style="color: #d75100; font-style: normal;">D1</em> 去掉（把前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t</code> 删了重建，在创建视图后，重新填充数据，因为视图数据要重置）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> materialized <span style="color: #000000; font-weight: bold">view</span> t_view
+ENGINE <span style="color: #000000; font-weight: bold">=</span> AggregatingMergeTree(gmt, (D2, D3), <span style="color: #009999">8192</span>)
+<span style="color: #000000; font-weight: bold">as</span>
+<span style="color: #000000; font-weight: bold">select</span> D2, D3, uniqState(D1) <span style="color: #000000; font-weight: bold">as</span> uv
+<span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> D2, D3;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在重新填充数据后，直接查 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_view</code> 的话：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t_view
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到这样的输出：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌────────gmt─┬─D2─┬─D3─┬─uv──────┐
+│ 2017-07-10 │ c  │ 2  │ \0????  │
+└────────────┴────┴────┴─────────┘
+┌────────gmt─┬─D2─┬─D3─┬─uv─────────┐
+│ 2017-07-10 │ a  │ 1  │ \0???      │
+│ 2017-07-10 │ b  │ 2  │ \0???????  │
+│ 2017-07-10 │ b  │ 3  │ \0????     │
+└────────────┴────┴────┴────────────┘
+┌────────gmt─┬─D2─┬─D3─┬─uv──────┐
+│ 2017-07-10 │ a  │ 1  │ \0????  │
+└────────────┴────┴────┴─────────┘
+┌────────gmt─┬─D2─┬─D3─┬─uv──────┐
+│ 2017-07-10 │ c  │ 1  │ \?????  │
+└────────────┴────┴────┴─────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">OPTIMIZE TABLE t_view</code> 一下，就只有一片了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌────────gmt─┬─D2─┬─D3─┬─uv─────────┐
+│ 2017-07-10 │ a  │ 1  │ \0???????  │
+│ 2017-07-10 │ b  │ 2  │ \0???????  │
+│ 2017-07-10 │ b  │ 3  │ \0???????  │
+│ 2017-07-10 │ c  │ 1  │ \0???????  │
+│ 2017-07-10 │ c  │ 2  │ \0???????  │
+└────────────┴────┴────┴────────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们要查 <em style="color: #d75100; font-style: normal;">D2</em> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uv</code> ，可以这样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> D2, uniqMerge(uv) <span style="color: #000000; font-weight: bold">from</span> t_view <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> D2 <span style="color: #000000; font-weight: bold">order</span> <span style="color: #000000; font-weight: bold">by</span> D2;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─D2─┬─uniqMerge(uv)─┐
+│ a  │             2 │
+│ b  │             3 │
+│ c  │             2 │
+└────┴───────────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+酷吧。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_view</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uv</code> 列保存的是源表中 <em style="color: #d75100; font-style: normal;">D1</em> 列的聚合状态，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniq</code> 的实现，简单地，状态中可以记录已经找到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row_id</code> ，已经有的参数值的集合，这里参数是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">D1</code>，还有当前结果值，这样，下次查的时候，就可以从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row_id</code> 开始去扫源表，并把结果拿到集合验证，并决定是否更新结果。效率上比全表再扫一次高得多了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说得更细一点，原始数据：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">row_id</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D1</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D3</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">M1</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">0</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">甲</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">乙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">4</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">丙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">5</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">丙</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">6</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">丁</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">7</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">丁</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_view</code> 的数据大概会像这个样子：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">gmt</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D2</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">D3</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">uv</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2017-07-10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">row_id:7 value:2 set:{甲,丁}</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2017-07-10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">row_id:7 value:2 set:{甲,丙}</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2017-07-10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">3</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">row_id:7 value:1 set:{乙}</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2017-07-10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">row_id:7 value:1 set:{丙}</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">2017-07-10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">2</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">row_id:7 value:1 set:{丁}</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，源表中后面有新的数据进去，更新 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_view</code> 的效率是很高的了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再考虑从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">t_view</code> 中只取子维度的情况，比如前面的只取 <em style="color: #d75100; font-style: normal;">D2</em> 维度的结果，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniq</code> 来说就更简单了， <em style="color: #d75100; font-style: normal;">D2</em> 的值对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uv</code> 状态中，集合做并集就可以得到正确结果了。比如取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">b</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniq</code> ，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{甲,丙}</code> 并 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{乙}</code> 结果为 3 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看出，这种方式，对于不同的聚合函数处理上是会有不同，但是即使是对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uv</code> 这类算是最麻烦的聚合计算， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">uniqState</code> 也处理得很好。
+</p>
+
+<a class="anchor" name="toc23"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.14. CollapsingMergeTree</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个引擎，是专门为 OLAP 场景下，一种“变通”存数做法而设计的，要搞明白它，以及什么场景下用它，为什么用它，需要先行了解一些背景。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，在 <em style="color: #d75100; font-style: normal;">clickhouse</em> 中，数据是不能改，更不能删的，其实在好多数仓的基础设施中都是这样。前面为了数据的“删除”，还专门有一个 <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 引擎嘛。在这个条件之下，想要处理“终态”类的数据，比如大部分的状态数据都是这类，就有些麻烦了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+试想，假设每隔 10 秒时间，你都能获取到一个当前在线人数的数据，把这些数据一条一条存下，大概就是这样：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时间点</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">在线人数</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">101</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">30</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">98</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">40</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">88</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">50</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">180</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在问你，“当前有多少人在线？”，这么简单的问题，怎么回答？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这种存数机制下，“当前在线人数”显然是不能把 <em style="color: #d75100; font-style: normal;">在线人数</em> 这一列聚合起来取数的嘛。也许，能想到的是，“取最大的时间”的那一行，即先 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">order by</code> 再 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">limit 1</code> ，这个办法，在这种简单场景下，好像可行。那我们再把维度加一点：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时间点</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">频道</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">在线人数</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">29</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">290</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">101</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">181</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">31</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">30</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">98</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">30</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">18</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">30</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">56</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">40</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">88</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">40</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">9</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">40</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">145</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这时，如果想看每个频道的当前在线人数，查询就不像之前那么好写了，硬上的话，你可能需要套子查询。好了，我们目的不是讨论 SQL 语句怎么写。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到开始的数据：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时间点</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">在线人数</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">101</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">30</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">98</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">40</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">88</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">50</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">180</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们的数据，是在关心一个最终的状态，或者说最新的状态的话，考虑在业务型数据库中的作法，我们会不断地更新确定的一条数据， OLAP 环境我们不能改数据，但是，我们可以通过“运算”的方式，去抹掉旧数据的影响，把旧数据“减”去即可，比如：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">符号</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时间点</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">在线人数</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">101</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当我们在添加 20 时间点的数据前，首先把之前一条数据“减”去，以这种“以加代删”的增量方式，达到保存最新状态的目的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，起初的数据存储，我们可以以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+1</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-1</code> 表示符号，以前面两个维度的数据的情况来看（我们把 “时间，频道” 作为主键）：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">sign</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">gmt</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">name</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">point</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">29</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">290</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">-1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">123</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">a</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">101</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">-1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">29</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">b</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">181</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">-1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">10</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">290</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+1</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">20</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">c</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">31</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果想看每个频道的当前在线人数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> name, <span style="color: #000000; font-weight: bold">sum</span>(point <span style="color: #000000; font-weight: bold">*</span> sign) <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> name;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就可以得到正确结果了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─name─┬─sum(multiply(point, sign))─┐
+│ b    │                        181 │
+│ c    │                         31 │
+│ a    │                        101 │
+└──────┴────────────────────────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+神奇。考虑数据可能有错误的情况（<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-1</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+1</code> 不匹配），我们可以添加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">having</code> 来把错误的数据过滤掉，比如再多一条类似这样的数据：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">insert</span> <span style="color: #000000; font-weight: bold">into</span> t (sign, gmt, name, point) <span style="color: #000000; font-weight: bold">values</span> (<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>, <span style="color: #dd1144">&#39;2017-07-11&#39;</span>, <span style="color: #dd1144">&#39;d&#39;</span>, <span style="color: #009999">10</span>),
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再按原来的 SQL 查，结果是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─name─┬─sum(multiply(point, sign))─┐
+│ b    │                        181 │
+│ c    │                         31 │
+│ d    │                        -10 │
+│ a    │                        101 │
+└──────┴────────────────────────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">having</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> name, <span style="color: #000000; font-weight: bold">sum</span>(point <span style="color: #000000; font-weight: bold">*</span> sign) <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> name <span style="color: #000000; font-weight: bold">having</span> <span style="color: #000000; font-weight: bold">sum</span>(sign) <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #009999">0</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就可以得到正确的数据了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─name─┬─sum(multiply(point, sign))─┐
+│ b    │                        181 │
+│ c    │                         31 │
+│ a    │                        101 │
+└──────┴────────────────────────────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种增量方式更大的好处，是它与指标本身的性质无关的，不管是否是可加指标，或者是像 UV 这种的去重指标，都可以处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+相较于其它一些变通的处理方式，比如对于可加指标，我们可以通过“差值”存储，来使最后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sum</code> 聚合正确工作，但是对于不可加指标就无能为力了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的东西如果都明白了，我们也就很容易理解 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 引擎的作用了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“以加代删”的增量存储方式，带来了聚合计算方便的好处，代价却是存储空间的翻倍，并且，对于只关心最新状态的场景，中间数据都是无用的。 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 引擎的作用，就是针对主键，来帮你维护这些数据，它会在 <em style="color: #d75100; font-style: normal;">merge</em> 期，把中间数据删除掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的数据，如果我们存在 <em style="color: #d75100; font-style: normal;">MergeTree</em> 引擎的表中，那么通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select * from t</code> 查出来是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─sign─┬────────gmt─┬─name─┬─point─┐
+│    1 │ 2017-07-10 │ a    │   123 │
+│   -1 │ 2017-07-10 │ a    │   123 │
+│    1 │ 2017-07-10 │ b    │    29 │
+│   -1 │ 2017-07-10 │ b    │    29 │
+│    1 │ 2017-07-10 │ c    │   290 │
+│   -1 │ 2017-07-10 │ c    │   290 │
+│    1 │ 2017-07-11 │ a    │   101 │
+│    1 │ 2017-07-11 │ b    │   181 │
+│    1 │ 2017-07-11 │ c    │    31 │
+│   -1 │ 2017-07-11 │ d    │    10 │
+└──────┴────────────┴──────┴───────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果换作 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> ，那么直接就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">┌─sign─┬────────gmt─┬─name─┬─point─┐
+│    1 │ 2017-07-11 │ a    │   101 │
+│    1 │ 2017-07-11 │ b    │   181 │
+│    1 │ 2017-07-11 │ c    │    31 │
+│   -1 │ 2017-07-11 │ d    │    10 │
+└──────┴────────────┴──────┴───────┘
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 在创建时与 <em style="color: #d75100; font-style: normal;">MergeTree</em> 基本一样，除了最后多了一个参数，需要指定 <em style="color: #d75100; font-style: normal;">Sign</em> 位（必须是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Int8</code> 类型）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">create</span> <span style="color: #000000; font-weight: bold">table</span> t(sign <span style="color: #0086B3">Int8</span>, gmt <span style="color: #0086B3">Date</span>, name String, point UInt16) ENGINE<span style="color: #000000; font-weight: bold">=</span>CollapsingMergeTree(gmt, (gmt, name), <span style="color: #009999">8192</span>, sign);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+讲明白了 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 可能有人会问，如果只是要“最新状态”，用 <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 不就好了么？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，即使不论对“日期维度”的特殊处理（ <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 不会对日期维度做特殊处理，但是 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 看起来是最会保留最新的），更重要的，是要搞明白， 我们面对的数据的形态，不一定是 <em style="color: #d75100; font-style: normal;">merge</em> 操作后的“完美”形态，也可能是没有 <em style="color: #d75100; font-style: normal;">merge</em> 的中间形态，所以，即使你知道最后的结果对于每个主键只有一条数据，那也只是 <em style="color: #d75100; font-style: normal;">merge</em> 操作后的结果，你查数据时，聚合函数还是得用的，当你查询那一刻，可能还有很多数据没有做 <em style="color: #d75100; font-style: normal;">merge</em> 呢。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+明白了一点，不难了解，对于 <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 来说，在这个场景下跟 <em style="color: #d75100; font-style: normal;">MergeTree</em> 其实没有太多区别的，如果不要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sign</code> ，那么结果就是日期维度在那里，你仍然不能以通用方式聚合到最新状态数据。如果要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sign</code> ，当它是主键的一部分时，结果就跟 <em style="color: #d75100; font-style: normal;">MergeTree</em> 一样了，多存很多数据。而当它不是主键的一部分，那旧的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sign</code> 会丢失，就跟没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sign</code> 的 <em style="color: #d75100; font-style: normal;">MergeTree</em> 一样，不能以通用方式聚合到最新状态数据。结论就是， <em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 的应用场景本来就跟 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 是两回事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ReplacingMergeTree</em> 的应用，大概都是一些 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">order by limit 1</code> 这种。而 <em style="color: #d75100; font-style: normal;">CollapsingMergeTree</em> 则真的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">group by</code> 了。
+</p>
+
+<a class="anchor" name="toc24"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. TODO</h1>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'clickhouse';
+  var disqus_url = 'https://www.zouyesheng.com/clickhouse.html';
+  var disqus_title = 'ClickHouse 使用';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
+AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
+ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
+2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
+8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
+vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
+cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2018 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
