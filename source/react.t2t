@@ -957,6 +957,45 @@ console.log(testRenderer.root.instance.state);
 
 
 
+# Redux #
+
+*Redux* 并不是 *React* 必不可少的一部分，它只是随着 React 出来的一套模式，并且带了一个这个模式的实现： https://redux.js.org/ 。 简单来说，这个模式是着眼于“组件状态及组件间通信”的，换句话，它定义了一种“相对独立的组件句柄”。
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Redux</title>
+<script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+</head>
+<body>
+
+  <script type="text/javascript">
+    var store = Redux.createStore(function reducer(state, action){
+      console.log('here', state);
+      if(action.type === 'HAHA'){ return 'OK' }
+      return 'ERROR';
+    });
+    console.log(store.getState());
+    store.subscribe(function render(){
+      console.log('subscribe');
+      console.log(store.getState());
+    })
+    store.dispatch({type: 'HAHA'});
+  </script>
+
+</body>
+</html>
+```
+
+*Redux* 的流程本身非常简单，如上所示，通过一个 ``reducer`` 初始化一个 ``store`` ， 这个 ``store`` 先 ``subscribe`` 一些动作，然后使用时在需要的时候 ``dispatch`` 出一个 ``action`` 就好了。 ``dispatch`` 的对应逻辑是 ``reducer`` 中的事，而 ``reducer`` 执行完就轮到 ``subscribe`` 的回调了，就是这样的一个执行循环。
+
+
+
+
+
 
 
 
