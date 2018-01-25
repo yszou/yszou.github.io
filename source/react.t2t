@@ -959,6 +959,8 @@ console.log(testRenderer.root.instance.state);
 
 # Redux #
 
+## 基本概念 ##
+
 *Redux* 并不是 *React* 必不可少的一部分，它只是随着 React 出来的一套模式，并且带了一个这个模式的实现： https://redux.js.org/ 。 简单来说，这个模式是着眼于“组件状态及组件间通信”的，换句话，它定义了一种“相对独立的组件句柄”。
 
 
@@ -994,13 +996,141 @@ console.log(testRenderer.root.instance.state);
 
 
 
+## React-Redux ##
 
 
+*React-Redux* 是 *Redux* 在 *React* 上的一个实现，直观点说，就是结合了 React 的 Component 机制的一套 Redux 流程。它的核心点，我个人的理解是下面几点：
+
+- 首先，组件本身进行两分类，一类“纯组件”，一类“通信组件”。“纯组件”的意思，就是参入 ``props`` 之后，它自己就可以完全独立工作的，里面尽量不包含业务逻辑。而“通信组件”的作用，就是在“纯组件”之上，加入具体业务逻辑，去完成各“纯组件”的调度。
+- 在实现“通信组件”上，并不推荐你去手写，而是根据 *Redux* 的思路， *React-Redux* 提供相应用的包装 API ，来完成 ``State -> Props`` 和 ``Dispatch -> Props`` 的这个过程。
+- 进一步说，“纯组件”的行为，完全由 ``props`` 控制，无论是相应的数据输入，还是一些事件回调的输出。状态性的一些东西，则由上层的“通信组件”，通过 ``state`` 和 ``dispatch`` 来维护，上层通信组件的状态性的数据，会更新到“纯组件”的 ``props`` 上，来完成页面重渲染。
+- 本质上，是实现上的一种垂直抽象分层， *Redux* 的具体 API 不是重点。
 
 
+具体代码：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/redux.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-redux.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="text/babel">
+
+    const Title = props => (
+      <h1 onClick={props.onClick}>{props.name}</h1>
+    )
+
+    const mapStateToProps = state => {
+      return {...state};
+    }
+
+    const mapDispatchToProps = dispatch => {
+      return {
+        onClick: id => {
+          dispatch({type: "CLICK"});
+        }
+      }
+    }
+
+    const VisibleTitle = ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    let store = Redux.createStore( (state, action) => {
+      if(action.type === 'CLICK'){
+        return {name: '点击之后的'};
+      }
+      return {name: '初始化的'};
+    });
+
+    const App = () => (
+      <ReactRedux.Provider store={store}>
+        <VisibleTitle />
+      </ReactRedux.Provider>
+    )
+
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+上面的组件实现的效果很简单，就是点击之后，改变文本。但是经过 React-Redux 分拆之后，感觉复杂了好多。不过，直观地也可以看出，分拆之后， ``Title`` 这个组件变“纯”了，它的行为一目了解，没有什么“点击之后，改变文本”这类逻辑，只有单纯的接受输入，然后渲染组件。操作上的逻辑，则由外层的 ``VisibleTitle`` 来完成。
+
+``VisibleTitle`` 通过它的 ``state`` 状态性数据，来控制下面的 ``Title`` 的渲染。 ``state`` 则是通过 Redux 的 ``store`` 来承接的。进一步， ``state`` 到 ``Title`` 的 ``props`` ，可能只是 ``Title`` 需要输入的一部分（数据部分），另一部分涉及“反馈”到 ``state`` 变化的 ``props`` ，则由 Redux 的 ``dispatch - action`` 来承接。
+
+说的这两部分，也就对应着 ``mapStateToProps`` 和 ``mapDispatchToProps`` ，一个处理数据，一个调度 ``dispatch`` 的执行。然后使用 ``connect`` 这个现成的方法生成包裹在 ``Title`` 之上的 ``VisibleTitle`` 。
+
+当然，事情到这里还没有结束，再上层，还有一个 ``store`` ， ``Provider`` 是 React-Redux 提供的东西，目的是给里面的组件提供 ``store`` 。而得到 ``store`` ，又需要 ``Reducer`` ， ``dispatch`` 出的 ``action`` ，及 ``state`` 的变化实际上是在这里处理。
 
 
+## Redux 中间件 ##
 
+*Redux* 的设计中，所有的状态变化是通过 ``dispatch`` 这一个点完成的（并且这个 API 又非常简单），自然，围绕这一个点，就可以很容易完成“套圈”。
+
+
+```javascript
+let next = store.dispatch;
+store.dispatch = function(action){
+    console.log(action);
+    next(action);
+}
+```
+
+这都完全不需要特别设计，你自己就可以随便搞。
+
+不过从 *Monkeypatching* 作为切入，官方的 https://redux.js.org/docs/advanced/Middleware.html 这份文档写得非常好，循序渐进，推荐一读。
+
+最后，官方 API 在这上面的支持，或者说推荐作法，是通过高阶函数定义 *Middleware* ，然后使用 ``applyMiddleware`` 挂到 ``store`` 里面去。
+
+```javascript
+const logger = store => next => action => {
+  console.log('dispatching', action, store.getState());
+  let result = next(action);
+  console.log('next state', store.getState());
+  return result
+}
+```
+
+这是定义，使用时：
+
+```javascript
+import { createStore, combineReducers, applyMiddleware } from 'redux'
+let store = createStore( reducer, applyMiddleware(logger) )
+```
+
+用前面的简单例子可以试试：
+
+```javascript
+function logger(store) {
+  return function(next){
+    return function(action){
+      console.log('dispatching', action, store.getState());
+      var result = next(action);
+      console.log('next state', store.getState());
+      return result
+    }
+  }
+}
+
+var store = Redux.createStore(function reducer(state, action){
+  if(action.type === 'HAHA'){ return 'OK' }
+  return 'ERROR';
+}, Redux.applyMiddleware(logger));
+
+store.subscribe(function render(){
+  console.log('sub', store.getState());
+})
+store.dispatch({type: 'HAHA'});
+```
 
 
 
