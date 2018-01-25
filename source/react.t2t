@@ -1133,4 +1133,137 @@ store.dispatch({type: 'HAHA'});
 ```
 
 
+## 异步流程与 redux-promise ##
+
+了解了中间件，再来看异步流程，就没什么新问题了。
+
+在 *Redux* 中，``state`` 的维护是在 ``reducer`` 中的，从前面的例子可以看出， ``reducer`` 本身的设计，是没有考虑异步情况的，它的结构： ``(state, action) => newState`` 是同步的。
+
+如果我们在某个 ``dispatch`` 之后，需要异步获取数据（事实上这很常见），并把这个东西更新到 ``store`` 中去，我们就需要额外做点事，比较很容易想到的一个办法：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Redux</title>
+<script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+</head>
+<body>
+
+  <script type="text/javascript">
+    var store = Redux.createStore(function reducer(state, action){
+      if(action.type === 'HAHA'){
+        setTimeout(function(){
+          store.dispatch({type: 'FETCH', payload: '123'});
+        }, 3000);
+        return 'LOADING';
+      }
+      if(action.type === 'FETCH'){
+        return action.payload;
+      }
+      return 'ERROR';
+    });
+    store.subscribe(function render(){
+      console.log('sub', store.getState());
+    })
+    store.dispatch({type: 'HAHA'});
+  </script>
+
+</body>
+</html>
+```
+
+简单来说，在 ``dispatch`` 之后，我们异步发出请求，并在当前至少有对 ``dispatch`` 的引用，然后返回一个中间状态的 ``state`` ，甚至是没有任何更改的 ``state`` 。在异步响应之后，再次 ``dispatch`` ，同时把异步响应的数据放到 ``action`` 中传递出去。
+
+这种方式，虽然绕了一点，但是本身没毛病，不过要多定义出来一个 ``dispatch`` 类型，是很烦人就是了。
+
+考虑前面讲过的“中间件”机制，我们很容易对 ``dispatch`` 的行为作一些扩展，加入对异步的支持。
+
+先看“中间件”的样子：
+
+```javascript
+const logger = store => next => action => {
+  console.log('dispatching', action, store.getState());
+  let result = next(action);
+  console.log('next state', store.getState());
+  return result
+}
+```
+
+很显然，对于 ``dispatch`` 传入的 ``action`` 这个东西，我们可以先判断它的特征，或者说状态，根据既定规则决定在什么时候作 ``next(action)`` 。
+
+事实上， ``redux-promise`` 的代码就几行：
+
+```javascript
+import { isFSA } from 'flux-standard-action';
+
+function isPromise(val) {
+  return val && typeof val.then === 'function';
+}
+
+export default function promiseMiddleware({ dispatch }) {
+  return next => action => {
+    if (!isFSA(action)) {
+      return isPromise(action)
+        ? action.then(dispatch)
+        : next(action);
+    }
+
+    return isPromise(action.payload)
+      ? action.payload.then(
+          result => dispatch({ ...action, payload: result }),
+          error => {
+            dispatch({ ...action, payload: error, error: true });
+            return Promise.reject(error);
+          }
+        )
+      : next(action);
+  };
+}
+```
+
+做的事，就是当 ``dispatch`` 出去的东西，里面有一个 ``then`` 成员，并且这个成员是一个函数的话，那么 ``reducer`` 会返回这个函数的调用结果，并且调用这个函数时传入的是当前的 ``dispatch`` 。
+
+简单演示一下大概是：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Redux</title>
+<script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+</head>
+<body>
+
+  <script type="text/javascript">
+    var store = Redux.createStore(function reducer(state, action){
+      if(!!action.then){
+        return action.then(store.dispatch.bind(store));
+      }
+      return 'GOT: ' + action.payload;
+    });
+    store.subscribe(function render(){
+      console.log('sub', store.getState());
+    })
+
+    store.dispatch({type: '123', payload: 'null'});
+    setTimeout(function(){
+      store.dispatch({type: 'async', then: function(dispatch){
+        setTimeout(function(){
+          dispatch({type: 'xxx', payload: 'async data'});
+        }, 3000);
+      }});
+    }, 2000);
+
+  </script>
+
+</body>
+</html>
+```
+
+
+
+
 

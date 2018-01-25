@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
 <head>
+    <link rel="shortcut icon" type="image/x-icon" href="_favicon.ico" />
     <meta charset="UTF-8" />
     <title>React 学习笔记 - YS.Zou</title>
     <meta name="generator" content="http://txt2tags.org" />
@@ -13,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">React 学习笔记</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2018-01-11 23:07 更新</span>
+                <span>2018-01-25 19:04 更新</span>
             </div>
         </div>
 
@@ -71,6 +72,18 @@
   <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none">测试 API</a>
     <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
     <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none">11.1. 非浏览器渲染</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none">Redux</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none">12.1. 基本概念</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none">12.2. React-Redux</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none">12.3. Redux 中间件</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc25" style="color: #0184b7; text-decoration: none">12.4. 异步流程与 redux-promise</a>
     </li>
     </ul>
   </li>
@@ -517,7 +530,7 @@ JSX 中的名字，如果是自定义组件，名字开头需要大写，小写�
       constructor(props) {
           <span style="color: #000000; font-weight: bold">super</span>(props);
           <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
-          setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState({date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()}), <span style="color: #009999">1000</span>);
+          setInterval(() =&gt; <span style="color: #000000; font-weight: bold">this</span>.setState({date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()}), <span style="color: #009999">1000</span>);
       }
 
       render(){
@@ -546,7 +559,7 @@ JSX 中的名字，如果是自定义组件，名字开头需要大写，小写�
   constructor(props) {
       <span style="color: #000000; font-weight: bold">super</span>(props);
       <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
-      setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) <span style="color: #000000; font-weight: bold">=&gt;</span> ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
+      setInterval(() =&gt; <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) =&gt; ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
   }
 
   render(){
@@ -572,10 +585,10 @@ React 自己维护了一个节点状态的树结构，并且，同时也自己�
   constructor(props) {
       <span style="color: #000000; font-weight: bold">super</span>(props);
       <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {date<span style="color: #000000; font-weight: bold">:</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).valueOf()};
-      setInterval(() <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) <span style="color: #000000; font-weight: bold">=&gt;</span> ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
+      setInterval(() =&gt; <span style="color: #000000; font-weight: bold">this</span>.setState((prevState, props) =&gt; ({date<span style="color: #000000; font-weight: bold">:</span> prevState.date <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1000</span>})), <span style="color: #009999">1000</span>);
   }
 
-  handleClick <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+  handleClick <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
       console.log(<span style="color: #000000; font-weight: bold">this</span>);
   }
 
@@ -595,7 +608,7 @@ ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyCom
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">handleClick <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">handleClick <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
     console.log(<span style="color: #000000; font-weight: bold">this</span>);
 }
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -654,14 +667,14 @@ React 自己的事件，是“驼峰式”的名字，比如 <code style="margin
       }
 
       handleClick(o){
-        <span style="color: #000000; font-weight: bold">return</span> (e) <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">return</span> (e) =&gt; {
           console.log(o);
         }
       }
 
       render(){
         <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
-          {<span style="color: #000000; font-weight: bold">this</span>.state.itemList.map( (o) <span style="color: #000000; font-weight: bold">=&gt;</span> (<span style="color: #000000; font-weight: bold">&lt;</span>div key<span style="color: #000000; font-weight: bold">=</span>{o.id} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.handleClick(o)}<span style="color: #000000; font-weight: bold">&gt;</span>{o.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;) ) }</span>
+          {<span style="color: #000000; font-weight: bold">this</span>.state.itemList.map( (o) =&gt; (<span style="color: #000000; font-weight: bold">&lt;</span>div key<span style="color: #000000; font-weight: bold">=</span>{o.id} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.handleClick(o)}<span style="color: #000000; font-weight: bold">&gt;</span>{o.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;) ) }</span>
           <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
       }
 
@@ -935,7 +948,7 @@ React 对于 Component 的处理，前面介绍得差不多了，这里说的外
     <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>哈哈哈<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
   }
 
-  clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+  clickHandler <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
     <span style="color: #000000; font-weight: bold">var</span> dom <span style="color: #000000; font-weight: bold">=</span> ReactDOM.findDOMNode(<span style="color: #000000; font-weight: bold">this</span>);
     console.log(dom);
     ReactDOM.unmountComponentAtNode($(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
@@ -983,7 +996,7 @@ ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyCom
         $(<span style="color: #000000; font-weight: bold">this</span>.dom).remove();
       }
 
-      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
         <span style="color: #000000; font-weight: bold">var</span> dom <span style="color: #000000; font-weight: bold">=</span> ReactDOM.findDOMNode(<span style="color: #000000; font-weight: bold">this</span>);
         console.log(dom);
         ReactDOM.unmountComponentAtNode($(<span style="color: #dd1144">&#39;div&#39;</span>)[<span style="color: #009999">0</span>]);
@@ -1053,7 +1066,7 @@ label 标签的 <code style="margin: auto 3px; color: #228b22; font-family: mono
   &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
 
     <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
-      getHtml <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+      getHtml <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
         <span style="color: #000000; font-weight: bold">return</span> {__html<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;&lt;h1 style=&quot;color: red&quot;&gt;哈哈哈&lt;/h1&gt;&#39;</span>};
       }
       
@@ -1095,12 +1108,12 @@ label 标签的 <code style="margin: auto 3px; color: #228b22; font-family: mono
   &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
 
     <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
-      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
         console.log(<span style="color: #000000; font-weight: bold">this</span>.h1);
       }
 
       render(){
-        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 ref<span style="color: #000000; font-weight: bold">=</span>{(node) <span style="color: #000000; font-weight: bold">=&gt;</span> {<span style="color: #000000; font-weight: bold">this</span>.h1 <span style="color: #000000; font-weight: bold">=</span> node}} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>哈哈<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 ref<span style="color: #000000; font-weight: bold">=</span>{(node) =&gt; {<span style="color: #000000; font-weight: bold">this</span>.h1 <span style="color: #000000; font-weight: bold">=</span> node}} onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.clickHandler}<span style="color: #000000; font-weight: bold">&gt;</span>哈哈<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
       }
 
     }
@@ -1151,8 +1164,8 @@ React 因为有自己的一套树状态，所以，理论上它在测试方面�
         <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {n<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>};
       }
 
-      clickHandler <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
-        <span style="color: #000000; font-weight: bold">this</span>.setState((s) <span style="color: #000000; font-weight: bold">=&gt;</span> ({n<span style="color: #000000; font-weight: bold">:</span> s.n <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}));
+      clickHandler <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">this</span>.setState((s) =&gt; ({n<span style="color: #000000; font-weight: bold">:</span> s.n <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}));
       }
 
       render(){
@@ -1207,7 +1220,7 @@ React 因为有自己的一套树状态，所以，理论上它在测试方面�
     <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {number<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>};
   }
   render(){
-    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{ () <span style="color: #000000; font-weight: bold">=&gt;</span> {<span style="color: #000000; font-weight: bold">this</span>.setState((s) <span style="color: #000000; font-weight: bold">=&gt;</span> ({number<span style="color: #000000; font-weight: bold">:</span> s.number <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}))} }<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.state.number}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{ () =&gt; {<span style="color: #000000; font-weight: bold">this</span>.setState((s) =&gt; ({number<span style="color: #000000; font-weight: bold">:</span> s.number <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>}))} }<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.state.number}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;;</span>
   }
 }
 
@@ -1226,6 +1239,374 @@ console.log(testRenderer.root.instance.state);
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 在非浏览器环境下，“模拟点击”这种操作是没有意义的，但是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onClick</code> 本身并没有说一定是“点击”，它只是指明了一个回调函数而已，浏览环境下是点击触发，那么纯编程环境下，直接调用即可。
 </p>
+
+<a class="anchor" name="toc21"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">12. Redux</h1>
+
+<a class="anchor" name="toc22"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">12.1. 基本概念</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Redux</em> 并不是 <em style="color: #d75100; font-style: normal;">React</em> 必不可少的一部分，它只是随着 React 出来的一套模式，并且带了一个这个模式的实现： <a href="https://redux.js.org/" style="color: #0184b7; text-decoration: none">https://redux.js.org/</a> 。 简单来说，这个模式是着眼于“组件状态及组件间通信”的，换句话，它定义了一种“相对独立的组件句柄”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Redux&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/redux@latest/dist/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore(<span style="color: #000000; font-weight: bold">function</span> reducer(state, action){
+      console.log(<span style="color: #dd1144">&#39;here&#39;</span>, state);
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>){ <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;OK&#39;</span> }
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;ERROR&#39;</span>;
+    });
+    console.log(store.getState());
+    store.subscribe(<span style="color: #000000; font-weight: bold">function</span> render(){
+      console.log(<span style="color: #dd1144">&#39;subscribe&#39;</span>);
+      console.log(store.getState());
+    })
+    store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>});
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Redux</em> 的流程本身非常简单，如上所示，通过一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 初始化一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> ， 这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 先 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">subscribe</code> 一些动作，然后使用时在需要的时候 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 出一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">action</code> 就好了。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 的对应逻辑是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 中的事，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 执行完就轮到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">subscribe</code> 的回调了，就是这样的一个执行循环。
+</p>
+
+<a class="anchor" name="toc23"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">12.2. React-Redux</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">React-Redux</em> 是 <em style="color: #d75100; font-style: normal;">Redux</em> 在 <em style="color: #d75100; font-style: normal;">React</em> 上的一个实现，直观点说，就是结合了 React 的 Component 机制的一套 Redux 流程。它的核心点，我个人的理解是下面几点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">首先，组件本身进行两分类，一类“纯组件”，一类“通信组件”。“纯组件”的意思，就是参入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 之后，它自己就可以完全独立工作的，里面尽量不包含业务逻辑。而“通信组件”的作用，就是在“纯组件”之上，加入具体业务逻辑，去完成各“纯组件”的调度。
+</li>
+<li style="margin: 10px auto;">在实现“通信组件”上，并不推荐你去手写，而是根据 <em style="color: #d75100; font-style: normal;">Redux</em> 的思路， <em style="color: #d75100; font-style: normal;">React-Redux</em> 提供相应用的包装 API ，来完成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">State -&gt; Props</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Dispatch -&gt; Props</code> 的这个过程。
+</li>
+<li style="margin: 10px auto;">进一步说，“纯组件”的行为，完全由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 控制，无论是相应的数据输入，还是一些事件回调的输出。状态性的一些东西，则由上层的“通信组件”，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 来维护，上层通信组件的状态性的数据，会更新到“纯组件”的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 上，来完成页面重渲染。
+</li>
+<li style="margin: 10px auto;">本质上，是实现上的一种垂直抽象分层， <em style="color: #d75100; font-style: normal;">Redux</em> 的具体 API 不是重点。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+具体代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">const</span> Title <span style="color: #000000; font-weight: bold">=</span> props =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{props.onClick}<span style="color: #000000; font-weight: bold">&gt;</span>{props.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+    )
+
+    <span style="color: #000000; font-weight: bold">const</span> mapStateToProps <span style="color: #000000; font-weight: bold">=</span> state =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> {...state};
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> mapDispatchToProps <span style="color: #000000; font-weight: bold">=</span> dispatch =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> {
+        onClick<span style="color: #000000; font-weight: bold">:</span> id =&gt; {
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;CLICK&quot;</span>});
+        }
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> VisibleTitle <span style="color: #000000; font-weight: bold">=</span> ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    <span style="color: #000000; font-weight: bold">let</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore( (state, action) =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;CLICK&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;点击之后的&#39;</span>};
+      }
+      <span style="color: #000000; font-weight: bold">return</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;初始化的&#39;</span>};
+    });
+
+    <span style="color: #000000; font-weight: bold">const</span> App <span style="color: #000000; font-weight: bold">=</span> () =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>ReactRedux.Provider store<span style="color: #000000; font-weight: bold">=</span>{store}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>VisibleTitle <span style="color: #000000; font-weight: bold">/&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/ReactRedux.Provider&gt;</span>
+    )
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>App <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的组件实现的效果很简单，就是点击之后，改变文本。但是经过 React-Redux 分拆之后，感觉复杂了好多。不过，直观地也可以看出，分拆之后， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Title</code> 这个组件变“纯”了，它的行为一目了解，没有什么“点击之后，改变文本”这类逻辑，只有单纯的接受输入，然后渲染组件。操作上的逻辑，则由外层的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">VisibleTitle</code> 来完成。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">VisibleTitle</code> 通过它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 状态性数据，来控制下面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Title</code> 的渲染。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 则是通过 Redux 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 来承接的。进一步， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Title</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> ，可能只是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Title</code> 需要输入的一部分（数据部分），另一部分涉及“反馈”到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 变化的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> ，则由 Redux 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch - action</code> 来承接。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说的这两部分，也就对应着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mapStateToProps</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mapDispatchToProps</code> ，一个处理数据，一个调度 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 的执行。然后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">connect</code> 这个现成的方法生成包裹在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Title</code> 之上的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">VisibleTitle</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，事情到这里还没有结束，再上层，还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Provider</code> 是 React-Redux 提供的东西，目的是给里面的组件提供 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 。而得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> ，又需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Reducer</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 出的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">action</code> ，及 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 的变化实际上是在这里处理。
+</p>
+
+<a class="anchor" name="toc24"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">12.3. Redux 中间件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Redux</em> 的设计中，所有的状态变化是通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 这一个点完成的（并且这个 API 又非常简单），自然，围绕这一个点，就可以很容易完成“套圈”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">let</span> next <span style="color: #000000; font-weight: bold">=</span> store.dispatch;
+store.dispatch <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(action){
+    console.log(action);
+    next(action);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这都完全不需要特别设计，你自己就可以随便搞。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过从 <em style="color: #d75100; font-style: normal;">Monkeypatching</em> 作为切入，官方的 <a href="https://redux.js.org/docs/advanced/Middleware.html" style="color: #0184b7; text-decoration: none">https://redux.js.org/docs/advanced/Middleware.html</a> 这份文档写得非常好，循序渐进，推荐一读。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，官方 API 在这上面的支持，或者说推荐作法，是通过高阶函数定义 <em style="color: #d75100; font-style: normal;">Middleware</em> ，然后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">applyMiddleware</code> 挂到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 里面去。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> logger <span style="color: #000000; font-weight: bold">=</span> store =&gt; next =&gt; action =&gt; {
+  console.log(<span style="color: #dd1144">&#39;dispatching&#39;</span>, action, store.getState());
+  <span style="color: #000000; font-weight: bold">let</span> result <span style="color: #000000; font-weight: bold">=</span> next(action);
+  console.log(<span style="color: #dd1144">&#39;next state&#39;</span>, store.getState());
+  <span style="color: #000000; font-weight: bold">return</span> result
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是定义，使用时：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> { createStore, combineReducers, applyMiddleware } from <span style="color: #dd1144">&#39;redux&#39;</span>
+<span style="color: #000000; font-weight: bold">let</span> store <span style="color: #000000; font-weight: bold">=</span> createStore( reducer, applyMiddleware(logger) )
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用前面的简单例子可以试试：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> logger(store) {
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(next){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">function</span>(action){
+      console.log(<span style="color: #dd1144">&#39;dispatching&#39;</span>, action, store.getState());
+      <span style="color: #000000; font-weight: bold">var</span> result <span style="color: #000000; font-weight: bold">=</span> next(action);
+      console.log(<span style="color: #dd1144">&#39;next state&#39;</span>, store.getState());
+      <span style="color: #000000; font-weight: bold">return</span> result
+    }
+  }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore(<span style="color: #000000; font-weight: bold">function</span> reducer(state, action){
+  <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>){ <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;OK&#39;</span> }
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;ERROR&#39;</span>;
+}, Redux.applyMiddleware(logger));
+
+store.subscribe(<span style="color: #000000; font-weight: bold">function</span> render(){
+  console.log(<span style="color: #dd1144">&#39;sub&#39;</span>, store.getState());
+})
+store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc25"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">12.4. 异步流程与 redux-promise</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+了解了中间件，再来看异步流程，就没什么新问题了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <em style="color: #d75100; font-style: normal;">Redux</em> 中，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 的维护是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 中的，从前面的例子可以看出， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 本身的设计，是没有考虑异步情况的，它的结构： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(state, action) =&gt; newState</code> 是同步的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们在某个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 之后，需要异步获取数据（事实上这很常见），并把这个东西更新到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 中去，我们就需要额外做点事，比较很容易想到的一个办法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Redux&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/redux@latest/dist/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore(<span style="color: #000000; font-weight: bold">function</span> reducer(state, action){
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>){
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+          store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;FETCH&#39;</span>, payload<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;123&#39;</span>});
+        }, <span style="color: #009999">3000</span>);
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;LOADING&#39;</span>;
+      }
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;FETCH&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> action.payload;
+      }
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;ERROR&#39;</span>;
+    });
+    store.subscribe(<span style="color: #000000; font-weight: bold">function</span> render(){
+      console.log(<span style="color: #dd1144">&#39;sub&#39;</span>, store.getState());
+    })
+    store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;HAHA&#39;</span>});
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 之后，我们异步发出请求，并在当前至少有对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 的引用，然后返回一个中间状态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> ，甚至是没有任何更改的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 。在异步响应之后，再次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> ，同时把异步响应的数据放到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">action</code> 中传递出去。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种方式，虽然绕了一点，但是本身没毛病，不过要多定义出来一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 类型，是很烦人就是了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+考虑前面讲过的“中间件”机制，我们很容易对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 的行为作一些扩展，加入对异步的支持。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先看“中间件”的样子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> logger <span style="color: #000000; font-weight: bold">=</span> store =&gt; next =&gt; action =&gt; {
+  console.log(<span style="color: #dd1144">&#39;dispatching&#39;</span>, action, store.getState());
+  <span style="color: #000000; font-weight: bold">let</span> result <span style="color: #000000; font-weight: bold">=</span> next(action);
+  console.log(<span style="color: #dd1144">&#39;next state&#39;</span>, store.getState());
+  <span style="color: #000000; font-weight: bold">return</span> result
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+很显然，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 传入的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">action</code> 这个东西，我们可以先判断它的特征，或者说状态，根据既定规则决定在什么时候作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next(action)</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+事实上， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">redux-promise</code> 的代码就几行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> { isFSA } from <span style="color: #dd1144">&#39;flux-standard-action&#39;</span>;
+
+<span style="color: #000000; font-weight: bold">function</span> isPromise(val) {
+  <span style="color: #000000; font-weight: bold">return</span> val <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #000000; font-weight: bold">typeof</span> val.then <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;function&#39;</span>;
+}
+
+<span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">default</span> <span style="color: #000000; font-weight: bold">function</span> promiseMiddleware({ dispatch }) {
+  <span style="color: #000000; font-weight: bold">return</span> next =&gt; action =&gt; {
+    <span style="color: #000000; font-weight: bold">if</span> (<span style="color: #000000; font-weight: bold">!</span>isFSA(action)) {
+      <span style="color: #000000; font-weight: bold">return</span> isPromise(action)
+        <span style="color: #000000; font-weight: bold">?</span> action.then(dispatch)
+        <span style="color: #000000; font-weight: bold">:</span> next(action);
+    }
+
+    <span style="color: #000000; font-weight: bold">return</span> isPromise(action.payload)
+      <span style="color: #000000; font-weight: bold">?</span> action.payload.then(
+          result =&gt; dispatch({ ...action, payload<span style="color: #000000; font-weight: bold">:</span> result }),
+          error =&gt; {
+            dispatch({ ...action, payload<span style="color: #000000; font-weight: bold">:</span> error, error<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> });
+            <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">Promise</span>.reject(error);
+          }
+        )
+      <span style="color: #000000; font-weight: bold">:</span> next(action);
+  };
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+做的事，就是当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 出去的东西，里面有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">then</code> 成员，并且这个成员是一个函数的话，那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reducer</code> 会返回这个函数的调用结果，并且调用这个函数时传入的是当前的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">dispatch</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单演示一下大概是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Redux&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/redux@latest/dist/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore(<span style="color: #000000; font-weight: bold">function</span> reducer(state, action){
+      <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!</span>action.then){
+        <span style="color: #000000; font-weight: bold">return</span> action.then(store.dispatch.bind(store));
+      }
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;GOT: &#39;</span> <span style="color: #000000; font-weight: bold">+</span> action.payload;
+    });
+    store.subscribe(<span style="color: #000000; font-weight: bold">function</span> render(){
+      console.log(<span style="color: #dd1144">&#39;sub&#39;</span>, store.getState());
+    })
+
+    store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;123&#39;</span>, payload<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;null&#39;</span>});
+    setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+      store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;async&#39;</span>, then<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">function</span>(dispatch){
+        setTimeout(<span style="color: #000000; font-weight: bold">function</span>(){
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;xxx&#39;</span>, payload<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;async data&#39;</span>});
+        }, <span style="color: #009999">3000</span>);
+      }});
+    }, <span style="color: #009999">2000</span>);
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
 
 <style type="text/css">
 body.z { background-color: #eff3fa; }
