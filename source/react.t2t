@@ -1264,6 +1264,209 @@ export default function promiseMiddleware({ dispatch }) {
 ```
 
 
+## Redux 流程中的重复计算问题 ##
+
+前面一个例中，有一个 ``mapStateToProps`` ，把例子改一点点看看：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/redux.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-redux.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="text/babel">
+
+    const getName = (name, count) => {
+      console.log('getName');
+      return name + count;
+    }
+
+    const Title = props => (
+      <div>
+        <h1 onClick={props.onClick}>{props.name}</h1>
+        <h1 onClick={props.onOtherClick}>另外的 {props.name}</h1>
+      </div>
+    )
+
+    const mapStateToProps = (state, props) => {
+      console.log('mapStateToProps');
+      return {
+        name: getName(state.name, state.count)
+      }
+    }
+
+    const mapDispatchToProps = dispatch => {
+      return {
+        onClick: () => {
+          dispatch({type: "CLICK"});
+        },
+        onOtherClick: () => {
+          dispatch({type: "OTHER_CLICK"});
+        }
+      }
+    }
+
+    const VisibleTitle = ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    let store = Redux.createStore( (state = {name: '初始值', count: 0}, action) => {
+      if(action.type === 'CLICK'){
+        return { ...state, name: '点击之后的', count: state.count + 1};
+      }
+      if(action.type === 'OTHER_CLICK'){
+        return { ...state, other: '什么东西'};
+      }
+      return { ...state };
+    });
+
+    const App = () => (
+      <ReactRedux.Provider store={store}>
+        <VisibleTitle />
+      </ReactRedux.Provider>
+    )
+
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+上面的例子，简单来说，“纯组件”需要一个 ``name`` 来显示，而这个 ``name`` 的来自于外套组件的 ``store`` 中的 ``name`` 和 ``count`` 连在一起的。
+
+执行这个例子，可以看出一个重复执行的问题，当你点击第二行“另外的”那块文本时，是做的 ``onOtherClick`` 回调，这个过程并不会更改 ``count`` 值，也就是说，“纯组件”需要的 ``name`` 并不会因为这个操作而有所改变。但是， ``getName()`` 这个函数却还是一遍又一遍地执行了，这就是所谓的重复执行的问题。（如果这样的函数很多，会影响到页面性能的，特别是这些函数的逻辑有一点复杂的时候）
+
+其实看到这里，我个觉得 React 中的这个问题还是非常尴尬的，它自己内部的虚拟节点，靠自己的 diff 算法实现高效的更新策略，但是外面的 ``state`` 本身的维护又成了可能的问题。
+
+回到重复执行的问题，它并没有什么本质的解决办法，只可能进一步拆分 ``getName()`` ，分离变量的情况下，作一些执行层面的优化，简单说，先作变量是否变化的判断，然后再决定是否继续执行。这样用额外判断的成本，换取可能的省略后继执行的效益。大概是：
+
+```javascript
+const getName = ( () => {
+  let lastName = null;
+  let lastCount = null;
+  let lastResult = null;
+  return (name, count) => {
+    console.log('getName');
+    if(name === lastName && count === lastCount){ return lastResult }
+    lastName = name;
+    lastCount = count;
+    lastResult = name + count;
+    return lastResult;
+  }
+})();
+```
+
+这个样子，像是中间加了一个缓存层。
+
+把这个形式封装一下，就是说先把“变量”的获取提取出来，然后加一个中间缓存层。官方推荐的实现是 *reselect* ，做的事就是这样的： https://github.com/reactjs/reselect 。
+
+用 *reselect* 把前面的代码调整一下，就是：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/jq/jquery.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/redux.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-redux.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/reselect.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="text/babel">
+
+    const getName = Reselect.createSelector(
+      [
+        (state, props) => {console.log('reselect'); return state.name},
+        (state, props) => state.count
+      ],
+      (name, count) => {
+        console.log('getName');
+        return name + count
+      }
+    );
+
+    const Title = props => (
+      <div>
+        <h1 onClick={props.onClick}>{props.name}</h1>
+        <h1 onClick={props.onOtherClick}>另外的 {props.name}</h1>
+      </div>
+    )
+
+    const mapStateToProps = (state, props) => {
+      console.log('mapStateToProps');
+      return {
+        name: getName(state, props)
+      }
+    }
+
+    const mapDispatchToProps = dispatch => {
+      return {
+        onClick: () => {
+          dispatch({type: "CLICK"});
+        },
+        onOtherClick: () => {
+          dispatch({type: "OTHER_CLICK"});
+        }
+      }
+    }
+
+    const VisibleTitle = ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    let store = Redux.createStore( (state = {name: '初始值', count: 0}, action) => {
+      if(action.type === 'CLICK'){
+        return { ...state, name: '点击之后的', count: state.count + 1};
+      }
+      if(action.type === 'OTHER_CLICK'){
+        return { ...state, other: '什么东西'};
+      }
+      return { ...state };
+    });
+
+    const App = () => (
+      <ReactRedux.Provider store={store}>
+        <VisibleTitle />
+      </ReactRedux.Provider>
+    )
+
+    ReactDOM.render(<App />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+
+``Reselect.createSelector`` 是一个高阶函数，它接受的第一个参数，是一个列表，里面就是分拆出来的，获取“变量”的方法，第二个参数就是接受变量的主要逻辑。因为变量已经明确拆分出来的，所以自然地，针对变量作判断并应用缓存机制就好办了。
+
+这里注意一下，虽然表面上 ``getName()`` 的调用少了，但是却额外多了 ``reselect`` 的调用，本质上来说，只是改善的重复调用的损耗，并没有避免它。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

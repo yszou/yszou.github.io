@@ -14,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">React 学习笔记</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2018-01-25 19:04 更新</span>
+                <span>2018-01-26 14:40 更新</span>
             </div>
         </div>
 
@@ -84,6 +84,8 @@
     <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none">12.3. Redux 中间件</a>
     </li>
     <li style="margin: 10px auto;"><a href="#toc25" style="color: #0184b7; text-decoration: none">12.4. 异步流程与 redux-promise</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc26" style="color: #0184b7; text-decoration: none">12.5. Redux 流程中的重复计算问题</a>
     </li>
     </ul>
   </li>
@@ -1607,6 +1609,213 @@ store.dispatch({type<span style="color: #000000; font-weight: bold">:</span> <sp
 
 </div>
 
+<a class="anchor" name="toc26"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">12.5. Redux 流程中的重复计算问题</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面一个例中，有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mapStateToProps</code> ，把例子改一点点看看：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">const</span> getName <span style="color: #000000; font-weight: bold">=</span> (name, count) =&gt; {
+      console.log(<span style="color: #dd1144">&#39;getName&#39;</span>);
+      <span style="color: #000000; font-weight: bold">return</span> name <span style="color: #000000; font-weight: bold">+</span> count;
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> Title <span style="color: #000000; font-weight: bold">=</span> props =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{props.onClick}<span style="color: #000000; font-weight: bold">&gt;</span>{props.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{props.onOtherClick}<span style="color: #000000; font-weight: bold">&gt;</span>另外的 {props.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    )
+
+    <span style="color: #000000; font-weight: bold">const</span> mapStateToProps <span style="color: #000000; font-weight: bold">=</span> (state, props) =&gt; {
+      console.log(<span style="color: #dd1144">&#39;mapStateToProps&#39;</span>);
+      <span style="color: #000000; font-weight: bold">return</span> {
+        name<span style="color: #000000; font-weight: bold">:</span> getName(state.name, state.count)
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> mapDispatchToProps <span style="color: #000000; font-weight: bold">=</span> dispatch =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> {
+        onClick<span style="color: #000000; font-weight: bold">:</span> () =&gt; {
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;CLICK&quot;</span>});
+        },
+        onOtherClick<span style="color: #000000; font-weight: bold">:</span> () =&gt; {
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;OTHER_CLICK&quot;</span>});
+        }
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> VisibleTitle <span style="color: #000000; font-weight: bold">=</span> ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    <span style="color: #000000; font-weight: bold">let</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore( (state <span style="color: #000000; font-weight: bold">=</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;初始值&#39;</span>, count<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}, action) =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;CLICK&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> { ...state, name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;点击之后的&#39;</span>, count<span style="color: #000000; font-weight: bold">:</span> state.count <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>};
+      }
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;OTHER_CLICK&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> { ...state, other<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;什么东西&#39;</span>};
+      }
+      <span style="color: #000000; font-weight: bold">return</span> { ...state };
+    });
+
+    <span style="color: #000000; font-weight: bold">const</span> App <span style="color: #000000; font-weight: bold">=</span> () =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>ReactRedux.Provider store<span style="color: #000000; font-weight: bold">=</span>{store}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>VisibleTitle <span style="color: #000000; font-weight: bold">/&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/ReactRedux.Provider&gt;</span>
+    )
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>App <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的例子，简单来说，“纯组件”需要一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 来显示，而这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 的来自于外套组件的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">store</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">count</code> 连在一起的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+执行这个例子，可以看出一个重复执行的问题，当你点击第二行“另外的”那块文本时，是做的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onOtherClick</code> 回调，这个过程并不会更改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">count</code> 值，也就是说，“纯组件”需要的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 并不会因为这个操作而有所改变。但是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getName()</code> 这个函数却还是一遍又一遍地执行了，这就是所谓的重复执行的问题。（如果这样的函数很多，会影响到页面性能的，特别是这些函数的逻辑有一点复杂的时候）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实看到这里，我个觉得 React 中的这个问题还是非常尴尬的，它自己内部的虚拟节点，靠自己的 diff 算法实现高效的更新策略，但是外面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">state</code> 本身的维护又成了可能的问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到重复执行的问题，它并没有什么本质的解决办法，只可能进一步拆分 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getName()</code> ，分离变量的情况下，作一些执行层面的优化，简单说，先作变量是否变化的判断，然后再决定是否继续执行。这样用额外判断的成本，换取可能的省略后继执行的效益。大概是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> getName <span style="color: #000000; font-weight: bold">=</span> ( () =&gt; {
+  <span style="color: #000000; font-weight: bold">let</span> lastName <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+  <span style="color: #000000; font-weight: bold">let</span> lastCount <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+  <span style="color: #000000; font-weight: bold">let</span> lastResult <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+  <span style="color: #000000; font-weight: bold">return</span> (name, count) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;getName&#39;</span>);
+    <span style="color: #000000; font-weight: bold">if</span>(name <span style="color: #000000; font-weight: bold">===</span> lastName <span style="color: #000000; font-weight: bold">&amp;&amp;</span> count <span style="color: #000000; font-weight: bold">===</span> lastCount){ <span style="color: #000000; font-weight: bold">return</span> lastResult }
+    lastName <span style="color: #000000; font-weight: bold">=</span> name;
+    lastCount <span style="color: #000000; font-weight: bold">=</span> count;
+    lastResult <span style="color: #000000; font-weight: bold">=</span> name <span style="color: #000000; font-weight: bold">+</span> count;
+    <span style="color: #000000; font-weight: bold">return</span> lastResult;
+  }
+})();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个样子，像是中间加了一个缓存层。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把这个形式封装一下，就是说先把“变量”的获取提取出来，然后加一个中间缓存层。官方推荐的实现是 <em style="color: #d75100; font-style: normal;">reselect</em> ，做的事就是这样的： <a href="https://github.com/reactjs/reselect" style="color: #0184b7; text-decoration: none">https://github.com/reactjs/reselect</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用 <em style="color: #d75100; font-style: normal;">reselect</em> 把前面的代码调整一下，就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;React&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-dom.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/babel.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/react-redux.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/react/reselect.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">const</span> getName <span style="color: #000000; font-weight: bold">=</span> Reselect.createSelector(
+      [
+        (state, props) =&gt; {console.log(<span style="color: #dd1144">&#39;reselect&#39;</span>); <span style="color: #000000; font-weight: bold">return</span> state.name},
+        (state, props) =&gt; state.count
+      ],
+      (name, count) =&gt; {
+        console.log(<span style="color: #dd1144">&#39;getName&#39;</span>);
+        <span style="color: #000000; font-weight: bold">return</span> name <span style="color: #000000; font-weight: bold">+</span> count
+      }
+    );
+
+    <span style="color: #000000; font-weight: bold">const</span> Title <span style="color: #000000; font-weight: bold">=</span> props =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{props.onClick}<span style="color: #000000; font-weight: bold">&gt;</span>{props.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>h1 onClick<span style="color: #000000; font-weight: bold">=</span>{props.onOtherClick}<span style="color: #000000; font-weight: bold">&gt;</span>另外的 {props.name}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/h1&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    )
+
+    <span style="color: #000000; font-weight: bold">const</span> mapStateToProps <span style="color: #000000; font-weight: bold">=</span> (state, props) =&gt; {
+      console.log(<span style="color: #dd1144">&#39;mapStateToProps&#39;</span>);
+      <span style="color: #000000; font-weight: bold">return</span> {
+        name<span style="color: #000000; font-weight: bold">:</span> getName(state, props)
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> mapDispatchToProps <span style="color: #000000; font-weight: bold">=</span> dispatch =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> {
+        onClick<span style="color: #000000; font-weight: bold">:</span> () =&gt; {
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;CLICK&quot;</span>});
+        },
+        onOtherClick<span style="color: #000000; font-weight: bold">:</span> () =&gt; {
+          dispatch({type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;OTHER_CLICK&quot;</span>});
+        }
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> VisibleTitle <span style="color: #000000; font-weight: bold">=</span> ReactRedux.connect( mapStateToProps, mapDispatchToProps )(Title);
+
+    <span style="color: #000000; font-weight: bold">let</span> store <span style="color: #000000; font-weight: bold">=</span> Redux.createStore( (state <span style="color: #000000; font-weight: bold">=</span> {name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;初始值&#39;</span>, count<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}, action) =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;CLICK&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> { ...state, name<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;点击之后的&#39;</span>, count<span style="color: #000000; font-weight: bold">:</span> state.count <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>};
+      }
+      <span style="color: #000000; font-weight: bold">if</span>(action.type <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;OTHER_CLICK&#39;</span>){
+        <span style="color: #000000; font-weight: bold">return</span> { ...state, other<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;什么东西&#39;</span>};
+      }
+      <span style="color: #000000; font-weight: bold">return</span> { ...state };
+    });
+
+    <span style="color: #000000; font-weight: bold">const</span> App <span style="color: #000000; font-weight: bold">=</span> () =&gt; (
+      <span style="color: #000000; font-weight: bold">&lt;</span>ReactRedux.Provider store<span style="color: #000000; font-weight: bold">=</span>{store}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>VisibleTitle <span style="color: #000000; font-weight: bold">/&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/ReactRedux.Provider&gt;</span>
+    )
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>App <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Reselect.createSelector</code> 是一个高阶函数，它接受的第一个参数，是一个列表，里面就是分拆出来的，获取“变量”的方法，第二个参数就是接受变量的主要逻辑。因为变量已经明确拆分出来的，所以自然地，针对变量作判断并应用缓存机制就好办了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里注意一下，虽然表面上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getName()</code> 的调用少了，但是却额外多了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reselect</code> 的调用，本质上来说，只是改善的重复调用的损耗，并没有避免它。
+</p>
 
 <style type="text/css">
 body.z { background-color: #eff3fa; }
