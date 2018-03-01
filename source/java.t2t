@@ -1,0 +1,396 @@
+JAVA 学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/java.html
+%!format: !email
+%%toc
+
+
+# HelloWorld #
+
+```java
+public class Demo {
+    public static void main(String[] args) {
+        System.out.println("HelloWorld");
+    }
+}
+```
+
+上面代码在 ``Demo.java`` 文件中，然后使用 ``javac Demo.java`` 编译，得到 ``Demo.class`` ，再使用  ``java Demo`` 执行。
+
+
+*java* 的文件组织有一些约束：
+
+- 直接执行类，是调用类中的 ``main`` 的静态方法，命令行参数是这个方法的传参。
+- 源文件中有每个 ``class`` 定义，都会被编译成一个 ``.class`` 文件。
+- 一个源文件中最多只允许有一个 *public* 的 ``class`` 定义，并且这个 *public* 的类名要同文件名一样。
+
+
+# 包 #
+
+改一个前面的 ``HelloWorld`` ：
+
+```java
+package me.zys;
+
+public class Demo {
+    public static void main(String[] args) {
+        System.out.println("HelloWorld");
+    }
+}
+```
+
+通过 ``package`` 指定了“包”，这里再使用 ``javac Demo.java`` 编译的话，对应的 ``Demo.class`` 会放到： ``./me/zys/Demo.class`` 路径下，这里如果还是 ``java Demo`` ，会报找不到类的错误的。
+
+*java* 中的“包”，有两层意思，一方面关系着一个类的“全名”，另一方面则对应文件系统上的路径。
+
+要正确执行 ``Demo.class`` 的话，如果你当前目录是 ``.`` ，那么需要 ``java me.zys.Demo`` 来执行。可以看出，这个类的名字不是 ``Demo`` ，而是 ``me.zys.Demo`` ，找这个类时，一定是在 ``me/zys/Demo.class`` 这样的路径去找的。
+
+如果执行 ``java me.zys.Demo`` 当然路径不是 ``./me/..`` ，可以使用 ``-classpath`` 参数添加相应的类路径：
+
+```bash
+java -classpath /home/zys/temp me.zys.Demo
+```
+
+
+# 数据结构与控制结构 #
+
+## 主类型 primitive type ##
+
+|| 名字 | 标识 | 使用空间 | 取值范围 ||
+| 布尔值 | ``boolean`` | 1 bit | 0,1 |
+| 字符 | ``char`` | 1 字节 | \u0000 - \uFFFF |
+| 字节 | ``byte`` | 1 字节 | -128 - 127 |
+| 短整型 | ``short`` | 2 字节 | -32768 - 327676 |
+| 整型 | ``int`` | 4 字节 | -21 亿 - 21 亿 |
+| 长整型 | ``long`` | 8 字节 | (反正很大了) |
+| 单浮点 | ``float`` | 4 字节 | 1.4E-45 - 3.4E+38 |
+| 双浮点 | ``double`` | 8 字节 | 4.9E-324 - 1.79E+308 |
+
+需要注意的是， java 中的布尔值是严格判断的，有类型要求，像下面的代码是不允许的：
+
+```java
+if( 0 ){
+    System.out.println("HelloWorld");
+}
+```
+
+``char`` 和 ``byte`` 这类单字节的类型， ``'a'`` 和 ``97`` 及 ``\u0061`` 是一样的。
+
+
+## 字符串 ##
+
+java 中的字符串，不是主类型中的一种，而是一个类 *class* ，因为使用太频繁，所以在语法层面给了它一个特殊照顾，可以使用双引号来创建（ ``char`` 字符是单引号）：
+
+```java
+String s = "Hello";
+char[] s2 = {'H', 'e', 'l', 'l', 'o'};
+```
+
+``s`` 和 ``s2`` 看起来是一样的，不过 java 在判断时，因为它们是不同类型，所以也会判断成是不同的，嗯， java 中“类型”很重要。
+
+java 编译时，字符串是按 UTF-8 处理的，所以源码最好也用 UTF-8 。
+
+
+## 控制结构 ##
+
+``for`` 有两种形式：
+
+```java
+public class Demo {
+    public static void main(String[] args) {
+        for(int i = 0; i < 10; i++){
+            System.out.println(i);
+        }
+        for(int i: new int[] {0,2,3,4}){
+            System.out.println(i);
+        }
+    }
+}
+```
+
+``assert`` 的形式是：
+
+```java
+assert assertion : errorcode
+```
+
+在一般执行中是不起作用的，除非使用 ``-ea`` 或 ``-ea:classname`` 打开断言功能：
+
+```java
+public class Demo {
+    public static void main(String[] args) {
+        assert false : 1;
+    }
+}
+```
+
+直接执行没有任何结果的，要找开断言的话：
+
+```bash
+java -ea Demo
+```
+
+或者限定只打开指定类中的断言：
+
+```bash
+java -ea:Demo Demo
+```
+
+
+# 类 #
+
+*类* 算是 java 中的基本单位，通过 javac 编译得到的一个一个的 ``.class`` 文件，就是类。
+
+一开始提过跟文件名和 *pubilc* 有关的一些约束，如果我们先不管 *public* ， *包* 这些东西的话，我们可以在 ``Demo.java`` 中写这样的代码：
+
+```java
+class A {
+    public static void main(String[] args) {
+        System.out.println("I am A");
+    }
+}
+
+class B {
+    public static void main(String[] args) {
+        System.out.println("I am B");
+    }
+}
+```
+
+先编译：
+
+```bash
+javac Demo.java
+```
+
+可以看到，得到了 ``A.class`` 和 ``B.class`` 现两个产出， ``java A`` 和 ``java B`` 都可以正常执行。
+
+
+## 可见性限定词与继承 ##
+
+说这些概念前，先需要了解一下“包”和“继承”的概念，“包”前面已经说过了：
+
+```java
+package me.zys;
+
+public class Demo {
+    public static void main(String[] args) {
+        System.out.println("I am Demo");
+    }
+}
+```
+
+``Demo.class`` 会被放到 ``me/zys/Demo.class`` ，它的名字是 ``me.zys.Demo`` 。
+
+继承是写成：
+
+```java
+class A extends Demo {
+    public static void main(String[] args) {
+        System.out.println("I am A");
+    }
+}
+```
+
+限定词，指的是放在类定义前面，或者类成员前面的一个单词，用于控制定义的类，或者成员的可见性的，它有 4 种：
+
+- *public* ，最松的控制，总是可见。
+- *private* ，最严的控制，只能自己可见。
+- *protected* ，同包可见，或者子类可见。
+- （不写），即 *default* 的情况，同包可见。
+
+在源文件中，直接定义“类”，只能用到 *public* 或 *不写* 两种情况，类中的成员，才会用到可能的全部 4 种情况。
+
+
+*public* 最简单，不用多说了。
+
+*private* 说的“只能自己可见”，具体指的是“自己的类定义中的代码这个范围可见”。
+
+
+```java
+class A {
+    private String getHello(){
+        return "hello";
+    }
+
+    public String getPublicHello(){
+        return getHello();
+    }
+}
+
+public class Demo extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.getPublicHello());
+    }
+}
+```
+
+上面代码直接 ``a.getHello()`` 不行，通过 ``getPublicHello()`` 转一下就可以了。
+
+
+再看 *protected* 的情况：
+
+```java
+class A {
+    protected String getHello(){
+        return "hello";
+    }
+
+}
+
+class Demo extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.getHello());
+    }
+}
+
+class Demo2 {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.getHello());
+    }
+}
+```
+
+上面的代码执行都没有问题，它们都是“同包”的类，所以 ``getHello()`` 对 ``Demo2`` 可见。
+
+
+再看， ``me.zys.A`` ：
+
+```java
+package me.zys;
+
+public class A {
+    protected String getHello(){
+        return "hello";
+    }
+}
+```
+
+``Demo`` ：
+
+```java
+import me.zys.A;
+
+class Demo extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.getHello());
+    }
+}
+```
+
+这样特别注意，虽不是“同包”，但 ``Demo`` 是 ``A`` 的子类，那么为什么 *protected* 的 ``getHello()`` 调用会出错呢？这里实际上算是 *protected* 行为的表述问题。
+
+我觉得正确的描述应该，“作为父类访问时可见”，而不是“在子类中可见”。要正确访问，可以这样改：
+
+```java
+import me.zys.A;
+
+class Demo extends A {
+    private String getAHello(){
+        return super.getHello();
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        System.out.println(d.getAHello());
+    }
+}
+```
+
+当然，如果是同包，就没有这些限制了：
+
+```java
+package me.zys;
+import me.zys.A;
+
+class Demo extends A {
+    public static void main(String[] args) {
+        A a = new A();
+        System.out.println(a.getHello());
+    }
+}
+```
+
+最后说 *default* ，上面的例子去掉 *protected* 就不行了：
+
+``me.zys.A`` ：
+
+```java
+package me.zys;
+
+public class A {
+    String getHello(){
+        return "hello";
+    }
+}
+```
+
+``Demo`` ：
+
+```java
+import me.zys.A;
+
+class Demo extends A {
+    private String getAHello(){
+        return super.getHello();
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        System.out.println(d.getAHello());
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 初始化方法 ##
+
+## 属性和方法 ##
+
+## 静态属性和方法 ##
+
+## 接口 ##
+
+## 枚举类 ##
+
+
+
+
+# 注解 #
+
+# lambda #
+
+# 泛型 #
+
+# Collections #
+
+# 线程与并发 #
+
+# 文件IO #
+
+# 网络IO #
+
+# 类的动态加载 #
+
+
