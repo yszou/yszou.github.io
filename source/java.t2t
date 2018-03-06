@@ -350,21 +350,40 @@ class Demo extends A {
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## 初始化方法 ##
+
+
+初始化方法指跟类名同名的那个方法定义， java 官方好像就叫它是“构造方法”， *Constructor* 。但它的行为更像 Python 中的 ``__init__`` ，而不是 ``__new__`` ，并且 java 中也没有能改变 ``new`` 结果的方法定义。这个方法做的是初始化实例的一些工作，而不是在定义如何创建实例，所以，我更趋向叫它“初始化方法”。
+
+
+```java
+public class Demo {
+    public static void main(String[] args) {
+        Demo d = new Demo(333);
+        System.out.println(d.a);
+    }
+
+    private int a = 0;
+
+    Demo(){
+        System.out.println("none");
+        this.a = 123;
+    }
+
+    Demo(int a){
+        System.out.println("int");
+        this.a = a;
+    }
+}
+```
+
+初始化方法跟普通的方法相比，有一些特殊的地方：
+
+- 需要跟类同名。
+- 不能有任何返回，即使是 ``void`` ，或者 ``this`` 。
+- ``public`` 等限定词，影响这个类在哪个范围内可以被“实例化”。
+- 一个类，可以有多个同名的初始化方法，根据参数不同，调用时会应用不同的方法。
+
 
 ## 属性和方法 ##
 
