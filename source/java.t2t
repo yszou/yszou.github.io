@@ -387,9 +387,129 @@ public class Demo {
 
 ## 属性和方法 ##
 
+这个没什么多说的，前面的演示基本都已经包括了相关内容了。
+
+如果在子类中，要调用父类的方法，可以使用 ``super`` ：
+
+```java
+public class Demo extends A {
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.f();
+    }
+
+    public void f(){
+        super.f();
+        System.out.println("f");
+    }
+
+    Demo(){
+        super();
+        System.out.println("int");
+    }
+}
+
+
+class A {
+    public A(){
+        System.out.println("A");
+    }
+
+    public void f(){
+        System.out.println("f in A");
+    }
+}
+```
+
+
 ## 静态属性和方法 ##
 
+静态属性和方法，定义上，就是加一个 ``static`` 的前缀，这样，“类”本身只是相当于一个名字空间的概念了。
+
+```java
+public class Demo {
+    public static String s = "Hello";
+
+    public static void out() {
+        System.out.println("World");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Demo.s);
+        Demo.out();
+    }
+}
+```
+
+
 ## 接口 ##
+
+接口本身是定义一套“规则”，然后“类”去“实现”这套规则，那么后面在使用的地方，就可以抽象地，接受某个接口的实现，而不是限定为某个类了。
+
+```java
+public class Demo implements Dog, Bird {
+
+    public void run(){
+        System.out.println("dog run");
+    }
+
+    public void fly(){
+        System.out.println("bird fly");
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.run();
+        d.howl();
+        d.fly();
+    }
+}
+
+interface Dog {
+    public void run();
+    default public void howl(){
+        System.out.println("hoooo");
+    }
+}
+
+interface Bird {
+    public void fly();
+}
+```
+
+接口中只能有方法，不允许有属性。
+
+本来在接口的定义中，是只需要有“方法定义”，不允许有“方法实现”的，后来 java 为了加入允许有方法实现，但又为了兼容性，所以，如果你在接口中要定义一个有实现的方法，则需要在前面加一个 ``default`` 前缀。
+
+同一个类，可以实现多个接口的。
+
+
+## 抽象类 ##
+
+```java
+public class Demo extends Dog {
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.run();
+        System.out.println(d.s);
+    }
+}
+
+
+abstract class Dog {
+    public String s = "Hello";
+    public void run(){
+        System.out.println("dog run");
+    }
+}
+```
+
+
+抽象类是不能被直接实例化，只能用来继续使用的类。
+
+某方面来说，它跟“接口”有点像，而它是可以直接定义方法的，跟“接口”的区别，更多只是在使用概念上，一般来说，“接口”是定义行为，而“抽象类”是定义“实体”。
+
 
 ## 枚举类 ##
 
