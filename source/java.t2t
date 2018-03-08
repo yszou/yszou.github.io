@@ -513,16 +513,250 @@ abstract class Dog {
 
 ## 枚举类 ##
 
+枚举类一种特殊的类，有自己的特殊语法。表现上，有点像一种包装作用的容器。
 
+最简单的情况，就是定义一组静态成员：
 
+```java
+enum Color {
+    RED, BLUE;
+}
 
-# 注解 #
+public class Demo {
+    public static void main(String[] args) {
+        System.out.println(Color.RED);
+    }
+}
+```
 
-# lambda #
+复杂一点的例子：
+
+```java
+enum Color {
+    RED(1), BLUE(2);
+
+    private String name;
+
+    public String getName(){
+        return name;
+    }
+
+    public Color change(){
+        name = "黑";
+        return this;
+    }
+
+    private Color(int i){
+        if(i == 1){
+            name = "红";
+        }
+        if(i == 2){
+            name = "蓝";
+        }
+    }
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        Color c = Color.RED;
+        System.out.println(c.getName());
+        c.change();
+        System.out.println(c.getName());
+        System.out.println(Color.RED == Color.RED);
+        System.out.println(Color.RED == c);
+        System.out.println(Color.RED.getName());
+    }
+}
+```
+
+可以看出， ``Color.RED`` 这个静态成员，是对一个实例的引用，而实例的初始化逻辑就是类的“构造方法”处理的（这个方法要是 ``private`` ，不能是 ``public``），并且这个实例还是“单例”行为。
+
 
 # 泛型 #
 
+*泛型*，简单来说，就是推迟，确定，类型，或者说，在定义时，我也不知道使用时是什么类型。
+
+考虑：
+
+```java
+public class Demo {
+
+    public void hello(? obj){
+        System.out.println(obj);
+    }
+
+    public static void main(String[] args) {
+        System.out.println("HelloWorld");
+    }
+}
+```
+
+这个 ``hello`` ，我也不知道它的传参 ``obj`` 会是什么。
+
+当然，不知道是什么时，总是可以用 ``Object`` 来标明（事实上“原生类型”，“接口”这些也不是 ``Object`` 的子类）：
+
+```java
+public class Demo {
+
+    public void hello(Object obj){
+        System.out.println(obj);
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.hello(d);
+    }
+}
+```
+
+但是，这样做不能解决所有问题，因为向上转成 ``Object`` 之后，有很多更细的信息是丢失的。
+
+```java
+public class Demo {
+
+    public void world(){
+        System.out.println("world");
+    }
+
+    public void hello(Object obj){
+        obj.world();
+        //((Demo) obj).world();
+    }
+
+    public static void main(String[] args) {
+        Demo d = new Demo();
+        d.hello(d);
+    }
+}
+```
+
+泛型的语法，就是把“类型”信息单独拿出来，使其可以在使用时被传递：
+
+```java
+public class Demo<T extends Demo> {
+
+    public void world(){
+        System.out.println("world");
+    }
+
+    public void hello(T obj){
+        obj.world();
+    }
+
+    public static void main(String[] args) {
+        Demo<Demo> d = new Demo<Demo>();
+        d.hello(d);
+    }
+}
+```
+
+通过 ``Demo<Demo>`` 这种语法，带上了额外的类型信息，那么在 ``hello(T obj)`` 中，就可以确定 ``obj`` 的类型了。
+
+这里需要注意，仅仅是 ``hello(T obj)`` 是不够的，因为后面有一个 ``obj.world()`` ，编译器会要求 ``T`` 需要满足 ``拥有 world()`` 的要求，所以，我们必须强制一点，也就是 ``<T extends Demo>`` 。
+
+泛型也可以用到接口上：
+
+
+```java
+interface Any<T> {
+    public void hello(T obj);
+}
+
+public class Demo<T extends Demo> implements Any<T> {
+
+    public void world(){
+        System.out.println("world");
+    }
+
+    public void hello(T obj){
+        obj.world();
+    }
+
+    public static void main(String[] args) {
+        Demo<Demo> d = new Demo<Demo>();
+        d.hello(d);
+    }
+}
+```
+
+
 # Collections #
+
+# lambda #
+
+
+# 反射 #
+
+# 注解 #
+
+*注解* ，从实现上来说，是一种特殊的接口。
+
+在很多对注释的解释中，都会看到，说“注解不会改变原代码”，这种说法，我觉得其实是不严谨的。准备说，注解确实是不改动它挂的对象，但是，一方面不改动对象不代表不改变整个系统的运行逻辑，另一方面，“附加信息”这种行为，说“改”可能不太恰当，但是行为前后的东西是有区别的，就像，你指着一个人，对他是“天才”，或者说他是 SB，这个人还是这个人，但是别人受你的描述的影响，对这个人的看法却可能发生改变，这个过程，你就是在“注解”这个人。
+
+
+java 本身已经提供了一些注解，比如有一个是 ``@Override`` ，它的作用为，在编译期，检查父类中是否有对应方法：
+
+```java
+public class Demo extends Parent {
+
+    @Override
+    public void hello(){ }
+
+    @Override
+    public void world(){ }
+
+    public static void main(String[] args) {
+        System.out.println("HelloWorld");
+    }
+}
+
+class Parent {
+    public void hello(){}
+}
+```
+
+上面例子中， ``world()`` 这个方法在父类中是不存在的，但是它又被声明成了是一个重写方法，有了额外的这个 ``@Override`` ，在编译期就可以检查出这个“逻辑错误”了（非语法错误）。
+
+
+在自定义一个注解，要考虑两方面的东西，一方面是如何创建，另一方面是如何使用。前面说了，注解的作用只是附加额外信息，这是前者，而附加信息之后又怎么使用这些信息，某些时候才是更重要的事，这是后者。
+
+创建一个注解，其实是比较简单的，描述清楚 “目标” 和 “生存期” 就差不多了，：
+
+- 目标， *Target*， TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE, ANNOTATION_TYPE, PACKAGE, TYPE_PARAMETER, TYPE_USE.
+- 生存期， *Retention*, SOURCE, CLASS, RUNTIME.
+
+
+``@Override`` 是检查父亲方法是否存在，那，我们就做一个，“检查参数是否比 N 大”的 ``@GreaterN(int n)`` 吧。
+
+
+```java
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+@interface GreaterN {
+    int value() default 1;
+    int n() default 20;
+}
+
+public class Demo {
+    public void hello(@GreaterN(10) int i){
+        System.out.println(i);
+    }
+
+    public void world(@GreaterN(n=10) int i){
+        System.out.println(i);
+    }
+
+    public static void main(String[] args) {
+        System.out.println("HelloWorld");
+    }
+}
+```
+
 
 # 线程与并发 #
 
