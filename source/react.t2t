@@ -510,6 +510,30 @@ React 自己的事件，是“驼峰式”的名字，比如 ``onClick`` ，而 
     - ``componentDidCatch(error, info)``
 
 
+这几个方法的一些细节:
+
+
+``componentWillReceiveProps``
+
+- 初始化时不会被调用。
+- 可以在这里作 ``setState()`` 。
+- ``props`` 没变化时也可能被调用。
+
+
+
+``componentWillUpdate``
+
+- 初始化时不会被调用。
+- 不能在这里作 ``setState()`` ， 否则会再次触发变化流程，造成死循环。
+- ``shouldComponentUpdate()`` 为 ``false`` 时不会调用。
+
+
+``componentDidUpdate``
+
+- 初始化时不会被调用。
+- 远程请求常放在这里，因为可以先判断 ``props`` 的相应变化后再决定是否作新的远程调用。
+
+
 
 除了上面讲的过程 Hook 函数，及前面用过的 ``setState()`` ，组件还有一个 ``forceUpdate(callback)`` 方法，它的调用可以触发 ``render()`` ，并且跳过 ``shouldComponentUpdate()`` 。
 

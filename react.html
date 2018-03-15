@@ -14,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">React 学习笔记</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2018-01-26 14:40 更新</span>
+                <span>2018-03-15 20:50 更新</span>
             </div>
         </div>
 
@@ -739,6 +739,46 @@ React 自己的事件，是“驼峰式”的名字，比如 <code style="margin
     <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidCatch(error, info)</code>
     </li>
     </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这几个方法的一些细节:
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillReceiveProps</code>
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">初始化时不会被调用。
+</li>
+<li style="margin: 10px auto;">可以在这里作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 没变化时也可能被调用。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentWillUpdate</code>
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">初始化时不会被调用。
+</li>
+<li style="margin: 10px auto;">不能在这里作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setState()</code> ， 否则会再次触发变化流程，造成死循环。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">shouldComponentUpdate()</code> 为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code> 时不会调用。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">componentDidUpdate</code>
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">初始化时不会被调用。
+</li>
+<li style="margin: 10px auto;">远程请求常放在这里，因为可以先判断 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">props</code> 的相应变化后再决定是否作新的远程调用。
 </li>
 </ul>
 
