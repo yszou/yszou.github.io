@@ -1,0 +1,104 @@
+CSS 中的 flex 布局
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/flex.html
+%!format: !email
+%%toc
+
+
+# 简介 #
+
+*flex* 是 css 中新添加的一种布局特性，它的表现，还是像一维的流式布局。但是，因为加了几个控制属性，所以很多时候可以很直接地使用它来代替浮动，来达到想要的效果，并且，它不像浮动会有“清除浮动”的问题。
+
+它的出现，也使得我们在使用“表格布局”，“浮动布局”之外，又有了一个新选择。
+
+机制上来说，可以把 *flex* 看成是三个部分：
+
+- 容器属性，需要在外层，定义一个节点 ``display`` 的值为 ``flex`` ，这样，它的直接子节点会自动被看成是“flex 条目”。
+- 条目属性，“flex 条目”会用的一些控制属性，可以定义在容器中，这些条目的宽度怎么处理，留白怎么处理等。
+- 条目对齐，这些属性是作用在“容器”上的，来处理条目与条目之间的相对关系是怎样的。
+
+
+一个完整的例子是：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Flex布局</title>
+<style type="text/css">
+  .wrapper {
+    background-color: #ccc;
+    height: 100px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .wrapper > div {
+    border: 1px solid gray;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 40%;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex: 1 0 auto;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div>A</div>
+    <div>B</div>
+    <div>C</div>
+  </div>
+</body>
+</html>
+```
+
+别看属性一列不少，同样的结果，用浮动不一定比它简单，明了的。
+
+上面例子中的 ``wrapper`` 就是“容器”，它的三个直接子节点 ``div`` 就是“条目”了。
+
+
+# 容器属性 #
+
+先不说对齐，那么容器属性本身还是比较简单的，只有 3 + 1 个：
+
+- ``display: flex;``
+- ``flex-direction: row;``
+- ``flex-wrap: wrap;``
+- ``flex-flow: row wrap;``
+
+
+``flex-flow`` 是 ``flex-direction`` 和 ``flex-wrap`` 的简写。
+
+``display`` 不用说了。 ``flex-wrap`` 表示条目是否换行，默认值是 ``nowrap`` ，这种情况下，根据设置宽度要么自动缩小，要么溢出容器。
+
+``flex-direction`` 是定义方向，横，或者竖，再加上是否“逆向”，就是四种情况：
+
+- ``row``
+- ``row-reverse``
+- ``column``
+- ``column-reverse``
+
+
+这个设置项，本身是很容易理解的。 ``row`` 就从左到右， ``column`` 就从上到下，加上 ``-reverse`` 就反过来。但是，这个设置项会直接影响后面的“条目属性”，及“对齐属性”的意义。我不太想去思考“主轴”，“交叉轴”这类比较正统的概念，暂且，只从 ``row`` 去认识 *flex* 就好了，然后，再单独看看 ``column`` 下又是怎样的表现。
+
+
+# 条目属性 #
+
+
+# 条目对齐 #
+
+
+# column #
+
+
+
