@@ -94,6 +94,101 @@ CSS 中的 flex 布局
 
 # 条目属性 #
 
+这块相对来说，就比较简单了，还是 3 + 1 个：
+
+- ``flex-grow: 1``
+- ``flex-shrink: 0``
+- ``flex-basis: auto``
+- ``flex: 1 0 auto``
+
+
+``flex`` 是 ``flex-grow`` ``flex-shrink`` ``flex-basis`` 的缩写。
+
+这些值定义的行为，主要影响 flex 元素与容器空白的关系。简单来说，如果一个容器宽是 100 ，但是里面所有的元素宽加起来只有 80 ，剩下的 20 如何处理的事。
+
+
+``flex-basis`` 是“宽度”的意思， ``auto`` 会取元素的 ``width`` 值，即，如果有值，则是一个定宽，否则，根据里面的内容决定宽度。
+
+``flex-grow`` 和 ``flex-shrink`` ，有点像“橡皮长度”的感觉，前者是伸长，后者是缩短。各个无素的这个值，表示它们之间程度的相对值，比如 A 的 ``flex-grow`` 是 1 ，而 B 的 ``flex-grow`` 是 2 ，那么空白的分配中， B 会比 A 占 得更多。
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Flex布局</title>
+<style type="text/css">
+  .wrapper {
+    background-color: #ccc;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 100px;
+    width: 300px;
+    display: flex;
+  }
+  .wrapper > div {
+    border: 1px solid black;
+    background-color: red;
+    width: 50px;
+    flex: 1 0 auto;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div>A</div>
+    <div>B</div>
+    <div>C</div>
+  </div>
+</body>
+</html>
+```
+
+上的例子中，三个子元素会填充满 ``wrapper`` ，像是浮动中的 ``width: 33.33%`` 的效果一样，而且，高度会自动填充为容器的高。
+
+
+``flex`` 跟容器的 ``flex-wrap`` 一起，会有不一样的作用：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Flex布局</title>
+<style type="text/css">
+  .wrapper {
+    background-color: #ccc;
+    padding: 10px;
+    box-sizing: content-box;
+    height: 100px;
+    width: 300px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .wrapper > div {
+    border: 1px solid black;
+    background-color: red;
+    width: 150px;
+    flex: 1 0 auto;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div>A</div>
+    <div>B</div>
+    <div>C</div>
+  </div>
+</body>
+</html>
+```
+
+上面的例子，因为设置了“可换行”，并且子元素“可伸长”，在容器高度一定，一行放不下两个子元素的情况下， A，B，C 三块，会变成从上往下排列了。
+
+如果把子元素的 ``width: 150px`` 改成 ``width: 120`` ，结果就是 A，B 在同一行，每个宽 150 ， C 独立一行，宽 300 。记住，宽度变成是因为 ``flex-grow`` 作用。如果想要简单的 ``float: left`` 那样的效果，只需要 ``flex-grow: 0`` 就好了。
+
+
 
 # 条目对齐 #
 
