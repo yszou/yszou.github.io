@@ -189,11 +189,125 @@ CSS 中的 flex 布局
 如果把子元素的 ``width: 150px`` 改成 ``width: 120`` ，结果就是 A，B 在同一行，每个宽 150 ， C 独立一行，宽 300 。记住，宽度变成是因为 ``flex-grow`` 作用。如果想要简单的 ``float: left`` 那样的效果，只需要 ``flex-grow: 0`` 就好了。
 
 
+# 条目分布与对齐 #
 
-# 条目对齐 #
+水平分布，是在容器中使用 ``justify-content`` 属性控制，在子元素没有伸缩的情况下，子元素在足够大的容器中如何排列的行为，简单列几个取值是：
+
+- ``flex-start`` 靠左
+- ``flex-end`` 靠右
+- ``center`` 整体居中
+- ``space-around`` 均匀分布
+- ``space-between`` 两边贴边的均匀分布
+
+
+垂直对齐方面，是在容器中使用 ``align-items`` 来控制，这个属性与子元素的 ``height`` 有关系，常见的几个取值：
+
+- ``stretch`` ，在子元素没有定高情况下，这个默认选项，会使子元素自动撑满高度。
+- ``flex-start`` ，顶部对齐。
+- ``flex-end`` ，底部对齐。
+- ``center`` ，居中。
+- ``baseline`` ，靠上的基线对齐。（内容字体大小不一的情况下，才能看出与 ``flex-start`` 的区别）
+
+
+例子：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Flex布局</title>
+<style type="text/css">
+  .wrapper {
+    background-color: #ccc;
+    padding: 10px;
+    box-sizing: content-box;
+    height: 100px;
+    width: 800px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .wrapper > div {
+    border: 1px solid black;
+    background-color: red;
+    width: 120px;
+    height: auto;
+    flex: 0 0 auto;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div>A</div>
+    <div><span style="font-size: 50px;">B</span></div>
+    <div>C</div>
+  </div>
+</body>
+</html>
+```
 
 
 # column #
+
+当把容器的 ``flex-direction`` 默认值 ``row`` 改成 ``column`` 之后，很多属性的行为都会不同了。
+
+我们之前说的什么“水平居中”，“左对齐”之类的说法，其实在 ``column`` 场景下，是对不上的。
+
+``row`` 的子元素排列，是从左往右排，沿水平轴。 ``column`` 的排列，是从上往下排，沿垂直轴。对应地，很多之前介绍的属性的行为，跟子元素排列的轴是一致的，所以 ``row`` 的时候我们说的“水平”，在 ``column`` 下就变成“垂直”了。。
+
+``flex-grow`` 和 ``flex-start`` 也是同样的道理， ``row`` 下它们控制宽， ``column`` 就变成控制高了。
+
+
+示例：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Flex布局</title>
+<style type="text/css">
+  .wrapper {
+    background-color: #ccc;
+    padding: 10px;
+    box-sizing: content-box;
+    height: 100px;
+    width: 800px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center
+  }
+  .wrapper > div {
+    border: 1px solid black;
+    background-color: red;
+    width: 120px;
+    height: 30px;
+    flex: 1 0 auto;
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <div>A</div>
+    <div style="width: 200px; height: 50px;"><span style="font-size: 50px;">B</span></div>
+    <div>C</div>
+  </div>
+</body>
+</html>
+```
+
+``column`` 的 ``flex`` ，有点像排版中的“分栏”，之前， css 应该是直接做不出来的吧。
+
+
+# 常用布局 #
+
+
+
+
 
 
 
