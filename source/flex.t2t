@@ -306,8 +306,152 @@ CSS 中的 flex 布局
 # 常用布局 #
 
 
+## 左右 ##
 
 
+'''
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+</div>
+'''
 
 
+```html
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+</div>
+```
+
+
+## 右左 ##
+
+
+'''
+<div style="display: flex; height: 300px;">
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+</div>
+'''
+
+
+```html
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+</div>
+```
+
+
+## 左中右 ##
+
+'''
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+</div>
+'''
+
+
+```html
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+</div>
+```
+
+
+## 从左到右 ##
+
+
+'''
+<div style="display: flex; height: auto; flex-wrap: wrap;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+</div>
+'''
+
+
+```html
+<div style="display: flex; height: auto; flex-wrap: wrap;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+</div>
+```
+
+## 均匀分布（不贴边） ##
+
+
+'''
+<div style="display: flex; height: auto; justify-content: space-around;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+'''
+
+```html
+<div style="display: flex; height: auto; justify-content: space-around;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+```
+
+
+## 均匀分布（贴边） ##
+
+
+'''
+<div style="display: flex; height: auto; justify-content: space-between;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+'''
+
+
+```html
+<div style="display: flex; height: auto; justify-content: space-around;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+```
+
+## 分栏 ##
+
+
+'''
+<div style="display: flex; height: 300px; flex-flow: column wrap">
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">A</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">B</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">C</div>
+</div>
+'''
+
+```html
+<div style="display: flex; height: 300px; flex-flow: column wrap">
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">A</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">B</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">C</div>
+</div>
+```
 

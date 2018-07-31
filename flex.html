@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="_favicon.ico" />
+    <meta charset="UTF-8" />
+    <title>CSS 中的 flex 布局 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">CSS 中的 flex 布局</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2018-08-01 01:23 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">简介</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">容器属性</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">条目属性</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">条目分布与对齐</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">column</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">常用布局</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">6.1. 左右</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">6.2. 右左</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none">6.3. 左中右</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none">6.4. 从左到右</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none">6.5. 均匀分布（不贴边）</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none">6.6. 均匀分布（贴边）</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none">6.7. 分栏</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 简介</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">flex</em> 是 css 中新添加的一种布局特性，它的表现，还是像一维的流式布局。但是，因为加了几个控制属性，所以很多时候可以很直接地使用它来代替浮动，来达到想要的效果，并且，它不像浮动会有“清除浮动”的问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它的出现，也使得我们在使用“表格布局”，“浮动布局”之外，又有了一个新选择。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+机制上来说，可以把 <em style="color: #d75100; font-style: normal;">flex</em> 看成是三个部分：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">容器属性，需要在外层，定义一个节点 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">display</code> 的值为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex</code> ，这样，它的直接子节点会自动被看成是“flex 条目”。
+</li>
+<li style="margin: 10px auto;">条目属性，“flex 条目”会用的一些控制属性，可以定义在容器中，这些条目的宽度怎么处理，留白怎么处理等。
+</li>
+<li style="margin: 10px auto;">条目对齐，这些属性是作用在“容器”上的，来处理条目与条目之间的相对关系是怎样的。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个完整的例子是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Flex布局&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">wrapper</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#ccc</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">flex</span>;
+    <span style="color: #000000; font-weight: bold">flex-direction</span>: <span style="color: #000000; font-weight: bold">row</span>;
+    <span style="color: #000000; font-weight: bold">flex-wrap</span>: <span style="color: #000000; font-weight: bold">wrap</span>;
+    <span style="color: #000000; font-weight: bold">flex-flow</span>: <span style="color: #000000; font-weight: bold">row</span> <span style="color: #000000; font-weight: bold">wrap</span>;
+    <span style="color: #000000; font-weight: bold">justify-content</span>: <span style="color: #000000; font-weight: bold">center</span>;
+    <span style="color: #000000; font-weight: bold">align-items</span>: <span style="color: #000000; font-weight: bold">center</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">wrapper</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">div</span> {
+    <span style="color: #000000; font-weight: bold">border</span>: <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #000000; font-weight: bold">gray</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">border-box</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">40</span><span style="color: #445588; font-weight: bold">%</span>;
+    <span style="color: #000000; font-weight: bold">flex-basis</span>: <span style="color: #000000; font-weight: bold">auto</span>;
+    <span style="color: #000000; font-weight: bold">flex-grow</span>: <span style="color: #009999">1</span>;
+    <span style="color: #000000; font-weight: bold">flex-shrink</span>: <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">flex</span>: <span style="color: #009999">1</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">auto</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;B&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+别看属性一列不少，同样的结果，用浮动不一定比它简单，明了的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面例子中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wrapper</code> 就是“容器”，它的三个直接子节点 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">div</code> 就是“条目”了。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 容器属性</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先不说对齐，那么容器属性本身还是比较简单的，只有 3 + 1 个：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">display: flex;</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-direction: row;</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-wrap: wrap;</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-flow: row wrap;</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-flow</code> 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-direction</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-wrap</code> 的简写。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">display</code> 不用说了。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-wrap</code> 表示条目是否换行，默认值是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nowrap</code> ，这种情况下，根据设置宽度要么自动缩小，要么溢出容器。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-direction</code> 是定义方向，横，或者竖，再加上是否“逆向”，就是四种情况：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row-reverse</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column-reverse</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个设置项，本身是很容易理解的。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 就从左到右， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 就从上到下，加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-reverse</code> 就反过来。但是，这个设置项会直接影响后面的“条目属性”，及“对齐属性”的意义。我不太想去思考“主轴”，“交叉轴”这类比较正统的概念，暂且，只从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 去认识 <em style="color: #d75100; font-style: normal;">flex</em> 就好了，然后，再单独看看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 下又是怎样的表现。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 条目属性</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这块相对来说，就比较简单了，还是 3 + 1 个：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow: 1</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-shrink: 0</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-basis: auto</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex: 1 0 auto</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex</code> 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-shrink</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-basis</code> 的缩写。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这些值定义的行为，主要影响 flex 元素与容器空白的关系。简单来说，如果一个容器宽是 100 ，但是里面所有的元素宽加起来只有 80 ，剩下的 20 如何处理的事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-basis</code> 是“宽度”的意思， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">auto</code> 会取元素的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">width</code> 值，即，如果有值，则是一个定宽，否则，根据里面的内容决定宽度。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-shrink</code> ，有点像“橡皮长度”的感觉，前者是伸长，后者是缩短。各个无素的这个值，表示它们之间程度的相对值，比如 A 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> 是 1 ，而 B 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> 是 2 ，那么空白的分配中， B 会比 A 占 得更多。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Flex布局&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">wrapper</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#ccc</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">border-box</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">300</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">flex</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">wrapper</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">div</span> {
+    <span style="color: #000000; font-weight: bold">border</span>: <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #000000; font-weight: bold">black</span>;
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #000000; font-weight: bold">red</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">50</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">flex</span>: <span style="color: #009999">1</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">auto</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;B&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上的例子中，三个子元素会填充满 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wrapper</code> ，像是浮动中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">width: 33.33%</code> 的效果一样，而且，高度会自动填充为容器的高。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex</code> 跟容器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-wrap</code> 一起，会有不一样的作用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Flex布局&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">wrapper</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#ccc</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">content-box</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">300</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">flex</span>;
+    <span style="color: #000000; font-weight: bold">flex-wrap</span>: <span style="color: #000000; font-weight: bold">wrap</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">wrapper</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">div</span> {
+    <span style="color: #000000; font-weight: bold">border</span>: <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #000000; font-weight: bold">black</span>;
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #000000; font-weight: bold">red</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">150</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">flex</span>: <span style="color: #009999">1</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">auto</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;B&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的例子，因为设置了“可换行”，并且子元素“可伸长”，在容器高度一定，一行放不下两个子元素的情况下， A，B，C 三块，会变成从上往下排列了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果把子元素的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">width: 150px</code> 改成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">width: 120</code> ，结果就是 A，B 在同一行，每个宽 150 ， C 独立一行，宽 300 。记住，宽度变成是因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> 作用。如果想要简单的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">float: left</code> 那样的效果，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow: 0</code> 就好了。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 条目分布与对齐</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+水平分布，是在容器中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">justify-content</code> 属性控制，在子元素没有伸缩的情况下，子元素在足够大的容器中如何排列的行为，简单列几个取值是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-start</code> 靠左
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-end</code> 靠右
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">center</code> 整体居中
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">space-around</code> 均匀分布
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">space-between</code> 两边贴边的均匀分布
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+垂直对齐方面，是在容器中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">align-items</code> 来控制，这个属性与子元素的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">height</code> 有关系，常见的几个取值：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">stretch</code> ，在子元素没有定高情况下，这个默认选项，会使子元素自动撑满高度。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-start</code> ，顶部对齐。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-end</code> ，底部对齐。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">center</code> ，居中。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">baseline</code> ，靠上的基线对齐。（内容字体大小不一的情况下，才能看出与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-start</code> 的区别）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+例子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Flex布局&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">wrapper</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#ccc</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">content-box</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">800</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">flex</span>;
+    <span style="color: #000000; font-weight: bold">flex-wrap</span>: <span style="color: #000000; font-weight: bold">nowrap</span>;
+    <span style="color: #000000; font-weight: bold">justify-content</span>: <span style="color: #000000; font-weight: bold">space-between</span>;
+    <span style="color: #000000; font-weight: bold">align-items</span>: <span style="color: #000000; font-weight: bold">flex-start</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">wrapper</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">div</span> {
+    <span style="color: #000000; font-weight: bold">border</span>: <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #000000; font-weight: bold">black</span>;
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #000000; font-weight: bold">red</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">120</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #000000; font-weight: bold">auto</span>;
+    <span style="color: #000000; font-weight: bold">flex</span>: <span style="color: #009999">0</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">auto</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;&lt;<span style="color: #000080">span</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;font-size: 50px;&quot;</span>&gt;B&lt;/<span style="color: #000080">span</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. column</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当把容器的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-direction</code> 默认值 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 改成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 之后，很多属性的行为都会不同了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们之前说的什么“水平居中”，“左对齐”之类的说法，其实在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 场景下，是对不上的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 的子元素排列，是从左往右排，沿水平轴。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 的排列，是从上往下排，沿垂直轴。对应地，很多之前介绍的属性的行为，跟子元素排列的轴是一致的，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 的时候我们说的“水平”，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 下就变成“垂直”了。。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-grow</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex-start</code> 也是同样的道理， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 下它们控制宽， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 就变成控制高了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+示例：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Flex布局&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">wrapper</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#ccc</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">content-box</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">800</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">flex</span>;
+    <span style="color: #000000; font-weight: bold">flex-direction</span>: <span style="color: #000000; font-weight: bold">column</span>;
+    <span style="color: #000000; font-weight: bold">flex-wrap</span>: <span style="color: #000000; font-weight: bold">wrap</span>;
+    <span style="color: #000000; font-weight: bold">justify-content</span>: <span style="color: #000000; font-weight: bold">flex-start</span>;
+    <span style="color: #000000; font-weight: bold">align-items</span>: <span style="color: #000000; font-weight: bold">center</span>
+  }
+  .<span style="color: #445588; font-weight: bold">wrapper</span> <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000080">div</span> {
+    <span style="color: #000000; font-weight: bold">border</span>: <span style="color: #009999">1</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #000000; font-weight: bold">solid</span> <span style="color: #000000; font-weight: bold">black</span>;
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #000000; font-weight: bold">red</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">120</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">30</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">flex</span>: <span style="color: #009999">1</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">auto</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;width: 200px; height: 50px;&quot;</span>&gt;&lt;<span style="color: #000080">span</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;font-size: 50px;&quot;</span>&gt;B&lt;/<span style="color: #000080">span</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">column</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">flex</code> ，有点像排版中的“分栏”，之前， css 应该是直接做不出来的吧。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 常用布局</h1>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 左右</h2>
+
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: 300px;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 200px; background-color: lightblue;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 1 0 auto; background-color: yellow;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 右左</h2>
+
+<div style="display: flex; height: 300px;">
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: 300px;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 200px; background-color: lightblue;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 1 0 auto; background-color: yellow;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. 左中右</h2>
+
+<div style="display: flex; height: 300px;">
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+    <div style="flex: 1 0 auto; background-color: yellow;"></div>
+    <div style="flex: 0 0 200px; background-color: lightblue;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: 300px;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 200px; background-color: lightblue;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 1 0 auto; background-color: yellow;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 200px; background-color: lightblue;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.4. 从左到右</h2>
+
+<div style="display: flex; height: auto; flex-wrap: wrap;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: auto; flex-wrap: wrap;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px; margin: 10px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.5. 均匀分布（不贴边）</h2>
+
+<div style="display: flex; height: auto; justify-content: space-around;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: auto; justify-content: space-around;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.6. 均匀分布（贴边）</h2>
+
+<div style="display: flex; height: auto; justify-content: space-between;">
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+    <div style="flex: 0 0 100px; background-color: lightblue; height: 100px;"></div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: auto; justify-content: space-around;&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; height: 100px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.7. 分栏</h2>
+
+<div style="display: flex; height: 300px; flex-flow: column wrap">
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">A</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">B</div>
+    <div style="flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;">C</div>
+</div>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: flex; height: 300px; flex-flow: column wrap&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;&quot;</span>&gt;A&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;&quot;</span>&gt;B&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;flex: 0 0 100px; background-color: lightblue; width: auto; margin: 10px;&quot;</span>&gt;C&lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'flex';
+  var disqus_url = 'https://www.zouyesheng.com/flex.html';
+  var disqus_title = 'CSS 中的 flex 布局';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABpUlEQVR4nN2XMY7bMBBF31gCpK1o
+IAegLhJrc6SUAbyQFs7BJPsU6eQbUB0F0PopvF2SLlMk7DgFh/M5/8+niV/XdvhNEP61KJqAZqda
+ODEIIGa/O5gkTG99Bmik4lrxah2yyxIuso7ZRnd8bwm2/vjXz/1T9JtxWi+LbzY0S2p2hqXZQ4mN
+VDy7RGbGLT16bveRzaz2rE2StIeCZo1RkuRWG5qCFk6cY7MHSVNwzHbA0nd0SdWyva4125e7I5I1
+QDTC1y6/CMKOI7vRDuQ+VWpmjTSu73bgGkbC+/F8h7VE4NG58q1E7Zw/9pZcVfmz1ffWUrVwCiVq
+Z1iclSvr+OiaOVWzvfoiqXSOEEqEIElp8GT3nIZFO4OyJWgmz2mKJirRq4BpRK6qXGN673RdP6nN
+q5btZa8WTxe0FqyPI1nRupbVXLtEkqZQyCfO0VuVZzNrLVVLa6ppWUdPp2CSYH3r8nUdyQRXJOdE
+bJRAs0YwjZ4MeGaTlPsE+RRcGfDMeSD+IOjeQlPcGPDhueZUSbMuT8/g7bkUR9CRmK9UfjPA/uMf
+1U8Pbg4Rg6EvfAAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2018 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
