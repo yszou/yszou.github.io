@@ -1,0 +1,69 @@
+Clojure学习
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 准备环境 #
+
+
+```bash
+sudo apt-get install leiningen
+```
+
+你也可以到 https://leiningen.org/#install 下载自安装程序。
+
+安装了 *lein* 之后，运行：
+
+```bash
+lein repl
+```
+
+第一次使用，会自动下载相关的依赖，当看到 ``user=>`` 时，这个 REPL 工具就启动好了：
+
+```bash
+user=> (println "hello world")
+hello world
+nil
+user=> 
+```
+
+最简单的 Hello World 就是：
+
+```clj
+(println "hello world")
+```
+
+REPL 用起来还是有些不方便的，一个 clj 文件可以直接被执行当然更好，使用 ``lein-exec`` 可以使用。
+
+``lein-exec`` 是 *lein* 的一个 plugin ，在 ``~/.lein/profiles.clj`` 中添加：
+
+```clj
+{:user {
+    :plugins [[lein-exec "0.3.7"]]
+}}
+```
+
+再次执行 ``lein`` 命令，会自动安装上 ``lein-exec`` ，然后假设 ``demo.clj`` 的内容是：
+
+```clj
+(println "hello world")
+```
+
+那么：
+
+```bash
+lein exec demo.clj
+```
+
+就可以看到输出了。
+
+
+
+
+
+
