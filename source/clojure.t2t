@@ -238,8 +238,118 @@ REPL 环境，有一个专门的包提供了一些实用的工具：
 
 
 
+# 函数 #
+
+## 基本定义 ##
 
 
+```clj
+user=> (defn show [name] (str "Hello, " name) )
+#'user/show
+user=> (show "123")
+"Hello, 123"
+```
+
+多种参数:
+
+```clj
+user=> (defn show
+  #_=>   ([] (show "World"))
+  #_=>   ([name] (str "Hello, " name))
+  #_=> )
+#'user/show                                                                
+user=> (show)
+"Hello, World"                                                             
+user=> (show "xx")                                                         
+"Hello, xx" 
+```
+
+可变参数，使用 ``&`` ，则不定参数会放到一个 *List* 中传递：
+
+```clj
+user=> (defn show [name & other] (println name other))
+#'user/show
+user=> (show "1" "2" "3")
+1 (2 3)
+nil
+user=> (show "1")
+1 nil
+```
+
+匿名函数，使用 ``fn`` 定义：
+
+```clj
+user=> ( (fn [name] (println name)) "hahah" )
+hahah
+```
+
+实际上， ``defn`` 相当于 ``(def name (fn [name] (println name)))`` 。
+
+
+匿名函数的简写形式 ``#()`` ：
+
+- 使用 ``%`` 引用单一的一个参数。
+- 使用 ``%1`` , ``%2`` 引用多个参数中的某个。
+- 使用 ``%&`` 引用不定参数。
+
+
+```clj
+user=> (#(+ 6 %) 1)
+7
+
+user=> (#(println %2 %1) "hello" "world")
+world hello
+
+user=> (#(println %&) "a" "b" "c")
+(a b c)
+```
+
+
+``apply`` 的使用，使用 ``apply`` 显式调用函数，可以把参数包装到一个 *List* 中传递：
+
+```clj
+user=> (apply #(println %2 %1 %3) "1" '("2" "3"))
+2 1 3
+```
+
+注意，唯一的 *List* 只能掉到最后，否则，解释的方式会不一样：
+
+```clj
+user=> (apply #(println %2 %1 %3) "1" '("2" "3") '("4"))
+(2 3) 1 4
+```
+
+
+## let 局部变量与闭名 ##
+
+使用 ``let`` 结构，可以定义一组局部变量：
+
+```clj
+user=> (str (let [a 1 b 2] (+ a b)) " ok")
+"3 ok"
+```
+
+闭包行为：
+
+```clj
+user=> (defn call-name [name] #(println name) )
+#'user/call-name
+user=> (call-name "ok")
+#object[user$call_name$fn__2897 0x5c0af97a "user$call_name$fn__2897@5c0af97a"]
+user=> ((call-name "ok"))
+ok
+```
+
+## Java 代码调用的写法 ##
+
+|| 场景 | Java | Clojure ||
+| 构造补全 | ``new Widget("name")`` | ``(Widget. "name")`` |
+| 实例方法 | ``ins.getName()`` | ``(.getName  ins)`` |
+| 实例属性 | ``ins.name`` | ``(.-name ins)``  |
+| 静态方法 | ``Math.sqrt(25)`` | ``(Math/sqrt 25)`` |
+
+
+注意， Java 中的方法，与 Clojure 的“函数”，是不同的。
 
 
 
