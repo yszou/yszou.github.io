@@ -11,6 +11,8 @@ Clojure学习
 # 准备环境 #
 
 
+## 使用 lein ##
+
 ```bash
 sudo apt-get install leiningen
 ```
@@ -61,6 +63,14 @@ lein exec demo.clj
 ```
 
 就可以看到输出了。
+
+
+## 直接安装 ##
+
+访问 https://clojure.org/guides/getting_started
+
+下载安装的 shell 文件，执行后， ``bin`` 中就会有相应的可执行程序了。
+
 
 
 # 数据类型 #
@@ -564,5 +574,61 @@ nil
 user=> (for [x '(1 2) y '(3 4) z '(5 6)] [x y z])
 ([1 3 5] [1 3 6] [1 4 5] [1 4 6] [2 3 5] [2 3 6] [2 4 5] [2 4 6])
 ```
+
+
+
+# 递归 #
+
+
+
+
+# 异常处理 #
+
+``try`` ``catch`` 的结构：
+
+```clj
+(try
+  (/ 2 0)
+  (catch Exception e "here")
+  (finally (println "OK")))
+```
+
+当没有异常发生时，会返回 ``(/ 2 0)`` 这个位置的表达式的值，否则，会返回 ``catch`` 表达式的值。 ``finally`` 那里只是执行，与返回值无关。
+
+
+抛出异常使用 ``throw`` ：
+
+```clj
+(def x
+(try
+  (/ 2 1)
+  (throw (Exception. "xxx"))
+  (catch Exception e (.getMessage e))
+  (finally "OK"))
+)
+
+(println x)
+```
+
+可以看到，整个 ``try`` 表达式的返回值，就是 ``(.getMessage e)`` 的值。
+
+
+*Clojure* 自己提供了一组 ``ex-info`` 和 ``ex-data`` 来处理异常：
+
+```clj
+(def x
+(try
+  (/ 2 1)
+  (throw (ex-info "xxx" {:info "here"}))
+  (catch Exception e (ex-data e))
+  (finally "OK"))
+)
+
+(println (:info x))
+```
+
+``ex-info`` 打包一个 *map* ， ``ex-data`` 把这个 *map* 解出来。
+
+
 
 
