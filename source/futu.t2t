@@ -1,0 +1,39 @@
+富途证券 OpenAPI 的使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/futu.html
+%!format: !email
+%%toc
+
+
+
+# 安装 #
+
+## Daemon 安装 ##
+
+- https://www.futunn.com/openAPI 下载 Daemon 程序。（它的角色，是一个本地网关，当然，你也可以把它部署到远端服务器上）
+- 在 ``FutuOpenD.xml`` 中配置账号信息及服务端服务。账号就是“牛牛号”，密码你是登录富途的密码。
+- 因为是直接写在文件中的，所以密码最好使用 MD5 散列值的方式。初次登录，可能会有手机验证码的流程。按屏幕提示操作即可（会使用 ``input_phone_verify_code`` 命令）。
+- ``FutuOpenD.xml`` 除了一个 Daemon ，还直接在命令提供了简单管理命令（同时这个管理终端支持 *telnet*），使用 ``help`` 可看到命令列表。
+
+
+## 文档安装 ##
+
+- https://github.com/FutunnOpen/futu-api-doc 文档项目， git 抽下代码。
+- 安装 pandoc ，简单点， ``sudo apt-get install pandoc`` 。
+- 安装 Python 的 Sphinx ， ``sudo pip3 install sphinx`` 。
+- 及一个主题， ``sudo pip3 install sphinx_rtd_theme`` 。
+- 还需要一个 sphinx 的扩展， ``sudo pip3 install nbsphinx`` 。
+- 如果 ``sphinx-build`` 不在系统 PATH 中，可以打开 ``Makefile`` 编辑 ``SPHINXBUILD`` 的值。
+- 最后，使用 ``make`` ，或者你自己使用 ``sphinx-build`` 就可以构建出指定类型的文档了。
+
+
+## Python SDK ##
+
+- https://github.com/FutunnOpen/py-futu-api 项目。
+- 参照 ``requirements.txt`` 安装依赖的模块。
+
+
+
