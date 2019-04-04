@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="_favicon.ico" />
+    <meta charset="UTF-8" />
+    <title>一种 BI 报表配置过程描述 DSL 的设计想法 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">一种 BI 报表配置过程描述 DSL 的设计想法</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-04-04 14:01 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">为什么会想到这个？</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">使用一种 DSL</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">YY 一些应用场景</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">3.1. 多种输出格式</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">3.2. 作为其它应用系统的输出目标</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">3.3. 作为专有格式部分嵌入</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">3.4. 作为分析训练的语料</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 为什么会想到这个？</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来说，现在我们在做 BI 报表的实现时，因为过分地关注呈现结果，而正在把过程中最有价值的能力丢失掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，我们可能一来，就从呈现结果上去考虑我们需要的数据结构是怎么样的：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/ga-1.jpg" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于这个“组件”，上面一排指标，下面一个趋势图，我们大概可以用这样的结构去表示它：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[
+    {
+        <span style="color: #000080">&quot;type&quot;</span>: <span style="color: #dd1144">&quot;measure&quot;</span>,
+        <span style="color: #000080">&quot;params&quot;</span>: {
+            <span style="color: #000080">&quot;measure&quot;</span>: [<span style="color: #dd1144">&quot;用户&quot;</span>, <span style="color: #dd1144">&quot;收入&quot;</span>, <span style="color: #dd1144">&quot;转化率&quot;</span>, <span style="color: #dd1144">&quot;会话&quot;</span>]
+        },
+        <span style="color: #a61717; background-color: #e3d2d2">x:</span> <span style="color: #a61717; background-color: #e3d2d2">0,</span>
+        <span style="color: #a61717; background-color: #e3d2d2">y:</span> <span style="color: #a61717; background-color: #e3d2d2">0</span>
+    },
+    {
+        <span style="color: #000080">&quot;type&quot;</span>: <span style="color: #dd1144">&quot;trend&quot;</span>,
+        <span style="color: #000080">&quot;params&quot;</span>: {
+            <span style="color: #000080">&quot;x&quot;</span>: <span style="color: #dd1144">&quot;日期&quot;</span>,
+            <span style="color: #000080">&quot;y&quot;</span>: <span style="color: #dd1144">&quot;@measure&quot;</span>
+        },
+        <span style="color: #a61717; background-color: #e3d2d2">x:</span> <span style="color: #a61717; background-color: #e3d2d2">0,</span>
+        <span style="color: #a61717; background-color: #e3d2d2">y:</span> <span style="color: #a61717; background-color: #e3d2d2">300</span>
+    }
+]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+只是一个示意，事实上，在真实场景中，这样一个看似普通的呈现效果，其在一个可视化编辑器中要实现的挑战，是要大得多的。它里面有太多的细节的东西要去考虑，而上面的例子，甚至还带有“指标切换”的交互行为。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，挑战再大，也仅仅是技术实现层面的事，通过不断完善与扩充前面的那个 json 结构，理论上，我们总可以达到目标。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+问题是，我们费尽千辛万苦达到的所谓目标，真的是我们关心的吗？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+至少，不是我们关心的全部。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的 json 只是一两个组件的片段，要考虑整个报表的配置，那么这个 json 配置的规模要膨胀很多很多，直接的结果，就是这个配置本身，已经是无法让人去阅读里面的信息了，同时，对于代码处理来讲，也变成了一个“独特的”，“针对专一系统”的特定配置文件，即，这个报表配置，只能在你的系统中使用，想针对这个配置作一些“转换”到其它系统的处理，几乎是不可能的。（因为其它的很多系统也是同样的设计思路，它们的格式也同样复杂无比）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一旦我们把“呈现效果”在这个配置中越来越多地表示出来，其实我们也就是在“核心价值”外添加很多不重要的东西。为了使我们的可视化报表编辑器足够强大与灵活，对于像颜色到底是红色还是绿色，趁势图 X，Y 轴范围是多少这样的信息，在 json 结构中可能都会保存下来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最终，这个 json 结构本身已经没有任何数据价值，它的功能变成了单纯的存储信息。就像你精心编写的，富含注释的源代码，编译之后变成了 0 和 1 的指令，它被存储起来，随时准备被执行。可怕的是，我们并没有源代码， json 结构的得到，是具体配置行为被“即时地”，“带状态地”编译之后的结果。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个 json 结构是一个结果，而得到这个结果的过程信息，已经荡然无存。看到了一个 10 ，可能是 5 + 5 的结果，也可能是 15 - 5 的结果，还可能是 5 * 2 的结果，减法与乘法代表的意义是完全不同的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到现实中的场景来说，对于这个 json 结构：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">针对单一系统，转换成本，生成成本，非常巨大。
+</li>
+<li style="margin: 10px auto;">无法从中看出报表的逻辑层次。比如第一部分，讲什么，从哪里到哪里，第二部分讲什么，又是哪里到哪里。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第一点本质上是一个技术问题。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这个 json 中，即有数据内容，又有视觉内容，在完成了一个可视化编辑器之后，你会发现你陷入了一个两难境地。这个编辑器的功能越强大， 这个 json 结构就越复杂，也就越绑死在这个编辑系统中。如果当初你的配置目标，是一个可交互的网页，那么，你很难再为这个 json 结构，写一套生成静态网页的逻辑，其它的，生成位图，生成失量图更不用想了。甚至移动端适配，都可能需要在足够的前提下才能进行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另一方面，其它系统，想要生成这个 json 结构，也不是一件容易的事，有太多细节的东西。比如再做一个简化版可视化编辑器，得花多大的代价才能提取到这个 json 结构的一个子集出来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好吧，技术的问题，几乎都有历史可以参照。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">C 语言，不同于汇编被绑定在了具体硬件上。这使得你的 C 代码，通过不同平台的编译器，就可以跑在不同平台上。不管你用的操作系统是什么， CPU 是哪家的。这里的思路，是定义 C 语言，然后为它写编译器，而不是为某个平台上的汇编，写转换程序。
+</li>
+<li style="margin: 10px auto;">高德纳给自己发明 TeX 时，就是一种排版描述的抽象，而不依赖于具体的排版载体与形式。巧的是，后面 Adobe 的 PS / PDF 语言，也是同样的东西，不依赖于具体设备的打印描述。所以，今天 TeX -&gt; PDF 算是一个标准转换路径了，而这两个东西产生的联系也使曲高和寡的 TeX 时至今日仍然可以被使用（否则时代更迭，TeX 排出的东西几十年后就没有设备可以打印了）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不难看出来，一个抽象的，标准的定义集，是多少重要，以及在时间的推演中将产生多么大的收益。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第二点，原来是跟业务有关的事，不过，后来想想，其实可以推出更多的一些意义。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们在写文章时，看文章时，文章自身内部，是有一套逻辑关系的，前后顺序，单节层次。而在配置报表，查看报表时，报表其实也有这种类似的逻辑关系（当聚焦一个话题时，数据呈现的顺序，层次是有讲究的）。但 json 结构不像文章，人不能看不说，其内部也无法再反映这种关系了。这里多说一点，逻辑关系与可视化编辑的形式，并不是矛盾的。拿排版来说， TeX 是典型的关注逻辑关系的，但是 Word ，就“正确”使用来讲，如果你在排版一本书，正确的姿势，也是先定义章节的逻辑，再通过样式表处理格式。而不是直接对于一行字去设置它的格式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+丢失逻辑关系，看似没有什么影响，但就 BI 应用场景，及现在行业关注数据资产这些背景来想的话，失去的东西及埋下的隐患，会像病毒一样在系统中蔓延。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+你首先碰到的难题是，如何表达报表中蕴含的分析方法，分析思路。就像前面讲 10 的那个例子，分析方法就像加法，乘法一样，但是现在，你只有一个结果，我们是没有办法通过结果去倒推方法的。所以现实里，报表中本身无法表述，我们只能在系统其它层面，加入额外的概念，以具体形式试求达到类似的目的，比如，报表模板，高阶组件等。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+顺着这个问题，往后很容易想到，因为只是侧重视觉结果的呈现， json 结构这样的内容，与目前的“处处皆可算法”的潮流，很难结合，本质的核心点在于，你的算法，是在针对如何分析数据呢，还是针对如何排版呈现数据？现在中，我们往往拿着针对后者的 json 结构，去想着做针对前者的事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果上一个难题，只是系统能力的瑕疵的话，那么接下来的难题，可能会拷问你做事的意义。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+进入正题前，先回想一下我们是如何开发并持续维护应用系统的。典型的，无论你用什么语言，什么形式，B / S，C / S，系统运行于何种平台，一个系统在几年，甚至几十年的维护过程中，最最核心的东西，是它的数据，更具体一点，是存储于关系数据库中的数据模型及具体数据。因为关系数据库的相关定义是开放并且稳定的标准，所以依赖它存在的各种数据，足以在几十年，这种目前看来足够长的时间内，处于一种可以持续维护的状态中。哪怕你的应用系统要重构，要重写，甚至关系数据库本身要换个产品，都没有问题。（现在理解为什么用 Mongo 这种东西作主要持久化存储是多么不负责的行为了吧）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而如果你的数据，没有建立在 SQL 这种超强标准的前提之下，一个因为业务需求而临时确定的超复杂的 json 结构，想要持续维护是不可能的事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+事实告诉我们，无论当初你为了配置那些看起来花哨无比的报表花了多少时间，这套数据报表系统并不会比其它一些应用系统能活得更久。随着系统的迁移变更，这些旧的报表要么进垃圾堆，要么成为阻碍你系统进化的高墙枷锁。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以史为鉴，现在编程语言几乎已经不会再提什么“平台无关”了吧，像 BI 报表这种东西，是不是也应该提提“与具体系统无关”呢。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+总结一下：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">现在为 BI 报表直接设计的，像 json 结构这种数据形式，缺乏必要的抽象，本身也太复杂。
+</li>
+<li style="margin: 10px auto;">因为复杂，输出形式很难扩展，输入端也很难对接。
+</li>
+<li style="margin: 10px auto;">仅仅是为了视觉呈现存储信息，丢失了过程中的表现分析思路，分析方法的逻辑层次等信息。不利于在沉淀的数据中提取总结分析方法。
+</li>
+<li style="margin: 10px auto;">与具体的系统强耦合，不同系统数据无法融合，要么制约系统进化，要么随着系统变化而消逝。
+</li>
+</ul>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 使用一种 DSL</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说了问题，要避免，或者解决这些问题，参考计算机历史，一种方案，就是设计一个专门的形式来表达“报表配置”这个过程。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们先把注意力放在这个“形式”上，让这种“形式”充分表达报表配置者的逻辑意图，然后，我们针对这种“形式”开发各种编译器，把它转换到其它目标格式中。我自己尝试简单例子大概是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">TITLE --name=标题的名字在这里
+AUTHOR --name=邹业盛
+SECTION --name=标题在这里
+
+DATA --header=日期,数据  --body=2010,2012,2013|10,11,23  =&gt; data
+DEBUG --name=data --data=@data
+
+COLUMN2
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+END
+
+COLUMN4
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+END
+
+SECTION --name=标题在这里
+
+COLUMN1
+    CHART_TREND --title=标题 --data=@data
+END
+
+SUBSECTION --name=子标题
+
+COLUMN3
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+    CHART_TREND --title=标题 --data=@data
+END
+
+TEXT --text=哈哈哈，一些内容在这里 =&gt; text
+TEXT --text=哈哈哈，一些内容在这里 =&gt; text
+
+SAVE --uri=/home/zys/demo.png
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我思考，这种“语言”应该有这样的一些特点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">是人可读的形式。
+</li>
+<li style="margin: 10px auto;">是人可写的形式。
+</li>
+<li style="margin: 10px auto;">像写文章一样，有层次结构。
+</li>
+<li style="margin: 10px auto;">像看文章一样，从前到后，顺序处理。
+</li>
+<li style="margin: 10px auto;">结构简单，便于代码解析处理。
+</li>
+<li style="margin: 10px auto;">能力方便扩展。我们只是给定形式，由具体的实现再确定具体的标准。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，上面的形式，不管是用 TeX ，或者 XML / HTML ，都可以有等价表示的。但 TeX 不好解析处理，而 XML / HTML 对于“可写” / “可读” 这点，又太不友好。所以自己试着弄了一个，至少还好解析的样子。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单实现了一个生成位图的编译器，上面的代码，可以生成如下图：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/ded-example.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实我觉得位图已经算是比较不好处理的类型了，相应的，要生成 HTML 什么的，同样的办法，还容易处理得多。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. YY 一些应用场景</h1>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 多种输出格式</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是最直接的一个应用能力。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过不同的编译器实现，我们可以用“源文件”生成各种目标格式，不光是 PNG / SVG / HTML 这类，还可以是具体应用系统的专有格式。这样，应用系统的变迁就不会影响报表这类资产的积累了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+自然地，多端适配更不在话下了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+拿来自动合成多媒体也行，每天用最新的数据给你讲视频故事。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. 作为其它应用系统的输出目标</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+报表可以是人配置，也可以是系统生成，这里顺理成章的。之前的 json 结构复杂，其它系统要生成，成本比较大。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是这种本身就为手写准备的 DSL 则简单得多。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">可以通过其它数据结构（比如关系数据库）生成报表。
+</li>
+<li style="margin: 10px auto;">可以通过其它逻辑结构（比如组织结构）生成报表。
+</li>
+<li style="margin: 10px auto;">可以通过其它交互形式（比如语音，手势，图片）生成报表。
+</li>
+</ul>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 作为专有格式部分嵌入</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个行为，类似 markdown 。网页系统可以支持 markdown 生成 HTML ，自然也可以支持这种格式生成 HTML 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而在我自己使用的，扩展了 markdown 语法，用来写这篇文章的标记语言中，也可以加入这种格式的支持，目标，可以是一个大的 SVG ，或者是 HTML 片段。（我已经支持了 gnuplot 生成 SVG 嵌入）
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 作为分析训练的语料</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面介绍过，这种半结构化的格式，某方面说，是保留了“分析思路”这部分信息的，同时，根据人为可读可写设计。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+参照自然语言处理的思路，对其进行处理，提取特征，或者其它量化指标，这件事，就要比之前那种 json 结构，在可行性上要容易得多。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'ded';
+  var disqus_url = 'https://www.zouyesheng.com/ded.html';
+  var disqus_title = '一种 BI 报表配置过程描述 DSL 的设计想法';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsElEQVR4nN2XPY7bMBCFvxEFiB2V
+E1AXibxVTpTSXgvwwSLaJ8gN6BtIVWhAq5fCSZNsuSwSFiymmOH7A4Ym/j6P5p0i/GtVNAOdliMc
+FiJALPXeYJK44jKpP+dO2qoiXm1gDKehHGQDyabq/Cabolfv8gf3/fMoLcRuD1IBp27mWE83lCR1
+c5ii9rDFTtpqukRmht03/O0+8TBr6zHZchCgxm2e0CKomG40Q4RwkfagXMZwUU3dFiel5QgjgNXU
+reXzp5N1ZXV5MIEvuFyRyT1cJGmjmKbYSVWZnAFGjrHbcSoj55rTdlwuY5CefrGlarqliS5pioWw
+RWmpiK0h9U7rKy57W+DxEiqmG6XFZUactAepNjb1oDk8zN/uNvjUvw1VsZ3FQcrPq6onGwg2lOt6
+Gsp1nWK5qaJuDayXFHaIXtHMs57qMdkwhi2WKy4r3beob/0H9X2/mszMK9rweA0tHs654jSTxGFx
+2QMUgtX1JLFLi5P2sAG4qp4E4Jm3NpYxVHTJL2xz+J23qthaCMLb8jbouvaxfPn+teYWJINOdoz+
+R+Py40rFzdz+4x/VT7YtBLuMzgFsAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
