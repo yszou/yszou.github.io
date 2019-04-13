@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>滚动字幕的实现 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">滚动字幕的实现</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-04-14 00:07 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">定义问题</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">1.1. 滚动过程</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">1.2. 准备过程</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_blank">1.3. 回收过程</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_blank">实现</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_blank">2.1. 非界面抽象逻辑</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_blank">2.2. 滚动显示逻辑</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_blank">2.3. 完整代码</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 定义问题</h1>
+
+<a class="anchor" name="toc2"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.1. 滚动过程</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+滚动字幕，简单来说，就是从下往上，把一些内容顺序组织之后，同步移动。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-init.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个看似很简单的效果，在配合实际场景的“内容产生不确定性”这个特点之后，就会有一点点挑战了。至少，比可以乱飞，可重叠的 B 站式弹幕要麻烦得多。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从上面看，也许初步的思路，是创建很多 div 之后，不断计算它们的位置，就实现了同步滚动。这样处理不是不行，只是计算每个 div 位置，会有一些性能浪费，同时，因为每个 div 的高度是可能不同的，在判断“进入”及“完成”时，总是需要先取得正确的对象，并获取其高度之后，才能计算。这也就是说，你必须得保持每一个 div 的引用。这可不是明智的办法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-diff-h.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更容易的处理方式，是把这些 div 打包处理：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-group.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在单个包内部，通过 css 调整好间距之后，滚动的效果只是单个块滚动的结果。判断“进入”用“完成”需要保持每个块的引用，这在大部分时候，要比单个 div 少一个数量级。当然，极端情况，每个块中只有一个 div ，也就退化到前面一样的场景了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+为了达到滚动不间断的效果（单个块的高度，有可能比可视区高度大，也可能小），我们需要在适当的时候，在底部加入新的块。同时，为了稳定页面资源的消耗，也需要把完成显示的块给删除掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我个人在想像这个过程的时候，很自然会联想到机枪的装弹夹及换弹夹的过程。显示的过程，就是在输送弹夹的过程。内容移出显示区，就是打出了一颗子弹。一个弹夹的所有子弹都打完的时候，这个弹夹就需要被卸掉。同时，弹夹的输送需要是不间断的，一个弹夹接着一个弹夹（但是它们不能有重叠）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基于这个比喻，整个过程大概变成了：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-clip.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.2. 准备过程</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再看准备过程。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的第一步，当我们获取到一个弹夹的时候，把它置于初始位，然后控制它开始往上滚动。当滚动到第二步的位置时，我们需要再得到一个新的弹夹，把它置于第一步位置，如此反复。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这一步，需要的抽象，是“获取弹夹”这个行为。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们可以定义一个“弹夹工厂”，当需要弹夹的时候，总是去找它使就可以了。它一定会返回一个弹夹，哪怕是空弹夹。至于，这个“弹夹工厂”自己是如何获取子弹，如何生产弹夹，可以完全内化。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-factory.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.3. 回收过程</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+额外的这个回收过程，是为了处理一种“意外场景”。即在内容滚动完，又没有新的内容产生的时候，可以用旧的内容来代替。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但注意一点，在旧的内容滚动过程中，新的内容可能随时产生，所以，为了能尽快把新内容显示出来，我们可以把旧内容弹夹，永远只放一颗子弹，这样，这个弹夹就很“小”。一旦它达到第二步位置，我们就有机会去判断是否有新内容需要马上被放进来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回收过程本身，也就是当弹夹被显示完之后，这个弹夹中的子弹，再次被送到弹夹工厂。当然，这个工厂弹夹生产策略，可能和新内容的那个工厂不同。除了前面说过了，一个弹夹只放一颗子弹之外，还有，比如，旧内容，一般我们只需要保留最新 N 条。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll-all.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+至此，整个问题就差不多是这样了。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 实现</h1>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. 非界面抽象逻辑</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+滚动的实现，肯定是只能放在页面，通过控制 DOM 的属性来实现了。这种跟页面相关的，一般我们放在后面再去处理。因为与页面相关的代码，我们需要在浏览器中调试。而与界面无关的部分，就容易得多了，只需要打开编辑器，写完，运行就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+非界面的逻辑，很清楚地，就是上面的右侧，“弹夹工厂”，“弹夹”，“子弹”这套东西。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">子弹，就是显示的单条内容。目前，我们只需要给个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">text</code> 就行了。（现实场景，可能还有其它属性）
+</li>
+<li style="margin: 10px auto;">弹夹，弹夹中，是保存了一个“子弹序列”的，同时，它还应该有“填充”的方法。
+</li>
+<li style="margin: 10px auto;">弹夹工厂，它生产弹夹，自然应该是有保存一个“弹夹序列”，同时，还有“获取子弹”，或者“接收子弹输入”，及“给出弹夹”的实现。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Bullet {
+    constructor(text){
+        <span style="color: #000000; font-weight: bold">this</span>.text <span style="color: #000000; font-weight: bold">=</span> text;
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> Clip {
+    constructor(){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletList <span style="color: #000000; font-weight: bold">=</span> [];
+    }
+
+    fill(bullet){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletList.push(bullet);
+    }
+
+    isEmpty(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList.length <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">0</span>;
+    }
+
+    getBulletAmount(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList.length;
+    }
+
+    getBulletList(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList;
+    }
+
+}
+
+<span style="color: #000000; font-weight: bold">class</span> ClipFactory {
+    constructor(bulletMaxAmountPerClip, maxClipAmount){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletMaxAmountPerClip <span style="color: #000000; font-weight: bold">=</span> bulletMaxAmountPerClip <span style="color: #000000; font-weight: bold">||</span> <span style="color: #009999">30</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.maxClipAmount <span style="color: #000000; font-weight: bold">=</span> maxClipAmount <span style="color: #000000; font-weight: bold">||</span> <span style="color: #009999">0</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.clipList <span style="color: #000000; font-weight: bold">=</span> [];
+        <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+    }
+
+    receive(bullet){
+        <span style="color: #000000; font-weight: bold">this</span>.currentClip.fill(bullet);
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.currentClip.getBulletAmount() <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #000000; font-weight: bold">this</span>.bulletMaxAmountPerClip){
+            <span style="color: #000000; font-weight: bold">this</span>.clipList.push(<span style="color: #000000; font-weight: bold">this</span>.currentClip);
+            <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+            <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.maxClipAmount){
+                <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.clipList.length <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.maxClipAmount){
+                    <span style="color: #000000; font-weight: bold">this</span>.clipList.shift();
+                }
+            }
+        }
+    }
+
+    pop(){
+        <span style="color: #000000; font-weight: bold">let</span> clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.clipList.shift();
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>clip){
+            <span style="color: #999988">// 有可能是空弹夹</span>
+            clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.currentClip;
+            <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+        }
+        <span style="color: #000000; font-weight: bold">return</span> clip;
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> StandbyClipFactory <span style="color: #000000; font-weight: bold">extends</span> ClipFactory {
+    constructor(){
+        <span style="color: #000000; font-weight: bold">super</span>(<span style="color: #009999">1</span>, <span style="color: #009999">30</span>);
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码中，最后多了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">StandbyClipFactory</code> ，是备用弹夹工厂。因为需要处理它的逻辑，所以弹夹工厂多出来了两个参数， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bulletMaxAmountPerClip</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">maxClipAmount</code> ，用于定义，单个弹夹的子弹数，及，工厂可保存的最大弹夹数。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以定义写好之后，可以加上随机逻辑让它们跑起来看看：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> main() {
+    <span style="color: #000000; font-weight: bold">const</span> clipFactory <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> ClipFactory();
+    <span style="color: #000000; font-weight: bold">const</span> standbyClipFactory <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> StandbyClipFactory();
+
+    <span style="color: #000000; font-weight: bold">const</span> fillStandby <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">const</span> bullet <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Bullet(<span style="color: #dd1144">&#39;子弹&#39;</span>);
+        standbyClipFactory.receive(bullet);
+        setTimeout(() =&gt; {
+            fillStandby();
+        }, <span style="color: #0086B3">Math</span>.random() <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1000</span>)
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> fill <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">const</span> bullet <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Bullet(<span style="color: #dd1144">&#39;子弹&#39;</span>);
+        clipFactory.receive(bullet);
+        setTimeout(() =&gt; {
+            fill();
+        }, <span style="color: #0086B3">Math</span>.random() <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">100</span>)
+    }
+
+    <span style="color: #000000; font-weight: bold">const</span> check <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">let</span> clip <span style="color: #000000; font-weight: bold">=</span> clipFactory.pop();
+        <span style="color: #000000; font-weight: bold">if</span>(clip.isEmpty()){
+            clip <span style="color: #000000; font-weight: bold">=</span> standbyClipFactory.pop();
+            console.log(clip, <span style="color: #dd1144">&#39;standby&#39;</span>);
+        } <span style="color: #000000; font-weight: bold">else</span> {
+            console.log(clip);
+        }
+        setTimeout(() =&gt; {
+            check();
+        }, <span style="color: #0086B3">Math</span>.random() <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">500</span>)
+    }
+
+    fillStandby();
+    fill();
+    check();
+}
+
+
+<span style="color: #000000; font-weight: bold">if</span> (require.main <span style="color: #000000; font-weight: bold">===</span> module) {
+    main();
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. 滚动显示逻辑</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+滚动的 DOM 结构是很简单的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;view&quot;</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;clip&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;bullet&quot;</span>&gt;&lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;inner&quot;</span>&gt;哈哈哈&lt;/<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;bullet&quot;</span>&gt;&lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;inner&quot;</span>&gt;哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈&lt;/<span style="color: #000080">div</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">#view</code> 作 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">position: relative; overflow: hidden;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 绝对定位，通过改成其 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">transform: translate3d(0, 100px, 0)</code> 实现滚动。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.bullet</code> 里面套个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.inner</code> 是为了保存 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 里面的内容都在其高度计算之内，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 的高度与判断弹夹切换的逻辑直接相关。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再看执行流程，无非是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">从工厂获取弹夹，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">#view</code> 中创建 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 及里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.bullet</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 开始向上滚动，并不断更新其滚动值。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 到达“第二位置”时，再从工厂获取弹夹，重复第一步。（如果得到了空弹夹，则尝试从“备用弹夹工厂”再获取）。这步，可以再抽象为“获取策略”。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> 到达“第三位置”时，删除 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.clip</code> ，并把对应的弹夹里面的子弹，重新送入“备用弹夹工厂”。这步，可以再抽象为“回收策略”。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实谈到了“获取策略”，和“回收策略”，很自然会想到“优先弹夹工厂”的逻辑，即，实现，某些内容一旦产生，是直接优先“插队”显示的。这步就不延展了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+流程列清楚了，代码不难：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Engine {
+    constructor(wrapper, clipFactory, standbyClipFactory){
+        <span style="color: #000000; font-weight: bold">this</span>.wrapper <span style="color: #000000; font-weight: bold">=</span> wrapper;
+        <span style="color: #000000; font-weight: bold">this</span>.clipFactory <span style="color: #000000; font-weight: bold">=</span> clipFactory;
+        <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory <span style="color: #000000; font-weight: bold">=</span> standbyClipFactory;
+        <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight <span style="color: #000000; font-weight: bold">=</span> wrapper.clientHeight;
+    }
+
+    createClipElement(clip){
+        <span style="color: #000000; font-weight: bold">const</span> dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&#39;div&#39;</span>);
+        dom.setAttribute(<span style="color: #dd1144">&#39;class&#39;</span>, <span style="color: #dd1144">&#39;clip&#39;</span>);
+        clip.getBulletList().map(bullet =&gt; {
+            <span style="color: #000000; font-weight: bold">const</span> d <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&#39;div&#39;</span>);
+            d.setAttribute(<span style="color: #dd1144">&#39;class&#39;</span>, <span style="color: #dd1144">&#39;bullet&#39;</span>);
+            d.innerHTML <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&lt;div class=&quot;inner&quot;&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> bullet.text <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;&lt;/div&gt;&#39;</span>;
+            dom.appendChild(d);
+        });
+        <span style="color: #000000; font-weight: bold">return</span> dom;
+    }
+
+    move(clip, nextCallback, endCallback){
+
+      <span style="color: #000000; font-weight: bold">const</span> ele <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.createClipElement(clip);
+      ele.style.opacity <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+      <span style="color: #000000; font-weight: bold">this</span>.wrapper.appendChild(ele);
+
+      <span style="color: #000000; font-weight: bold">let</span> y <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight;
+      <span style="color: #000000; font-weight: bold">let</span> delta <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+      <span style="color: #000000; font-weight: bold">let</span> nextY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight <span style="color: #000000; font-weight: bold">-</span> ele.clientHeight;
+      <span style="color: #000000; font-weight: bold">let</span> endY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">*</span> ele.clientHeight;
+      <span style="color: #000000; font-weight: bold">let</span> status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;before&#39;</span>; <span style="color: #999988">// before, in, end</span>
+
+      ele.style.transform <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`translate3d(0, ${</span>y<span style="color: #dd1144">}px, 0)`</span>;
+      ele.style.opacity <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+      <span style="color: #000000; font-weight: bold">const</span> animation <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        y <span style="color: #000000; font-weight: bold">-=</span> delta;
+        ele.style.transform <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`translate3d(0, ${</span>y<span style="color: #dd1144">}px, 0)`</span>;
+
+        <span style="color: #000000; font-weight: bold">if</span>( (y <span style="color: #000000; font-weight: bold">&lt;=</span> nextY) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> (status <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;before&#39;</span>)){
+          status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;in&#39;</span>;
+          nextCallback();
+        }
+        <span style="color: #000000; font-weight: bold">if</span>( (y <span style="color: #000000; font-weight: bold">&lt;=</span> endY) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> (status <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;in&#39;</span>) ){
+          status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;end&#39;</span>;
+          ele.remove();
+          endCallback();
+        }
+
+        <span style="color: #000000; font-weight: bold">if</span>(status <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;end&#39;</span>){
+          <span style="color: #000000; font-weight: bold">return</span>;
+        }
+        requestAnimationFrame(animation);
+      };
+
+      animation();
+    }
+
+    <span style="color: #999988">// 获取策略</span>
+    getNewClip(callback){
+        <span style="color: #000000; font-weight: bold">let</span> clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.clipFactory.pop();
+        <span style="color: #000000; font-weight: bold">if</span>(clip.isEmpty()){
+          clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory.pop();
+          <span style="color: #000000; font-weight: bold">if</span>(clip.isEmpty()){
+            setTimeout(() =&gt; {
+              <span style="color: #000000; font-weight: bold">this</span>.getNewClip(callback);
+            }, <span style="color: #009999">500</span>);
+            <span style="color: #000000; font-weight: bold">return</span>;
+          }
+        }
+        callback(clip);
+    }
+
+    <span style="color: #999988">// 回收策略</span>
+    onClipEnd(clip){
+        clip.getBulletList().map(bullet =&gt; {
+          <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory.receive(bullet);
+        });
+    }
+
+    run(){
+      <span style="color: #000000; font-weight: bold">this</span>.getNewClip(clip =&gt; {
+        <span style="color: #000000; font-weight: bold">this</span>.move(clip, <span style="color: #000000; font-weight: bold">this</span>.run.bind(<span style="color: #000000; font-weight: bold">this</span>), () =&gt; {<span style="color: #000000; font-weight: bold">this</span>.onClipEnd(clip)});
+      });
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.3. 完整代码</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/scroll.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;滚动字幕&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  .<span style="color: #445588; font-weight: bold">view</span> {
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">200</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">height</span>: <span style="color: #009999">500</span><span style="color: #445588; font-weight: bold">px</span>;
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #009999">#aaa</span>;
+    <span style="color: #000000; font-weight: bold">position</span>: <span style="color: #000000; font-weight: bold">relative</span>;
+    <span style="color: #000000; font-weight: bold">overflow</span>: <span style="color: #000000; font-weight: bold">hidden</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">bullet</span> {
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span>;  
+    <span style="color: #000000; font-weight: bold">box-sizing</span>: <span style="color: #000000; font-weight: bold">border-box</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">inner</span> {
+    <span style="color: #000000; font-weight: bold">background-color</span>: <span style="color: #000000; font-weight: bold">white</span>;
+    <span style="color: #000000; font-weight: bold">padding</span>: <span style="color: #009999">5</span><span style="color: #445588; font-weight: bold">px</span>;
+  }
+  .<span style="color: #445588; font-weight: bold">clip</span> {
+    <span style="color: #000000; font-weight: bold">transform</span>: <span style="color: #0086B3">translate3d</span>(<span style="color: #009999">0</span>, <span style="color: #009999">0</span><span style="color: #445588; font-weight: bold">px</span>, <span style="color: #009999">0</span>);  
+    <span style="color: #000000; font-weight: bold">position</span>: <span style="color: #000000; font-weight: bold">absolute</span>;
+    <span style="color: #000000; font-weight: bold">width</span>: <span style="color: #009999">100</span><span style="color: #445588; font-weight: bold">%</span>;
+  }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+<span style="color: #000000; font-weight: bold">class</span> Bullet {
+    constructor(text){
+        <span style="color: #000000; font-weight: bold">this</span>.text <span style="color: #000000; font-weight: bold">=</span> text;
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> Clip {
+    constructor(){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletList <span style="color: #000000; font-weight: bold">=</span> [];
+    }
+
+    fill(bullet){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletList.push(bullet);
+    }
+
+    isEmpty(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList.length <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">0</span>;
+    }
+
+    getBulletAmount(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList.length;
+    }
+
+    getBulletList(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.bulletList;
+    }
+
+}
+
+<span style="color: #000000; font-weight: bold">class</span> ClipFactory {
+    constructor(bulletMaxAmountPerClip, maxClipAmount){
+        <span style="color: #000000; font-weight: bold">this</span>.bulletMaxAmountPerClip <span style="color: #000000; font-weight: bold">=</span> bulletMaxAmountPerClip <span style="color: #000000; font-weight: bold">||</span> <span style="color: #009999">30</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.maxClipAmount <span style="color: #000000; font-weight: bold">=</span> maxClipAmount <span style="color: #000000; font-weight: bold">||</span> <span style="color: #009999">0</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.clipList <span style="color: #000000; font-weight: bold">=</span> [];
+        <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+    }
+
+    receive(bullet){
+        <span style="color: #000000; font-weight: bold">this</span>.currentClip.fill(bullet);
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.currentClip.getBulletAmount() <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #000000; font-weight: bold">this</span>.bulletMaxAmountPerClip){
+            <span style="color: #000000; font-weight: bold">this</span>.clipList.push(<span style="color: #000000; font-weight: bold">this</span>.currentClip);
+            <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+            <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.maxClipAmount){
+                <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.clipList.length <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.maxClipAmount){
+                    <span style="color: #000000; font-weight: bold">this</span>.clipList.shift();
+                }
+            }
+        }
+    }
+
+    pop(){
+        <span style="color: #000000; font-weight: bold">let</span> clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.clipList.shift();
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>clip){
+            <span style="color: #999988">// 有可能是空弹夹</span>
+            clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.currentClip;
+            <span style="color: #000000; font-weight: bold">this</span>.currentClip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Clip();
+        }
+        <span style="color: #000000; font-weight: bold">return</span> clip;
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> StandbyClipFactory <span style="color: #000000; font-weight: bold">extends</span> ClipFactory {
+    constructor(){
+        <span style="color: #000000; font-weight: bold">super</span>(<span style="color: #009999">1</span>, <span style="color: #009999">30</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> Engine {
+    constructor(wrapper, clipFactory, standbyClipFactory){
+        <span style="color: #000000; font-weight: bold">this</span>.wrapper <span style="color: #000000; font-weight: bold">=</span> wrapper;
+        <span style="color: #000000; font-weight: bold">this</span>.clipFactory <span style="color: #000000; font-weight: bold">=</span> clipFactory;
+        <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory <span style="color: #000000; font-weight: bold">=</span> standbyClipFactory;
+        <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight <span style="color: #000000; font-weight: bold">=</span> wrapper.clientHeight;
+        <span style="color: #000000; font-weight: bold">this</span>.isStop <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">false</span>;
+    }
+
+    createClipElement(clip){
+        <span style="color: #000000; font-weight: bold">const</span> dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&#39;div&#39;</span>);
+        dom.setAttribute(<span style="color: #dd1144">&#39;class&#39;</span>, <span style="color: #dd1144">&#39;clip&#39;</span>);
+        clip.getBulletList().map(bullet =&gt; {
+            <span style="color: #000000; font-weight: bold">const</span> d <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.createElement(<span style="color: #dd1144">&#39;div&#39;</span>);
+            d.setAttribute(<span style="color: #dd1144">&#39;class&#39;</span>, <span style="color: #dd1144">&#39;bullet&#39;</span>);
+            d.innerHTML <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&lt;div class=&quot;inner&quot;&gt;&#39;</span> <span style="color: #000000; font-weight: bold">+</span> bullet.text <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;&lt;/div&gt;&#39;</span>;
+            dom.appendChild(d);
+        });
+        <span style="color: #000000; font-weight: bold">return</span> dom;
+    }
+
+    move(clip, nextCallback, endCallback){
+
+      <span style="color: #000000; font-weight: bold">const</span> ele <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.createClipElement(clip);
+      ele.style.opacity <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+      <span style="color: #000000; font-weight: bold">this</span>.wrapper.appendChild(ele);
+
+      <span style="color: #000000; font-weight: bold">let</span> y <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight;
+      <span style="color: #000000; font-weight: bold">let</span> delta <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+      <span style="color: #000000; font-weight: bold">let</span> nextY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.wrapperHeight <span style="color: #000000; font-weight: bold">-</span> ele.clientHeight;
+      <span style="color: #000000; font-weight: bold">let</span> endY <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">*</span> ele.clientHeight;
+      <span style="color: #000000; font-weight: bold">let</span> status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;before&#39;</span>; <span style="color: #999988">// before, in, end</span>
+
+      ele.style.transform <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`translate3d(0, ${</span>y<span style="color: #dd1144">}px, 0)`</span>;
+      ele.style.opacity <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+      <span style="color: #000000; font-weight: bold">const</span> animation <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        y <span style="color: #000000; font-weight: bold">-=</span> delta;
+        ele.style.transform <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`translate3d(0, ${</span>y<span style="color: #dd1144">}px, 0)`</span>;
+
+        <span style="color: #000000; font-weight: bold">if</span>( (y <span style="color: #000000; font-weight: bold">&lt;=</span> nextY) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> (status <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;before&#39;</span>)){
+          status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;in&#39;</span>;
+          nextCallback();
+        }
+        <span style="color: #000000; font-weight: bold">if</span>( (y <span style="color: #000000; font-weight: bold">&lt;=</span> endY) <span style="color: #000000; font-weight: bold">&amp;&amp;</span> (status <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;in&#39;</span>) ){
+          status <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;end&#39;</span>;
+          ele.remove();
+          endCallback();
+        }
+
+        <span style="color: #000000; font-weight: bold">if</span>(status <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;end&#39;</span>){ <span style="color: #000000; font-weight: bold">return</span> }
+
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.isStop){<span style="color: #000000; font-weight: bold">return</span>}
+
+        requestAnimationFrame(animation);
+      };
+
+      animation();
+    }
+
+    getNewClip(callback){
+        <span style="color: #000000; font-weight: bold">let</span> clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.clipFactory.pop();
+        <span style="color: #000000; font-weight: bold">if</span>(clip.isEmpty()){
+          clip <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory.pop();
+          <span style="color: #000000; font-weight: bold">if</span>(clip.isEmpty()){
+            setTimeout(() =&gt; {
+              <span style="color: #000000; font-weight: bold">this</span>.getNewClip(callback);
+            }, <span style="color: #009999">500</span>);
+            <span style="color: #000000; font-weight: bold">return</span>;
+          }
+        }
+        callback(clip);
+    }
+
+    run(){
+      <span style="color: #000000; font-weight: bold">this</span>.getNewClip(clip =&gt; {
+        <span style="color: #000000; font-weight: bold">this</span>.move(clip, <span style="color: #000000; font-weight: bold">this</span>.run.bind(<span style="color: #000000; font-weight: bold">this</span>), () =&gt; {
+          clip.getBulletList().map(bullet =&gt; {
+            <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory.receive(bullet);
+          });
+        });
+      });
+    }
+
+    stop(){
+        <span style="color: #000000; font-weight: bold">this</span>.isStop <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">true</span>;
+    }
+
+}
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> MyComponent <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+        constructor(props){
+          <span style="color: #000000; font-weight: bold">super</span>(props);
+          <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {};
+          <span style="color: #000000; font-weight: bold">this</span>.state.counter <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+          <span style="color: #000000; font-weight: bold">this</span>.state.genNumber <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+          <span style="color: #000000; font-weight: bold">this</span>.clipFactory <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> ClipFactory();
+          <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> StandbyClipFactory();
+          <span style="color: #000000; font-weight: bold">this</span>.engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+        }
+
+        componentDidMount(){
+          setInterval(() =&gt; {
+            <span style="color: #000000; font-weight: bold">this</span>.setState({counter<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">this</span>.state.counter <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>});
+          }, <span style="color: #009999">1000</span>);
+        }
+
+        componentWillUmount(){
+          <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.engine){<span style="color: #000000; font-weight: bold">this</span>.engine.stop()}
+        }
+
+        onView(dom){
+          <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!this</span>.engine){<span style="color: #000000; font-weight: bold">return</span>}
+          <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>dom){<span style="color: #000000; font-weight: bold">return</span>}
+          <span style="color: #000000; font-weight: bold">this</span>.engine <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Engine(dom, <span style="color: #000000; font-weight: bold">this</span>.clipFactory, <span style="color: #000000; font-weight: bold">this</span>.standbyClipFactory);
+          <span style="color: #000000; font-weight: bold">this</span>.engine.run();
+        }
+
+        gen(){
+          <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!this</span>.state.genNumber){<span style="color: #000000; font-weight: bold">return</span>}
+          (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Array</span>(<span style="color: #000000; font-weight: bold">this</span>.state.genNumber)).fill(<span style="color: #009999">1</span>).map(o =&gt; {
+            <span style="color: #000000; font-weight: bold">const</span> bullet <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Bullet(<span style="color: #000000; font-weight: bold">this</span>.state.counter);
+            <span style="color: #000000; font-weight: bold">this</span>.clipFactory.receive(bullet);
+          });
+        }
+
+        render(){
+          <span style="color: #000000; font-weight: bold">return</span> (
+            <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>滚动字幕显示 {<span style="color: #000000; font-weight: bold">this</span>.state.counter}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{margin<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">10</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+                <span style="color: #000000; font-weight: bold">&lt;</span>span<span style="color: #000000; font-weight: bold">&gt;</span>随机生成<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/span&gt;</span>
+                <span style="color: #000000; font-weight: bold">&lt;</span>input onChange<span style="color: #000000; font-weight: bold">=</span>{ e =&gt; {<span style="color: #000000; font-weight: bold">this</span>.setState({genNumber<span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">parseInt</span>(e.target.value, <span style="color: #009999">10</span>)})}} <span style="color: #000000; font-weight: bold">/&gt;</span>
+                <span style="color: #000000; font-weight: bold">&lt;</span>span<span style="color: #000000; font-weight: bold">&gt;</span>条消息<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/span&gt;</span>
+                <span style="color: #000000; font-weight: bold">&lt;</span>button onClick<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.gen.bind(<span style="color: #000000; font-weight: bold">this</span>)}<span style="color: #000000; font-weight: bold">&gt;</span>确定<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/button&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>div className<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;view&quot;</span> key<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;view&quot;</span> ref<span style="color: #000000; font-weight: bold">=</span>{dom =&gt; <span style="color: #000000; font-weight: bold">this</span>.onView(dom)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          )
+        }
+    }
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>MyComponent <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'scroll';
+  var disqus_url = 'https://www.zouyesheng.com/scroll.html';
+  var disqus_title = '滚动字幕的实现';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABmUlEQVR4nN2XMY7cMAxFH8cLKJ0M
+7AE0N8gJMs6VAqQ0MAomp0oTO3uC3EA+wAJyJwOe+VvMbpUgVVgkbASw0Ic+/ycpE7/GdvhNEv61
+LJqAMNEp3DgLIDU/tFlSkDKaIAVp90M7wGpH1HdlO2uH2bIfkw/3w5bH0eg//bV7/4gGVwvf3vfJ
+F+21brd4KWHW7l43mRlPyzbAmtnMHjzfJkma4p7CrNdwdMAUcwq3uMMpXuTNpC370p6Wi2DNrIc1
+FEdNKn2WnX4+HyE+H5eB0bVzxT3dhTnFTBs8mUQ3RsKNcwlzHf07Vwyl/eA6rEPfzZv1X10dUDsF
+SYKYU7gxejKpepYmRhikwlBd0WblFCZIkvbUBm9373c6GzHToHNFoxOmHayC3DW5ma4WiqaY2cwu
+fr2Eu0CsdkVT3MGZybcZQBvqmDRFX5UAQbUrbaik4Ip2wCQB12P4njINvhw9N4VKChN354E5axKA
+qGIfOZd2WrPrFlRJQRXaia40q4678gGiCnPfCavw7kPvO02B8LaeOzvA/uMf1QtEuCJvLT8mLAAA
+AABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

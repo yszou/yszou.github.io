@@ -1,0 +1,595 @@
+滚动字幕的实现
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/scroll.html
+%!format: !email
+%%toc
+
+
+# 定义问题 #
+
+## 滚动过程 ##
+
+滚动字幕，简单来说，就是从下往上，把一些内容顺序组织之后，同步移动。
+
+
+![](img/scroll-init.png)
+
+
+这个看似很简单的效果，在配合实际场景的“内容产生不确定性”这个特点之后，就会有一点点挑战了。至少，比可以乱飞，可重叠的 B 站式弹幕要麻烦得多。
+
+从上面看，也许初步的思路，是创建很多 div 之后，不断计算它们的位置，就实现了同步滚动。这样处理不是不行，只是计算每个 div 位置，会有一些性能浪费，同时，因为每个 div 的高度是可能不同的，在判断“进入”及“完成”时，总是需要先取得正确的对象，并获取其高度之后，才能计算。这也就是说，你必须得保持每一个 div 的引用。这可不是明智的办法。
+
+![](img/scroll-diff-h.png)
+
+
+更容易的处理方式，是把这些 div 打包处理：
+
+
+![](img/scroll-group.png)
+
+
+在单个包内部，通过 css 调整好间距之后，滚动的效果只是单个块滚动的结果。判断“进入”用“完成”需要保持每个块的引用，这在大部分时候，要比单个 div 少一个数量级。当然，极端情况，每个块中只有一个 div ，也就退化到前面一样的场景了。
+
+为了达到滚动不间断的效果（单个块的高度，有可能比可视区高度大，也可能小），我们需要在适当的时候，在底部加入新的块。同时，为了稳定页面资源的消耗，也需要把完成显示的块给删除掉。
+
+我个人在想像这个过程的时候，很自然会联想到机枪的装弹夹及换弹夹的过程。显示的过程，就是在输送弹夹的过程。内容移出显示区，就是打出了一颗子弹。一个弹夹的所有子弹都打完的时候，这个弹夹就需要被卸掉。同时，弹夹的输送需要是不间断的，一个弹夹接着一个弹夹（但是它们不能有重叠）。
+
+基于这个比喻，整个过程大概变成了：
+
+![](img/scroll-clip.png)
+
+
+## 准备过程 ##
+
+再看准备过程。
+
+上面的第一步，当我们获取到一个弹夹的时候，把它置于初始位，然后控制它开始往上滚动。当滚动到第二步的位置时，我们需要再得到一个新的弹夹，把它置于第一步位置，如此反复。
+
+在这一步，需要的抽象，是“获取弹夹”这个行为。
+
+我们可以定义一个“弹夹工厂”，当需要弹夹的时候，总是去找它使就可以了。它一定会返回一个弹夹，哪怕是空弹夹。至于，这个“弹夹工厂”自己是如何获取子弹，如何生产弹夹，可以完全内化。
+
+![](img/scroll-factory.png)
+
+
+## 回收过程 ##
+
+额外的这个回收过程，是为了处理一种“意外场景”。即在内容滚动完，又没有新的内容产生的时候，可以用旧的内容来代替。
+
+但注意一点，在旧的内容滚动过程中，新的内容可能随时产生，所以，为了能尽快把新内容显示出来，我们可以把旧内容弹夹，永远只放一颗子弹，这样，这个弹夹就很“小”。一旦它达到第二步位置，我们就有机会去判断是否有新内容需要马上被放进来。
+
+回收过程本身，也就是当弹夹被显示完之后，这个弹夹中的子弹，再次被送到弹夹工厂。当然，这个工厂弹夹生产策略，可能和新内容的那个工厂不同。除了前面说过了，一个弹夹只放一颗子弹之外，还有，比如，旧内容，一般我们只需要保留最新 N 条。
+
+![](img/scroll-all.png)
+
+
+至此，整个问题就差不多是这样了。
+
+
+# 实现 #
+
+## 非界面抽象逻辑 ##
+
+滚动的实现，肯定是只能放在页面，通过控制 DOM 的属性来实现了。这种跟页面相关的，一般我们放在后面再去处理。因为与页面相关的代码，我们需要在浏览器中调试。而与界面无关的部分，就容易得多了，只需要打开编辑器，写完，运行就好了。
+
+非界面的逻辑，很清楚地，就是上面的右侧，“弹夹工厂”，“弹夹”，“子弹”这套东西。
+
+- 子弹，就是显示的单条内容。目前，我们只需要给个 ``text`` 就行了。（现实场景，可能还有其它属性）
+- 弹夹，弹夹中，是保存了一个“子弹序列”的，同时，它还应该有“填充”的方法。
+- 弹夹工厂，它生产弹夹，自然应该是有保存一个“弹夹序列”，同时，还有“获取子弹”，或者“接收子弹输入”，及“给出弹夹”的实现。
+
+
+```javascript
+class Bullet {
+    constructor(text){
+        this.text = text;
+    }
+}
+
+class Clip {
+    constructor(){
+        this.bulletList = [];
+    }
+
+    fill(bullet){
+        this.bulletList.push(bullet);
+    }
+
+    isEmpty(){
+        return this.bulletList.length === 0;
+    }
+
+    getBulletAmount(){
+        return this.bulletList.length;
+    }
+
+    getBulletList(){
+        return this.bulletList;
+    }
+
+}
+
+class ClipFactory {
+    constructor(bulletMaxAmountPerClip, maxClipAmount){
+        this.bulletMaxAmountPerClip = bulletMaxAmountPerClip || 30;
+        this.maxClipAmount = maxClipAmount || 0;
+        this.clipList = [];
+        this.currentClip = new Clip();
+    }
+
+    receive(bullet){
+        this.currentClip.fill(bullet);
+        if(this.currentClip.getBulletAmount() >= this.bulletMaxAmountPerClip){
+            this.clipList.push(this.currentClip);
+            this.currentClip = new Clip();
+            if(this.maxClipAmount){
+                if(this.clipList.length > this.maxClipAmount){
+                    this.clipList.shift();
+                }
+            }
+        }
+    }
+
+    pop(){
+        let clip = this.clipList.shift();
+        if(!clip){
+            // 有可能是空弹夹
+            clip = this.currentClip;
+            this.currentClip = new Clip();
+        }
+        return clip;
+    }
+}
+
+class StandbyClipFactory extends ClipFactory {
+    constructor(){
+        super(1, 30);
+    }
+}
+```
+
+
+上面代码中，最后多了一个 ``StandbyClipFactory`` ，是备用弹夹工厂。因为需要处理它的逻辑，所以弹夹工厂多出来了两个参数， ``bulletMaxAmountPerClip`` 和 ``maxClipAmount`` ，用于定义，单个弹夹的子弹数，及，工厂可保存的最大弹夹数。
+
+
+所以定义写好之后，可以加上随机逻辑让它们跑起来看看：
+
+```javascript
+function main() {
+    const clipFactory = new ClipFactory();
+    const standbyClipFactory = new StandbyClipFactory();
+
+    const fillStandby = () => {
+        const bullet = new Bullet('子弹');
+        standbyClipFactory.receive(bullet);
+        setTimeout(() => {
+            fillStandby();
+        }, Math.random() * 1000)
+    }
+
+    const fill = () => {
+        const bullet = new Bullet('子弹');
+        clipFactory.receive(bullet);
+        setTimeout(() => {
+            fill();
+        }, Math.random() * 100)
+    }
+
+    const check = () => {
+        let clip = clipFactory.pop();
+        if(clip.isEmpty()){
+            clip = standbyClipFactory.pop();
+            console.log(clip, 'standby');
+        } else {
+            console.log(clip);
+        }
+        setTimeout(() => {
+            check();
+        }, Math.random() * 500)
+    }
+
+    fillStandby();
+    fill();
+    check();
+}
+
+
+if (require.main === module) {
+    main();
+}
+```
+
+
+## 滚动显示逻辑 ##
+
+滚动的 DOM 结构是很简单的：
+
+```html
+<div id="view">
+  <div class="clip">
+    <div class="bullet"><div class="inner">哈哈哈</div></div>
+    <div class="bullet"><div class="inner">哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈</div></div>
+  </div>
+</div>
+```
+
+- ``#view`` 作 ``position: relative; overflow: hidden;`` 。
+- ``.clip`` 绝对定位，通过改成其 ``transform: translate3d(0, 100px, 0)`` 实现滚动。
+- ``.bullet`` 里面套个 ``.inner`` 是为了保存 ``.clip`` 里面的内容都在其高度计算之内，因为 ``.clip`` 的高度与判断弹夹切换的逻辑直接相关。
+
+
+再看执行流程，无非是：
+
+- 从工厂获取弹夹，在 ``#view`` 中创建 ``.clip`` 及里面的 ``.bullet`` 。
+- ``.clip`` 开始向上滚动，并不断更新其滚动值。
+- ``.clip`` 到达“第二位置”时，再从工厂获取弹夹，重复第一步。（如果得到了空弹夹，则尝试从“备用弹夹工厂”再获取）。这步，可以再抽象为“获取策略”。
+- ``.clip`` 到达“第三位置”时，删除 ``.clip`` ，并把对应的弹夹里面的子弹，重新送入“备用弹夹工厂”。这步，可以再抽象为“回收策略”。
+
+
+其实谈到了“获取策略”，和“回收策略”，很自然会想到“优先弹夹工厂”的逻辑，即，实现，某些内容一旦产生，是直接优先“插队”显示的。这步就不延展了。
+
+
+流程列清楚了，代码不难：
+
+```javascript
+class Engine {
+    constructor(wrapper, clipFactory, standbyClipFactory){
+        this.wrapper = wrapper;
+        this.clipFactory = clipFactory;
+        this.standbyClipFactory = standbyClipFactory;
+        this.wrapperHeight = wrapper.clientHeight;
+    }
+
+    createClipElement(clip){
+        const dom = document.createElement('div');
+        dom.setAttribute('class', 'clip');
+        clip.getBulletList().map(bullet => {
+            const d = document.createElement('div');
+            d.setAttribute('class', 'bullet');
+            d.innerHTML = '<div class="inner">' + bullet.text + '</div>';
+            dom.appendChild(d);
+        });
+        return dom;
+    }
+
+    move(clip, nextCallback, endCallback){
+
+      const ele = this.createClipElement(clip);
+      ele.style.opacity = 0;
+      this.wrapper.appendChild(ele);
+
+      let y = this.wrapperHeight;
+      let delta = 1;
+      let nextY = this.wrapperHeight - ele.clientHeight;
+      let endY = -1 * ele.clientHeight;
+      let status = 'before'; // before, in, end
+
+      ele.style.transform = `translate3d(0, ${y}px, 0)`;
+      ele.style.opacity = 1;
+      const animation = () => {
+        y -= delta;
+        ele.style.transform = `translate3d(0, ${y}px, 0)`;
+
+        if( (y <= nextY) && (status == 'before')){
+          status = 'in';
+          nextCallback();
+        }
+        if( (y <= endY) && (status === 'in') ){
+          status = 'end';
+          ele.remove();
+          endCallback();
+        }
+
+        if(status === 'end'){
+          return;
+        }
+        requestAnimationFrame(animation);
+      };
+
+      animation();
+    }
+
+    // 获取策略
+    getNewClip(callback){
+        let clip = this.clipFactory.pop();
+        if(clip.isEmpty()){
+          clip = this.standbyClipFactory.pop();
+          if(clip.isEmpty()){
+            setTimeout(() => {
+              this.getNewClip(callback);
+            }, 500);
+            return;
+          }
+        }
+        callback(clip);
+    }
+
+    // 回收策略
+    onClipEnd(clip){
+        clip.getBulletList().map(bullet => {
+          this.standbyClipFactory.receive(bullet);
+        });
+    }
+
+    run(){
+      this.getNewClip(clip => {
+        this.move(clip, this.run.bind(this), () => {this.onClipEnd(clip)});
+      });
+    }
+}
+```
+
+## 完整代码 ##
+
+
+![](img/scroll.png)
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>滚动字幕</title>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+<style type="text/css">
+  .view {
+    width: 200px;
+    height: 500px;
+    background-color: #aaa;
+    position: relative;
+    overflow: hidden;
+  }
+  .bullet {
+    padding: 10px;  
+    box-sizing: border-box;
+  }
+  .inner {
+    background-color: white;
+    padding: 5px;
+  }
+  .clip {
+    transform: translate3d(0, 0px, 0);  
+    position: absolute;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+
+
+  <script type="text/babel">
+class Bullet {
+    constructor(text){
+        this.text = text;
+    }
+}
+
+class Clip {
+    constructor(){
+        this.bulletList = [];
+    }
+
+    fill(bullet){
+        this.bulletList.push(bullet);
+    }
+
+    isEmpty(){
+        return this.bulletList.length === 0;
+    }
+
+    getBulletAmount(){
+        return this.bulletList.length;
+    }
+
+    getBulletList(){
+        return this.bulletList;
+    }
+
+}
+
+class ClipFactory {
+    constructor(bulletMaxAmountPerClip, maxClipAmount){
+        this.bulletMaxAmountPerClip = bulletMaxAmountPerClip || 30;
+        this.maxClipAmount = maxClipAmount || 0;
+        this.clipList = [];
+        this.currentClip = new Clip();
+    }
+
+    receive(bullet){
+        this.currentClip.fill(bullet);
+        if(this.currentClip.getBulletAmount() >= this.bulletMaxAmountPerClip){
+            this.clipList.push(this.currentClip);
+            this.currentClip = new Clip();
+            if(this.maxClipAmount){
+                if(this.clipList.length > this.maxClipAmount){
+                    this.clipList.shift();
+                }
+            }
+        }
+    }
+
+    pop(){
+        let clip = this.clipList.shift();
+        if(!clip){
+            // 有可能是空弹夹
+            clip = this.currentClip;
+            this.currentClip = new Clip();
+        }
+        return clip;
+    }
+}
+
+class StandbyClipFactory extends ClipFactory {
+    constructor(){
+        super(1, 30);
+    }
+}
+
+class Engine {
+    constructor(wrapper, clipFactory, standbyClipFactory){
+        this.wrapper = wrapper;
+        this.clipFactory = clipFactory;
+        this.standbyClipFactory = standbyClipFactory;
+        this.wrapperHeight = wrapper.clientHeight;
+        this.isStop = false;
+    }
+
+    createClipElement(clip){
+        const dom = document.createElement('div');
+        dom.setAttribute('class', 'clip');
+        clip.getBulletList().map(bullet => {
+            const d = document.createElement('div');
+            d.setAttribute('class', 'bullet');
+            d.innerHTML = '<div class="inner">' + bullet.text + '</div>';
+            dom.appendChild(d);
+        });
+        return dom;
+    }
+
+    move(clip, nextCallback, endCallback){
+
+      const ele = this.createClipElement(clip);
+      ele.style.opacity = 0;
+      this.wrapper.appendChild(ele);
+
+      let y = this.wrapperHeight;
+      let delta = 1;
+      let nextY = this.wrapperHeight - ele.clientHeight;
+      let endY = -1 * ele.clientHeight;
+      let status = 'before'; // before, in, end
+
+      ele.style.transform = `translate3d(0, ${y}px, 0)`;
+      ele.style.opacity = 1;
+      const animation = () => {
+        y -= delta;
+        ele.style.transform = `translate3d(0, ${y}px, 0)`;
+
+        if( (y <= nextY) && (status == 'before')){
+          status = 'in';
+          nextCallback();
+        }
+        if( (y <= endY) && (status === 'in') ){
+          status = 'end';
+          ele.remove();
+          endCallback();
+        }
+
+        if(status === 'end'){ return }
+
+        if(this.isStop){return}
+
+        requestAnimationFrame(animation);
+      };
+
+      animation();
+    }
+
+    getNewClip(callback){
+        let clip = this.clipFactory.pop();
+        if(clip.isEmpty()){
+          clip = this.standbyClipFactory.pop();
+          if(clip.isEmpty()){
+            setTimeout(() => {
+              this.getNewClip(callback);
+            }, 500);
+            return;
+          }
+        }
+        callback(clip);
+    }
+
+    run(){
+      this.getNewClip(clip => {
+        this.move(clip, this.run.bind(this), () => {
+          clip.getBulletList().map(bullet => {
+            this.standbyClipFactory.receive(bullet);
+          });
+        });
+      });
+    }
+
+    stop(){
+        this.isStop = true;
+    }
+
+}
+
+  </script>
+
+  <script type="text/babel">
+
+    class MyComponent extends React.Component {
+        constructor(props){
+          super(props);
+          this.state = {};
+          this.state.counter = 0;
+          this.state.genNumber = null;
+          this.clipFactory = new ClipFactory();
+          this.standbyClipFactory = new StandbyClipFactory();
+          this.engine = null;
+        }
+
+        componentDidMount(){
+          setInterval(() => {
+            this.setState({counter: this.state.counter + 1});
+          }, 1000);
+        }
+
+        componentWillUmount(){
+          if(this.engine){this.engine.stop()}
+        }
+
+        onView(dom){
+          if(!!this.engine){return}
+          if(!dom){return}
+          this.engine = new Engine(dom, this.clipFactory, this.standbyClipFactory);
+          this.engine.run();
+        }
+
+        gen(){
+          if(!this.state.genNumber){return}
+          (new Array(this.state.genNumber)).fill(1).map(o => {
+            const bullet = new Bullet(this.state.counter);
+            this.clipFactory.receive(bullet);
+          });
+        }
+
+        render(){
+          return (
+            <div>
+              <div>滚动字幕显示 {this.state.counter}</div>
+              <div style={{margin: 10}}>
+                <span>随机生成</span>
+                <input onChange={ e => {this.setState({genNumber: parseInt(e.target.value, 10)})}} />
+                <span>条消息</span>
+                <button onClick={this.gen.bind(this)}>确定</button>
+              </div>
+              <div className="view" key="view" ref={dom => this.onView(dom)}></div>
+            </div>
+          )
+        }
+    }
+    ReactDOM.render(<MyComponent />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+
+
+
+
+
+
+
+
+
+
+
