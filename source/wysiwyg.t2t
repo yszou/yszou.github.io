@@ -1,0 +1,734 @@
+前端可视化编辑器的实现套路
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/wysiwyg.html
+%!format: !email
+%%toc
+
+
+# 关于可视化编辑器 #
+
+“可视化编辑器”，顾名思义，就是在编辑内容过程中可以即时看到最终呈现结果的一种编辑界面工具。典型的，有富文本编辑器，及其它自定义组件的编辑器，比如 BI 系统的报表编辑器，后面会说的，是后者。
+
+下面 google analytics 中的“信息中心”配置页面，就是一个相对简单的可视化编辑器。
+
+![](img/wysiwyg-ga.png)
+
+
+先说明一下，这篇文章，仅从纯技术角度，去尝试给出可视化编辑器的一些实现方法。至于真实产品层面，功能多少的取舍，不同实现方案在投入成本与实际效用之间的平衡，本文不讨论。
+
+
+
+# 最简单便最核心的概念 #
+
+不管一个可视化编辑器看起来多么炫酷，要实现它，最基本，最核心的概念，却是非常的简单，想明白之后，为后面各种功能的实现已经铺平了道路。
+
+三个核心概念：
+
+- Placeholder ，页面上可以接收数据的地方。
+- Message ，传递的是怎么数据。
+- State ，状态转换。
+
+
+光说这三个东西，可能会比较抽象。举例来说，页面上某块地方是一个 *Placeholder* ，你就可以把“组件”拖到上面去，这个拖入行为会带有相关的 *Message* ，因为这个拖入行为，会造成页面上相关“组件”的 *State* 变化。比如，某个容器中会多出一个组件，或者，某个组件的样子发生了变化。
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="utf-8" />
+  <title>WYSIWYG</title>
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+  <style type="text/css">
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel">
+    class Placeholder extends React.Component {
+      onDrop = e => {
+        console.log(e.clientX, e.clientY);
+        let data = e.nativeEvent.dataTransfer.getData('text/plain');
+        this.props.onMessage(data);
+        e.preventDefault();
+      }
+
+      onDragOver = e => {
+        e.preventDefault();
+      }
+
+      render(){
+        return <div style={{width: '100%', height: '100%'}}
+          onDrop={this.onDrop}
+          onDragOver={this.onDragOver}>{this.props.children}</div>
+      }
+    }
+
+    class Message extends React.Component {
+      dragStart = e => {
+        e.nativeEvent.dataTransfer.setData('text/plain', this.props.data);
+        e.nativeEvent.dataTransfer.effectAllowed = 'copy';
+      }
+
+      render() {
+        return <div style={{width: '100%', height: '100%'}}
+          draggable
+          onDragStart={this.dragStart} >{this.props.children}</div>
+      }
+    }
+
+
+    class Playground extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {data: []};
+      }
+      render(){
+        return <div>
+          <div>
+            { this.state.data.map( (o, i) => {return <div key={i.toString()}>{o}</div>}) }
+          </div>
+          <div style={{width: 500, height: 500, backgroundColor: 'gray'}}>
+            <Placeholder onMessage={d => this.setState({data: [...this.state.data, d]})}>
+              <div style={{width: '100%', height: '100%'}}></div>
+            </Placeholder>
+          </div>
+          <Message data={123}>
+            <div style={{width: 100, height: 100, backgroundColor: 'red'}}></div>
+          </Message>
+        </div>
+      }
+    }
+
+    ReactDOM.render(<Playground />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+
+在上面代码中， ``Placeholder`` 和 ``Message`` 都比较清楚。
+
+``State`` 的状态转换，在这里，只表现为添加了一行文本，具体实现是 ``this.setState`` 。当然，这只是为了演示，而做的一个最简单例子，实际场景下， ``Placeholder`` 和 ``Message`` 的互动而影响的结果，这块其实是有很多想象力的。后面，会挨着演示一些效果的实现。
+
+
+## Placeholder ##
+
+``Placeholder`` 在上面代码中的实现，只是一个外层的包裹，这是因为 *React* 的限制，所以只能以这种不好看的方式来实现“节点上的抽象能力”。
+
+关于 ``Placeholder`` ，说两个注意点：
+
+- ``onMessage`` 中，除了 ``data`` ，一般，我们还需要把事件触发时的位置信息传递出去。
+- ``this.props.children`` 不一定是专门做的一块接受拖入的区域，不要在这个地方限制了你的思维。任何地方，都可以作为 *Placeholder* ，关于这个，后面也会有一些演示。
+
+
+```javascript
+class Placeholder extends React.Component {
+  onDrop = e => {
+    let data = e.nativeEvent.dataTransfer.getData('text/plain');
+    if(!!data){
+        this.props.onMessage(data, e.clientX, e.clientY);
+    }
+    e.preventDefault();
+  }
+
+  onDragOver = e => { e.preventDefault() }
+
+  render(){
+    return <div style={{width: '100%', height: '100%'}} onDrop={this.onDrop}
+                onDragOver={this.onDragOver}>{this.props.children}</div>
+  }
+}
+```
+
+
+## Message ##
+
+
+``Message`` 也说两点：
+
+- 可以扩展一个 ``src`` ，作为拖动时随鼠标的图像。这个 ``Image`` 因为涉及加载 ``src`` ，所以需要预先处理。
+- 同 ``Placeholder`` ， ``this.props.children`` 可以是任何东西，不一定是专门设计的“组件”。
+
+
+```javascript
+class Message extends React.Component {
+
+  componentWillMount(){
+    if(!this.props.src){return}
+    const img = new Image();
+    img.src = this.props.src;
+    this.img = img;
+  }
+
+  dragStart = e => {
+    e.nativeEvent.dataTransfer.setData('text/plain', this.props.data);
+    e.nativeEvent.dataTransfer.effectAllowed = 'copy';
+    if(!!this.img){
+      e.nativeEvent.dataTransfer.setDragImage(this.img, 10, 10);
+    }
+  }
+
+  render() {
+    return <div style={{width: '100%', height: '100%'}}
+      draggable
+      onDragStart={this.dragStart} >{this.props.children}</div>
+  }
+}
+```
+
+
+# 堆积组件 #
+
+这里说的“组件”，是指那些可以被拖入的，狭义上的“组件”。
+
+一个可视化编辑器，在正常的产品流程中，前期开发完之后，剩下的，也基本就是堆组件的过程。所以，这里我们把“组件”单独拿出来演示一下。
+
+“组件”的本质，其实是一个数据格式规范，扩展一下，还有加载机制。最简单的格式描述，只需要 ``type`` 和 ``params`` 就可以了。
+
+
+## 一个简单组件的流程 ##
+
+
+我们把前面的代码，整理重构一下，同时做一个 ``TextShape`` 的文本组件：
+
+![](img/wysiwyg-demo-init.png)
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="utf-8" />
+  <title>WYSIWYG</title>
+  <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6.15.0/babel.js"></script>
+  <style type="text/css">
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="text/babel">
+    class Placeholder extends React.Component {
+      onDrop = e => {
+        let data = e.nativeEvent.dataTransfer.getData('text/plain');
+        if(!!data){
+          var bounds = e.currentTarget.getBoundingClientRect();
+          this.props.onMessage(JSON.parse(data), e.clientX - bounds.left, e.clientY - bounds.top);
+        }
+        e.preventDefault();
+      }
+
+      onDragOver = e => {
+        e.preventDefault();
+      }
+
+      render(){
+        return <div style={{width: '100%', height: '100%'}}
+          onDrop={this.onDrop}
+          onDragOver={this.onDragOver}>{this.props.children}</div>
+      }
+    }
+
+    class Message extends React.Component {
+
+      componentWillMount(){
+        if(!this.props.src){return}
+        const img = new Image();
+        img.src = this.props.src;
+        this.img = img;
+      }
+
+      dragStart = e => {
+        e.nativeEvent.dataTransfer.setData('text/plain', JSON.stringify(this.props.data));
+        e.nativeEvent.dataTransfer.effectAllowed = 'copy';
+        if(!!this.img){
+          e.nativeEvent.dataTransfer.setDragImage(this.img, 10, 10);
+        }
+      }
+
+      render() {
+        return <div style={{width: '100%', height: '100%'}}
+          draggable
+          onDragStart={this.dragStart} >{this.props.children}</div>
+      }
+    }
+
+  </script>
+
+
+  <script type="text/babel">
+    class BaseShape extends React.Component {
+      constructor(props){
+        super(props);
+        // width, height
+        // type, params
+      }
+
+      getStyle(){
+        return {width: this.props.width, height: this.props.height};
+      }
+
+      render(){
+        return <div>此组件没有实现渲染方法</div>
+      }
+    }
+
+    BaseShape.create = obj => {
+      const map = {
+        'text': TextShape
+      }
+
+      const Shape = map[obj.type];
+      return <Shape {...obj} />
+    }
+
+    class TextShape extends BaseShape {
+      getStyle(){
+        const style = super.getStyle();
+        style['padding'] = '10px';
+        style['border'] = '1px solid #ccc';
+        return style;
+      }
+      render(){
+        const style = this.getStyle();
+        return <div style={this.getStyle()}>{this.props.params.text}</div>
+      }
+    }
+  </script>
+
+
+  <script type="text/babel">
+
+    class Playground extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {shapeList: []};
+      }
+
+      getId(){
+        return (new Date()).getTime().toString();
+      }
+
+      onMessage = (shape, x, y) => {
+        if(!shape.__ZYS__){return}
+        this.setState({
+          shapeList: [
+            ...this.state.shapeList,
+            {
+              ...shape,
+              x, y,
+              id: this.getId(),
+            }
+          ]
+        });
+      }
+
+      genShapeList = () => {
+        return this.state.shapeList.map(o => {
+          return <div style={{position: 'absolute', left: o.x, top: o.y}} key={o.id}>{BaseShape.create(o)}</div>
+        });
+      }
+
+      render(){
+        return <div>
+          <Message data={{__ZYS__: true, type: 'text', params: {text: '文本'}, width: 200, height: 30}}
+                   src="https://www.zouyesheng.com/img/imagemagick.jpg">
+            <div style={{width: 100, height: 100, backgroundColor: 'red'}}></div>
+          </Message>
+          <div style={{width: 500, height: 500, backgroundColor: 'white', border: '1px solid #ccc', position: 'relative'}}>
+            <Placeholder onMessage={this.onMessage}>
+              <div style={{width: '100%', height: '100%'}}>
+                {this.genShapeList()}
+              </div>
+            </Placeholder>
+          </div>
+        </div>
+      }
+    }
+
+    ReactDOM.render(<Playground />, document.getElementById('app'));
+  </script>
+</body>
+</html>
+```
+
+
+上面的代码有点多了，大体结构是：
+
+```javascript
+<script type="text/babel">
+  class Placeholder extends React.Component {
+    onDrop = e => { }
+    onDragOver = e => { }
+    render(){ }
+  }
+
+  class Message extends React.Component {
+
+    dragStart = e => { }
+    render() { }
+  }
+
+</script>
+
+
+<script type="text/babel">
+  class BaseShape extends React.Component {
+    getStyle(){ }
+    render(){ }
+  }
+  BaseShape.create = obj => { }
+  class TextShape extends BaseShape { }
+</script>
+
+
+<script type="text/babel">
+
+  class Playground extends React.Component {
+    onMessage = (shape, x, y) => { }
+    genShapeList = () => { }
+
+    render(){
+      return <div>
+        <Message data={{}}> </Message>
+        <div>
+          <Placeholder onMessage={this.onMessage}>
+            <div style={{width: '100%', height: '100%'}}>
+              {this.genShapeList()}
+            </div>
+          </Placeholder>
+        </div>
+      </div>
+    }
+  }
+
+  ReactDOM.render(<Playground />, document.getElementById('app'));
+</script>
+```
+
+可以看到，我们只是在代码组织层面作了整理，并没有任何新的东西。
+
+
+## move ##
+
+组件被放置到页面上之后，*move* 和 *resize* 是接下来可以有的两个操作。但是根据实际功能需求，并不是每个组件都一定可以做这两个事的。
+
+*move* 要比 *resize* 好处理一些，我们先做 *move* 。
+
+```javascript
+class Move extends React.Component {
+  onMouseDown = e => {
+    console.log('down');
+    document.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
+    this.dom.style.cursor = 'move';
+    this.dom.style.userSelect = 'none';
+    this.ox = e.pageX;
+    this.oy = e.pageY;
+    this.props.onMouseDown();
+  }
+  onMouseMove = e => {
+    console.log(e.pageX, this.ox);
+    this.props.onMouseMove(e.pageX - this.ox, e.pageY - this.oy);
+  }
+  onMouseUp = () => {
+    console.log('up');
+    document.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
+    this.dom.style.cursor = 'default';
+    this.dom.style.userSelect = '';
+    this.props.onMouseUp();
+  }
+  render(){
+    return <div style={{width: '100%', height: '100%'}}
+                ref={dom => this.dom = dom}
+                onMouseDown={this.onMouseDown} >{this.props.children}</div>
+  }
+}
+```
+
+```javascript
+class Playground extends React.Component {
+  constructor(props){ ... }
+
+  getId(){ ... }
+
+  onMessage = (shape, x, y) => { ... }
+
+  onMove(o) {
+    let dom = null;
+    let ox = null;
+    let oy = null;
+    return (dx, dy) => {
+      if(!dom){
+        dom = document.getElementById('n' + o.id);
+        ox = parseInt(dom.style.left.replace('px', ''), 10);
+        oy = parseInt(dom.style.top.replace('px', ''), 10);
+      }
+      o.x = ox + dx;
+      o.y = oy + dy;
+      dom.style.left = o.x + 'px';
+      dom.style.top = o.y + 'px';
+    }
+  }
+
+  onUp = () => {
+    this.setState({
+      shapeList: [...this.state.shapeList]
+    });
+  }
+
+  genShapeList = () => {
+    return this.state.shapeList.map(o => {
+      return <div style={{position: 'absolute', left: o.x, top: o.y}} key={o.id} id={'n' + o.id}>
+        <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+          {BaseShape.create(o)}
+        </Move>
+      </div>
+    });
+  }
+
+  render(){ ... }
+}
+```
+
+代码没什么好说的，传统的拖动实现方式。嗯，即使是在 *React* 环境，也可以直接操作节点，相关的数据做好同步就可以了。
+
+
+
+## resize ##
+
+*resize* 要麻烦一些，我想实现像 *dia* https://wiki.gnome.org/Apps/Dia 中那样的效果：
+
+![](img/wysiwyg-dia.png)
+
+
+实现过程需要处理一些细节：
+
+- 因为“边”和 *Move* 是叠在一起的，所以，要小心调整顺序，处理冒泡。
+- 周围 8 个点，要处理成“看的和用的不同”，看着的 8 个点太小，但是可操作范围我们需要扩大，如下图。
+
+
+![](img/wysiwyg-resize.png)
+
+
+*Resize* 中因为是挨个手动处理 8 个点，所以代码有些长：
+
+```javascript
+class Resize extends React.Component {
+
+  getSmallStyle = p => {
+    const wrapper = 20;
+    const side = 5;
+    const style = {
+      width: side,
+      height: side,
+      backgroundColor: '#00ff00',
+      border: '1px solid black',
+      position: 'absolute',
+      left: Math.floor((wrapper - side) / 2),
+      top: Math.floor((wrapper - side) / 2)
+    }
+    return style;
+  }
+
+  getStyle = p => {
+    const side = 20;
+    const style = {
+      width: side,
+      height: side,
+      backgroundColor: 'transparent',
+      border: '1px solid transparent',
+      position: 'absolute'
+    }
+    const v = -1 * Math.ceil(side / 2);
+    if(p === 0){style.left = v; style.top = v;}
+    if(p === 1){style.left = '50%'; style.marginLeft = v; style.top = v;}
+    if(p === 2){style.right = v; style.top = v;}
+    if(p === 3){style.left = v; style.top = '50%'; style.marginTop = v;}
+    if(p === 4){style.right = v; style.top = '50%'; style.marginTop = v;}
+    if(p === 5){style.left = v; style.bottom = v;}
+    if(p === 6){style.left = '50%'; style.marginLeft = v; style.bottom = v;}
+    if(p === 7){style.right = v; style.bottom = v;}
+    return style;
+  }
+
+  onMove = (dx, dy) => {
+    if(this.current === 0){
+      this.props.onMouseMove(-dx, -dy, dx, dy);
+    }
+    if(this.current === 1){
+      this.props.onMouseMove(0, -dy, 0, dy);
+    }
+    if(this.current === 2){
+      this.props.onMouseMove(dx, -dy, 0, dy);
+    }
+    if(this.current === 3){
+      this.props.onMouseMove(-dx, 0, dx, 0);
+    }
+    if(this.current === 4){
+      this.props.onMouseMove(dx, 0, 0, 0);
+    }
+    if(this.current === 5){
+      this.props.onMouseMove(-dx, dy, dx, 0);
+    }
+    if(this.current === 6){
+      this.props.onMouseMove(0, dy, 0, 0);
+    }
+    if(this.current === 7){
+      this.props.onMouseMove(dx, dy, 0, 0);
+    }
+  }
+
+  onDown = p => {
+    this.current = p;
+  }
+
+  onUp = () => {
+    this.current = null;
+    this.props.onMouseUp();
+  }
+
+  stop = e => {e.stopPropagation()}
+
+  render(){
+    return <div style={{width: '100%', height: '100%', position: 'relative'}} ref={dom => this.dom = dom}>
+      <div style={{width: 0, height: 0}}>
+
+        <div style={this.getStyle(0)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(0)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="nw-resize">
+            <div style={this.getSmallStyle(0)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(1)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(1)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="n-resize">
+            <div style={this.getSmallStyle(1)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(2)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(2)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="ne-resize">
+            <div style={this.getSmallStyle(2)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(3)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(3)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="w-resize">
+            <div style={this.getSmallStyle(3)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(4)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(4)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="e-resize">
+            <div style={this.getSmallStyle(4)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(5)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(5)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="sw-resize">
+            <div style={this.getSmallStyle(5)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(6)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(6)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="s-resize">
+            <div style={this.getSmallStyle(6)}></div>
+          </Move>
+        </div>
+
+        <div style={this.getStyle(7)} onMouseDown={this.stop} onMouseMove={this.stop}>
+          <Move onMouseDown={() => this.onDown(7)} onMouseMove={this.onMove} onMouseUp={this.onUp} cursor="se-resize">
+            <div style={this.getSmallStyle(7)}></div>
+          </Move>
+        </div>
+
+      </div>
+      {this.props.children}
+    </div>
+  }
+}
+```
+
+
+``genShapeList`` 中，注意 *Move* 和 *Resize* 的顺序。 ``onResizeMove`` 中也是直接处理节点属性的方式。
+
+```javascript
+onResizeMove(o){
+    let dom = null;
+    let shapeDom = null;
+    let ox = null;
+    let oy = null;
+    let ow = null;
+    let oh = null;
+    return (dw, dh, dx, dy) => {
+      if(!dom){
+        dom = document.getElementById('n-' + o.id);
+        shapeDom = dom.getElementsByClassName('shape')[0];
+        ox = parseInt(dom.style.left.replace('px', ''), 10);
+        oy = parseInt(dom.style.top.replace('px', ''), 10);
+        ow = parseInt(dom.style.width.replace('px', ''), 10);
+        oh = parseInt(dom.style.height.replace('px', ''), 10);
+      }
+      o.x = ox + dx;
+      o.y = oy + dy;
+      o.width = ow + dw;
+      o.height = oh + dh;
+      dom.style.left = o.x + 'px';
+      dom.style.top = o.y + 'px';
+      dom.style.width = o.width + 'px';
+      dom.style.height = o.height + 'px';
+      shapeDom.style.width = o.width + 'px';
+      shapeDom.style.height = o.height + 'px';
+    }
+}
+
+genShapeList = () => {
+  return this.state.shapeList.map(o => {
+    return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+      <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+        <Resize onMouseMove={this.onResizeMove(o)} onMouseUp={this.onUp}>
+          {BaseShape.create(o)}
+        </Resize>
+      </Move>
+    </div>
+  });
+}
+```
+
+
+``Shape`` 的节点，通过 ``className="shape"`` 作为节点查找的条件，用于直接控制节点的 ``width`` 和 ``height`` 。
+
+```javascript
+class TextShape extends BaseShape {
+  getStyle(){
+    const style = super.getStyle();
+    style['padding'] = '3px';
+    style['boxSizing'] = 'border-box';
+    style['border'] = '1px solid #ccc';
+    return style;
+  }
+  render(){
+    const style = this.getStyle();
+    return <div style={this.getStyle()} className="shape">{this.props.params.text}</div>
+  }
+}
+```
+
+
+
+## 单选 ##
+
+## 多选 ##
+
+
+## 提升下降 ##
