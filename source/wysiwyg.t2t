@@ -726,9 +726,178 @@ class TextShape extends BaseShape {
 
 
 
-## 单选 ##
+## 单选和多选 ##
 
-## 多选 ##
+“选中”这套机制，本身的实现很容易。但是，引入多选概念之后，相应的交互操作，会有框选和 Shift 点击，并且多选和后面的“编组”功能又有直接关系，要做的事还有点多的。
+
+在实现方法上，还是参考 *dia* 的形式。
+
+![](img/wysiwyg-dia-select.png)
+
+
+它区分了“单选中”和“多选中”两种状态：
+
+- 这两种状态互斥。
+- *Shape* 上的 *MouseDown* 总是切换为“单选中”状态（然后可以 *move*）。
+- “单选中”时，就是可以 *resize* 的时候。
+- 空的地方 *MouseUp* 可以取消“单选中”和“多选中”。
+- 可以框选得到“多选中”状态。
+- 可以 *Shift 点击* 得到“多选中”状态。
+- “多选中”状态时，不能 *resize* 。
+- “多选中”状态时，可以整体 *move* 。
+
+
+### 单选中 ###
+
+从简单的“单选中”开始。要做的事，主要是调度 *Resize* ， *Resize* 的框和点，本身就是“单选中”的视觉表示了。我们前面已经对 *Resize* 作了抽象，所以这里的修改是很容易的事，额外处理一下 *MouseDown* 事件就好了。
+
+
+具体代码中，我先做了三种壳：
+
+```javascript
+class NotSelected extends React.Component {
+  render(){
+    return <div style={{width: '100%', height: '100%'}}
+      onMouseUp={e => e.stopPropagation()}
+      onMouseDownCapture={this.props.onMouseDown}>{this.props.children}</div>
+  }
+}
+
+class SingleSelected extends React.Component {
+  render(){
+    return <div style={{width: '100%', height: '100%'}}
+                onMouseUp={e => e.stopPropagation()} >{this.props.children}</div>
+  }
+}
+
+class MultiSelected extends React.Component {
+
+}
+```
+
+这层壳，一方面是整合事件处理，另一方面，也是隔离整个画布相关冒泡行为的地方。
+
+比如，上面代码中的阻止冒泡，是为了在 ``onMouseUp`` 事件上，不影响画布的“取消选择”逻辑。
+
+```javascript
+class Playground extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {shapeList: [], singleSelected: null, multiSelected: []};
+  }
+
+  ...
+
+
+  cancelSelected = () => {
+    this.setState({singleSelected: null, multiSelected: []});
+  }
+
+  render(){
+    return <div>
+      <Message data={{__ZYS__: true, type: 'text', params: {text: '文本'}, width: 200, height: 30}}
+               src="https://www.zouyesheng.com/img/imagemagick.jpg">
+        <div style={{width: 100, height: 100, backgroundColor: 'red'}}></div>
+      </Message>
+      <div style={{width: 500, height: 500, backgroundColor: 'white', border: '1px solid #ccc', position: 'relative'}}
+        onMouseUp={this.cancelSelected}>
+        <Placeholder onMessage={this.onMessage}>
+          <div style={{width: '100%', height: '100%'}}>
+            {this.genShapeList()}
+          </div>
+        </Placeholder>
+      </div>
+    </div>
+  }
+}
+```
+
+上面准备好之后，最后调整 *Shape* 的生成逻辑， ``genShapeList`` 就好了。
+
+```javascript
+onSingleMouseDown = shape => {
+  this.setState({singleSelected: shape.id})
+}
+
+genShapeList = () => {
+
+  // 空状态
+  if(!this.state.singleSelected && !this.state.multiSelected.length){
+    return this.state.shapeList.map(o => {
+      return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+        <NotSelected onMouseDown={() => this.onSingleMouseDown(o)}>
+          <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+            <HiddenResize onMouseMove={this.onResizeMove(o)} onMouseUp={this.onUp}>
+              {BaseShape.create(o)}
+            </HiddenResize>
+          </Move>
+        </NotSelected>
+      </div>
+    });
+  }
+
+  // 单选状态
+  if(!!this.state.singleSelected){
+    return this.state.shapeList.map(o => {
+      if(o.id === this.state.singleSelected){
+        return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+          <SingleSelected>
+            <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+              <Resize onMouseMove={this.onResizeMove(o)} onMouseUp={this.onUp}>
+                {BaseShape.create(o)}
+              </Resize>
+            </Move>
+          </SingleSelected>
+        </div>
+      }
+
+      return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+        <NotSelected onMouseDown={() => this.onSingleMouseDown(o)}>
+          <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+            <HiddenResize onMouseMove={this.onResizeMove(o)} onMouseUp={this.onUp}>
+              {BaseShape.create(o)}
+            </HiddenResize>
+          </Move>
+        </NotSelected>
+      </div>
+    });
+  }
+
+  if(this.state.multiSelected.length >= 2){
+  
+  }
+
+
+  return this.state.shapeList.map(o => {
+    return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+      <Move onMouseMove={this.onMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+        <Resize onMouseMove={this.onResizeMove(o)} onMouseUp={this.onUp}>
+          {BaseShape.create(o)}
+        </Resize>
+      </Move>
+    </div>
+  });
+
+}
+```
+
+一些重复的代码现在不用管，等功能阶段性做完，再重构整理就好。
+
+![](img/wysiwyg-single-select.gif)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## 提升下降 ##
