@@ -886,6 +886,175 @@ genShapeList = () => {
 ![](img/wysiwyg-single-select.gif)
 
 
+### 多选中 ###
+
+多选的实现，在之前 ``Playground`` 中已经留了 ``multiSelected`` 来处理了。
+
+我们先从“框选矩形”的实现开始着手：
+
+```javascript
+class SelectBox extends React.Component {
+  onMouseDown = (ox, oy) => {
+    this.ox = ox;
+    this.oy = oy;
+  }
+  onMouseMove = (dx, dy) => {
+    let p = [];
+    // 4 个象限，4 种情况
+    if(dx >= 0 && dy >= 0){p = [dx, dy, this.ox, this.oy]};
+    if(dx >= 0 && dy <= 0){p = [dx, -dy, this.ox, this.oy + dy]};
+    if(dx <= 0 && dy >= 0){p = [-dx, dy, this.ox + dx, this.oy]};
+    if(dx <= 0 && dy <= 0){p = [-dx, -dy, this.ox + dx, this.oy + dy]};
+
+    this.box.style.width = p[0] + 'px';
+    this.box.style.height = p[1] + 'px';
+    this.box.style.left = p[2] + 'px';
+    this.box.style.top = p[3] + 'px';
+  }
+  onMouseUp = () => {
+    this.props.onMouseUp(
+      parseInt(this.box.style.width.replace('px', ''), 10),
+      parseInt(this.box.style.height.replace('px', ''), 10),
+      parseInt(this.box.style.left.replace('px', ''), 10),
+      parseInt(this.box.style.top.replace('px', ''), 10)
+    );
+    this.ox = 0;
+    this.oy = 0;
+    this.box.style.width = 0;
+    this.box.style.height = 0;
+    this.box.style.left = 0;
+    this.box.style.top = 0;
+  }
+  render() {
+    return <div style={{width: '100%', height: '100%', position: 'relative'}}>
+      <div style={{position: 'absolute', border: '1px dashed #ccc', left: 0, top: 0, width: 0, height: 0}} ref={dom => this.box = dom}></div>
+      <Move cursor='default'
+            onMouseDown={this.onMouseDown}
+            onMouseMove={this.onMouseMove}
+            onMouseUp={this.onMouseUp}> {this.props.children} </Move>
+    </div>
+  }
+}
+```
+
+4 个象限的情况要单独处理一下，本身移动的计算使用现成的 ``Move`` 就好了。
+
+使用 ``SelectBox`` 修改 ``Placeholder`` 的 ``render()`` ：
+
+```javascript
+render(){
+  return <div>
+    <Message data={{__ZYS__: true, type: 'text', params: {text: '文本'}, width: 200, height: 30}}
+             src="https://www.zouyesheng.com/img/imagemagick.jpg">
+      <div style={{width: 100, height: 100, backgroundColor: 'red'}}></div>
+    </Message>
+    <div style={{width: 500, height: 500, backgroundColor: 'white', border: '1px solid #ccc', position: 'relative'}}
+      onMouseUp={this.cancelSelected}>
+      <Placeholder onMessage={this.onMessage}>
+        <SelectBox onMouseUp={this.onBoxMouseUp}>
+          <div style={{width: '100%', height: '100%'}}>
+            {this.genShapeList()}
+          </div>
+        </SelectBox>
+      </Placeholder>
+    </div>
+  </div>
+}
+```
+
+``onBoxMouseUp`` 就是计算哪些 *Shape* 被选中：
+
+```javascript
+onBoxMouseUp = (w, h, x, y) => {
+  const rightDown = [x + w, y + h];
+  const selected = [];
+  this.state.shapeList.map(o => {
+    if(o.x >= x && o.y >= y){
+      const rd = [o.x + o.width, o.y + o.height];
+      if(rd[0] <= rightDown[0] && rd[1] <= rightDown[1]){
+        selected.push(o.id);
+      }
+    }
+  });
+  if(selected.length === 1){
+    this.setState({singleSelected: selected[0], multiSelected: []})
+  } else {
+    this.setState({singleSelected: null, multiSelected: selected})
+  }
+}
+```
+
+最后修改 ``genShapeList`` 中的多选部分：
+
+```
+// 多选状态
+if(this.state.multiSelected.length >= 2){
+  const map = {};
+  this.state.multiSelected.map(o => {map[o] = true});
+  return this.state.shapeList.map(o => {
+    if(map[o.id]){
+      return <div style={{position: 'absolute', left: o.x, top: o.y, width: o.width, height: o.height}} key={o.id} id={'n-' + o.id}>
+        <MultiSelected>
+          <Move onMouseMove={this.onMultiMove(o)} onMouseDown={() => {}} onMouseUp={this.onUp}>
+            <FakeResize>
+              {BaseShape.create(o)}
+            </FakeResize>
+          </Move>
+        </MultiSelected>
+      </div>
+    }
+
+    ...
+
+  });
+}
+```
+
+``FakeResize`` 是只显示点，没有 ``Resize`` 功能的 ``Resize`` ：
+
+```javascript
+class FakeResize extends Resize {
+  getSmallStyle = p => {
+    const wrapper = 20;
+    const side = 5;
+    const style = {
+      width: side,
+      height: side,
+      backgroundColor: '#008800',
+      border: '1px solid black',
+      position: 'absolute',
+      left: Math.floor((wrapper - side) / 2),
+      top: Math.floor((wrapper - side) / 2)
+    }
+    return style;
+  }
+
+  render(){
+    return <div style={{width: '100%', height: '100%', position: 'relative'}} ref={dom => this.dom = dom}>
+      <div style={{width: 0, height: 0}}>
+
+        <div style={this.getStyle(0)}> <div style={this.getSmallStyle(0)}></div> </div>
+        <div style={this.getStyle(1)}> <div style={this.getSmallStyle(1)}></div> </div>
+        <div style={this.getStyle(2)}> <div style={this.getSmallStyle(2)}></div> </div>
+        <div style={this.getStyle(3)}> <div style={this.getSmallStyle(3)}></div> </div>
+        <div style={this.getStyle(4)}> <div style={this.getSmallStyle(4)}></div> </div>
+        <div style={this.getStyle(5)}> <div style={this.getSmallStyle(5)}></div> </div>
+        <div style={this.getStyle(6)}> <div style={this.getSmallStyle(6)}></div> </div>
+        <div style={this.getStyle(7)}> <div style={this.getSmallStyle(7)}></div> </div>
+
+      </div>
+      {this.props.children}
+    </div>
+  }
+}
+```
+
+完成之后的效果如下图：
+
+![](img/wysiwyg-multi-select.gif)
+
+
+
 
 
 
