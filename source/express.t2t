@@ -1,0 +1,520 @@
+Express 使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/express.html
+%!format: !email
+%%toc
+
+
+**以下内容，基于 Express 4.x 版本**
+
+
+# Node.js 的 Express #
+
+*Express* 估计是那种你第一次接触，就会喜欢上用它的框架。因为它真的非常简单，直接。
+
+在当前版本上，它一共才这么几个文件：
+
+```txt
+lib/
+├── application.js
+├── express.js
+├── middleware
+│   ├── init.js
+│   └── query.js
+├── request.js
+├── response.js
+├── router
+│   ├── index.js
+│   ├── layer.js
+│   └── route.js
+├── utils.js
+└── view.js
+```
+
+这种程度，说它是一个“框架”可能都有些过了，几乎都是工具性质的实现，只限于 Web 层。
+
+当然，直接了当地实现了 Web 层的基本功能，是得益于 *Node.js* 本身的 API 中，就提供了 *net* 和 *http* 这两层的实现， *Express* 对 *http* 的方法包装一下即可。
+
+不过，另外有两点让我个人感受上有些不舒服，一方面，本身功能简单的东西，在 ``package.json`` 中却有好长一串 *dependencies* 列表。另一方面，就是 *Express* 里面 js 式的代码写法：
+
+```javascript
+...
+var res = Object.create(http.ServerResponse.prototype)
+module.exports = res
+var charsetRegExp = /;\s*charset\s*=/;
+res.status = function status(code) {
+  this.statusCode = code;
+  return this;
+};
+res.links = function(links){
+  var link = this.get('Link') || '';
+  if (link) link += ', ';
+  return this.set('Link', link + Object.keys(links).map(function(rel){
+    return '<' + links[rel] + '>; rel="' + rel + '"';
+  }).join(', '));
+};
+...
+```
+
+这种游离于对象与函数之间的风格，真的，有特点。
+
+
+# Hello World #
+
+在跑 *Express* 前，你可能需要初始化一个 *npm* 项目再安装：
+
+```bash
+mkdir p
+cd p
+npm init
+npm install express --save
+```
+
+然后新建一个 ``app.js`` ：
+
+```javascript
+const express = require('express');
+const app = express();
+app.all('/', (req, res) => res.send('hello') );
+app.listen(8888);
+```
+
+
+# 应用 Application #
+
+*Application* 是一个上层统筹的概念，整合“请求-响应”流程的。 ``express()`` 的调用就会返回一个 *application* ，一个项目中，有多个 *app* 是没问题的：
+
+```javascript
+const express = require('express');
+
+const app = express();
+app.all('/', (req, res) => res.send('hello'));
+app.listen(8888);
+
+const app2 = express();
+app2.all('/', (req, res) => res.send('hello2'));
+app2.listen(8889);
+```
+
+
+多个 *app* 的另一个用法，是直接把某个 *path* 映射到整个 *app* ：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.all('/', (req, res) => {
+    res.send('ok');
+});
+
+const app2 = express();
+app2.get('/xx', (req, res, next) => res.send('in app2') )
+app.use('/2', app2)
+
+app.listen(8888);
+```
+
+这样，当访问 ``/2/xx`` 时，就会看到 ``in app2`` 的响应。
+
+
+前面说了 *app* 实际上是一个上层调度的角色，在看后面的内容之前，先说一下 *Express* 的特点，整体上来说，它的结构基本上是“回调函数串行”，无论是 *app* ，或者 *route*， *handle*， *middleware* 这些不同的概念，它们的形式，基本是一致的，就是 ``(res, req, next) => {}`` ，串行的流程依赖 ``next()`` 的显式调用。
+
+我们把 *app* 的功能，分成五个部分来说。
+
+## 路由 - Handle 映射 ##
+
+```javascript
+app.all('/', (req, res, next) => {});
+app.get('/', (req, res, next) => {});
+app.post('/', (req, res, next) => {});
+app.put('/', (req, res, next) => {});
+app.delete('/', (req, res, next) => {});
+```
+
+上面的代码就是基本的几个方法，路由的匹配是串行的，可以通过 ``next()`` 控制：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.all('/', (req, res, next) => {
+    res.send('1 ');
+    console.log('here');
+    next();
+});
+
+app.get('/', (req, res, next) => {
+    res.send('2 ');
+    console.log('get');
+    next();
+});
+
+app.listen(8888);
+```
+
+只是，对于上面的代码，因为重复调用 ``send()`` 会报错。
+
+同样的功能，也可以使用 ``app.route()`` 来实现：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.route('/').all( (req, res, next) => {
+    console.log('all');
+    next();
+}).get( (req, res, next) => {
+    res.send('get');
+    next();
+}).all( (req, res, next) => {
+    console.log('tail');
+    next();
+});
+
+app.listen(8888);
+```
+
+这也是一种抽象通用逻辑的形式。
+
+还有一个方法是 ``app.params`` ，它把“命名参数”的处理单独拆出来了：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.route('/:id').all( (req, res, next) => {
+    console.log('all');
+    next();
+}).get( (req, res, next) => {
+    res.send('get');
+    next()
+}).all( (req, res, next) => {
+    console.log('tail');
+});
+
+app.route('/').all( (req, res) => {res.send('ok')});
+
+app.param('id', (req, res, next, value) => {
+    console.log('param', value);
+    next();
+});
+
+app.listen(8888);
+```
+
+``app.params`` 中的对应函数会先行执行，并且，记得显式调用 ``next()`` 。
+
+上面这些内容现在是放在 *app* 中来讲的，在实现上，实际上与 *Route* 有关，最后再提 *Route* 。
+
+
+## Middleware ##
+
+其实前面讲了那些方法，要实现 *Middleware* ，只需要 ``app.all(/.*/, () => {})`` 就可以了， *Express* 还专门提供了 ``app.use()`` 作通用逻辑的定义：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.all(/.*/, (req, res, next) => {
+    console.log('reg');
+    next();
+});
+
+app.all('/', (req, res, next) => {
+    console.log('pre');
+    next();
+});
+
+app.use((req, res, next) => {
+    console.log('use');
+    next();
+});
+
+app.all('/', (req, res, next) => {
+    console.log('all');
+    res.send('/ here');
+    next();
+});
+
+app.use((req, res, next) => {
+    console.log('use2');
+    next();
+});
+
+app.listen(8888);
+```
+
+注意 ``next()`` 的显式调用，同时，注意定义的顺序， ``use()`` 和 ``all()`` 顺序上是平等的。
+
+
+## 功能开关，变量容器 ##
+
+
+``app.set()`` 和 ``app.get()`` 可以用来保存 *app* 级别的变量（对， ``app.get()`` 还和 *GET* 方法的实现冲突了）：
+
+```javascript
+const express = require('express');
+
+const app = express();
+
+app.all('/', (req, res) => {
+    app.set('title', '标题123');
+    res.send('ok');
+});
+
+app.all('/t', (req, res) => {
+    res.send(app.get('title'));
+});
+
+
+app.listen(8888);
+```
+
+上面的代码，启动之后直接访问 ``/t`` 是没有内容的，先访问 ``/`` 再访问 ``/t`` 才可以看到内容。
+
+对于变量名， *Express* 自己预置了一些，这些变量的值，可以叫 *settings* ，它们同时也影响整个应用的行为：
+
+- ``case sensitive routing``
+- ``env``
+- ``etag``
+- ``jsonp callback name``
+- ``json escape``
+- ``json replacer``
+- ``json spaces``
+- ``query parser``
+- ``strict routing``
+- ``subdomain offset``
+- ``trust proxy``
+- ``views``
+- ``view cache``
+- ``view engine``
+- ``x-powered-by``
+
+
+具体的作用，可以参考 https://expressjs.com/en/4x/api.html#app.set 。它们中一些值，可以是函数定义的。
+
+（上面这些值中，居然没有最基本的 *debug* ……）
+
+除了基本的 ``set() / get()`` ，还有一组 ``enable() / disable() / enabled() / disabled()`` 的包装方法，其实就是 ``set(name, false)`` 这种。 ``set(name)`` 这种只传一个参数，也可以获取到值，等于 ``get(name)`` 。
+
+
+
+## 模板引擎 ##
+
+*Express* 没有自带模板，所以模板引擎这块就被设计成一个基础的配置机制了。
+
+
+```javascript
+const process = require('process');
+const express = require('express');
+const app = express();
+
+app.set('views', process.cwd() + '/template');
+
+app.engine('t2t', (path, options, callback) => {
+    console.log(path, options);
+    callback(false, '123');
+});
+
+app.all('/', (req, res) => {
+    res.render('demo.t2t', {title: "标题"}, (err, html) => {
+        res.send(html)
+    });
+});
+
+app.listen(8888);
+```
+
+``app.set('views', ...)`` 是配置模板在文件系统上的路径， ``app.engine()`` 是扩展名为标识，注册对应的处理函数，然后， ``res.render()`` 就可以渲染指定的模板了。 ``res.render('demo')`` 这样不写扩展名也可以，通过 ``app.set('view engine', 't2t')`` 可以配置默认的扩展名。
+
+这里，注意一下 ``callback()`` 的形式，是 ``callback(err, html)`` 。
+
+
+## 端口监听 ##
+
+*app* 功能的最后一部分， ``app.listen()`` ，它完成的形式是：
+
+```txt
+app.listen([port[, host[, backlog]]][, callback])
+```
+
+注意， ``host`` 是第二个参数。
+
+``backlog`` 是一个数字，配置可等待的最大连接数。这个值同时受操作系统的配置影响。默认是 512 。
+
+
+
+# 请求 Request #
+
+这一块倒没有太多可以说的，一个请求你想知道的信息，都被包装到 ``req`` 的属性中的。除了，头。头的信息，需要使用 ``req.get(name)`` 来获取。
+
+
+## GET 参数 ##
+
+使用 ``req.query`` 可以获取 GET 参数：
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.all('/', (req, res) => {
+    console.log(req.query);
+    res.send('ok');
+});
+
+app.listen(8888);
+```
+
+请求：
+
+```python
+# -*- coding: utf-8 -*-
+import requests
+requests.get('http://localhost:8888', params={"a": '中文'.encode('utf8')})
+```
+
+
+## POST 参数 ##
+
+POST 参数的获取，使用 ``req.body`` ，但是，在此之前，需要专门挂一个 Middleware ， ``req.body`` 才有值：
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use(express.urlencoded({ extended: true }));
+app.all('/', (req, res) => {
+    console.log(req.body);
+    res.send('ok');
+});
+
+app.listen(8888);
+```
+
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+
+requests.post('http://localhost:8888', data={"a": '中文'})
+```
+
+如果你是整块扔的 json 的话：
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+import json
+
+requests.post('http://localhost:8888', data=json.dumps({"a": '中文'}),
+              headers={'Content-Type': 'application/json'})
+```
+
+*Express* 中也有对应的 ``express.json()`` 来处理：
+
+```javascript
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+app.all('/', (req, res) => {
+    console.log(req.body);
+    res.send('ok');
+});
+
+app.listen(8888);
+```
+
+*Express* 中处理 ``body`` 部分的逻辑，是单独放在 ``body-parser`` 这个 npm 模块中的。 *Express* 也没有提供方法，方便地获取原始 raw 的内容。另外，对于 POST 提交的编码数据， *Express* 只支持 UTF-8 编码。
+
+如果你要处理文件上传，嗯， *Express* 没有现成的 Middleware ，额外的实现在 https://github.com/expressjs/multer 。（ Node.js 天然没有“字节”类型，所以在字节级别的处理上，就会感觉很不顺啊）
+
+
+## Cookie ##
+
+Cookie 的获取，也跟 POST 参数一样，需要外挂一个 ``cookie-parser`` 模块才行：
+
+```javascript
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser())
+app.all('/', (req, res) => {
+    console.log(req.cookies);
+    res.send('ok');
+});
+
+app.listen(8888);
+```
+
+请求：
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+import json
+
+requests.post('http://localhost:8888', data={'a': '中文'},
+              headers={'Cookie': 'a=1'})
+```
+
+如果 Cookie 在响应时，是配置 *res* 作了签名的，则在 *req* 中可以通过 ``req.signedCookies`` 处理签名，并获取结果。
+
+
+## 来源 IP ##
+
+*Express* 对 ``X-Forwarded-For`` 头，又处理了特殊处理，你可以通过 ``req.ips`` 获取这个头的解析后的值，这个功能需要配置  ``trust proxy`` 这个 *settings* 来使用：
+
+```javascript
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cookieParser())
+app.set('trust proxy', true);
+app.all('/', (req, res) => {
+    console.log(req.ips);
+    console.log(req.ip);
+    res.send('ok');
+});
+
+app.listen(8888);
+```
+
+请求：
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+import json
+
+#requests.get('http://localhost:8888', params={"a": '中文'.encode('utf8')})
+requests.post('http://localhost:8888', data={'a': '中文'},
+              headers={'X-Forwarded-For': 'a, b, c'})
+```
+
+如果 ``trust proxy`` 不是 ``true`` ，则 ``req.ip`` 会是一个 ipv4 或者 ipv6 的值。
+
+
+
+# 响应 Response #
+
+
+
+
+
