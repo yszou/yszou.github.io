@@ -15,7 +15,7 @@ Express 使用
 
 *Express* 估计是那种你第一次接触，就会喜欢上用它的框架。因为它真的非常简单，直接。
 
-在当前版本上，它一共才这么几个文件：
+在当前版本上，一共才这么几个文件：
 
 ```txt
 lib/
@@ -36,35 +36,14 @@ lib/
 
 这种程度，说它是一个“框架”可能都有些过了，几乎都是工具性质的实现，只限于 Web 层。
 
-当然，直接了当地实现了 Web 层的基本功能，是得益于 *Node.js* 本身的 API 中，就提供了 *net* 和 *http* 这两层的实现， *Express* 对 *http* 的方法包装一下即可。
+当然，直接了当地实现了 Web 层的基本功能，是得益于 *Node.js* 本身的 API 中，就提供了 *net* 和 *http* 这两层， *Express* 对 *http* 的方法包装一下即可。
 
-不过，另外有两点让我个人感受上有些不舒服，一方面，本身功能简单的东西，在 ``package.json`` 中却有好长一串 *dependencies* 列表。另一方面，就是 *Express* 里面 js 式的代码写法：
-
-```javascript
-...
-var res = Object.create(http.ServerResponse.prototype)
-module.exports = res
-var charsetRegExp = /;\s*charset\s*=/;
-res.status = function status(code) {
-  this.statusCode = code;
-  return this;
-};
-res.links = function(links){
-  var link = this.get('Link') || '';
-  if (link) link += ', ';
-  return this.set('Link', link + Object.keys(links).map(function(rel){
-    return '<' + links[rel] + '>; rel="' + rel + '"';
-  }).join(', '));
-};
-...
-```
-
-这种游离于对象与函数之间的风格，真的，有特点。
+不过，本身功能简单的东西，在 ``package.json`` 中却有好长一串 *dependencies* 列表。
 
 
 # Hello World #
 
-在跑 *Express* 前，你可能需要初始化一个 *npm* 项目再安装：
+在跑 *Express* 前，你可能需要初始化一个 *npm* 项目，然后再使用 *npm* 安装 *Express*：
 
 ```bash
 mkdir p
@@ -73,7 +52,7 @@ npm init
 npm install express --save
 ```
 
-然后新建一个 ``app.js`` ：
+新建一个 ``app.js`` ：
 
 ```javascript
 const express = require('express');
@@ -94,7 +73,7 @@ process.env['DEBUG'] = 'express:*';
 
 # 应用 Application #
 
-*Application* 是一个上层统筹的概念，整合“请求-响应”流程的。 ``express()`` 的调用就会返回一个 *application* ，一个项目中，有多个 *app* 是没问题的：
+*Application* 是一个上层统筹的概念，整合“请求-响应”流程。 ``express()`` 的调用会返回一个 *application* ，一个项目中，有多个 *app* 是没问题的：
 
 ```javascript
 const express = require('express');
@@ -129,10 +108,10 @@ app.listen(8888);
 
 这样，当访问 ``/2/xx`` 时，就会看到 ``in app2`` 的响应。
 
-
 前面说了 *app* 实际上是一个上层调度的角色，在看后面的内容之前，先说一下 *Express* 的特点，整体上来说，它的结构基本上是“回调函数串行”，无论是 *app* ，或者 *route*， *handle*， *middleware* 这些不同的概念，它们的形式，基本是一致的，就是 ``(res, req, next) => {}`` ，串行的流程依赖 ``next()`` 的显式调用。
 
 我们把 *app* 的功能，分成五个部分来说。
+
 
 ## 路由 - Handle 映射 ##
 
@@ -166,7 +145,7 @@ app.get('/', (req, res, next) => {
 app.listen(8888);
 ```
 
-只是，对于上面的代码，因为重复调用 ``send()`` 会报错。
+对于上面的代码，因为重复调用 ``send()`` 会报错。
 
 同样的功能，也可以使用 ``app.route()`` 来实现：
 
@@ -189,9 +168,11 @@ app.route('/').all( (req, res, next) => {
 app.listen(8888);
 ```
 
-这也是一种抽象通用逻辑的形式。
+``app.route()`` 也是一种抽象通用逻辑的形式。
 
-还有一个方法是 ``app.params`` ，它把“命名参数”的处理单独拆出来了：
+
+还有一个方法是 ``app.params`` ，它把“命名参数”的处理单独拆出来了（我个人不理解这玩意儿有什么用）：
+
 
 ```javascript
 const express = require('express');
@@ -220,12 +201,10 @@ app.listen(8888);
 
 ``app.params`` 中的对应函数会先行执行，并且，记得显式调用 ``next()`` 。
 
-上面这些内容现在是放在 *app* 中来讲的，在实现上，实际上与 *Route* 有关，最后再提 *Route* 。
-
 
 ## Middleware ##
 
-其实前面讲了那些方法，要实现 *Middleware* ，只需要 ``app.all(/.*/, () => {})`` 就可以了， *Express* 还专门提供了 ``app.use()`` 作通用逻辑的定义：
+其实前面讲了一些方法，要实现 *Middleware* 功能，只需要 ``app.all(/.*/, () => {})`` 就可以了， *Express* 还专门提供了 ``app.use()`` 做通用逻辑的定义：
 
 ```javascript
 const express = require('express');
@@ -263,7 +242,7 @@ app.listen(8888);
 
 注意 ``next()`` 的显式调用，同时，注意定义的顺序， ``use()`` 和 ``all()`` 顺序上是平等的。
 
-*Middleware* 本身也是 ``(req, res, next) => {}`` 这种形式，自然也可以和 *app* 有对等的机制，接受路由过滤， *Express* 提供了 *Router* ，可以单独定义一组逻辑，然后这组逻辑可以跟 *Middleware* 一样使用。
+*Middleware* 本身也是 ``(req, res, next) => {}`` 这种形式，自然也可以和 *app* 有对等的机制——接受路由过滤， *Express* 提供了 *Router* ，可以单独定义一组逻辑，然后这组逻辑可以跟 *Middleware* 一样使用。
 
 ```javascript
 const express = require('express');
@@ -288,7 +267,7 @@ app.listen(8888);
 ## 功能开关，变量容器 ##
 
 
-``app.set()`` 和 ``app.get()`` 可以用来保存 *app* 级别的变量（对， ``app.get()`` 还和 *GET* 方法的实现冲突了）：
+``app.set()`` 和 ``app.get()`` 可以用来保存 *app* 级别的变量（对， ``app.get()`` 还和 *GET* 方法的实现名字上还冲突了）：
 
 ```javascript
 const express = require('express');
@@ -310,7 +289,7 @@ app.listen(8888);
 
 上面的代码，启动之后直接访问 ``/t`` 是没有内容的，先访问 ``/`` 再访问 ``/t`` 才可以看到内容。
 
-对于变量名， *Express* 自己预置了一些，这些变量的值，可以叫 *settings* ，它们同时也影响整个应用的行为：
+对于变量名， *Express* 预置了一些，这些变量的值，可以叫 *settings* ，它们同时也影响整个应用的行为：
 
 - ``case sensitive routing``
 - ``env``
@@ -329,9 +308,9 @@ app.listen(8888);
 - ``x-powered-by``
 
 
-具体的作用，可以参考 https://expressjs.com/en/4x/api.html#app.set 。它们中一些值，可以是函数定义的。
+具体的作用，可以参考 https://expressjs.com/en/4x/api.html#app.set 。
 
-（上面这些值中，居然没有最基本的 *debug* ……）
+（上面这些值中，干嘛不放一个最基本的 *debug* 呢……）
 
 除了基本的 ``set() / get()`` ，还有一组 ``enable() / disable() / enabled() / disabled()`` 的包装方法，其实就是 ``set(name, false)`` 这种。 ``set(name)`` 这种只传一个参数，也可以获取到值，等于 ``get(name)`` 。
 
@@ -501,12 +480,12 @@ requests.post('http://localhost:8888', data={'a': '中文'},
               headers={'Cookie': 'a=1'})
 ```
 
-如果 Cookie 在响应时，是配置 *res* 作了签名的，则在 *req* 中可以通过 ``req.signedCookies`` 处理签名，并获取结果。
+如果 Cookie 在响应时，是配置 *res* 做了签名的，则在 *req* 中可以通过 ``req.signedCookies`` 处理签名，并获取结果。
 
 
 ## 来源 IP ##
 
-*Express* 对 ``X-Forwarded-For`` 头，又处理了特殊处理，你可以通过 ``req.ips`` 获取这个头的解析后的值，这个功能需要配置  ``trust proxy`` 这个 *settings* 来使用：
+*Express* 对 ``X-Forwarded-For`` 头，做了特殊处理，你可以通过 ``req.ips`` 获取这个头的解析后的值，这个功能需要配置  ``trust proxy`` 这个 *settings* 来使用：
 
 ```javascript
 const express = require('express');
@@ -690,7 +669,7 @@ app.listen(8888);
 ## Chunk 响应 ##
 
 
-*Chunk* 方式的响应，指连接建立之后，服务端的响应内容是不定长的，会加个头： ``Transfer-Encoding: chunked`` ，这种状态，服务端可以不定时往连接中写入内容，不排除服务端的实现会有缓冲区机制，不过我看 *Express* 没有。
+*Chunk* 方式的响应，指连接建立之后，服务端的响应内容是不定长的，会加个头： ``Transfer-Encoding: chunked`` ，这种状态下，服务端可以不定时往连接中写入内容（不排除服务端的实现会有缓冲区机制，不过我看 *Express* 没有）。
 
 ```javascript
 const process = require('process');
@@ -722,9 +701,11 @@ app.all('/', (req, res) => {
 app.listen(8888);
 ```
 
-上面的代码，访问之后，每过一秒，都会收到新的内容。大概是 ``res`` 本身是 Node.js 中的 *stream* 对象，所以，它有一个 ``write()`` 方法。
+上面的代码，访问之后，每过一秒，都会收到新的内容。
 
-这个要测试效果，比较方便的是直接 telet：
+大概是 ``res`` 本身是 Node.js 中的 *stream* 类似对象，所以，它有一个 ``write()`` 方法。
+
+要测试这个效果，比较方便的是直接 telet：
 
 ```text
 zys@zys-alibaba:/home/zys/temp >>> telnet localhost 8888
@@ -762,7 +743,7 @@ e
 1561018306460
 ```
 
-每行前面的一个字节的 ``e`` ，是 16 进制的 14 这个数字，也就是后面紧跟着的内容的长度，是 *Chunk* 格式的要求。具体可以参考 HTTP 的 RFC ， https://tools.ietf.org/html/rfc2616#page-2 。
+每行前面的一个字节的 ``e`` ，为 16 进制的 14 这个数字，也就是后面紧跟着的内容的长度，是 *Chunk* 格式的要求。具体可以参考 HTTP 的 RFC ， https://tools.ietf.org/html/rfc2616#page-2 。
 
 
 Tornado 中的类似实现是：
@@ -855,8 +836,7 @@ app.listen(8888);
 
 ``req`` 上直接挂连接事件，从 ``net`` ``http`` ``Express`` 这个层次结构上来说，也很，尴尬了。 Web 层不应该关心到网络连接这么底层的东西的。
 
-
-其实我个人还是习惯这样：
+我还是习惯这样：
 
 ```javascript
 app.all('/', (req, res) => {
@@ -870,7 +850,7 @@ app.all('/', (req, res) => {
 
 # 日志 #
 
-这部分不属于 *Express* 本身的内容了，但是要组件一个完整的项目，这部分内容必不可少，所以简单介绍一下。（其实是目的是让我自己是边学边写）
+后面这几部分，都不属于 *Express* 本身的内容了，只是我个人，随便想到的一些东西。
 
 找一个日志模块的实现，功能上，就看这么几点：
 
@@ -915,16 +895,16 @@ l2.error('ii');
 
 总的来说，还是很好用的，但是官网的文档不太好读，有些细节的东西没讲，好在源码还是比较简单。
 
-几点说一下：
+说几点：
 
 - ``getLogger(name)`` 需要给一个名字，否则 ``default`` 的规则都匹配不到。
 - ``getLogger('parent.child')`` 中的名字，规则匹配上，可以通过 ``.`` 作父子继承的。
 - ``enableCallStack: true`` 加上，才能拿到文件名和行号。
 
 
-# ini 配置格式 #
+# ini 格式配置 #
 
-json 作配置文件，有功能，但是对人为修改是不友好的。所以，个人喜欢用 ini 格式作项目的环境配置文件。
+json 作配置文件，功能上没问题，但是对人为修改是不友好的。所以，个人还是喜欢用 ini 格式作项目的环境配置文件。
 
 Node.js 中，可以使用 *ini* 模块作解析：
 
@@ -951,8 +931,86 @@ const config = ini.parse(s);
 console.log(config);
 ```
 
-扩展了 ``array[]`` 这种格式，但是，并没有对类型有处理，比如，获取 ``port`` ，结果是 ``"5432"`` 。
+它扩展了 ``array[]`` 这种格式，但没有对类型作处理，比如，获取 ``port`` ，结果是 ``"5432"`` 。简单够用了。
 
-简单够用了。
 
+# WebSocket #
+
+Node.js 中的 WebSocket 实现，可以使用 *ws* 模块， https://github.com/websockets/ws 。
+
+要把 *ws* 的 WebSocket Server 和 *Express* 的 *app* 整合，需要在 *Express* 的 *Server* 层面动手，实际上这里说的 *Server* 就是 Node.js 的 *http* 模块中的 ``http.createServer()`` 。
+
+```javascript
+const express = require('express');
+const ws = require('ws');
+
+const app = express();
+
+app.all('/', (req, res) => {
+    console.log('/');
+    res.send('hello');
+});
+
+const server = app.listen(8888);
+
+const wss = new ws.Server({server, path: '/ws'});
+wss.on('connection', conn => {
+    conn.on('message', msg => {
+        console.log(msg);
+        conn.send(new Date().toISOString());
+    });
+});
+```
+
+对应的一个客户端实现，来自： https://github.com/ilkerkesen/tornado-websocket-client-example/blob/master/client.py
+
+```python
+# -*- coding: utf-8 -*-
+
+import time
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado import gen
+from tornado.websocket import websocket_connect
+
+class Client(object):
+    def __init__(self, url, timeout):
+        self.url = url
+        self.timeout = timeout
+        self.ioloop = IOLoop.instance()
+        self.ws = None
+        self.connect()
+        PeriodicCallback(self.keep_alive, 2000).start()
+        self.ioloop.start()
+
+    @gen.coroutine
+    def connect(self):
+        print("trying to connect")
+        try:
+            self.ws = yield websocket_connect(self.url)
+        except Exception:
+            print("connection error")
+        else:
+            print("connected")
+            self.run()
+
+    @gen.coroutine
+    def run(self):
+        while True:
+            msg = yield self.ws.read_message()
+            print('read', msg)
+            if msg is None:
+                print("connection closed")
+                self.ws = None
+                break
+
+    def keep_alive(self):
+        if self.ws is None:
+            self.connect()
+        else:
+            self.ws.write_message(str(time.time()))
+
+
+if __name__ == "__main__":
+    client = Client("ws://localhost:8888/ws", 5)
+```
 
