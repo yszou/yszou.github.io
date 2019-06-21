@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>Express 的使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">Express 的使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-06-21 11:56 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">Node.js 的 Express</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">Hello World</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">应用 Application</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_blank">3.1. 路由 - Handle 映射</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_blank">3.2. Middleware</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_blank">3.3. 功能开关，变量容器</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_blank">3.4. 模板引擎</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_blank">3.5. 端口监听</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_blank">请求 Request</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_blank">4.1. GET 参数</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_blank">4.2. POST 参数</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_blank">4.3. Cookie</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_blank">4.4. 来源 IP</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_blank">响应 Response</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_blank">5.1. 普通响应</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_blank">5.2. 模板渲染</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_blank">5.3. Cookie</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_blank">5.4. 头和其它</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_blank">5.5. Chunk 响应</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_blank">日志</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_blank">ini 格式配置</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_blank">WebSocket</a>
+  </li>
+  </ol>
+
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">以下内容，基于 Express 4.x 版本</strong>
+</p>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. Node.js 的 Express</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 估计是那种你第一次接触，就会喜欢上用它的框架。因为它真的非常简单，直接。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在当前版本上，一共才这么几个文件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">lib/
+├── application.js
+├── express.js
+├── middleware
+│   ├── init.js
+│   └── query.js
+├── request.js
+├── response.js
+├── router
+│   ├── index.js
+│   ├── layer.js
+│   └── route.js
+├── utils.js
+└── view.js
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种程度，说它是一个“框架”可能都有些过了，几乎都是工具性质的实现，只限于 Web 层。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，直接了当地实现了 Web 层的基本功能，是得益于 <em style="color: #d75100; font-style: normal;">Node.js</em> 本身的 API 中，就提供了 <em style="color: #d75100; font-style: normal;">net</em> 和 <em style="color: #d75100; font-style: normal;">http</em> 这两层， <em style="color: #d75100; font-style: normal;">Express</em> 对 <em style="color: #d75100; font-style: normal;">http</em> 的方法包装一下即可。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过，本身功能简单的东西，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">package.json</code> 中却有好长一串 <em style="color: #d75100; font-style: normal;">dependencies</em> 列表。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. Hello World</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在跑 <em style="color: #d75100; font-style: normal;">Express</em> 前，你可能需要初始化一个 <em style="color: #d75100; font-style: normal;">npm</em> 项目，然后再使用 <em style="color: #d75100; font-style: normal;">npm</em> 安装 <em style="color: #d75100; font-style: normal;">Express</em>：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">mkdir p
+<span style="color: #0086B3">cd</span> p
+npm init
+npm install express --save
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+新建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.js</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; res.send(<span style="color: #dd1144">&#39;hello&#39;</span>) );
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+调试信息是通过环境变量 <em style="color: #d75100; font-style: normal;">DEBUG</em> 控制的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+process.env[<span style="color: #dd1144">&#39;DEBUG&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;express:*&#39;</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就可以在终端看到带颜色的输出了，嗯，是的，带颜色控制字符，vim 中直接跑就 SB 了。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 应用 Application</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Application</em> 是一个上层统筹的概念，整合“请求-响应”流程。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">express()</code> 的调用会返回一个 <em style="color: #d75100; font-style: normal;">application</em> ，一个项目中，有多个 <em style="color: #d75100; font-style: normal;">app</em> 是没问题的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; res.send(<span style="color: #dd1144">&#39;hello&#39;</span>));
+app.listen(<span style="color: #009999">8888</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app2 <span style="color: #000000; font-weight: bold">=</span> express();
+app2.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; res.send(<span style="color: #dd1144">&#39;hello2&#39;</span>));
+app2.listen(<span style="color: #009999">8889</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多个 <em style="color: #d75100; font-style: normal;">app</em> 的另一个用法，是直接把某个 <em style="color: #d75100; font-style: normal;">path</em> 映射到整个 <em style="color: #d75100; font-style: normal;">app</em> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+<span style="color: #000000; font-weight: bold">const</span> app2 <span style="color: #000000; font-weight: bold">=</span> express();
+app2.get(<span style="color: #dd1144">&#39;/xx&#39;</span>, (req, res, next) =&gt; res.send(<span style="color: #dd1144">&#39;in app2&#39;</span>) )
+app.use(<span style="color: #dd1144">&#39;/2&#39;</span>, app2)
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，当访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/2/xx</code> 时，就会看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">in app2</code> 的响应。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说了 <em style="color: #d75100; font-style: normal;">app</em> 实际上是一个上层调度的角色，在看后面的内容之前，先说一下 <em style="color: #d75100; font-style: normal;">Express</em> 的特点，整体上来说，它的结构基本上是“回调函数串行”，无论是 <em style="color: #d75100; font-style: normal;">app</em> ，或者 <em style="color: #d75100; font-style: normal;">route</em>， <em style="color: #d75100; font-style: normal;">handle</em>， <em style="color: #d75100; font-style: normal;">middleware</em> 这些不同的概念，它们的形式，基本是一致的，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(res, req, next) =&gt; {}</code> ，串行的流程依赖 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 的显式调用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们把 <em style="color: #d75100; font-style: normal;">app</em> 的功能，分成五个部分来说。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 路由 - Handle 映射</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {});
+app.get(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {});
+app.post(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {});
+app.put(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {});
+app.<span style="color: #000000; font-weight: bold">delete</span>(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码就是基本的几个方法，路由的匹配是串行的，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 控制：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;1 &#39;</span>);
+    console.log(<span style="color: #dd1144">&#39;here&#39;</span>);
+    next();
+});
+
+app.get(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;2 &#39;</span>);
+    console.log(<span style="color: #dd1144">&#39;get&#39;</span>);
+    next();
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于上面的代码，因为重复调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">send()</code> 会报错。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同样的功能，也可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.route()</code> 来实现：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.route(<span style="color: #dd1144">&#39;/&#39;</span>).all( (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;all&#39;</span>);
+    next();
+}).get( (req, res, next) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;get&#39;</span>);
+    next();
+}).all( (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;tail&#39;</span>);
+    next();
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.route()</code> 也是一种抽象通用逻辑的形式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+还有一个方法是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.params</code> ，它把“命名参数”的处理单独拆出来了（我个人不理解这玩意儿有什么用）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.route(<span style="color: #dd1144">&#39;/:id&#39;</span>).all( (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;all&#39;</span>);
+    next();
+}).get( (req, res, next) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;get&#39;</span>);
+    next()
+}).all( (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;tail&#39;</span>);
+});
+
+app.route(<span style="color: #dd1144">&#39;/&#39;</span>).all( (req, res) =&gt; {res.send(<span style="color: #dd1144">&#39;ok&#39;</span>)});
+
+app.param(<span style="color: #dd1144">&#39;id&#39;</span>, (req, res, next, value) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;param&#39;</span>, value);
+    next();
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.params</code> 中的对应函数会先行执行，并且，记得显式调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. Middleware</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实前面讲了一些方法，要实现 <em style="color: #d75100; font-style: normal;">Middleware</em> 功能，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.all(/.*/, () =&gt; {})</code> 就可以了， <em style="color: #d75100; font-style: normal;">Express</em> 还专门提供了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.use()</code> 做通用逻辑的定义：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #009926">/.*/</span>, (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;reg&#39;</span>);
+    next();
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;pre&#39;</span>);
+    next();
+});
+
+app.use((req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;use&#39;</span>);
+    next();
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;all&#39;</span>);
+    res.send(<span style="color: #dd1144">&#39;/ here&#39;</span>);
+    next();
+});
+
+app.use((req, res, next) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;use2&#39;</span>);
+    next();
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">next()</code> 的显式调用，同时，注意定义的顺序， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">use()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">all()</code> 顺序上是平等的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Middleware</em> 本身也是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(req, res, next) =&gt; {}</code> 这种形式，自然也可以和 <em style="color: #d75100; font-style: normal;">app</em> 有对等的机制——接受路由过滤， <em style="color: #d75100; font-style: normal;">Express</em> 提供了 <em style="color: #d75100; font-style: normal;">Router</em> ，可以单独定义一组逻辑，然后这组逻辑可以跟 <em style="color: #d75100; font-style: normal;">Middleware</em> 一样使用。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+<span style="color: #000000; font-weight: bold">const</span> router <span style="color: #000000; font-weight: bold">=</span> express.Router();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.send({a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;123&#39;</span>});
+});
+
+router.all(<span style="color: #dd1144">&#39;/a&#39;</span>, (req, res) =&gt; {
+    res.send(<span style="color: #dd1144">&#39;hello&#39;</span>);
+});
+
+app.use(<span style="color: #dd1144">&#39;/route&#39;</span>, router);
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 功能开关，变量容器</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.set()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.get()</code> 可以用来保存 <em style="color: #d75100; font-style: normal;">app</em> 级别的变量（对， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.get()</code> 还和 <em style="color: #d75100; font-style: normal;">GET</em> 方法的实现名字上还冲突了）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    app.set(<span style="color: #dd1144">&#39;title&#39;</span>, <span style="color: #dd1144">&#39;标题123&#39;</span>);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/t&#39;</span>, (req, res) =&gt; {
+    res.send(app.get(<span style="color: #dd1144">&#39;title&#39;</span>));
+});
+
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码，启动之后直接访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/t</code> 是没有内容的，先访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/</code> 再访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/t</code> 才可以看到内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于变量名， <em style="color: #d75100; font-style: normal;">Express</em> 预置了一些，这些变量的值，可以叫 <em style="color: #d75100; font-style: normal;">settings</em> ，它们同时也影响整个应用的行为：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">case sensitive routing</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">env</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">etag</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">jsonp callback name</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">json escape</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">json replacer</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">json spaces</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">query parser</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">strict routing</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">subdomain offset</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">trust proxy</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">views</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">view cache</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">view engine</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">x-powered-by</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+具体的作用，可以参考 <a href="https://expressjs.com/en/4x/api.html#app.set" style="color: #0184b7; text-decoration: none" target="_blank">https://expressjs.com/en/4x/api.html#app.set</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（上面这些值中，干嘛不放一个最基本的 <em style="color: #d75100; font-style: normal;">debug</em> 呢……）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了基本的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">set() / get()</code> ，还有一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">enable() / disable() / enabled() / disabled()</code> 的包装方法，其实就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">set(name, false)</code> 这种。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">set(name)</code> 这种只传一个参数，也可以获取到值，等于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">get(name)</code> 。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 模板引擎</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 没有自带模板，所以模板引擎这块就被设计成一个基础的配置机制了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+
+app.engine(<span style="color: #dd1144">&#39;t2t&#39;</span>, (path, options, callback) =&gt; {
+    console.log(path, options);
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;123&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.render(<span style="color: #dd1144">&#39;demo.t2t&#39;</span>, {title<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;标题&quot;</span>}, (err, html) =&gt; {
+        res.send(html)
+    });
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.set('views', ...)</code> 是配置模板在文件系统上的路径， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.engine()</code> 是扩展名为标识，注册对应的处理函数，然后， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.render()</code> 就可以渲染指定的模板了。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.render('demo')</code> 这样不写扩展名也可以，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.set('view engine', 't2t')</code> 可以配置默认的扩展名。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，注意一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback()</code> 的形式，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback(err, html)</code> 。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 端口监听</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">app</em> 功能的最后一部分， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.listen()</code> ，它完成的形式是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.listen([port[, host[, backlog]]][, callback])
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">host</code> 是第二个参数。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">backlog</code> 是一个数字，配置可等待的最大连接数。这个值同时受操作系统的配置影响。默认是 512 。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 请求 Request</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一块倒没有太多可以说的，一个请求你想知道的信息，都被包装到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req</code> 的属性中的。除了，头。头的信息，需要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.get(name)</code> 来获取。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. GET 参数</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.query</code> 可以获取 GET 参数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(req.query);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+requests<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, params<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&#39;中文&#39;</span><span style="color: #000000; font-weight: bold">.</span>encode(<span style="color: #dd1144">&#39;utf8&#39;</span>)})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. POST 参数</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+POST 参数的获取，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.body</code> ，但是，在此之前，需要专门挂一个 Middleware ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.body</code> 才有值：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(req.body);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+
+requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&#39;中文&#39;</span>})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你是整块扔的 json 的话：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+
+requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span>json<span style="color: #000000; font-weight: bold">.</span>dumps({<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&#39;中文&#39;</span>}),
+              headers<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;Content-Type&#39;</span>: <span style="color: #dd1144">&#39;application/json&#39;</span>})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 中也有对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">express.json()</code> 来处理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.use(express.json());
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(req.body);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 中处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">body</code> 部分的逻辑，是单独放在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">body-parser</code> 这个 npm 模块中的。 <em style="color: #d75100; font-style: normal;">Express</em> 也没有提供方法，方便地获取原始 raw 的内容。另外，对于 POST 提交的编码数据， <em style="color: #d75100; font-style: normal;">Express</em> 只支持 UTF-8 编码。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你要处理文件上传，嗯， <em style="color: #d75100; font-style: normal;">Express</em> 没有现成的 Middleware ，额外的实现在 <a href="https://github.com/expressjs/multer" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/expressjs/multer</a> 。（ Node.js 天然没有“字节”类型，所以在字节级别的处理上，就会感觉很不顺啊）
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. Cookie</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Cookie 的获取，也跟 POST 参数一样，需要外挂一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cookie-parser</code> 模块才行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser())
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(req.cookies);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+
+requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;a&#39;</span>: <span style="color: #dd1144">&#39;中文&#39;</span>},
+              headers<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;Cookie&#39;</span>: <span style="color: #dd1144">&#39;a=1&#39;</span>})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果 Cookie 在响应时，是配置 <em style="color: #d75100; font-style: normal;">res</em> 做了签名的，则在 <em style="color: #d75100; font-style: normal;">req</em> 中可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.signedCookies</code> 处理签名，并获取结果。
+</p>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.4. 来源 IP</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X-Forwarded-For</code> 头，做了特殊处理，你可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.ips</code> 获取这个头的解析后的值，这个功能需要配置  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">trust proxy</code> 这个 <em style="color: #d75100; font-style: normal;">settings</em> 来使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser())
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">true</span>);
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(req.ips);
+    console.log(req.ip);
+    res.send(<span style="color: #dd1144">&#39;ok&#39;</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+
+<span style="color: #999988">#requests.get(&#39;http://localhost:8888&#39;, params={&quot;a&quot;: &#39;中文&#39;.encode(&#39;utf8&#39;)})</span>
+requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;a&#39;</span>: <span style="color: #dd1144">&#39;中文&#39;</span>},
+              headers<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;X-Forwarded-For&#39;</span>: <span style="color: #dd1144">&#39;a, b, c&#39;</span>})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">trust proxy</code> 不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">true</code> ，则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req.ip</code> 会是一个 ipv4 或者 ipv6 的值。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 响应 Response</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 的响应，针对不同类型，本身就提供了几种包装了。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. 普通响应</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.send</code> 处理确定性的内容响应：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">res.send({ some<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;json&#39;</span> });
+res.send(<span style="color: #dd1144">&#39;&lt;p&gt;some html&lt;/p&gt;&#39;</span>);
+res.status(<span style="color: #009999">404</span>); res.end();
+res.status(<span style="color: #009999">500</span>); res.end();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.send()</code> 会自动 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.end()</code> ，但是，如果只使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.status()</code> 的话，记得加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.end()</code> 。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. 模板渲染</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+模板需要预先配置，在 <em style="color: #d75100; font-style: normal;">Request</em> 那节已经介绍过了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser())
+
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">false</span>);
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+app.set(<span style="color: #dd1144">&#39;view engine&#39;</span>, <span style="color: #dd1144">&#39;html&#39;</span>);
+app.engine(<span style="color: #dd1144">&#39;html&#39;</span>, (path, options, callback) =&gt; {
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;&lt;h1&gt;Hello&lt;/h1&gt;&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.render(<span style="color: #dd1144">&#39;index&#39;</span>, {}, (err, html) =&gt; {
+        res.send(html);
+    });
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里有一个坑点，就是必须在对应的目录下，有对应的文件存在，比如上面例子的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">template/index.html</code> ，那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.engine()</code> 中的回调函数才会执行。都自定义回调函数了，这个限制没有任何意义， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path, options</code> 传入就好了，至于是不是要通过文件系统读取内容，怎么读取，又有什么关系呢。
+</p>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.3. Cookie</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.cookie</code> 来处理 <em style="color: #d75100; font-style: normal;">Cookie</em> 头：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser(<span style="color: #dd1144">&quot;key&quot;</span>))
+
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">false</span>);
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+app.set(<span style="color: #dd1144">&#39;view engine&#39;</span>, <span style="color: #dd1144">&#39;html&#39;</span>);
+app.engine(<span style="color: #dd1144">&#39;html&#39;</span>, (path, options, callback) =&gt; {
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;&lt;h1&gt;Hello&lt;/h1&gt;&#39;</span>);
+});
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.render(<span style="color: #dd1144">&#39;index&#39;</span>, {}, (err, html) =&gt; {
+        console.log(<span style="color: #dd1144">&#39;cookie&#39;</span>, req.signedCookies.a);
+        res.cookie(<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;123&#39;</span>, {signed<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>});
+        res.cookie(<span style="color: #dd1144">&#39;b&#39;</span>, <span style="color: #dd1144">&#39;123&#39;</span>, {signed<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>});
+        res.clearCookie(<span style="color: #dd1144">&#39;b&#39;</span>);
+        res.send(html);
+    });
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">json</span>
+
+res <span style="color: #000000; font-weight: bold">=</span> requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;a&#39;</span>: <span style="color: #dd1144">&#39;中文&#39;</span>},
+                    headers<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;X-Forwarded-For&#39;</span>: <span style="color: #dd1144">&#39;a, b, c&#39;</span>,
+                             <span style="color: #dd1144">&#39;Cookie&#39;</span>: <span style="color: #dd1144">&#39;a=s%3A123.p%2Fdzmx3FtOkisSJsn8vcg0mN7jdTgsruCP1SoT63z%2BI&#39;</span>})
+<span style="color: #000000; font-weight: bold">print</span>(res, res<span style="color: #000000; font-weight: bold">.</span>text, res<span style="color: #000000; font-weight: bold">.</span>headers)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意三点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.use(cookieParser("key"))</code>  这里必须要有一个字符串做 <em style="color: #d75100; font-style: normal;">key</em> ，才可以正确使用签名的 cookie 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">clearCookie()</code> 仍然是用“设置过期”的方式来达到删除目的，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">cookie()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">clearCookie()</code> 并不会整合，会写两组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">b=xx</code> 进头。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.send()</code> 会在连接上完成一个响应，所以，与头相关的操作，都必须放在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.send()</code> 前面。
+</li>
+</ul>
+
+<a class="anchor" name="toc18"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.4. 头和其它</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.set()</code> 可以设置指定的响应头， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.rediect(301, 'http://www.zouyesheng.com')</code> 处理重定向， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.status(404); res.end()</code> 处理非 20 响应。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser(<span style="color: #dd1144">&quot;key&quot;</span>))
+
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">false</span>);
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+app.set(<span style="color: #dd1144">&#39;view engine&#39;</span>, <span style="color: #dd1144">&#39;html&#39;</span>);
+app.engine(<span style="color: #dd1144">&#39;html&#39;</span>, (path, options, callback) =&gt; {
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;&lt;h1&gt;Hello&lt;/h1&gt;&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.render(<span style="color: #dd1144">&#39;index&#39;</span>, {}, (err, html) =&gt; {
+        res.set(<span style="color: #dd1144">&#39;X-ME&#39;</span>, <span style="color: #dd1144">&#39;zys&#39;</span>);
+        <span style="color: #999988">//res.redirect(&#39;back&#39;);</span>
+        <span style="color: #999988">//res.redirect(&#39;http://www.zouyesheng.com&#39;);</span>
+        res.status(<span style="color: #009999">404</span>);
+        res.end();
+    });
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.redirect('back')</code> 会自动获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">referer</code> 头作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Location</code> 的值，使用这个时，注意 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">referer</code> 为空的情况，会造成循环重复重定向的后果。
+</p>
+
+<a class="anchor" name="toc19"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.5. Chunk 响应</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Chunk</em> 方式的响应，指连接建立之后，服务端的响应内容是不定长的，会加个头： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Transfer-Encoding: chunked</code> ，这种状态下，服务端可以不定时往连接中写入内容（不排除服务端的实现会有缓冲区机制，不过我看 <em style="color: #d75100; font-style: normal;">Express</em> 没有）。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser(<span style="color: #dd1144">&quot;key&quot;</span>))
+
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">false</span>);
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+app.set(<span style="color: #dd1144">&#39;view engine&#39;</span>, <span style="color: #dd1144">&#39;html&#39;</span>);
+app.engine(<span style="color: #dd1144">&#39;html&#39;</span>, (path, options, callback) =&gt; {
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;&lt;h1&gt;Hello&lt;/h1&gt;&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> f <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">const</span> t <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().getTime() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;\n&#39;</span>;
+        res.write(t);
+        console.log(t);
+        setTimeout(f, <span style="color: #009999">1000</span>);
+    }
+
+    setTimeout(f, <span style="color: #009999">1000</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码，访问之后，每过一秒，都会收到新的内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+大概是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res</code> 本身是 Node.js 中的 <em style="color: #d75100; font-style: normal;">stream</em> 类似对象，所以，它有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">write()</code> 方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要测试这个效果，比较方便的是直接 telet：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">zys@zys-alibaba:/home/zys/temp &gt;&gt;&gt; telnet localhost 8888
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is &#39;^]&#39;.
+GET / HTTP/1.1
+Host: localhost
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Date: Thu, 20 Jun 2019 08:11:40 GMT
+Connection: keep-alive
+Transfer-Encoding: chunked
+
+e
+1561018300451
+
+e
+1561018301454
+
+e
+1561018302456
+
+e
+1561018303457
+
+e
+1561018304458
+
+e
+1561018305460
+
+e
+1561018306460
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+每行前面的一个字节的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">e</code> ，为 16 进制的 14 这个数字，也就是后面紧跟着的内容的长度，是 <em style="color: #d75100; font-style: normal;">Chunk</em> 格式的要求。具体可以参考 HTTP 的 RFC ， <a href="https://tools.ietf.org/html/rfc2616#page-2" style="color: #0184b7; text-decoration: none" target="_blank">https://tools.ietf.org/html/rfc2616#page-2</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Tornado 中的类似实现是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.ioloop</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.web</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.gen</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">MainHandler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+    <span style="color: #3c5d5d; font-weight: bold">@tornado.gen.coroutine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #999999">True</span>:
+            <span style="color: #000000; font-weight: bold">yield</span> tornado<span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>sleep(<span style="color: #009999">1</span>)
+            s <span style="color: #000000; font-weight: bold">=</span> time<span style="color: #000000; font-weight: bold">.</span>time()
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(<span style="color: #0086B3">str</span>(s))
+            <span style="color: #000000; font-weight: bold">print</span>(s)
+            <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>flush()
+
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">make_app</span>():
+    <span style="color: #000000; font-weight: bold">return</span> tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>Application([
+        (<span style="color: #dd1144">r&quot;/&quot;</span>, MainHandler),
+    ])
+
+<span style="color: #000000; font-weight: bold">if</span> <span style="color: #008080">__name__</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&quot;__main__&quot;</span>:
+    app <span style="color: #000000; font-weight: bold">=</span> make_app()
+    app<span style="color: #000000; font-weight: bold">.</span>listen(<span style="color: #009999">8888</span>)
+    tornado<span style="color: #000000; font-weight: bold">.</span>ioloop<span style="color: #000000; font-weight: bold">.</span>IOLoop<span style="color: #000000; font-weight: bold">.</span>current()<span style="color: #000000; font-weight: bold">.</span>start()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Express</em> 中的实现，有个大坑，就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> f <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">const</span> t <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().getTime() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;\n&#39;</span>;
+        res.write(t);
+        console.log(t);
+        setTimeout(f, <span style="color: #009999">1000</span>);
+    }
+
+    setTimeout(f, <span style="color: #009999">1000</span>);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这段逻辑，在连接已经断了的情况下，并不会停止，还是会永远执行下去。所以，你得自己处理好：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> process <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;process&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> cookieParser <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;cookie-parser&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+app.use(express.urlencoded({ extended<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }));
+app.use(express.json());
+app.use(cookieParser(<span style="color: #dd1144">&quot;key&quot;</span>))
+
+app.set(<span style="color: #dd1144">&#39;trust proxy&#39;</span>, <span style="color: #000000; font-weight: bold">false</span>);
+app.set(<span style="color: #dd1144">&#39;views&#39;</span>, process.cwd() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/template&#39;</span>);
+app.set(<span style="color: #dd1144">&#39;view engine&#39;</span>, <span style="color: #dd1144">&#39;html&#39;</span>);
+app.engine(<span style="color: #dd1144">&#39;html&#39;</span>, (path, options, callback) =&gt; {
+    callback(<span style="color: #000000; font-weight: bold">false</span>, <span style="color: #dd1144">&#39;&lt;h1&gt;Hello&lt;/h1&gt;&#39;</span>);
+});
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    <span style="color: #000000; font-weight: bold">let</span> close <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">false</span>;
+    <span style="color: #000000; font-weight: bold">const</span> f <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">const</span> t <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().getTime() <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;\n&#39;</span>;
+        res.write(t);
+        console.log(t);
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>close){
+            setTimeout(f, <span style="color: #009999">1000</span>);
+        }
+    }
+
+    req.on(<span style="color: #dd1144">&#39;close&#39;</span>, () =&gt; {
+        close <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">true</span>;
+    });
+
+    setTimeout(f, <span style="color: #009999">1000</span>);
+});
+
+app.listen(<span style="color: #009999">8888</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req</code> 挂了一些事件的，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">close</code> 事件来得到当前连接是否已经关闭了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">req</code> 上直接挂连接事件，从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Express</code> 这个层次结构上来说，也很，尴尬了。 Web 层不应该关心到网络连接这么底层的东西的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我还是习惯这样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    res.write(<span style="color: #dd1144">&#39;&lt;h1&gt;123&lt;/h1&gt;&#39;</span>);
+    res.end();
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.write()</code> 是不能直接处理 json 对象的，还是老老实实 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">res.send()</code> 吧。
+</p>
+
+<a class="anchor" name="toc20"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 日志</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后面这几部分，都不属于 <em style="color: #d75100; font-style: normal;">Express</em> 本身的内容了，只是我个人，随便想到的一些东西。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+找一个日志模块的实现，功能上，就看这么几点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">标准的级别： DEBUG，INFO，WARN, ERROR 这些。
+</li>
+<li style="margin: 10px auto;">层级的多个 <em style="color: #d75100; font-style: normal;">logger</em> 。
+</li>
+<li style="margin: 10px auto;">可注册式的多种 <em style="color: #d75100; font-style: normal;">Handler</em> 实现，比如文件系统，操作系统的 <em style="color: #d75100; font-style: normal;">rsyslog</em> ，标准输出，等。
+</li>
+<li style="margin: 10px auto;">格式定义，一般都带上时间和代码位置。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Node.js 中，大概就是 <em style="color: #d75100; font-style: normal;">log4js</em> 了， <a href="https://github.com/log4js-node/log4js-node" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/log4js-node/log4js-node</a> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> log4js <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;log4js&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> layout <span style="color: #000000; font-weight: bold">=</span> {
+    type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;pattern&#39;</span>,
+    pattern<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;- * %p * %x{time} * %c * %f * %l * %m&#39;</span>,
+    tokens<span style="color: #000000; font-weight: bold">:</span> {
+        time<span style="color: #000000; font-weight: bold">:</span> logEvent =&gt; {
+            <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().toISOString().replace(<span style="color: #dd1144">&#39;T&#39;</span>, <span style="color: #dd1144">&#39; &#39;</span>).split(<span style="color: #dd1144">&#39;.&#39;</span>)[<span style="color: #009999">0</span>];
+        }
+    }
+};
+log4js.configure({
+  appenders<span style="color: #000000; font-weight: bold">:</span> {
+        file<span style="color: #000000; font-weight: bold">:</span> { type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;dateFile&#39;</span>, layout<span style="color: #000000; font-weight: bold">:</span> layout, filename<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;app.log&#39;</span>, keepFileExt<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> },
+        stream<span style="color: #000000; font-weight: bold">:</span> { type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;stdout&#39;</span>, layout<span style="color: #000000; font-weight: bold">:</span> layout }
+  },
+  categories<span style="color: #000000; font-weight: bold">:</span> {
+      <span style="color: #000000; font-weight: bold">default:</span> { appenders<span style="color: #000000; font-weight: bold">:</span> [ <span style="color: #dd1144">&#39;stream&#39;</span> ], level<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;info&#39;</span>, enableCallStack<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">false</span> },
+      app<span style="color: #000000; font-weight: bold">:</span> { appenders<span style="color: #000000; font-weight: bold">:</span> [ <span style="color: #dd1144">&#39;stream&#39;</span>, <span style="color: #dd1144">&#39;file&#39;</span> ], level<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;info&#39;</span>, enableCallStack<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span> }
+  }
+});
+
+<span style="color: #000000; font-weight: bold">const</span> logger <span style="color: #000000; font-weight: bold">=</span> log4js.getLogger(<span style="color: #dd1144">&#39;app&#39;</span>);
+logger.error(<span style="color: #dd1144">&#39;xxx&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> l2 <span style="color: #000000; font-weight: bold">=</span> log4js.getLogger(<span style="color: #dd1144">&#39;app.good&#39;</span>);
+l2.error(<span style="color: #dd1144">&#39;ii&#39;</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+总的来说，还是很好用的，但是官网的文档不太好读，有些细节的东西没讲，好在源码还是比较简单。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说几点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getLogger(name)</code> 需要给一个名字，否则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">default</code> 的规则都匹配不到。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getLogger('parent.child')</code> 中的名字，规则匹配上，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.</code> 作父子继承的。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">enableCallStack: true</code> 加上，才能拿到文件名和行号。
+</li>
+</ul>
+
+<a class="anchor" name="toc21"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. ini 格式配置</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+json 作配置文件，功能上没问题，但是对人为修改是不友好的。所以，个人还是喜欢用 ini 格式作项目的环境配置文件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Node.js 中，可以使用 <em style="color: #d75100; font-style: normal;">ini</em> 模块作解析：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`</span>
+<span style="color: #dd1144">[database]</span>
+<span style="color: #dd1144">host = 127.0.0.1</span>
+<span style="color: #dd1144">port = 5432</span>
+<span style="color: #dd1144">user = dbuser</span>
+<span style="color: #dd1144">password = dbpassword</span>
+<span style="color: #dd1144">database = use_this_database</span>
+
+<span style="color: #dd1144">[paths.default]</span>
+<span style="color: #dd1144">datadir = /var/lib/data</span>
+<span style="color: #dd1144">array[] = first value</span>
+<span style="color: #dd1144">array[] = second value</span>
+<span style="color: #dd1144">array[] = third value</span>
+<span style="color: #dd1144">`</span>
+
+<span style="color: #000000; font-weight: bold">const</span> fs <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;fs&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> ini <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;ini&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> config <span style="color: #000000; font-weight: bold">=</span> ini.parse(s);
+console.log(config);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它扩展了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">array[]</code> 这种格式，但没有对类型作处理，比如，获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">port</code> ，结果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">"5432"</code> 。简单够用了。
+</p>
+
+<a class="anchor" name="toc22"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. WebSocket</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Node.js 中的 WebSocket 实现，可以使用 <em style="color: #d75100; font-style: normal;">ws</em> 模块， <a href="https://github.com/websockets/ws" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/websockets/ws</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要把 <em style="color: #d75100; font-style: normal;">ws</em> 的 WebSocket Server 和 <em style="color: #d75100; font-style: normal;">Express</em> 的 <em style="color: #d75100; font-style: normal;">app</em> 整合，需要在 <em style="color: #d75100; font-style: normal;">Express</em> 的 <em style="color: #d75100; font-style: normal;">Server</em> 层面动手，实际上这里说的 <em style="color: #d75100; font-style: normal;">Server</em> 就是 Node.js 的 <em style="color: #d75100; font-style: normal;">http</em> 模块中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.createServer()</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+<span style="color: #000000; font-weight: bold">const</span> ws <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;ws&#39;</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+
+app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res) =&gt; {
+    console.log(<span style="color: #dd1144">&#39;/&#39;</span>);
+    res.send(<span style="color: #dd1144">&#39;hello&#39;</span>);
+});
+
+<span style="color: #000000; font-weight: bold">const</span> server <span style="color: #000000; font-weight: bold">=</span> app.listen(<span style="color: #009999">8888</span>);
+
+<span style="color: #000000; font-weight: bold">const</span> wss <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> ws.Server({server, path<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;/ws&#39;</span>});
+wss.on(<span style="color: #dd1144">&#39;connection&#39;</span>, conn =&gt; {
+    conn.on(<span style="color: #dd1144">&#39;message&#39;</span>, msg =&gt; {
+        console.log(msg);
+        conn.send(<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().toISOString());
+    });
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应的一个客户端实现，来自： <a href="https://github.com/ilkerkesen/tornado-websocket-client-example/blob/master/client.py" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/ilkerkesen/tornado-websocket-client-example/blob/master/client.py</a>
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">time</span>
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado.ioloop</span> <span style="color: #000000; font-weight: bold">import</span> IOLoop, PeriodicCallback
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado</span> <span style="color: #000000; font-weight: bold">import</span> gen
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">tornado.websocket</span> <span style="color: #000000; font-weight: bold">import</span> websocket_connect
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Client</span>(<span style="color: #0086B3">object</span>):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, url, timeout):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>url <span style="color: #000000; font-weight: bold">=</span> url
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>timeout <span style="color: #000000; font-weight: bold">=</span> timeout
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ioloop <span style="color: #000000; font-weight: bold">=</span> IOLoop<span style="color: #000000; font-weight: bold">.</span>instance()
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">None</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>connect()
+        PeriodicCallback(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>keep_alive, <span style="color: #009999">2000</span>)<span style="color: #000000; font-weight: bold">.</span>start()
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ioloop<span style="color: #000000; font-weight: bold">.</span>start()
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.coroutine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">connect</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&quot;trying to connect&quot;</span>)
+        <span style="color: #000000; font-weight: bold">try</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> websocket_connect(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>url)
+        <span style="color: #000000; font-weight: bold">except</span> <span style="color: #990000; font-weight: bold">Exception</span>:
+            <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&quot;connection error&quot;</span>)
+        <span style="color: #000000; font-weight: bold">else</span>:
+            <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&quot;connected&quot;</span>)
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>run()
+
+    <span style="color: #3c5d5d; font-weight: bold">@gen.coroutine</span>
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">run</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #999999">True</span>:
+            msg <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws<span style="color: #000000; font-weight: bold">.</span>read_message()
+            <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&#39;read&#39;</span>, msg)
+            <span style="color: #000000; font-weight: bold">if</span> msg <span style="color: #000000; font-weight: bold">is</span> <span style="color: #999999">None</span>:
+                <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&quot;connection closed&quot;</span>)
+                <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">None</span>
+                <span style="color: #000000; font-weight: bold">break</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">keep_alive</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws <span style="color: #000000; font-weight: bold">is</span> <span style="color: #999999">None</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>connect()
+        <span style="color: #000000; font-weight: bold">else</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>ws<span style="color: #000000; font-weight: bold">.</span>write_message(<span style="color: #0086B3">str</span>(time<span style="color: #000000; font-weight: bold">.</span>time()))
+
+
+<span style="color: #000000; font-weight: bold">if</span> <span style="color: #008080">__name__</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&quot;__main__&quot;</span>:
+    client <span style="color: #000000; font-weight: bold">=</span> Client(<span style="color: #dd1144">&quot;ws://localhost:8888/ws&quot;</span>, <span style="color: #009999">5</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'express';
+  var disqus_url = 'https://www.zouyesheng.com/express.html';
+  var disqus_title = 'Express 的使用';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAAByElEQVR4nN2XMa7bMAyGP8YGrE0e
+u8nAO0fil6nX6DUKBHguEqDX6DXapfbLKbpJW5cC8iYDTtghmdqMj0PLRQIH/iCp/yclyt+2bB44
+4V/zoiPQjBwCkl8UIBQrtBpRcFBNQTd8aQqXJ8uMZ+mQfAryDDDJYF5fDUNCchXfOO4fVt+OPgNT
+e+hs0dBJVZtJB/Tqj9qornavZIOKCMxrcOe0dItIbZmbqqpe/RoKEFRV1Sw3dPQrjeoxsvNDKDtL
+vm1gHkKZZOl5nTW61zeL+9Db5xOy1zoBUERX274dY5FcRb1CKKKDZSWn9tL7kY/d8swhsaOKpsql
+sWzDMTqoopvaS2eItvN1cuc0hCL50iPJsG815wyz49D9/NoeaL55Q3Zv0PYi/srnCXydyra17Rsn
+5me/9PM+aXTnbNq3Pmn0U6qT27ZQVIz5tlLwx6gjL9qoJd9uOkmv6/2GN5w49xkweo3gh6CT7Xyb
+RMTt5pv849R2LxFV5ZwvnQMo+MZWuaQD30zNCEn2+a3iPrD7FrRtfz3N1ZUP797PS/fDGA1OydFm
+mu8bgmUlvUbOuYo68ql3r34w1cnbzrV0wCHN+2yok/If/6h+Axtj8PMjUekoAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
