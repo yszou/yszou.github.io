@@ -14,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">Express 的使用</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2019-06-21 11:56 更新</span>
+                <span>2019-06-21 15:27 更新</span>
             </div>
         </div>
 
@@ -65,11 +65,15 @@
     </li>
     </ul>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_blank">日志</a>
+  <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_blank">我会怎么用 Express</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_blank">ini 格式配置</a>
+  <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_blank">日志</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_blank">WebSocket</a>
+  <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_blank">ini 格式配置</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none" target="_blank">WebSocket</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none" target="_blank">其它</a>
   </li>
   </ol>
 
@@ -1117,7 +1121,168 @@ app.listen(<span style="color: #009999">8888</span>);
 </p>
 
 <a class="anchor" name="toc20"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 日志</h1>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 我会怎么用 Express</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先说一下，我自己，目前在 <em style="color: #d75100; font-style: normal;">Express</em> 运用方面，并没有太多的时间和复杂场景的积累。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+即使这样，作为技术上相对传统的人，我会以我以往的 web 开发的套路，来使用 <em style="color: #d75100; font-style: normal;">Express</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我不喜欢日常用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.all(path, callback)</code> 这种形式去组织代码。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，这会使 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> 定义散落在各处，方便了开发，麻烦了维护。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其次，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> 和具体实现逻辑 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback</code> 绑在一起，我觉得也是反思维的。至少，对于我个人来说，开发的过程，先是想如何实现一个 <em style="color: #d75100; font-style: normal;">handler</em> ，最后，再是考虑要把这个 <em style="color: #d75100; font-style: normal;">handle</em> 与哪些 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> 绑定。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再次，单纯的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback</code> 缺乏层次感，用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">app.use(path, callback)</code> 这种来处理共用逻辑的方式，我觉得完全是扯谈。共用逻辑是代码之间本身实现上的关系，硬生生跟网络应用层 HTTP 协议的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> 概念抽上关系，何必呢。当然，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback</code> 的组织，用纯函数来串是可以的，不过我在这方面并没有太多经验，所以，我还是选择用类继承的方式来作层次化的实现。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我自己要用 <em style="color: #d75100; font-style: normal;">Express</em> ，大概会这样组件项目代码（不包括关系数据库的 <em style="color: #d75100; font-style: normal;">Model</em> 抽象如何组织这部分）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">./
+├── config.conf
+├── config.js
+├── handler
+│   ├── base.js
+│   └── index.js
+├── middleware.js
+├── server.js
+└── url.js
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.conf</code> 是 ini 格式的项目配置。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">config.js</code> 处理配置，包括日志，数据库连接等。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">middleware.js</code> 是针对整体流程的扩展机制，比如，给每个请求加一个 UUID ，每个请求都记录一条日志，日志内容有请求的细节及本次请求的处理时间。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">server.js</code> 是主要的服务启动逻辑，整合各种资源，命令行参数 <em style="color: #d75100; font-style: normal;">port</em> 控制监听哪个端口。不需要考虑多进程问题，（正式部署时 <em style="color: #d75100; font-style: normal;">nginx</em> 反向代理到多个应用实例，多个实例及其它资源统一用 <em style="color: #d75100; font-style: normal;">supervisor</em> 管理）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">url.js</code> 定义路径与 <em style="color: #d75100; font-style: normal;">handler</em> 的映射关系。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">handler</code> ，具体逻辑实现的地方，所有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">handler</code> 都从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">BaseHandler</code> 继承。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">BaseHandler</code> 的实现：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> BaseHandler {
+    constructor(req, res, next){
+        <span style="color: #000000; font-weight: bold">this</span>.req <span style="color: #000000; font-weight: bold">=</span> req;
+        <span style="color: #000000; font-weight: bold">this</span>.res <span style="color: #000000; font-weight: bold">=</span> res;
+        <span style="color: #000000; font-weight: bold">this</span>._next <span style="color: #000000; font-weight: bold">=</span> next;
+        <span style="color: #000000; font-weight: bold">this</span>._finised <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">false</span>;
+    }
+
+    run(){
+        <span style="color: #000000; font-weight: bold">this</span>.prepare();
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!this</span>._finised){
+            <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.req.method <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;GET&#39;</span>){
+                <span style="color: #000000; font-weight: bold">this</span>.get();
+                <span style="color: #000000; font-weight: bold">return</span>;
+            }
+            <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.req.method <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;POST&#39;</span>){
+                <span style="color: #000000; font-weight: bold">this</span>.post();
+                <span style="color: #000000; font-weight: bold">return</span>;
+            }
+            <span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>(<span style="color: #000000; font-weight: bold">this</span>.req.method <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; this method had not been implemented&#39;</span>);
+        }
+    }
+
+    prepare(){}
+    get(){
+        <span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>(<span style="color: #dd1144">&#39;this method had not been implemented&#39;</span>);
+    }
+    post(){
+        <span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>(<span style="color: #dd1144">&#39;this method had not been implemented&#39;</span>);
+    }
+
+    render(template, values){
+        <span style="color: #000000; font-weight: bold">this</span>.res.render(template, values, (err, html) =&gt; {
+            <span style="color: #000000; font-weight: bold">this</span>.finish(html);
+        });
+    }
+
+    write(content){
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #0086B3">Object</span>.prototype.toString.call(content) <span style="color: #000000; font-weight: bold">===</span> <span style="color: #dd1144">&#39;[object Object]&#39;</span>){
+            <span style="color: #000000; font-weight: bold">this</span>.res.write(JSON.stringify(content));
+        } <span style="color: #000000; font-weight: bold">else</span> {
+            <span style="color: #000000; font-weight: bold">this</span>.res.write(content);
+        }
+    }
+
+    finish(content){
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>._finised){
+            <span style="color: #000000; font-weight: bold">throw</span> <span style="color: #0086B3">Error</span>(<span style="color: #dd1144">&#39;this handle was finished&#39;</span>);
+        }
+        <span style="color: #000000; font-weight: bold">this</span>.res.send(content);
+        <span style="color: #000000; font-weight: bold">this</span>._finised <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">true</span>;
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>._next){ <span style="color: #000000; font-weight: bold">this</span>._next() }
+    }
+
+}
+
+module.exports <span style="color: #000000; font-weight: bold">=</span> {BaseHandler};
+
+<span style="color: #000000; font-weight: bold">if</span>(module <span style="color: #000000; font-weight: bold">===</span> require.main){
+    <span style="color: #000000; font-weight: bold">const</span> express <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;express&#39;</span>);
+    <span style="color: #000000; font-weight: bold">const</span> app <span style="color: #000000; font-weight: bold">=</span> express();
+    app.all(<span style="color: #dd1144">&#39;/&#39;</span>, (req, res, next) =&gt; <span style="color: #000000; font-weight: bold">new</span> BaseHandler(req, res, next).run() );
+    app.listen(<span style="color: #009999">8888</span>);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要用的话，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">index.js</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> BaseHandler <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./base&#39;</span>).BaseHandler;
+
+<span style="color: #000000; font-weight: bold">class</span> IndexHandler <span style="color: #000000; font-weight: bold">extends</span> BaseHandler {
+    get(){
+        <span style="color: #000000; font-weight: bold">this</span>.finish({a<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;hello&#39;</span>});
+    }
+}
+
+module.exports <span style="color: #000000; font-weight: bold">=</span> {IndexHandler};
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">url.js</code> 中的样子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> IndexHandler <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./handler/index&#39;</span>).IndexHandler;
+
+<span style="color: #000000; font-weight: bold">const</span> Handlers <span style="color: #000000; font-weight: bold">=</span> [];
+
+Handlers.push([<span style="color: #dd1144">&#39;/&#39;</span>, IndexHandler]);
+
+module.exports <span style="color: #000000; font-weight: bold">=</span> {Handlers};
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc21"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 日志</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 后面这几部分，都不属于 <em style="color: #d75100; font-style: normal;">Express</em> 本身的内容了，只是我个人，随便想到的一些东西。
@@ -1189,8 +1354,8 @@ l2.error(<span style="color: #dd1144">&#39;ii&#39;</span>);
 </li>
 </ul>
 
-<a class="anchor" name="toc21"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. ini 格式配置</h1>
+<a class="anchor" name="toc22"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. ini 格式配置</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 json 作配置文件，功能上没问题，但是对人为修改是不友好的。所以，个人还是喜欢用 ini 格式作项目的环境配置文件。
@@ -1225,11 +1390,11 @@ console.log(config);
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-它扩展了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">array[]</code> 这种格式，但没有对类型作处理，比如，获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">port</code> ，结果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">"5432"</code> 。简单够用了。
+它扩展了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">array[]</code> 这种格式，但没有对类型作处理（除了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">true</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code>），比如，获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">port</code> ，结果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">"5432"</code> 。简单够用了。
 </p>
 
-<a class="anchor" name="toc22"></a>
-<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. WebSocket</h1>
+<a class="anchor" name="toc23"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. WebSocket</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 Node.js 中的 WebSocket 实现，可以使用 <em style="color: #d75100; font-style: normal;">ws</em> 模块， <a href="https://github.com/websockets/ws" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/websockets/ws</a> 。
@@ -1317,6 +1482,16 @@ wss.on(<span style="color: #dd1144">&#39;connection&#39;</span>, conn =&gt; {
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
+
+<a class="anchor" name="toc24"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 其它</h1>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">命令行解析， <em style="color: #d75100; font-style: normal;">yargs</em> ，<a href="https://github.com/yargs/yargs" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/yargs/yargs</a>
+</li>
+<li style="margin: 10px auto;">UUID， <em style="color: #d75100; font-style: normal;">uuid</em> ， <a href="https://github.com/kelektiv/node-uuid" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/kelektiv/node-uuid</a>
+</li>
+</ul>
 
 
 <style type="text/css">

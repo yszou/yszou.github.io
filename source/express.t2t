@@ -848,6 +848,141 @@ app.all('/', (req, res) => {
 不过 ``res.write()`` 是不能直接处理 json 对象的，还是老老实实 ``res.send()`` 吧。
 
 
+
+# 我会怎么用 Express #
+
+先说一下，我自己，目前在 *Express* 运用方面，并没有太多的时间和复杂场景的积累。
+
+即使这样，作为技术上相对传统的人，我会以我以往的 web 开发的套路，来使用 *Express* 。
+
+我不喜欢日常用 ``app.all(path, callback)`` 这种形式去组织代码。
+
+首先，这会使 ``path`` 定义散落在各处，方便了开发，麻烦了维护。
+
+其次，把 ``path`` 和具体实现逻辑 ``callback`` 绑在一起，我觉得也是反思维的。至少，对于我个人来说，开发的过程，先是想如何实现一个 *handler* ，最后，再是考虑要把这个 *handle* 与哪些 ``path`` 绑定。
+
+再次，单纯的 ``callback`` 缺乏层次感，用 ``app.use(path, callback)`` 这种来处理共用逻辑的方式，我觉得完全是扯谈。共用逻辑是代码之间本身实现上的关系，硬生生跟网络应用层 HTTP 协议的 ``path`` 概念抽上关系，何必呢。当然，对于 ``callback`` 的组织，用纯函数来串是可以的，不过我在这方面并没有太多经验，所以，我还是选择用类继承的方式来作层次化的实现。
+
+我自己要用 *Express* ，大概会这样组件项目代码（不包括关系数据库的 *Model* 抽象如何组织这部分）：
+
+```text
+./
+├── config.conf
+├── config.js
+├── handler
+│   ├── base.js
+│   └── index.js
+├── middleware.js
+├── server.js
+└── url.js
+```
+
+- ``config.conf`` 是 ini 格式的项目配置。
+- ``config.js`` 处理配置，包括日志，数据库连接等。
+- ``middleware.js`` 是针对整体流程的扩展机制，比如，给每个请求加一个 UUID ，每个请求都记录一条日志，日志内容有请求的细节及本次请求的处理时间。
+- ``server.js`` 是主要的服务启动逻辑，整合各种资源，命令行参数 *port* 控制监听哪个端口。不需要考虑多进程问题，（正式部署时 *nginx* 反向代理到多个应用实例，多个实例及其它资源统一用 *supervisor* 管理）。
+- ``url.js`` 定义路径与 *handler* 的映射关系。
+- ``handler`` ，具体逻辑实现的地方，所有 ``handler`` 都从 ``BaseHandler`` 继承。
+
+
+``BaseHandler`` 的实现：
+
+```javascript
+class BaseHandler {
+    constructor(req, res, next){
+        this.req = req;
+        this.res = res;
+        this._next = next;
+        this._finised = false;
+    }
+
+    run(){
+        this.prepare();
+        if(!this._finised){
+            if(this.req.method === 'GET'){
+                this.get();
+                return;
+            }
+            if(this.req.method === 'POST'){
+                this.post();
+                return;
+            }
+            throw Error(this.req.method + ' this method had not been implemented');
+        }
+    }
+
+    prepare(){}
+    get(){
+        throw Error('this method had not been implemented');
+    }
+    post(){
+        throw Error('this method had not been implemented');
+    }
+
+    render(template, values){
+        this.res.render(template, values, (err, html) => {
+            this.finish(html);
+        });
+    }
+
+    write(content){
+        if(Object.prototype.toString.call(content) === '[object Object]'){
+            this.res.write(JSON.stringify(content));
+        } else {
+            this.res.write(content);
+        }
+    }
+
+    finish(content){
+        if(this._finised){
+            throw Error('this handle was finished');
+        }
+        this.res.send(content);
+        this._finised = true;
+        if(this._next){ this._next() }
+    }
+
+}
+
+module.exports = {BaseHandler};
+
+if(module === require.main){
+    const express = require('express');
+    const app = express();
+    app.all('/', (req, res, next) => new BaseHandler(req, res, next).run() );
+    app.listen(8888);
+}
+```
+
+要用的话，比如 ``index.js`` ：
+
+```javascript
+const BaseHandler = require('./base').BaseHandler;
+
+class IndexHandler extends BaseHandler {
+    get(){
+        this.finish({a: 'hello'});
+    }
+}
+
+module.exports = {IndexHandler};
+```
+
+
+``url.js`` 中的样子：
+
+```javascript
+const IndexHandler = require('./handler/index').IndexHandler;
+
+const Handlers = [];
+
+Handlers.push(['/', IndexHandler]);
+
+module.exports = {Handlers};
+```
+
+
+
 # 日志 #
 
 后面这几部分，都不属于 *Express* 本身的内容了，只是我个人，随便想到的一些东西。
@@ -931,7 +1066,7 @@ const config = ini.parse(s);
 console.log(config);
 ```
 
-它扩展了 ``array[]`` 这种格式，但没有对类型作处理，比如，获取 ``port`` ，结果是 ``"5432"`` 。简单够用了。
+它扩展了 ``array[]`` 这种格式，但没有对类型作处理（除了 ``true`` ``false``），比如，获取 ``port`` ，结果是 ``"5432"`` 。简单够用了。
 
 
 # WebSocket #
@@ -1013,4 +1148,11 @@ class Client(object):
 if __name__ == "__main__":
     client = Client("ws://localhost:8888/ws", 5)
 ```
+
+
+# 其它 #
+
+- 命令行解析， *yargs* ，https://github.com/yargs/yargs
+- UUID， *uuid* ， https://github.com/kelektiv/node-uuid
+
 
