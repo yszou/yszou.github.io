@@ -1,0 +1,167 @@
+SCIP 的习题
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus --mathjax
+%!qr: http://www.zouyesheng.com/sicp-exercise.html
+%!format: !email
+%%toc
+
+
+# 第一章 #
+
+*1.2* 请将下面表达式变换为前缀形式：
+
+\[
+\frac
+{5 + 4 + \bigg(  2 - \Big( 3 - \left( 6 + \frac{4}{5} \right) \Big) \bigg)  }
+{3 \left( 6 - 2 \right) \left( 2 - 7 \right)}
+\]
+
+
+
+```racket
+#lang planet neil/sicp
+
+(define denominator ( * 3 (- 6 2) (- 2 7)))
+(define numberator (+ 5 4 (- 2
+                             (- 3 (
+                                   + 6 (/ 4 5))))))
+(define result (/ numberator denominator))
+```
+
+
+*1.3* 请定义一个过程，它以三个数为参数，返回其中较大的两个数之和。
+
+
+```racket
+#lang planet neil/sicp
+
+(define
+  (>? a b)
+  (cond
+    ((> a b) a)
+    (else b))
+  )
+
+(define
+  (sum-of-2 a b c)
+  (cond
+    ((> a b) (+ a (>? b c)))
+    (else (+ b (>? a c)))
+    ))
+```
+
+
+*换零钱有多少种形式*
+
+```racket
+#lang planet neil/sicp
+
+(define (possible sum value_list)
+    (if (= (car value_list) 1) 1
+        (if (< sum (car value_list)) (possible sum (cdr value_list))
+         (+ (possible sum (cdr value_list))
+            (possible (- sum (car value_list)) value_list)))))
+```
+
+调用：
+
+```racket
+> (possible 200 '(50 25 10 5 1))
+2435
+```
+
+*1.11* 函数 $f$ 由如下规则定义：如果 $n < 3$ ，那么 $f(n) = n$ 。如果 $n>=3$，那么 $f(n) = f(n-1) + 2f(n-2) + 3f(n-3)$。请写一个采用递归计算过程计算 $f$ 的过程。再写一个采用迭代计算过程计算 $f$ 的过程：
+
+```racket
+(define (f n)
+  (if (< n 3) n
+    (+ (f (- n 1)) (* 2 (f (- n 2))) (* 3 (f (- n 3))))))
+
+(define (ff current target n-1 n-2 n-3)
+  (cond
+    ((< target 3) target)
+    ((= current target)
+     (if (< current 3) current (+ n-1 (* 2 n-2) (* 3 n-3))))
+    ((< current 3) (ff (+ 1 current) target current n-1 n-2))
+    (else (ff (+ current 1) target (+ n-1 (* 2 n-2) (* 3 n-3)) n-1 n-2))))
+
+(define (f2 n)
+  (ff 0 n -1 -2 -3))
+
+(define (f3 n)
+  (ff 0 n (f -1) (f -2) (f -3)))
+```
+
+上面有一个有意思的问题。
+
+很简单就可以写出递归的 ``f`` 的实现，虽然它在计算 ``n`` 大一点点就没用了，但是，后面我们实现迭代的 ``ff`` 时，需要传入最初的三个数，虽然可以先人工算出 ``-1`` ``-2`` ``-3`` ，但是明显，写成函数调用的形式更好。这时，如果用 ``ff`` ，就不得不多传几个用不到的参数，而用 ``f`` 只需要一个参数就可以了。
+
+
+*1.12* 帕斯卡三角 Pascal Triangle：
+
+```racket
+#lang planet neil/sicp
+
+
+(define (pascal row column)
+  (cond
+    ((= row column) 1)
+    ((= column 1) 1)
+    (else
+      (+ (pascal (- row 1) (- column 1)) (pascal (- row 1) column)))
+    ))
+```
+
+
+*1.16* 求幂
+
+```racket
+(define (square n) (* n n))
+(define (expt base n)
+  (cond
+    ((= n 1) base)
+    ((even? n) (square (expt base (/ n 2))))
+    (else
+      (* base (expt base (- n 1))))
+    ))
+
+(define (expt-iter base current target value)
+  (if (= current target) value
+    (if (< (* current 2) target) (expt-iter base (* current 2) target (* value value)     )
+      (expt-iter base (+ current 1) target (* value base)))
+    ))
+
+(define (fast-expt base n)
+  (expt-iter base 1 n base))
+
+(display (expt 2 1000))
+```
+
+
+## 感想 ##
+
+对于计算而言，看似再复杂的问题，如果可以找到一个关系 $f(x) = g(f(x-a))$ 且知道 $f(m) = N$ ，那么都可以很容易递归出来。其中每次迭代 $x$ 往 $m$ 靠近得越快，这个过程也就越有效率。
+
+比如对于求幂，我们知道：
+
+\[
+b^n = b \cdot b^{n-1}
+\]
+
+
+还有 $b^0 = 1$， $b^1=b$ 。
+
+同时，对于 $g(f(x-1))$ ，存在的 $g$ 并不一定只有一个，对于求幂，还有：
+
+\[
+b^n = \left( b^{\frac{n}{2}} \right)^2
+\]
+
+
+$n-1$ 与 $\frac{n}{2}$ 在迭代次数上，就有线性与对数级的差距。
+
+当我们找到了一个递归的实现后，反过来，从 $m$ 开始迭代，可以有一个尾递归的实现。一般的思路，就是在函数参数中，同时有 ``current`` ``target`` ``value`` ，当 ``current = target`` 就可以返回 ``value`` 了 。
+
+
