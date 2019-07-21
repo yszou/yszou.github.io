@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>HTML的注音排版和其它 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">HTML的注音排版和其它</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-07-22 02:28 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">ruby 标签</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">VIM 中如何快速生成上面的代码</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">使用 LaTeX 排版注音</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. ruby 标签</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+记得很多年前，我用 CSS 折腾了一个注音的排版格式，与别人交流时，别人问我，“为什么你不直接使用 ruby 标签呢？” 那时我才知道 HTML 中有一人叫 <em style="color: #d75100; font-style: normal;">ruby</em> 的标签是专门用来处理注音场景的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  &lt;<span style="color: #000080">p</span>&gt;
+    &lt;<span style="color: #000080">ruby</span>&gt;你好&lt;<span style="color: #000080">rt</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;color: red;&quot;</span>&gt;ni hao&lt;/<span style="color: #000080">rt</span>&gt;&lt;/<span style="color: #000080">ruby</span>&gt;
+  &lt;/<span style="color: #000080">p</span>&gt;
+  &lt;<span style="color: #000080">p</span>&gt;
+    &lt;<span style="color: #000080">ruby</span>&gt;你好&lt;<span style="color: #000080">rt</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;color: red;&quot;</span>&gt;ni hao&lt;/<span style="color: #000080">rt</span>&gt;&lt;/<span style="color: #000080">ruby</span>&gt;
+  &lt;/<span style="color: #000080">p</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果会显示成：
+</p>
+  <p>
+    <ruby>你好<rt style="color: red;">ni hao</rt></ruby>
+  </p>
+  <p>
+    <ruby>你好<rt style="color: red;">ni hao</rt></ruby>
+  </p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当时，只是这样，其实你没有办法控制注音与正文之间的间距，我尝试了一些方式，发现这样处理可以：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  &lt;<span style="color: #000080">p</span>&gt;
+    &lt;<span style="color: #000080">ruby</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;display: inline-block;&quot;</span>&gt;&lt;<span style="color: #000080">rt</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;color: red; line-height: 10px;&quot;</span>&gt;nihao&lt;/<span style="color: #000080">rt</span>&gt;你好&lt;/<span style="color: #000080">ruby</span>&gt;
+  &lt;/<span style="color: #000080">p</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+显示出来就是：
+</p>
+  <p>
+    <ruby style="display: inline-block;"><rt style="color: red; line-height: 10px;">nihao</rt>你好</ruby>
+  </p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如下面的代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">style</span>&gt;
+.<span style="color: #445588; font-weight: bold">ruby</span> { <span style="color: #000000; font-weight: bold">font-size</span>: <span style="color: #009999">20</span><span style="color: #445588; font-weight: bold">px</span>; }
+.<span style="color: #445588; font-weight: bold">ruby</span> <span style="color: #000080">p</span> { <span style="color: #000000; font-weight: bold">margin</span>: <span style="color: #009999">10</span><span style="color: #445588; font-weight: bold">px</span> <span style="color: #009999">0</span>; }
+.<span style="color: #445588; font-weight: bold">ruby</span> <span style="color: #000080">ruby</span> { <span style="color: #000000; font-weight: bold">display</span>: <span style="color: #000000; font-weight: bold">inline-block</span>; }
+.<span style="color: #445588; font-weight: bold">ruby</span> <span style="color: #000080">rt</span> { <span style="color: #000000; font-weight: bold">line-height</span>: <span style="color: #009999">12</span><span style="color: #445588; font-weight: bold">px</span>; <span style="color: #000000; font-weight: bold">font-size</span>: <span style="color: #009999">12</span><span style="color: #445588; font-weight: bold">px</span>; <span style="color: #000000; font-weight: bold">color</span>: <span style="color: #009999">#00a905</span>; }
+&lt;/<span style="color: #000080">style</span>&gt;
+&lt;<span style="color: #000080">div</span> <span style="color: #008080">class</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;ruby&quot;</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;ことし&lt;/<span style="color: #000080">rt</span>&gt;今年&lt;/<span style="color: #000080">ruby</span>&gt;もひとつ&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;きせつ&lt;/<span style="color: #000080">rt</span>&gt;季节&lt;/<span style="color: #000080">ruby</span>&gt;が&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;めく&lt;/<span style="color: #000080">rt</span>&gt;巡&lt;/<span style="color: #000080">ruby</span>&gt;って&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;おも&lt;/<span style="color: #000080">rt</span>&gt;思&lt;/<span style="color: #000080">ruby</span>&gt;い&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;で&lt;/<span style="color: #000080">rt</span>&gt;出&lt;/<span style="color: #000080">ruby</span>&gt;はまた&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;とう&lt;/<span style="color: #000080">rt</span>&gt;远&lt;/<span style="color: #000080">ruby</span>&gt;くなった&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;あいまい&lt;/<span style="color: #000080">rt</span>&gt;暧昧&lt;/<span style="color: #000080">ruby</span>&gt;だった&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;ゆめ&lt;/<span style="color: #000080">rt</span>&gt;梦&lt;/<span style="color: #000080">ruby</span>&gt;と&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;げんじつ&lt;/<span style="color: #000080">rt</span>&gt;现実&lt;/<span style="color: #000080">ruby</span>&gt;の&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;きょうかいせん&lt;/<span style="color: #000080">rt</span>&gt;境界线&lt;/<span style="color: #000080">ruby</span>&gt;は&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;こ&lt;/<span style="color: #000080">rt</span>&gt;浓&lt;/<span style="color: #000080">ruby</span>&gt;くなった&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;それでもいつか&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;きみ&lt;/<span style="color: #000080">rt</span>&gt;君&lt;/<span style="color: #000080">ruby</span>&gt;に&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;はな&lt;/<span style="color: #000080">rt</span>&gt;话&lt;/<span style="color: #000080">ruby</span>&gt;した&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;ゆめ&lt;/<span style="color: #000080">rt</span>&gt;梦&lt;/<span style="color: #000080">ruby</span>&gt;に&lt;<span style="color: #000080">ruby</span>&gt;&lt;<span style="color: #000080">rt</span>&gt;うそ&lt;/<span style="color: #000080">rt</span>&gt;嘘&lt;/<span style="color: #000080">ruby</span>&gt;はひとつもなかった&lt;/<span style="color: #000080">p</span>&gt;
+&lt;<span style="color: #000080">p</span>&gt;...&lt;/<span style="color: #000080">p</span>&gt;
+&lt;/<span style="color: #000080">div</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+显示出来是：
+</p>
+<style>
+.ruby { font-size: 20px; }
+.ruby p { margin: 10px 0; }
+.ruby ruby { display: inline-block; }
+.ruby rt { line-height: 12px; font-size: 12px; color: #00a905; }
+</style>
+<div class="ruby">
+<p><ruby><rt>ことし</rt>今年</ruby>もひとつ<ruby><rt>きせつ</rt>季节</ruby>が<ruby><rt>めく</rt>巡</ruby>って</p>
+<p><ruby><rt>おも</rt>思</ruby>い<ruby><rt>で</rt>出</ruby>はまた<ruby><rt>とう</rt>远</ruby>くなった</p>
+<p><ruby><rt>あいまい</rt>暧昧</ruby>だった<ruby><rt>ゆめ</rt>梦</ruby>と<ruby><rt>げんじつ</rt>现実</ruby>の</p>
+<p><ruby><rt>きょうかいせん</rt>境界线</ruby>は<ruby><rt>こ</rt>浓</ruby>くなった</p>
+<p>それでもいつか<ruby><rt>きみ</rt>君</ruby>に<ruby><rt>はな</rt>话</ruby>した</p>
+<p><ruby><rt>ゆめ</rt>梦</ruby>に<ruby><rt>うそ</rt>嘘</ruby>はひとつもなかった</p>
+<p>...</p>
+
+</div>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. VIM 中如何快速生成上面的代码</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（这是我临时想到的一个有些好玩的事）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，很容易在网上找到这样的原始的文本：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">今年（ことし）もひとつ季节（きせつ）が巡（めく）って
+思（おも）い出（で）はまた远（とう）くなった
+暧昧（あいまい）だった梦（ゆめ）と现実（げんじつ）の
+境界线（きょうかいせん）は浓（こ）くなった
+それでもいつか君（きみ）に话（はな）した
+梦（ゆめ）に嘘（うそ）はひとつもなかった
+...
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+相应的注音会写在括号里，我们要把它们变成带 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;ruby&gt;</code> 标签的片段，可以很快速地这样处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，把中文的括号，换成英文的括号，这是为了后面在“宏”中方便输入。这步简单的查找替换就好了， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">:%s/（/(/g</code> ，不细说。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后，手工把注音对应的汉字标记一下。（这一步，理论上，通过正则匹配非假名字符，是可以自动做到的，反正内容不多，我就手动了）得到这样的内容（在对应汉字前加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> ）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">|今年(ことし)もひとつ|季节(きせつ)が|巡(めく)って
+|思(おも)い|出(で)はまた|远(とう)くなった
+|暧昧(あいまい)だった|梦(ゆめ)と|现実(げんじつ)の
+|境界线(きょうかいせん)は|浓(こ)くなった
+それでもいつか|君(きみ)に|话(はな)した
+|梦(ゆめ)に|嘘(うそ)はひとつもなかった
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接首，我们先查找一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> ，即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/|</code> 。做这一步的目的，是使 vim 查找并且高亮出所有的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> 字符，之后，我们通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">n</code> 就可以直接移动到下一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> 的位置了，这对我们执行宏非常方便。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接着输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">@a</code> 开始录制一个把汉字部分写成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;ruby&gt;</code> 标签形式的宏，最后的具体操作是：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（针对单组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|今年(ことし)</code> 我们来看）
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">n</code> 移动到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> 的位置
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 进入编辑模式，光标在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> 后面。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;80&gt;kb</code> 按 &lt;BS&gt; 键，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> 删除。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;ruby&gt;</code> 输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;ruby&gt;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">^[</code> &lt;ESC&gt; 退出编辑模式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">f</code> 当前行，向前查找，并把光标移动到其位置。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 查找 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 进入编辑模式，光标在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 后面。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;/ruby&gt;</code> 输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;/ruby&gt;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">^[</code> &lt;ESC&gt; 退出编辑模式
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">F</code> 当前行，向后查找，并把光标移动到其位置。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(</code> 查找 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">v</code> 进入“块选择”模式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">f</code> 向前选。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 选到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 的位置。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">d</code> 删除（删除内容放到缓存区）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">F</code> 当前行，向后查找。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&gt;</code> 查找 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&gt;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">p</code> 粘贴（缓存区内容粘贴到当前位置）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">F</code> 当前行，向后查找。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(</code> 查询 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 进入编辑模式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;80&gt;kb</code> 按 &lt;BS&gt; 键，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(</code> 删除。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;rt&gt;</code> 输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;rt&gt;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">^[</code> 按 &lt;ESC&gt; 退出编辑模式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">f</code> 向前查找。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 查找 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 进入编辑模式。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;80&gt;kb</code> 按 &lt;BS&gt; 键，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">)</code> 删除。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;/rt&gt;</code> 输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;/rt&gt;</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">^[</code> 按 &lt;ESC&gt; 退出编辑模式。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整的放一起，就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">na<span style="color: #000080">&lt;80&gt;</span>kb<span style="color: #000080">&lt;ruby&gt;</span>^[f)a<span style="color: #000080">&lt;/ruby&gt;</span>^[F(vf)dF&gt;pF(a<span style="color: #000080">&lt;80&gt;</span>kb<span style="color: #000080">&lt;rt&gt;</span>^[f)a<span style="color: #000080">&lt;80&gt;</span>kb<span style="color: #000080">&lt;/rt&gt;</span>^[ 
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这些看起来很多，但是因为是录制，完全是记录每一步键盘的操作而已。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+录完之后，按一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">q</code> （普通模式下），把这个宏保存到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 这个缓冲区了。接着，输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">999@a</code> 执行 999 次，就可以了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/ruby-macro.gif" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 使用 LaTeX 排版注音</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你需要纸制输出，那么更好的选择自然是 LaTeX 。当你有各种“非正常”的输出需求时，总可以在 LaTeX 上找到超高质量的方案的。（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ruby</code> 宏包可以处理注音）
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">\documentclass[12pt]<span style="color: #0086B3">{</span>article<span style="color: #0086B3">}</span>
+\usepackage<span style="color: #0086B3">{</span>geometry<span style="color: #0086B3">}</span>
+\geometry<span style="color: #0086B3">{</span>a4paper,left=1cm,right=1cm,top=3cm,bottom=3cm<span style="color: #0086B3">}</span>
+\usepackage<span style="color: #0086B3">{</span>xeCJK<span style="color: #0086B3">}</span>
+\setCJKmainfont<span style="color: #0086B3">{</span>微软雅黑<span style="color: #0086B3">}</span>
+\setmainfont<span style="color: #0086B3">{</span>微软雅黑<span style="color: #0086B3">}</span>
+\usepackage<span style="color: #0086B3">{</span>ruby<span style="color: #0086B3">}</span>
+\renewcommand\rubysep<span style="color: #0086B3">{</span>-0.6em<span style="color: #0086B3">}</span>
+\linespread<span style="color: #0086B3">{</span>1.7<span style="color: #0086B3">}</span>
+\pagestyle<span style="color: #0086B3">{</span>empty<span style="color: #0086B3">}</span>
+\usepackage<span style="color: #0086B3">{</span>multicol<span style="color: #0086B3">}</span>
+\begin<span style="color: #0086B3">{</span>document<span style="color: #0086B3">}</span>
+
+<span style="color: #0086B3">{</span>\LARGE\textbf<span style="color: #0086B3">{</span>SEASONS<span style="color: #0086B3">}}</span>
+
+
+\begin<span style="color: #0086B3">{</span>multicols<span style="color: #0086B3">}{</span>2<span style="color: #0086B3">}</span>
+
+\ruby<span style="color: #0086B3">{</span>今年<span style="color: #0086B3">}{</span>ことし<span style="color: #0086B3">}</span>もひとつ\ruby<span style="color: #0086B3">{</span>季节<span style="color: #0086B3">}{</span>きせつ<span style="color: #0086B3">}</span>が\ruby<span style="color: #0086B3">{</span>巡<span style="color: #0086B3">}{</span>めく<span style="color: #0086B3">}</span>って
+
+\ruby<span style="color: #0086B3">{</span>思<span style="color: #0086B3">}{</span>おも<span style="color: #0086B3">}</span>い\ruby<span style="color: #0086B3">{</span>出<span style="color: #0086B3">}{</span>で<span style="color: #0086B3">}</span>はまた\ruby<span style="color: #0086B3">{</span>远<span style="color: #0086B3">}{</span>とう<span style="color: #0086B3">}</span>くなった
+
+\ruby<span style="color: #0086B3">{</span>暧昧<span style="color: #0086B3">}{</span>あいまい<span style="color: #0086B3">}</span>だった\ruby<span style="color: #0086B3">{</span>梦<span style="color: #0086B3">}{</span>ゆめ<span style="color: #0086B3">}</span>と\ruby<span style="color: #0086B3">{</span>现実<span style="color: #0086B3">}{</span>げんじつ<span style="color: #0086B3">}</span>の
+
+\ruby<span style="color: #0086B3">{</span>境界线<span style="color: #0086B3">}{</span>きょうかいせん<span style="color: #0086B3">}</span>は\ruby<span style="color: #0086B3">{</span>浓<span style="color: #0086B3">}{</span>こ<span style="color: #0086B3">}</span>くなった
+
+それでもいつか\ruby<span style="color: #0086B3">{</span>君<span style="color: #0086B3">}{</span>きみ<span style="color: #0086B3">}</span>に\ruby<span style="color: #0086B3">{</span>话<span style="color: #0086B3">}{</span>はな<span style="color: #0086B3">}</span>した
+
+\ruby<span style="color: #0086B3">{</span>梦<span style="color: #0086B3">}{</span>ゆめ<span style="color: #0086B3">}</span>に\ruby<span style="color: #0086B3">{</span>嘘<span style="color: #0086B3">}{</span>うそ<span style="color: #0086B3">}</span>はひとつもなかった
+
+La La-i
+
+\ruby<span style="color: #0086B3">{</span>今日<span style="color: #0086B3">}{</span>きょう<span style="color: #0086B3">}</span>がとても\ruby<span style="color: #0086B3">{</span>楽<span style="color: #0086B3">}{</span>たの<span style="color: #0086B3">}</span>しいと
+
+\ruby<span style="color: #0086B3">{</span>明日<span style="color: #0086B3">}{</span>あす<span style="color: #0086B3">}</span>もきっと\ruby<span style="color: #0086B3">{</span>楽<span style="color: #0086B3">}{</span>たの<span style="color: #0086B3">}</span>しくて
+
+そんな\ruby<span style="color: #0086B3">{</span>日<span style="color: #0086B3">}{</span>ひ<span style="color: #0086B3">}</span>々が\ruby<span style="color: #0086B3">{</span>続<span style="color: #0086B3">}{</span>つづ<span style="color: #0086B3">}</span>いてく
+
+そう\ruby<span style="color: #0086B3">{</span>思<span style="color: #0086B3">}{</span>おも<span style="color: #0086B3">}</span>っていたあの\ruby<span style="color: #0086B3">{</span>顷<span style="color: #0086B3">}{</span>ころ<span style="color: #0086B3">}</span>
+
+\ruby<span style="color: #0086B3">{</span>缲<span style="color: #0086B3">}{</span>く<span style="color: #0086B3">}</span>り\ruby<span style="color: #0086B3">{</span>返<span style="color: #0086B3">}{</span>かえ<span style="color: #0086B3">}</span>してく\ruby<span style="color: #0086B3">{</span>毎日<span style="color: #0086B3">}{</span>まいにち<span style="color: #0086B3">}</span>に\ruby<span style="color: #0086B3">{</span>少<span style="color: #0086B3">}{</span>すこ<span style="color: #0086B3">}</span>し
+
+\ruby<span style="color: #0086B3">{</span>物足<span style="color: #0086B3">}{</span>ものた<span style="color: #0086B3">}</span>りなさを\ruby<span style="color: #0086B3">{</span>感<span style="color: #0086B3">}{</span>かん<span style="color: #0086B3">}</span>じながら
+
+\ruby<span style="color: #0086B3">{</span>不自然<span style="color: #0086B3">}{</span>ふしぜん<span style="color: #0086B3">}</span>な\ruby<span style="color: #0086B3">{</span>时代<span style="color: #0086B3">}{</span>じだい<span style="color: #0086B3">}</span>のせいだよと
+
+\ruby<span style="color: #0086B3">{</span>先回<span style="color: #0086B3">}{</span>さきまわ<span style="color: #0086B3">}</span>りして\ruby<span style="color: #0086B3">{</span>谛<span style="color: #0086B3">}{</span>あきら<span style="color: #0086B3">}</span>めていた
+
+La La-i
+
+\ruby<span style="color: #0086B3">{</span>今日<span style="color: #0086B3">}{</span>きょう<span style="color: #0086B3">}</span>がとても\ruby<span style="color: #0086B3">{</span>悲<span style="color: #0086B3">}{</span>かな<span style="color: #0086B3">}</span>しくて
+
+\ruby<span style="color: #0086B3">{</span>明日<span style="color: #0086B3">}{</span>あす<span style="color: #0086B3">}</span>もしも\ruby<span style="color: #0086B3">{</span>泣<span style="color: #0086B3">}{</span>な<span style="color: #0086B3">}</span>いていても
+
+そんな\ruby<span style="color: #0086B3">{</span>日<span style="color: #0086B3">}{</span>ひ<span style="color: #0086B3">}</span>々もあったねと
+
+\ruby<span style="color: #0086B3">{</span>笑<span style="color: #0086B3">}{</span>わら<span style="color: #0086B3">}</span>える\ruby<span style="color: #0086B3">{</span>日<span style="color: #0086B3">}{</span>ひ<span style="color: #0086B3">}</span>が\ruby<span style="color: #0086B3">{</span>来<span style="color: #0086B3">}{</span>く<span style="color: #0086B3">}</span>るだろう
+
+\ruby<span style="color: #0086B3">{</span>几度<span style="color: #0086B3">}{</span>いくど<span style="color: #0086B3">}</span>\ruby<span style="color: #0086B3">{</span>巡<span style="color: #0086B3">}{</span>めぐ<span style="color: #0086B3">}</span>り\ruby<span style="color: #0086B3">{</span>巡<span style="color: #0086B3">}{</span>めぐ<span style="color: #0086B3">}</span>りゆく
+
+\ruby<span style="color: #0086B3">{</span>限<span style="color: #0086B3">}{</span>かぎ<span style="color: #0086B3">}</span>りある\ruby<span style="color: #0086B3">{</span>季节<span style="color: #0086B3">}{</span>とき<span style="color: #0086B3">}</span>の\ruby<span style="color: #0086B3">{</span>中<span style="color: #0086B3">}{</span>なか<span style="color: #0086B3">}</span>に
+
+\ruby<span style="color: #0086B3">{</span>仆<span style="color: #0086B3">}{</span>ぼく<span style="color: #0086B3">}</span>らは\ruby<span style="color: #0086B3">{</span>今<span style="color: #0086B3">}{</span>いま<span style="color: #0086B3">}</span>\ruby<span style="color: #0086B3">{</span>生<span style="color: #0086B3">}{</span>い<span style="color: #0086B3">}</span>きていて
+
+そして\ruby<span style="color: #0086B3">{</span>何<span style="color: #0086B3">}{</span>なに<span style="color: #0086B3">}</span>を\ruby<span style="color: #0086B3">{</span>见<span style="color: #0086B3">}{</span>み<span style="color: #0086B3">}</span>つけるだろう
+
+\end<span style="color: #0086B3">{</span>multicols<span style="color: #0086B3">}</span>
+\end<span style="color: #0086B3">{</span>document<span style="color: #0086B3">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/ruby-latex.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'html-ruby';
+  var disqus_url = 'https://www.zouyesheng.com/html-ruby.html';
+  var disqus_title = 'HTML的注音排版和其它';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
+AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
+ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
+2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
+8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
+vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
+cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
