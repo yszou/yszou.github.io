@@ -14,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">HTML的注音排版和其它</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2019-07-22 02:42 更新</span>
+                <span>2019-07-22 11:33 更新</span>
             </div>
         </div>
 
@@ -136,7 +136,7 @@
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. VIM 中如何快速生成上面的代码</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-（这是我临时想到的一个有些好玩的事）
+先说“宏”的方式吧，很多时候，我觉得用宏比正则直观。（这里最开始我也是随手用宏处理的，后面才去试了正则表达式的方式）
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 首先，很容易在网上找到这样的原始的文本：
@@ -161,7 +161,7 @@
 首先，把中文的括号，换成英文的括号，这是为了后面在“宏”中方便输入。这步简单的查找替换就好了， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">:%s/（/(/g</code> ，不细说。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-然后，手工把注音对应的汉字标记一下。（这一步，理论上，通过正则匹配非假名字符，是可以自动做到的，反正内容不多，我就手动了）得到这样的内容（在对应汉字前加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">|</code> ）：
+然后，手工把注音对应的汉字标记一下（“宏”不太好判断假名与汉字）。
 </p>
 
 <div class="code" style="margin: 25px auto;">
@@ -269,12 +269,44 @@
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 <img align="middle" src="img/ruby-macro.gif" alt="" style="border: 1px solid gray;"/>
 </p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+用正则表达式就简单了，不过，你先要去 Unicode 的码表，查出日文假名的范围，是 <em style="color: #d75100; font-style: normal;">3040 ~ 31FF</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">今年（ことし）もひとつ季节（きせつ）が巡（めく）って
+思（おも）い出（で）はまた远（とう）くなった
+暧昧（あいまい）だった梦（ゆめ）と现実（げんじつ）の
+境界线（きょうかいせん）は浓（こ）くなった
+それでもいつか君（きみ）に话（はな）した
+梦（ゆめ）に嘘（うそ）はひとつもなかった
+...
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接正则表达式查找替换：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">:%s/\([^\u3040-\u31ff]\{-}\)（\(.\{-}\)）/&lt;ruby&gt;&lt;rt&gt;\2&lt;\/rt&gt;\1&lt;\/ruby&gt;/g 
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现实情况中，先不说查 Unicode 码表（或者使用搜索引擎）的事，这个很简单的正则表达式也很难一次就写对，比如，忘了括号要转义，忘了 vim 中的非贪婪匹配是用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\{-}</code> 等等。“宏”就没些问题，单纯记录键盘上的操作，然后重复执行就好了。
+</p>
 
 <a class="anchor" name="toc3"></a>
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 使用 LaTeX 排版注音</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-如果你需要纸制输出，那么更好的选择自然是 LaTeX 。当你有各种“非正常”的输出需求时，总可以在 LaTeX 上找到超高质量的方案的。（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ruby</code> 宏包可以处理注音）
+如果你需要纸制输出，那么更好的选择自然是 LaTeX 。当你有各种“非正常”的输出需求时，总可以在 LaTeX 上找到超高质量的方案。（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ruby</code> 宏包可以处理注音）
 </p>
 
 <div class="code" style="margin: 25px auto;">
