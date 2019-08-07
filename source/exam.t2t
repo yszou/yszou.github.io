@@ -1,0 +1,99 @@
+一些现场笔试题
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/exam.html
+%!format: email
+%%toc
+
+
+# 树的展示 #
+
+## 生成随机数据 ##
+
+完成函数 ``genData(count)`` ，它返回 ``count`` 条，树结构的节点数据，形如：
+
+```javascript
+[
+  { id: 0, name: 'BBLFL', parent: null },
+  { id: 1, name: 'GLNNS', parent: 0 },
+  { id: 2, name: 'BXDSL', parent: 0 },
+  { id: 3, name: 'XOBDG', parent: 0 },
+  { id: 4, name: 'TRPFF', parent: 0 },
+  { id: 5, name: 'ZBVLX', parent: 0 },
+  { id: 6, name: 'UHMPU', parent: 0 },
+  { id: 7, name: 'KXFDM', parent: 0 },
+  { id: 8, name: 'LTMIL', parent: 5 },
+  { id: 9, name: 'RWMMB', parent: 6 },
+  { id: 10, name: 'NTUMW', parent: 0 },
+  { id: 11, name: 'NDWUK', parent: 6 },
+  { id: 12, name: 'ROEFY', parent: 5 },
+  { id: 13, name: 'VXLYK', parent: 0 },
+  { id: 14, name: 'ZRHUC', parent: 5 },
+  { id: 15, name: 'NINHC', parent: 8 },
+  { id: 16, name: 'VLUZV', parent: 2 },
+  { id: 17, name: 'ZHXFL', parent: 6 },
+  { id: 18, name: 'UAPYL', parent: 2 },
+  { id: 19, name: 'ASVLM', parent: 10 }
+]
+```
+
+节点的 *name* **随机** 生成，整个树的结构， **随机** 生成。
+
+
+## 展示树 ##
+
+完成函数 ``drawLite(data)`` ， 其中 ``data`` 是 ``genData(count)`` 的返回值， ``drawLite(data)`` 通过标准输出，打印出树的结构，比如：
+
+```text
+PZGKC
+   QGDQH
+      DCGEJ
+      GLUKT
+   ZMDXM
+      ZWNWW
+         XYKMU
+            WDINC
+         EXDPL
+      EVMAA
+      KIOFN
+   QXBKA
+      RUORK
+         DIBRS
+            JIHNW
+      FXQDB
+   IJOCX
+      TRJGK
+   TTWTZ
+      LWPEY
+```
+
+
+## 更好地展示树 ##
+
+完成函数 ``draw(data)`` ， 其中 ``data`` 是 ``genData(count)`` 的返回值， ``draw(data)`` 通过标准输出，打印出树的结构，比如：
+
+```text
+CDYMH
+ ├ ACHPZ
+ │  ├ ABEUO
+ │  ├ BRVJO
+ │  │  ├ YFPZB
+ │  │  │  ├ FNOUB
+ │  │  │  ├ LMQEA
+ │  │  │  └ MSEDE
+ │  │  │     └ TFFHQ
+ │  │  └ DHVQV
+ │  └ WMEYE
+ ├ ATMFJ
+ │  ├ FBVPY
+ │  ├ YOEMN
+ │  └ FTVQO
+ ├ HZNPD
+ │  ├ PBXIZ
+ │  │  └ JOYBJ
+ │  └ OVCGK
+ └ JQVCN
+```
+
