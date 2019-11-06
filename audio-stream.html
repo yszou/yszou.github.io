@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>浏览器音频流获取 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">浏览器音频流获取</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-11-06 22:29 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">要做什么事</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">浏览器 Stream API</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">音频参数，采样率与样本值表示</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_blank">PCM 编码和 WAVE 封装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_blank">整体实现</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_blank">5.1. 客户端</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_blank">5.2. 服务端</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 要做什么事</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要做的事，是通过浏览器相关 API ，在页面上实时获取麦克风的音频数据，并把这些信息传递到服务端。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单来想，要解决这些问题：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">浏览器的麦克风相关的 API 怎么使用。
+</li>
+<li style="margin: 10px auto;">浏览器获取到的数据是什么样的。
+</li>
+<li style="margin: 10px auto;">浏览器获取的音频数据如何编码到通常的“音频文件”。
+</li>
+</ul>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 浏览器 Stream API</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果直接搜索 “浏览器 audio” 相关的内容，一方面是讲 <em style="color: #d75100; font-style: normal;">audio</em> 标签的，另一个方面会讲到 <em style="color: #d75100; font-style: normal;">AudioContext</em> ，其实这些都算是浏览器的多媒体能力的一部分，并且在编程 API 层面，它们也是统一的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">audio</em> 标签，是“音频”媒体的可选的一个输入端，及输出端。 <em style="color: #d75100; font-style: normal;">AudioContext</em> 整体处理风格，是管道式的，比如：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">source <span style="color: #000000; font-weight: bold">=</span> getAudioTag();
+dest <span style="color: #000000; font-weight: bold">=</span> getAnotherTag();
+source.connect(dest);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你想使用浏览器直接提供的音频解析能力，或者其它处理能力，则在 <em style="color: #d75100; font-style: normal;">AudioContext</em> 下直接创建相关“中间层”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">source <span style="color: #000000; font-weight: bold">=</span> getAudioTag();
+dest <span style="color: #000000; font-weight: bold">=</span> getAnotherTag();
+processor <span style="color: #000000; font-weight: bold">=</span> AudioContext.createScriptProcessor();
+analyser <span style="color: #000000; font-weight: bold">=</span> AudioContext.createAnalyser();
+source.connect(analyser);
+analyser.connect(processor);
+processor.connect(dest);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+每个中间层，都提供了一些音频的预处理信息，或者能力，或者事件。典型的，是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">processor</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 事件中，从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">analyser</code> 获取音频的采样数据。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">processor.onaudioprocess <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(e){
+    <span style="color: #000000; font-weight: bold">const</span> amplitudeArray <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Float32Array(analyser.frequencyBinCount);
+    analyser.getFloatTimeDomainData(amplitudeArray);
+    console.log(amplitudeArray);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，这里 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 触发的频率， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">amplitudeArray</code> 的长度这些，就与音频相关的参数有关了，后面会简单介绍。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于浏览器的音频 API 有了一点概念之后，再加上“麦克风”这个并不算太特殊的输入源，事情就好办多了：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream =&gt; {})</code> 回调，获取麦克风的实时输入内容。
+</li>
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">context.createMediaStreamSource(stream)</code> 创建一个包装输入的“中间层”。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整体代码大概像：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">  navigator.mediaDevices.getUserMedia({audio<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, video<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">false</span>}).then(stream =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> context <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> AudioContext({ sampleRate<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">48000</span> });
+    audioContext <span style="color: #000000; font-weight: bold">=</span> context;
+    <span style="color: #000000; font-weight: bold">const</span> input <span style="color: #000000; font-weight: bold">=</span> context.createMediaStreamSource(stream)
+    <span style="color: #000000; font-weight: bold">const</span> processor <span style="color: #000000; font-weight: bold">=</span> context.createScriptProcessor(<span style="color: #009999">1024</span>,<span style="color: #009999">1</span>,<span style="color: #009999">1</span>);
+    <span style="color: #000000; font-weight: bold">const</span> analyser <span style="color: #000000; font-weight: bold">=</span> context.createAnalyser();
+    <span style="color: #000000; font-weight: bold">const</span> dest <span style="color: #000000; font-weight: bold">=</span> context.destination;
+
+    input.connect(analyser);
+    analyser.connect(processor);
+    processor.connect(dest);
+
+    analyser.fftSize <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2048</span>;
+    <span style="color: #000000; font-weight: bold">const</span> amplitudeArray <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Float32Array(analyser.frequencyBinCount);
+    processor.onaudioprocess <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(e){
+      analyser.getFloatTimeDomainData(amplitudeArray);
+      console.log(amplitudeArray);
+    };
+  }).<span style="color: #000000; font-weight: bold">catch</span>(err =&gt; {console.log(err)});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+跑起来之后，能看到不断变化的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">amplitudeArray</code> ，就说明成功了。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 音频参数，采样率与样本值表示</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面示例中，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">amplitudeArray</code> 中的内容是一串在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[-1, 1]</code> 之间的小数，我们需要搞清楚这些数字的含义，才能方便后面对声音信息的处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+声音的物理形式，是“波”。存储，还原声音，是一种典型的模拟信号到数字信号的转换。直观地，这里有两个关键信息需要先确定，采样率和样本值表示。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+采样率比较好理解，就像做拟合一样，对于一段连续的曲线：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="text-align: center;">
+<svg 
+ width="600" height="480"
+ viewBox="0 0 600 480"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+
+<title>Gnuplot</title>
+<desc>Produced by GNUPLOT 5.2 patchlevel 2 </desc>
+
+<g id="gnuplot_canvas">
+
+<rect x="0" y="0" width="600" height="480" fill="none"/>
+<defs>
+
+	<circle id='gpDot' r='0.5' stroke-width='0.5'/>
+	<path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+	<path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+	<path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+	<rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+	<use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+	<path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+	<use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+	<use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+	<use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+	<path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+	<use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+	<filter id='textbox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='white' flood-opacity='1' result='bgnd'/>
+	  <feComposite in='SourceGraphic' in2='bgnd' operator='atop'/>
+	</filter>
+	<filter id='greybox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='lightgrey' flood-opacity='1' result='grey'/>
+	  <feComposite in='SourceGraphic' in2='grey' operator='atop'/>
+	</filter>
+</defs>
+<g fill="none" color="white" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,444.0 L62.9,444.0 M575.0,444.0 L566.0,444.0  '/>	<g transform="translate(45.6,447.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >-1</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,401.4 L62.9,401.4 M575.0,401.4 L566.0,401.4  '/>	<g transform="translate(45.6,405.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >-0.8</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,358.8 L62.9,358.8 M575.0,358.8 L566.0,358.8  '/>	<g transform="translate(45.6,362.7)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >-0.6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,316.2 L62.9,316.2 M575.0,316.2 L566.0,316.2  '/>	<g transform="translate(45.6,320.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >-0.4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,273.6 L62.9,273.6 M575.0,273.6 L566.0,273.6  '/>	<g transform="translate(45.6,277.5)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >-0.2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,231.0 L62.9,231.0 M575.0,231.0 L566.0,231.0  '/>	<g transform="translate(45.6,234.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,188.5 L62.9,188.5 M575.0,188.5 L566.0,188.5  '/>	<g transform="translate(45.6,192.4)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0.2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,145.9 L62.9,145.9 M575.0,145.9 L566.0,145.9  '/>	<g transform="translate(45.6,149.8)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0.4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,103.3 L62.9,103.3 M575.0,103.3 L566.0,103.3  '/>	<g transform="translate(45.6,107.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0.6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,60.7 L62.9,60.7 M575.0,60.7 L566.0,60.7  '/>	<g transform="translate(45.6,64.6)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 0.8</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,18.1 L62.9,18.1 M575.0,18.1 L566.0,18.1  '/>	<g transform="translate(45.6,22.0)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" > 1</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,444.0 L53.9,435.0 M53.9,18.1 L53.9,27.1  '/>	<g transform="translate(53.9,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" >-10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M184.2,444.0 L184.2,435.0 M184.2,18.1 L184.2,27.1  '/>	<g transform="translate(184.2,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" >-5</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M314.5,444.0 L314.5,435.0 M314.5,18.1 L314.5,27.1  '/>	<g transform="translate(314.5,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M444.7,444.0 L444.7,435.0 M444.7,18.1 L444.7,27.1  '/>	<g transform="translate(444.7,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 5</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M575.0,444.0 L575.0,435.0 M575.0,18.1 L575.0,27.1  '/>	<g transform="translate(575.0,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,18.1 L53.9,444.0 L575.0,444.0 L575.0,18.1 L53.9,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+	<g id="gnuplot_plot_1" ><title>(sin(x))</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<g transform="translate(507.9,40.0)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text>(sin(x))</text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(148,   0, 211)'  d='M516.2,36.1 L558.4,36.1 M53.9,115.2 L59.2,153.4 L64.4,194.8 L69.7,237.6 L75.0,280.2 L80.2,320.8
+		L85.5,357.7 L90.7,389.5 L96.0,414.8 L101.3,432.7 L106.5,442.3 L111.8,443.4 L117.1,435.8 L122.3,419.9
+		L127.6,396.3 L132.9,366.0 L138.1,330.2 L143.4,290.4 L148.6,248.2 L153.9,205.2 L159.2,163.3 L164.4,124.2
+		L169.7,89.4 L175.0,60.4 L180.2,38.3 L185.5,24.1 L190.8,18.2 L196.0,21.1 L201.3,32.4 L206.5,51.9
+		L211.8,78.6 L217.1,111.6 L222.3,149.3 L227.6,190.5 L232.9,233.2 L238.1,275.9 L243.4,316.8 L248.7,354.1
+		L253.9,386.5 L259.2,412.5 L264.4,431.2 L269.7,441.7 L275.0,443.7 L280.2,437.0 L285.5,421.9 L290.8,399.1
+		L296.0,369.4 L301.3,334.1 L306.6,294.6 L311.8,252.5 L317.1,209.6 L322.3,167.5 L327.6,128.0 L332.9,92.7
+		L338.1,63.0 L343.4,40.2 L348.7,25.1 L353.9,18.4 L359.2,20.4 L364.5,30.9 L369.7,49.6 L375.0,75.6
+		L380.2,108.0 L385.5,145.3 L390.8,186.2 L396.0,228.9 L401.3,271.6 L406.6,312.8 L411.8,350.5 L417.1,383.5
+		L422.4,410.2 L427.6,429.7 L432.9,441.0 L438.1,443.9 L443.4,438.0 L448.7,423.8 L453.9,401.7 L459.2,372.7
+		L464.5,337.9 L469.7,298.8 L475.0,256.9 L480.3,213.9 L485.5,171.7 L490.8,131.9 L496.0,96.1 L501.3,65.8
+		L506.6,42.2 L511.8,26.3 L517.1,18.7 L522.4,19.8 L527.6,29.4 L532.9,47.3 L538.2,72.6 L543.4,104.4
+		L548.7,141.3 L553.9,181.9 L559.2,224.5 L564.5,267.3 L569.7,308.7 L575.0,346.9  '/></g>
+	</g>
+<g fill="none" color="white" stroke="rgb(148,   0, 211)" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="black" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M53.9,18.1 L53.9,444.0 L575.0,444.0 L575.0,18.1 L53.9,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+</g>
+</svg>
+
+</div>
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（现实中的声音频率不是固定的，这里 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sin</code> 只作采样的一个说明）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+你在上面取的样本点越多，越能原样还原之前的曲线的样子。采样率 <em style="color: #d75100; font-style: normal;">Sample Rate</em> ，反映了单位时间内，获取样本的次数，要使结果更精确，这个值当然越大越好，但是采样数据越多，存储传输的成本也越大。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+由于人耳能听到的声音是有一个频率范围的，所以，在这个特定场景下，采样率有一个“足够”的上限，是 48000Hz 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+采样率对应到 API 中是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">new</span> AudioContext({sampleRate<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">48000</span>})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是注意，数据获取了，与数据暴露出来，还不是一回事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+获取数据的方式，是通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 的回调，换句话说， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 每秒回调的次数，每次传递出来的数据多少，才真正决定我们能拿到多少采样数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 每次传递出来的数据多少，由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">analyser.fftSize</code> 决定， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">amplitudeArray</code> 的长度是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">analyser.fftSize</code> 的一半。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 每秒回调次数，就比较诡异了。似乎与 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sampleRate</code> 及 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">context.createScriptProcessor</code> 的第一个参数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bufferSize</code> 有关。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在我自己的浏览器上：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fftSize</code>：2048，对应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">analyser.frequencyBinCount</code> 就是 1024。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sampleRate</code>：48000
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bufferSize</code>：1024
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+这种情况下，大概 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 每秒调用 48 次不到，每次 1024 个数据，算下来，每秒差不多 48000 个数据。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+但是我把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bufferSize</code> 改成 0 ，每秒调用就变成 24 了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+说完了采样率，再说样本值表示。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+从物理层面想的话，模拟信号信息的获取，最初得到的“样本值”只是一组非直接的物理量，比如某个特征尺寸改变了，但是这并不等于在这个时刻，你声音大，或者说声音的强度大。我们这里不讨论怎么定义声音的大小，只是说明，数字化的表示模拟信号，对于“强度”的还原，也是需要在一定规则下作约定式的处理，才能有结果的。就 API 来说：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">analyser.getByteTimeDomainData(amplitudeArray);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+可以返回一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255</code> 的整数，意味着在这组数据当中，强弱对比，最多 255 个级别，无法再有更细的辨识能力。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+而：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">analyser.getFloatTimeDomainData(amplitudeArray);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+对是返回一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-1</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> 之间的小数，其表示的强弱对比，就大之前的区区 255 个级别，要大得多了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+但是，无论是 255 个级别，还是远多于 255 的级别，都只是采样层面的“中间结果”，当你要把这些信息，以特定的格式（比如 PCM）存储的时候，又面临一些选择，使用多大的空间来保存这个“强弱对比”？ 255 的级别，那么使用 1 个字节就够了，远多于 255 级别呢？用 2 个字节？ 3 个字节？
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+这里说的到底用多少个字节，在音频技术指标中，就是“分辩率 <em style="color: #d75100; font-style: normal;">Resolution</em>”的概念了。 API 以浮点数给出的结果，精度是有了，存储时需要多么细致，用多少空间，就在于你自己选择了。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+基本的两个重要概念介绍完之后，总结一下，就是浏览器 API 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getFloatTimeDomainData</code> 能给到一个相对数据，但这些数据怎么存储，怎么格式化到通常的音频格式，都是你自己要处理的事。
+</li>
+</ul>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. PCM 编码和 WAVE 封装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">PCM</em> 算是一种通用的存储数字化采样信息的格式，事实上它都算不上什么格式，只是在音频领域有一些约定。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+拿“字节”和“字符”的关系来类比的话， <em style="color: #d75100; font-style: normal;">PCM</em> 的地位，就像“字节”，单独看一个 <em style="color: #d75100; font-style: normal;">PCM</em> 片段，没有意义，因为你无法解释。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">你不知道应该一个字节一个字节地看，还是两个字节两个字节的看。
+</li>
+<li style="margin: 10px auto;">你更不知道存储了几个声道的信息。
+</li>
+<li style="margin: 10px auto;">你还不知道应该以什么速度还原（这对声音很重要）。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如随意一段：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">0xAB 0x03 0x8F 0xD8
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">几个字节一起看，就是前面提的“分辩率”问题。用到字节越多，强弱对比就越细致。你平时看音频文件，16bit，32bit 说的就是这个。我们这里，假设是 16bit ，两个字节的配置，所以，数据就解释成： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0xAB 0x03</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0x8F 0xD8</code> ，同时， PCM 规定使用的是有符号整数，你就还知道了单个数的上限和下限，相对的强弱关系就可以还原了，那两个数就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">939</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-10097</code> 。范围在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[-32768, 32768)</code> 。
+</li>
+<li style="margin: 10px auto;">声道信息就简单了，它们是在单个 <em style="color: #d75100; font-style: normal;">frame</em> 中顺序排列的。上面 2 x 2 个字节，如果是双声道，则只有 1 frame ，分别是第一声道的信息和第二声道的信息。如果是单声道，则是单个声道 2 frame 的信息。这里我们假设是单声道。
+</li>
+<li style="margin: 10px auto;">以什么速度还原，就是采样率的问题。如果每秒采样 1 个单位，那么 2 frame 播放时间就是 2 秒。如果每秒采样 2 个单位，则 2 frame 播放时间 1 秒。（我们代码中用 48000Hz）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这几点说清楚后，就能明白， PCM 就是字节串，这些数据作为声音解释还原，所需要的其它信息，不是 PCM 的事。而 WAVE 封装，就是在其头部补充了这些信息。（当然，WAVE 还有其它功能，压缩什么的，同时， WAVE 中也不一定只能是 PCM 格式）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，浏览器的 API ，完成 PCM 的裸流即时往服务端提交，没有问题。但是服务端如果要把接收到的这些数据，最后存成通常的“音频文件”格式，则还需要其它信息补充，声道数，采样率，（分辩率在保存时由服务端决定）。我们后面的代码中，声道数约定写死，采样率通过协议设计在流程中交互获取。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 整体实现</h1>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">问题：为什么不在浏览器都做完，要加个服务端呢？
+</li>
+<li style="margin: 10px auto;">回答：1. 我不了解 wave 格式细节。2. 我对使用 js 处理二进制场景表示畏惧。3. Python 我都熟。
+</li>
+</ul>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. 客户端</h2>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getUserMedia</code> 实时获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getFloatTimeDomainData</code> 的结果。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getFloatTimeDomainData</code> 的数据，通过 <em style="color: #d75100; font-style: normal;">websocket</em> 传递给服务端。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">websocket</em> 上通过自定义有状态的协议，解决获取数据，获取采样率，保存等问题。
+</li>
+<li style="margin: 10px auto;">通过 <em style="color: #d75100; font-style: normal;">audio</em> 标签实时回放。
+</li>
+<li style="margin: 10px auto;">外加一个简单的声音可视化效果。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Audio&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/jq/jquery.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+
+  &lt;<span style="color: #000080">div</span>&gt;
+    &lt;<span style="color: #000080">audio</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;player&quot;</span> <span style="color: #008080">controls</span> <span style="color: #008080">autoplay</span>&gt;&lt;/<span style="color: #000080">audio</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;wrapper&quot;</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;width: 512px; height: 256px; border: 1px solid red; margin: 10px 0;&quot;</span>&gt;
+    &lt;<span style="color: #000080">canvas</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;canvas&quot;</span> <span style="color: #008080">width</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;512&quot;</span> <span style="color: #008080">height</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;256&quot;</span>&gt;&lt;/<span style="color: #000080">canvas</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;controls&quot;</span>&gt;
+    &lt;<span style="color: #000080">div</span>&gt;
+      &lt;<span style="color: #000080">input</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;button&quot;</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;start&quot;</span> <span style="color: #008080">value</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;开始&quot;</span>&gt;
+      &lt;<span style="color: #000080">input</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;button&quot;</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;stop&quot;</span> <span style="color: #008080">value</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;停止&quot;</span>&gt;
+    &lt;/<span style="color: #000080">div</span>&gt;
+  &lt;/<span style="color: #000080">div</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">const</span> requestAnimFrame <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">window</span>.requestAnimationFrame;
+    <span style="color: #000000; font-weight: bold">const</span> ctx <span style="color: #000000; font-weight: bold">=</span> $(<span style="color: #dd1144">&#39;#canvas&#39;</span>)[<span style="color: #009999">0</span>].getContext(<span style="color: #dd1144">&#39;2d&#39;</span>);
+    <span style="color: #000000; font-weight: bold">let</span> canvasWidth <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">512</span>;
+    <span style="color: #000000; font-weight: bold">let</span> canvasHeight <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">256</span>;
+    <span style="color: #000000; font-weight: bold">let</span> audioContext <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> connection <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">const</span> sampleRate <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">48000</span>;
+
+    <span style="color: #000000; font-weight: bold">function</span> setWidth(w){
+      $(<span style="color: #dd1144">&#39;#wrapper&#39;</span>).css({width<span style="color: #000000; font-weight: bold">:</span> w});
+      $(<span style="color: #dd1144">&#39;#canvas&#39;</span>).attr(<span style="color: #dd1144">&#39;width&#39;</span>, w);
+      canvasWidth <span style="color: #000000; font-weight: bold">=</span> w;
+    }
+
+    <span style="color: #000000; font-weight: bold">function</span> drawTimeDomain(data) {
+      ctx.clearRect(<span style="color: #009999">0</span>, <span style="color: #009999">0</span>, canvasWidth, canvasHeight);
+      <span style="color: #000000; font-weight: bold">for</span> (<span style="color: #000000; font-weight: bold">var</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> data.length; i<span style="color: #000000; font-weight: bold">++</span>) {
+        <span style="color: #000000; font-weight: bold">var</span> value <span style="color: #000000; font-weight: bold">=</span> data[i] <span style="color: #000000; font-weight: bold">-</span> (<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>;
+        <span style="color: #000000; font-weight: bold">var</span> y <span style="color: #000000; font-weight: bold">=</span> canvasHeight <span style="color: #000000; font-weight: bold">-</span> (canvasHeight <span style="color: #000000; font-weight: bold">*</span> value) <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>;
+        ctx.fillStyle <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;red&#39;</span>;
+        ctx.fillRect(i, y, <span style="color: #009999">2</span>, <span style="color: #009999">2</span>);
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">function</span> connect(){
+        <span style="color: #000000; font-weight: bold">const</span> ws <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> WebSocket(<span style="color: #dd1144">&#39;ws://&#39;</span> <span style="color: #000000; font-weight: bold">+</span> location.host <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;/stream&#39;</span>);
+
+        <span style="color: #000000; font-weight: bold">let</span> uuid <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+        connection <span style="color: #000000; font-weight: bold">=</span> {
+          close<span style="color: #000000; font-weight: bold">:</span> () =&gt; {
+            ws.send(<span style="color: #dd1144">&#39;CLOSE &#39;</span> <span style="color: #000000; font-weight: bold">+</span> uuid);
+            ws.close();
+            uuid <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+          },
+          send_data<span style="color: #000000; font-weight: bold">:</span> data =&gt; {
+            ws.send(<span style="color: #dd1144">&#39;DATA &#39;</span> <span style="color: #000000; font-weight: bold">+</span> uuid <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39; &#39;</span> <span style="color: #000000; font-weight: bold">+</span> data)
+          },
+          set_uuid<span style="color: #000000; font-weight: bold">:</span> id =&gt; {
+            uuid <span style="color: #000000; font-weight: bold">=</span> id;
+            console.log(uuid);
+          }
+        };
+
+        ws.addEventListener(<span style="color: #dd1144">&#39;open&#39;</span>, <span style="color: #000000; font-weight: bold">function</span> (event) {
+          ws.send(<span style="color: #dd1144">&#39;INIT &#39;</span> <span style="color: #000000; font-weight: bold">+</span> sampleRate);
+        });
+
+        ws.addEventListener(<span style="color: #dd1144">&#39;message&#39;</span>, <span style="color: #000000; font-weight: bold">function</span> (event) {
+          <span style="color: #000000; font-weight: bold">const</span> msg <span style="color: #000000; font-weight: bold">=</span> event.data;
+          <span style="color: #000000; font-weight: bold">const</span> p <span style="color: #000000; font-weight: bold">=</span> msg.split(<span style="color: #dd1144">&#39; &#39;</span>);
+          <span style="color: #000000; font-weight: bold">const</span> cmd <span style="color: #000000; font-weight: bold">=</span> p[<span style="color: #009999">0</span>];
+          <span style="color: #000000; font-weight: bold">const</span> params <span style="color: #000000; font-weight: bold">=</span> p.slice(<span style="color: #009999">1</span>);
+          <span style="color: #000000; font-weight: bold">const</span> cmdMap <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;UUID&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;set_uuid&#39;</span>
+          }
+          <span style="color: #000000; font-weight: bold">if</span>(cmdMap[cmd]){
+            connection[cmdMap[cmd]].apply(<span style="color: #000000; font-weight: bold">this</span>, params);
+          }
+        });
+    }
+
+    <span style="color: #000000; font-weight: bold">function</span> stop(){
+      <span style="color: #000000; font-weight: bold">if</span>(audioContext){
+        audioContext.close();
+        audioContext <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+      }
+      <span style="color: #000000; font-weight: bold">if</span>(connection){
+        connection.close();
+        connection <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+      }
+      $(<span style="color: #dd1144">&#39;#player&#39;</span>)[<span style="color: #009999">0</span>].pause();
+      $(<span style="color: #dd1144">&#39;#player&#39;</span>)[<span style="color: #009999">0</span>].currentTime <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+      $(<span style="color: #dd1144">&#39;#player&#39;</span>)[<span style="color: #009999">0</span>].srcObject <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+      ctx.clearRect(<span style="color: #009999">0</span>, <span style="color: #009999">0</span>, canvasWidth, canvasHeight);
+      ctx.restore();
+    }
+
+    <span style="color: #000000; font-weight: bold">function</span> run(){
+      navigator.mediaDevices.getUserMedia({audio<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, video<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">false</span>}).then(stream =&gt; {
+        connect();
+        <span style="color: #000000; font-weight: bold">const</span> context <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> AudioContext({ sampleRate });
+        audioContext <span style="color: #000000; font-weight: bold">=</span> context;
+        <span style="color: #000000; font-weight: bold">const</span> input <span style="color: #000000; font-weight: bold">=</span> context.createMediaStreamSource(stream)
+        <span style="color: #000000; font-weight: bold">const</span> processor <span style="color: #000000; font-weight: bold">=</span> context.createScriptProcessor(<span style="color: #009999">1024</span>,<span style="color: #009999">1</span>,<span style="color: #009999">1</span>);
+        <span style="color: #000000; font-weight: bold">const</span> analyser <span style="color: #000000; font-weight: bold">=</span> context.createAnalyser();
+        <span style="color: #000000; font-weight: bold">const</span> dest <span style="color: #000000; font-weight: bold">=</span> context.destination;
+
+        input.connect(analyser);
+        analyser.connect(processor);
+        processor.connect(dest);
+
+        analyser.fftSize <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2048</span>;
+        setWidth(analyser.fftSize <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>);
+        <span style="color: #999988">// getByteTimeDomainData 使用 Unit8 精度太低</span>
+        <span style="color: #999988">//const amplitudeArray = new Uint8Array(analyser.frequencyBinCount);</span>
+        <span style="color: #000000; font-weight: bold">const</span> amplitudeArray <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Float32Array(analyser.frequencyBinCount);
+        <span style="color: #000000; font-weight: bold">let</span> count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+        <span style="color: #000000; font-weight: bold">const</span> start <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().getTime();
+
+        <span style="color: #000000; font-weight: bold">const</span> _drawTimeDomain <span style="color: #000000; font-weight: bold">=</span> () =&gt; drawTimeDomain(amplitudeArray);
+        processor.onaudioprocess <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(e){
+          count <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>;
+          <span style="color: #000000; font-weight: bold">const</span> now <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>().getTime();
+
+          <span style="color: #999988">//每秒调用统计</span>
+          <span style="color: #999988">//console.log(count / ((now - start) / 1000));</span>
+
+          <span style="color: #999988">//analyser.getByteTimeDomainData(amplitudeArray);</span>
+          analyser.getFloatTimeDomainData(amplitudeArray);
+
+          <span style="color: #000000; font-weight: bold">if</span>(connection){
+            connection.send_data(amplitudeArray.join(<span style="color: #dd1144">&#39;|&#39;</span>))
+          }
+
+          requestAnimFrame(_drawTimeDomain);
+        };
+
+        <span style="color: #999988">//回放</span>
+        <span style="color: #000000; font-weight: bold">const</span> player <span style="color: #000000; font-weight: bold">=</span> $(<span style="color: #dd1144">&#39;#player&#39;</span>)[<span style="color: #009999">0</span>];
+        player.srcObject <span style="color: #000000; font-weight: bold">=</span> stream;
+        player.onloadedmetadata <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(e) { player.play() };
+      }).<span style="color: #000000; font-weight: bold">catch</span>(err =&gt; {console.log(err)});
+    }
+
+    $(() =&gt; {
+      $(<span style="color: #dd1144">&#39;#start&#39;</span>).on(<span style="color: #dd1144">&#39;click&#39;</span>, e =&gt; { run() });
+      $(<span style="color: #dd1144">&#39;#stop&#39;</span>).on(<span style="color: #dd1144">&#39;click&#39;</span>, e =&gt; { stop() });
+    });
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. 服务端</h2>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">HTTP 和 <em style="color: #d75100; font-style: normal;">websocket</em> 服务。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/</code> 返回上面客户端页面内容。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/stream</code> 处理 <em style="color: #d75100; font-style: normal;">websocket</em> 服务。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/stream</code> 上连接关闭时，把已接收的数据，作为 wave 格式存储到文件系统。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">uuid</span>
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">io</span> <span style="color: #000000; font-weight: bold">import</span> BytesIO
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">struct</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">wave</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.web</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.httpserver</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.ioloop</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">tornado.websocket</span>
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Application</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>Application):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, handlers):
+        <span style="color: #0086B3">super</span>(Application, <span style="color: #999999">self</span>)<span style="color: #000000; font-weight: bold">.</span><span style="color: #990000; font-weight: bold">__init__</span>(handlers, <span style="color: #dd1144">&#39;&#39;</span>, <span style="color: #999999">None</span>, debug<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">HTTPServer</span>(tornado<span style="color: #000000; font-weight: bold">.</span>httpserver<span style="color: #000000; font-weight: bold">.</span>HTTPServer):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, app):
+        <span style="color: #0086B3">super</span>(HTTPServer, <span style="color: #999999">self</span>)<span style="color: #000000; font-weight: bold">.</span><span style="color: #990000; font-weight: bold">__init__</span>(app, xheaders<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">BaseHandler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>web<span style="color: #000000; font-weight: bold">.</span>RequestHandler):
+    <span style="color: #000000; font-weight: bold">pass</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">IndexHandler</span>(BaseHandler):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">with</span> <span style="color: #0086B3">open</span>(<span style="color: #dd1144">&#39;./client.html&#39;</span>, <span style="color: #dd1144">&#39;rb&#39;</span>) <span style="color: #000000; font-weight: bold">as</span> f:
+            data <span style="color: #000000; font-weight: bold">=</span> f<span style="color: #000000; font-weight: bold">.</span>read()
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish(data)
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">StreamHandler</span>(tornado<span style="color: #000000; font-weight: bold">.</span>websocket<span style="color: #000000; font-weight: bold">.</span>WebSocketHandler):
+
+    CONNECTION <span style="color: #000000; font-weight: bold">=</span> {}
+    SAMPLE_LENGTH <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>
+    VALUE_MAX <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">**</span> (<span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">8</span> <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>) <span style="color: #000000; font-weight: bold">-</span> <span style="color: #009999">1</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">open</span>(<span style="color: #999999">self</span>):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>uuid <span style="color: #000000; font-weight: bold">=</span> uuid<span style="color: #000000; font-weight: bold">.</span>uuid4()
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>rate <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">None</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io <span style="color: #000000; font-weight: bold">=</span> BytesIO()
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_close</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">pass</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">do_init</span>(<span style="color: #999999">self</span>, rate):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>rate <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(rate)
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write_message(<span style="color: #dd1144">&#39;UUID {}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>uuid))
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>CONNECTION[<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>uuid] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">do_close</span>(<span style="color: #999999">self</span>, uuid):
+        <span style="color: #000000; font-weight: bold">if</span> uuid <span style="color: #000000; font-weight: bold">in</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>CONNECTION:
+            <span style="color: #000000; font-weight: bold">del</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>CONNECTION[uuid]
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>close()
+
+
+        <span style="color: #000000; font-weight: bold">with</span> wave<span style="color: #000000; font-weight: bold">.</span>open(<span style="color: #dd1144">&#39;{}.wav&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>uuid), <span style="color: #dd1144">&#39;wb&#39;</span>) <span style="color: #000000; font-weight: bold">as</span> wavfile:
+            wavfile<span style="color: #000000; font-weight: bold">.</span>setparams((<span style="color: #009999">1</span>, <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>SAMPLE_LENGTH, <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>rate, <span style="color: #009999">0</span>, <span style="color: #dd1144">&#39;NONE&#39;</span>, <span style="color: #dd1144">&#39;NONE&#39;</span>))
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io<span style="color: #000000; font-weight: bold">.</span>seek(<span style="color: #009999">0</span>)
+            wavfile<span style="color: #000000; font-weight: bold">.</span>writeframes(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io<span style="color: #000000; font-weight: bold">.</span>read())
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io<span style="color: #000000; font-weight: bold">.</span>close()
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">None</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">do_data</span>(<span style="color: #999999">self</span>, uuid, data):
+        <span style="color: #999988"># 2个字节带符号</span>
+        <span style="color: #999988"># 声音太小，作增益</span>
+        gain <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+        <span style="color: #000000; font-weight: bold">for</span> x <span style="color: #000000; font-weight: bold">in</span> data<span style="color: #000000; font-weight: bold">.</span>split(<span style="color: #dd1144">&#39;|&#39;</span>):
+            v <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(<span style="color: #0086B3">float</span>(x) <span style="color: #000000; font-weight: bold">*</span> gain <span style="color: #000000; font-weight: bold">*</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>VALUE_MAX)
+            <span style="color: #000000; font-weight: bold">if</span> v <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>VALUE_MAX:
+                v <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>VALUE_MAX
+            <span style="color: #000000; font-weight: bold">if</span> v <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>VALUE_MAX <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>:
+                v <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">__class__</span><span style="color: #000000; font-weight: bold">.</span>VALUE_MAX <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>
+            <span style="color: #000000; font-weight: bold">try</span>:
+                <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>io<span style="color: #000000; font-weight: bold">.</span>write(struct<span style="color: #000000; font-weight: bold">.</span>pack(<span style="color: #dd1144">&#39;h&#39;</span>, v))
+            <span style="color: #000000; font-weight: bold">except</span>:
+                <span style="color: #000000; font-weight: bold">print</span>(v)
+                <span style="color: #000000; font-weight: bold">raise</span> <span style="color: #990000; font-weight: bold">Exception</span>(<span style="color: #dd1144">&#39;&#39;</span>)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">on_message</span>(<span style="color: #999999">self</span>, message):
+        cmd_map <span style="color: #000000; font-weight: bold">=</span> {
+            <span style="color: #dd1144">&#39;INIT&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>do_init,
+            <span style="color: #dd1144">&#39;CLOSE&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>do_close,
+            <span style="color: #dd1144">&#39;DATA&#39;</span>: <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>do_data
+        }
+        cmd, <span style="color: #000000; font-weight: bold">*</span>params <span style="color: #000000; font-weight: bold">=</span> message<span style="color: #000000; font-weight: bold">.</span>split(<span style="color: #dd1144">&#39; &#39;</span>)
+        <span style="color: #000000; font-weight: bold">if</span> cmd <span style="color: #000000; font-weight: bold">in</span> cmd_map:
+            cmd_map[cmd](<span style="color: #000000; font-weight: bold">*</span>params)
+        <span style="color: #000000; font-weight: bold">else</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write_message(<span style="color: #dd1144">&#39;{} is a ERROR cmd&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(cmd))
+
+
+Handlers <span style="color: #000000; font-weight: bold">=</span> [
+    (<span style="color: #dd1144">&#39;/&#39;</span>, IndexHandler),
+    (<span style="color: #dd1144">&#39;/stream&#39;</span>, StreamHandler),
+]
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">main</span>():
+    application <span style="color: #000000; font-weight: bold">=</span> Application(Handlers)
+    server <span style="color: #000000; font-weight: bold">=</span> HTTPServer(application)
+    port <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">8888</span>
+    server<span style="color: #000000; font-weight: bold">.</span>listen(port)
+    <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&#39;SERVER IS STARTING ON %s ...&#39;</span> <span style="color: #000000; font-weight: bold">%</span> port)
+    tornado<span style="color: #000000; font-weight: bold">.</span>ioloop<span style="color: #000000; font-weight: bold">.</span>IOLoop<span style="color: #000000; font-weight: bold">.</span>current()<span style="color: #000000; font-weight: bold">.</span>start()
+
+
+<span style="color: #000000; font-weight: bold">if</span> <span style="color: #008080">__name__</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    main()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'audio-stream';
+  var disqus_url = 'https://www.zouyesheng.com/audio-stream.html';
+  var disqus_title = '浏览器音频流获取';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABq0lEQVR4nN2XQa6bYAyEPwck2P3c
+4Ocij6RH6rJSqlCRe/QqwLsIOUF/VgWJZLpI+jZNd/Gi9dILW2N5PGMTf8a6e5KEfy87mFnJ3GKH
+OcfMrHbsZpIYKlgIG4W0+WHLYa4iJgg/q8/fGQ5H9/m+Vdd6/XTR9OK6z7Pj3MJQXWvfbmiQVAzp
+yNKQqZC2uPhhk5kBxNClL/VqlntikyQNKVPRQ5QkuWFDfejEXu29L5Yyv247mnk1fauIjFytuMbV
+l905dkpAwxmYi8mR3WOTTVEGZj+kcnxN3b9uSYJiSNmkG0ATWj8GoJ5My17dJKmNUjp57qTSEZrQ
+SdIG+4QnthuZFrhPMqoPnScDxrBRmtY9Y2gvNK+q+zSkdLxL2/1iOt/JMeQEpXOkmb/W8746+2LL
+tBC2uDScVEiODNgxhu1SQjaU7zJbd7P8bslDA3oy3Xdy8GTAw3NZOl5410ZJ6PywPTzXW2yBuWVh
+dtQANCRi8UEDCI5q+tsFcaa4cY5FjyMDPhzeMZZwmnwnuYOgiXe1l/nAtcbkqKYPzyXLKYHLenhV
+3Wdh//FH9QsdAAGswiZ5GQAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

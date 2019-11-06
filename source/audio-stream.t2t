@@ -1,0 +1,488 @@
+浏览器音频流获取
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/audio-stream.html
+%!format: !email
+%%toc
+
+
+# 要做什么事 #
+
+要做的事，是通过浏览器相关 API ，在页面上实时获取麦克风的音频数据，并把这些信息传递到服务端。
+
+简单来想，要解决这些问题：
+
+- 浏览器的麦克风相关的 API 怎么使用。
+- 浏览器获取到的数据是什么样的。
+- 浏览器获取的音频数据如何编码到通常的“音频文件”。
+
+
+# 浏览器 Stream API #
+
+如果直接搜索 “浏览器 audio” 相关的内容，一方面是讲 *audio* 标签的，另一个方面会讲到 *AudioContext* ，其实这些都算是浏览器的多媒体能力的一部分，并且在编程 API 层面，它们也是统一的。
+
+*audio* 标签，是“音频”媒体的可选的一个输入端，及输出端。 *AudioContext* 整体处理风格，是管道式的，比如：
+
+```javascript
+source = getAudioTag();
+dest = getAnotherTag();
+source.connect(dest);
+```
+
+如果你想使用浏览器直接提供的音频解析能力，或者其它处理能力，则在 *AudioContext* 下直接创建相关“中间层”：
+
+```javascript
+source = getAudioTag();
+dest = getAnotherTag();
+processor = AudioContext.createScriptProcessor();
+analyser = AudioContext.createAnalyser();
+source.connect(analyser);
+analyser.connect(processor);
+processor.connect(dest);
+```
+
+每个中间层，都提供了一些音频的预处理信息，或者能力，或者事件。典型的，是在 ``processor`` 的 ``onaudioprocess`` 事件中，从 ``analyser`` 获取音频的采样数据。
+
+```javascript
+processor.onaudioprocess = function(e){
+    const amplitudeArray = new Float32Array(analyser.frequencyBinCount);
+    analyser.getFloatTimeDomainData(amplitudeArray);
+    console.log(amplitudeArray);
+}
+```
+
+当然，这里 ``onaudioprocess`` 触发的频率， ``amplitudeArray`` 的长度这些，就与音频相关的参数有关了，后面会简单介绍。
+
+对于浏览器的音频 API 有了一点概念之后，再加上“麦克风”这个并不算太特殊的输入源，事情就好办多了：
+
+- 通过 ``navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {})`` 回调，获取麦克风的实时输入内容。
+- 通过 ``context.createMediaStreamSource(stream)`` 创建一个包装输入的“中间层”。
+
+
+整体代码大概像：
+
+```javascript
+  navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
+    const context = new AudioContext({ sampleRate: 48000 });
+    audioContext = context;
+    const input = context.createMediaStreamSource(stream)
+    const processor = context.createScriptProcessor(1024,1,1);
+    const analyser = context.createAnalyser();
+    const dest = context.destination;
+
+    input.connect(analyser);
+    analyser.connect(processor);
+    processor.connect(dest);
+
+    analyser.fftSize = 2048;
+    const amplitudeArray = new Float32Array(analyser.frequencyBinCount);
+    processor.onaudioprocess = function(e){
+      analyser.getFloatTimeDomainData(amplitudeArray);
+      console.log(amplitudeArray);
+    };
+  }).catch(err => {console.log(err)});
+```
+
+跑起来之后，能看到不断变化的 ``amplitudeArray`` ，就说明成功了。
+
+
+# 音频参数，采样率与样本值表示 #
+
+前面示例中，``amplitudeArray`` 中的内容是一串在 ``[-1, 1]`` 之间的小数，我们需要搞清楚这些数字的含义，才能方便后面对声音信息的处理。
+
+声音的物理形式，是“波”。存储，还原声音，是一种典型的模拟信号到数字信号的转换。直观地，这里有两个关键信息需要先确定，采样率和样本值表示。
+
+采样率比较好理解，就像做拟合一样，对于一段连续的曲线：
+
+```gnuplot-svg
+plot(sin(x))
+```
+
+（现实中的声音频率不是固定的，这里 ``sin`` 只作采样的一个说明）
+
+你在上面取的样本点越多，越能原样还原之前的曲线的样子。采样率 *Sample Rate* ，反映了单位时间内，获取样本的次数，要使结果更精确，这个值当然越大越好，但是采样数据越多，存储传输的成本也越大。
+
+由于人耳能听到的声音是有一个频率范围的，所以，在这个特定场景下，采样率有一个“足够”的上限，是 48000Hz 。
+
+采样率对应到 API 中是：
+
+```javascript
+new AudioContext({sampleRate: 48000})
+```
+
+但是注意，数据获取了，与数据暴露出来，还不是一回事。
+
+获取数据的方式，是通过 ``onaudioprocess`` 的回调，换句话说， ``onaudioprocess`` 每秒回调的次数，每次传递出来的数据多少，才真正决定我们能拿到多少采样数据。
+
+``onaudioprocess`` 每次传递出来的数据多少，由 ``analyser.fftSize`` 决定， ``amplitudeArray`` 的长度是 ``analyser.fftSize`` 的一半。
+
+而 ``onaudioprocess`` 每秒回调次数，就比较诡异了。似乎与 ``sampleRate`` 及 ``context.createScriptProcessor`` 的第一个参数 ``bufferSize`` 有关。
+
+在我自己的浏览器上：
+
+- ``fftSize``：2048，对应 ``analyser.frequencyBinCount`` 就是 1024。
+- ``sampleRate``：48000
+- ``bufferSize``：1024
+
+这种情况下，大概 ``onaudioprocess`` 每秒调用 48 次不到，每次 1024 个数据，算下来，每秒差不多 48000 个数据。
+
+但是我把 ``bufferSize`` 改成 0 ，每秒调用就变成 24 了。
+
+说完了采样率，再说样本值表示。
+
+从物理层面想的话，模拟信号信息的获取，最初得到的“样本值”只是一组非直接的物理量，比如某个特征尺寸改变了，但是这并不等于在这个时刻，你声音大，或者说声音的强度大。我们这里不讨论怎么定义声音的大小，只是说明，数字化的表示模拟信号，对于“强度”的还原，也是需要在一定规则下作约定式的处理，才能有结果的。就 API 来说：
+
+```javascript
+analyser.getByteTimeDomainData(amplitudeArray);
+```
+
+可以返回一组 ``0`` 到 ``255`` 的整数，意味着在这组数据当中，强弱对比，最多 255 个级别，无法再有更细的辨识能力。
+
+而：
+
+```javascript
+analyser.getFloatTimeDomainData(amplitudeArray);
+```
+
+对是返回一组 ``-1`` 到 ``1`` 之间的小数，其表示的强弱对比，就大之前的区区 255 个级别，要大得多了。
+
+但是，无论是 255 个级别，还是远多于 255 的级别，都只是采样层面的“中间结果”，当你要把这些信息，以特定的格式（比如 PCM）存储的时候，又面临一些选择，使用多大的空间来保存这个“强弱对比”？ 255 的级别，那么使用 1 个字节就够了，远多于 255 级别呢？用 2 个字节？ 3 个字节？
+
+这里说的到底用多少个字节，在音频技术指标中，就是“分辩率 *Resolution*”的概念了。 API 以浮点数给出的结果，精度是有了，存储时需要多么细致，用多少空间，就在于你自己选择了。
+
+基本的两个重要概念介绍完之后，总结一下，就是浏览器 API 通过 ``getFloatTimeDomainData`` 能给到一个相对数据，但这些数据怎么存储，怎么格式化到通常的音频格式，都是你自己要处理的事。
+
+
+# PCM 编码和 WAVE 封装 #
+
+*PCM* 算是一种通用的存储数字化采样信息的格式，事实上它都算不上什么格式，只是在音频领域有一些约定。
+
+拿“字节”和“字符”的关系来类比的话， *PCM* 的地位，就像“字节”，单独看一个 *PCM* 片段，没有意义，因为你无法解释。
+
+- 你不知道应该一个字节一个字节地看，还是两个字节两个字节的看。
+- 你更不知道存储了几个声道的信息。
+- 你还不知道应该以什么速度还原（这对声音很重要）。
+
+
+比如随意一段：
+
+```text
+0xAB 0x03 0x8F 0xD8
+```
+
+
+- 几个字节一起看，就是前面提的“分辩率”问题。用到字节越多，强弱对比就越细致。你平时看音频文件，16bit，32bit 说的就是这个。我们这里，假设是 16bit ，两个字节的配置，所以，数据就解释成： ``0xAB 0x03`` 和 ``0x8F 0xD8`` ，同时， PCM 规定使用的是有符号整数，你就还知道了单个数的上限和下限，相对的强弱关系就可以还原了，那两个数就是 ``939`` 和 ``-10097`` 。范围在 ``[-32768, 32768)`` 。
+- 声道信息就简单了，它们是在单个 *frame* 中顺序排列的。上面 2 x 2 个字节，如果是双声道，则只有 1 frame ，分别是第一声道的信息和第二声道的信息。如果是单声道，则是单个声道 2 frame 的信息。这里我们假设是单声道。
+- 以什么速度还原，就是采样率的问题。如果每秒采样 1 个单位，那么 2 frame 播放时间就是 2 秒。如果每秒采样 2 个单位，则 2 frame 播放时间 1 秒。（我们代码中用 48000Hz）
+
+
+这几点说清楚后，就能明白， PCM 就是字节串，这些数据作为声音解释还原，所需要的其它信息，不是 PCM 的事。而 WAVE 封装，就是在其头部补充了这些信息。（当然，WAVE 还有其它功能，压缩什么的，同时， WAVE 中也不一定只能是 PCM 格式）
+
+
+所以，浏览器的 API ，完成 PCM 的裸流即时往服务端提交，没有问题。但是服务端如果要把接收到的这些数据，最后存成通常的“音频文件”格式，则还需要其它信息补充，声道数，采样率，（分辩率在保存时由服务端决定）。我们后面的代码中，声道数约定写死，采样率通过协议设计在流程中交互获取。
+
+
+# 整体实现 #
+
+- 问题：为什么不在浏览器都做完，要加个服务端呢？
+- 回答：1. 我不了解 wave 格式细节。2. 我对使用 js 处理二进制场景表示畏惧。3. Python 我都熟。
+
+
+## 客户端 ##
+
+- 通过 ``getUserMedia`` 实时获取 ``getFloatTimeDomainData`` 的结果。
+- ``getFloatTimeDomainData`` 的数据，通过 *websocket* 传递给服务端。
+- *websocket* 上通过自定义有状态的协议，解决获取数据，获取采样率，保存等问题。
+- 通过 *audio* 标签实时回放。
+- 外加一个简单的声音可视化效果。
+
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Audio</title>
+<script type="text/javascript" src="https://s.zys.me/js/jq/jquery.min.js"></script>
+</head>
+<body>
+
+  <div>
+    <audio id="player" controls autoplay></audio>
+  </div>
+  <div id="wrapper" style="width: 512px; height: 256px; border: 1px solid red; margin: 10px 0;">
+    <canvas id="canvas" width="512" height="256"></canvas>
+  </div>
+
+  <div id="controls">
+    <div>
+      <input type="button" id="start" value="开始">
+      <input type="button" id="stop" value="停止">
+    </div>
+  </div>
+
+  <script type="text/javascript">
+
+    const requestAnimFrame = window.requestAnimationFrame;
+    const ctx = $('#canvas')[0].getContext('2d');
+    let canvasWidth = 512;
+    let canvasHeight = 256;
+    let audioContext = null;
+    let connection = null;
+    const sampleRate = 48000;
+
+    function setWidth(w){
+      $('#wrapper').css({width: w});
+      $('#canvas').attr('width', w);
+      canvasWidth = w;
+    }
+
+    function drawTimeDomain(data) {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      for (var i = 0; i < data.length; i++) {
+        var value = data[i] - (-1) / 2;
+        var y = canvasHeight - (canvasHeight * value) - 1;
+        ctx.fillStyle = 'red';
+        ctx.fillRect(i, y, 2, 2);
+      }
+    }
+
+    function connect(){
+        const ws = new WebSocket('ws://' + location.host + '/stream');
+
+        let uuid = null;
+        connection = {
+          close: () => {
+            ws.send('CLOSE ' + uuid);
+            ws.close();
+            uuid = null;
+          },
+          send_data: data => {
+            ws.send('DATA ' + uuid + ' ' + data)
+          },
+          set_uuid: id => {
+            uuid = id;
+            console.log(uuid);
+          }
+        };
+
+        ws.addEventListener('open', function (event) {
+          ws.send('INIT ' + sampleRate);
+        });
+
+        ws.addEventListener('message', function (event) {
+          const msg = event.data;
+          const p = msg.split(' ');
+          const cmd = p[0];
+          const params = p.slice(1);
+          const cmdMap = {
+            'UUID': 'set_uuid'
+          }
+          if(cmdMap[cmd]){
+            connection[cmdMap[cmd]].apply(this, params);
+          }
+        });
+    }
+
+    function stop(){
+      if(audioContext){
+        audioContext.close();
+        audioContext = null;
+      }
+      if(connection){
+        connection.close();
+        connection = null;
+      }
+      $('#player')[0].pause();
+      $('#player')[0].currentTime = 0;
+      $('#player')[0].srcObject = null;
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.restore();
+    }
+
+    function run(){
+      navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
+        connect();
+        const context = new AudioContext({ sampleRate });
+        audioContext = context;
+        const input = context.createMediaStreamSource(stream)
+        const processor = context.createScriptProcessor(1024,1,1);
+        const analyser = context.createAnalyser();
+        const dest = context.destination;
+
+        input.connect(analyser);
+        analyser.connect(processor);
+        processor.connect(dest);
+
+        analyser.fftSize = 2048;
+        setWidth(analyser.fftSize / 2);
+        // getByteTimeDomainData 使用 Unit8 精度太低
+        //const amplitudeArray = new Uint8Array(analyser.frequencyBinCount);
+        const amplitudeArray = new Float32Array(analyser.frequencyBinCount);
+        let count = 0;
+        const start = new Date().getTime();
+
+        const _drawTimeDomain = () => drawTimeDomain(amplitudeArray);
+        processor.onaudioprocess = function(e){
+          count += 1;
+          const now = new Date().getTime();
+
+          //每秒调用统计
+          //console.log(count / ((now - start) / 1000));
+
+          //analyser.getByteTimeDomainData(amplitudeArray);
+          analyser.getFloatTimeDomainData(amplitudeArray);
+
+          if(connection){
+            connection.send_data(amplitudeArray.join('|'))
+          }
+
+          requestAnimFrame(_drawTimeDomain);
+        };
+
+        //回放
+        const player = $('#player')[0];
+        player.srcObject = stream;
+        player.onloadedmetadata = function(e) { player.play() };
+      }).catch(err => {console.log(err)});
+    }
+
+    $(() => {
+      $('#start').on('click', e => { run() });
+      $('#stop').on('click', e => { stop() });
+    });
+  </script>
+</body>
+</html>
+
+```
+
+
+
+
+## 服务端 ##
+
+
+- HTTP 和 *websocket* 服务。
+- ``/`` 返回上面客户端页面内容。
+- ``/stream`` 处理 *websocket* 服务。
+- ``/stream`` 上连接关闭时，把已接收的数据，作为 wave 格式存储到文件系统。
+
+
+```python
+# -*- coding: utf-8 -*-
+
+import uuid
+from io import BytesIO
+import struct
+import wave
+import tornado.web
+import tornado.httpserver
+import tornado.ioloop
+import tornado.websocket
+
+
+class Application(tornado.web.Application):
+    def __init__(self, handlers):
+        super(Application, self).__init__(handlers, '', None, debug=True)
+
+
+class HTTPServer(tornado.httpserver.HTTPServer):
+    def __init__(self, app):
+        super(HTTPServer, self).__init__(app, xheaders=True)
+
+
+class BaseHandler(tornado.web.RequestHandler):
+    pass
+
+class IndexHandler(BaseHandler):
+    def get(self):
+        with open('./client.html', 'rb') as f:
+            data = f.read()
+        self.finish(data)
+
+
+class StreamHandler(tornado.websocket.WebSocketHandler):
+
+    CONNECTION = {}
+    SAMPLE_LENGTH = 2
+    VALUE_MAX = 2 ** (2 * 8 - 1) - 1
+
+    def open(self):
+        self.uuid = uuid.uuid4()
+        self.rate = None
+        self.io = BytesIO()
+
+    def on_close(self):
+        pass
+
+    def do_init(self, rate):
+        self.rate = int(rate)
+        self.write_message('UUID {}'.format(self.uuid))
+        self.__class__.CONNECTION[self.uuid] = self
+
+    def do_close(self, uuid):
+        if uuid in self.__class__.CONNECTION:
+            del self.__class__.CONNECTION[uuid]
+        self.close()
+
+
+        with wave.open('{}.wav'.format(self.uuid), 'wb') as wavfile:
+            wavfile.setparams((1, self.__class__.SAMPLE_LENGTH, self.rate, 0, 'NONE', 'NONE'))
+            self.io.seek(0)
+            wavfile.writeframes(self.io.read())
+
+        self.io.close()
+        self.io = None
+
+    def do_data(self, uuid, data):
+        # 2个字节带符号
+        # 声音太小，作增益
+        gain = 1
+        for x in data.split('|'):
+            v = int(float(x) * gain * self.__class__.VALUE_MAX)
+            if v > self.__class__.VALUE_MAX:
+                v = self.__class__.VALUE_MAX
+            if v < self.__class__.VALUE_MAX * -1:
+                v = self.__class__.VALUE_MAX * -1
+            try:
+                self.io.write(struct.pack('h', v))
+            except:
+                print(v)
+                raise Exception('')
+
+    def on_message(self, message):
+        cmd_map = {
+            'INIT': self.do_init,
+            'CLOSE': self.do_close,
+            'DATA': self.do_data
+        }
+        cmd, *params = message.split(' ')
+        if cmd in cmd_map:
+            cmd_map[cmd](*params)
+        else:
+            self.write_message('{} is a ERROR cmd'.format(cmd))
+
+
+Handlers = [
+    ('/', IndexHandler),
+    ('/stream', StreamHandler),
+]
+
+def main():
+    application = Application(Handlers)
+    server = HTTPServer(application)
+    port = 8888
+    server.listen(port)
+    print('SERVER IS STARTING ON %s ...' % port)
+    tornado.ioloop.IOLoop.current().start()
+
+
+if __name__ == '__main__':
+    main()
+
+```
+
+
