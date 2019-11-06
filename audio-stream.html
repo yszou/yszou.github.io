@@ -14,7 +14,7 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">浏览器音频流获取</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2019-11-06 22:29 更新</span>
+                <span>2019-11-06 22:34 更新</span>
             </div>
         </div>
 
@@ -375,15 +375,21 @@ processor.connect(dest);
 <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sampleRate</code>：48000
 </li>
 <li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bufferSize</code>：1024
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这种情况下，大概 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onaudioprocess</code> 每秒调用 48 次不到，每次 1024 个数据，算下来，每秒差不多 48000 个数据。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 但是我把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bufferSize</code> 改成 0 ，每秒调用就变成 24 了。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 说完了采样率，再说样本值表示。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 从物理层面想的话，模拟信号信息的获取，最初得到的“样本值”只是一组非直接的物理量，比如某个特征尺寸改变了，但是这并不等于在这个时刻，你声音大，或者说声音的强度大。我们这里不讨论怎么定义声音的大小，只是说明，数字化的表示模拟信号，对于“强度”的还原，也是需要在一定规则下作约定式的处理，才能有结果的。就 API 来说：
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">analyser.getByteTimeDomainData(amplitudeArray);
@@ -391,11 +397,12 @@ processor.connect(dest);
 
 </div>
 
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 可以返回一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">255</code> 的整数，意味着在这组数据当中，强弱对比，最多 255 个级别，无法再有更细的辨识能力。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 而：
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">analyser.getFloatTimeDomainData(amplitudeArray);
@@ -403,16 +410,18 @@ processor.connect(dest);
 
 </div>
 
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 对是返回一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-1</code> 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> 之间的小数，其表示的强弱对比，就大之前的区区 255 个级别，要大得多了。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 但是，无论是 255 个级别，还是远多于 255 的级别，都只是采样层面的“中间结果”，当你要把这些信息，以特定的格式（比如 PCM）存储的时候，又面临一些选择，使用多大的空间来保存这个“强弱对比”？ 255 的级别，那么使用 1 个字节就够了，远多于 255 级别呢？用 2 个字节？ 3 个字节？
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 这里说的到底用多少个字节，在音频技术指标中，就是“分辩率 <em style="color: #d75100; font-style: normal;">Resolution</em>”的概念了。 API 以浮点数给出的结果，精度是有了，存储时需要多么细致，用多少空间，就在于你自己选择了。
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 基本的两个重要概念介绍完之后，总结一下，就是浏览器 API 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getFloatTimeDomainData</code> 能给到一个相对数据，但这些数据怎么存储，怎么格式化到通常的音频格式，都是你自己要处理的事。
-</li>
-</ul>
+</p>
 
 <a class="anchor" name="toc4"></a>
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. PCM 编码和 WAVE 封装</h1>
