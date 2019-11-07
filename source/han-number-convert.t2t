@@ -1,0 +1,204 @@
+# -*- coding: utf-8 -*-
+
+
+num_map = {
+    u'零': 0,
+    u'〇': 0,
+    u'两': 2,
+    u'一': 1, u'二': 2, u'三': 3, u'四': 4, u'五': 5, u'六': 6, u'七': 7, u'八': 8, u'九': 9,
+    u'壹': 1, u'贰': 2, u'叁': 3, u'肆': 4, u'伍': 5, u'陆': 6, u'柒': 7, u'捌': 8, u'玖': 9,
+    u'廿': 20,
+    u'卅': 30,
+    u'卌': 40,
+    u'圩': 50,
+    u'圆': 60,
+    u'进': 70,
+    u'枯': 80,
+    u'枠': 90,
+}
+rank_map = {
+    u'十': 10, u'百': 100, u'千': 1000, u'万': 10000, u'亿': 100000000,
+    u'拾': 10, u'佰': 100, u'仟': 1000
+}
+
+
+s = u'十'
+
+DEBUG = False
+
+def convert(s):
+    gen = []
+    last_rank = 1
+
+    #十 起头,要补一,否则后面逻辑无法统一解释
+    if s[0] in {u'十', u'拾'}:
+        gen.append({'type': 'number', 'value': 1})
+
+    for c in s:
+        if c in num_map:
+            if num_map[c] == 0:
+                #前面是数字,要补 rank , 1101
+                if gen[-1]['type'] == 'number':
+                    gen.append({'type': 'rank', 'value': int(last_rank / 10)})
+
+                gen.append({'type': 'zero'})
+            else:
+                #连着两个数字, 如 一一
+                if gen and (gen[-1]['type'] == 'number'):
+                    gen.append({'type': 'rank', 'value': 10})
+                gen.append({'type': 'number', 'value': num_map[c]})
+
+        if c in rank_map:
+
+            # 连续两个 rank ,合并
+            # 十 有歧义,如果它前面带零不能合,如 一千零十亿, 还要把它改成数字
+            # 不带零要合, 如 一十万零一
+            last_rank = rank_map[c]
+            if gen and gen[-1]['type'] == 'rank':
+                if (len(gen) > 1) and (gen[-1]['value'] == 10) and (gen[-2]['type'] == 'zero'):
+                    gen[-1]['type'] = 'number'
+                    gen.append({'type': 'rank', 'value': rank_map[c]})
+                else:
+                    gen[-1]['value'] *= rank_map[c]
+                continue
+
+            gen.append({'type': 'rank', 'value': rank_map[c]})
+
+    #补末位的省略, 如 一千一
+    if gen and len(gen) > 1:
+        if (gen[-1]['type'] == 'number') and (gen[-2]['type'] == 'rank'):
+            gen.append({'type': 'rank', 'value': int(gen[-2]['value'] / 10)})
+
+    if DEBUG:
+        print(gen)
+
+    gen.reverse()
+    gen.append({'type': 'complete'})
+
+    if DEBUG:
+        print(gen)
+
+    block = []
+    level_rank = 1
+    current_rank = 1
+    for o in gen:
+
+        if DEBUG:
+            print(block, current_rank, level_rank)
+
+        if o['type'] == 'number':
+            if not block:
+                block.append([])
+            block[-1].append(o['value'] * current_rank)
+
+        if o['type'] == 'rank':
+            rank = o['value']
+
+            if not block:
+                level_rank = rank
+                current_rank = rank
+                block.append([])
+                continue
+
+            if rank > level_rank:
+                level_rank = rank
+                current_rank = rank
+                block[-1] = sum(block[-1])
+                block.append([])
+            else:
+                current_rank = rank * level_rank
+                block[-1] = sum(block[-1])
+                block.append([])
+
+        if o['type'] == 'zero':
+            continue
+
+        if (o['type'] == 'complete'):
+            if isinstance(block[-1], list):
+                block[-1] = sum(block[-1])
+
+    return sum(block)
+
+
+if __name__ == '__main__':
+    print(s, convert(s))
+
+
+# from: https://github.com/HaveTwoBrush/cn2an/blob/master/cn2an/cn2an_test.py
+
+TEST_SUIT = {
+    u"一": 1,
+    u"两": 2,
+    u"十": 10,
+    u"十一": 11,
+    u"一十一": 11,
+    u"一百一十一": 111,
+    u"一千一百一十一": 1111,
+    u"一万一千一百一十一": 11111,
+    u"一十一万一千一百一十一": 111111,
+    u"一百一十一万一千一百一十一": 1111111,
+    u"一千一百一十一万一千一百一十一": 11111111,
+    u"一亿一千一百一十一万一千一百一十一": 111111111,
+    u"一十一亿一千一百一十一万一千一百一十一": 1111111111,
+    u"一百一十一亿一千一百一十一万一千一百一十一": 11111111111,
+    u"一千一百一十一亿一千一百一十一万一千一百一十一": 111111111111,
+    u"壹": 1,
+    u"拾": 10,
+    u"拾壹": 11,
+    u"壹拾壹": 11,
+    u"壹佰壹拾壹": 111,
+    u"壹仟壹佰壹拾壹": 1111,
+    u"壹万壹仟壹佰壹拾壹": 11111,
+    u"壹拾壹万壹仟壹佰壹拾壹": 111111,
+    u"壹佰壹拾壹万壹仟壹佰壹拾壹": 1111111,
+    u"壹仟壹佰壹拾壹万壹仟壹佰壹拾壹": 11111111,
+    u"壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹": 111111111,
+    u"壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹": 1111111111,
+    u"壹佰壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹": 11111111111,
+    u"壹仟壹佰壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹": 111111111111,
+    u"一百零一": 101,
+    u"一千零一": 1001,
+    u"一千零一十一": 1011,
+    u"一千一百零一": 1101,
+    u"一万零一": 10001,
+    u"一万零一十一": 10011,
+    u"一万零一百一十一": 10111,
+    u"一十万零一": 100001,
+    u"一百万零一": 1000001,
+    u"一千万零一": 10000001,
+    u"一千零一万一千零一": 10011001,
+    u"一千零一万零一": 10010001,
+    u"一亿零一": 100000001,
+    u"一十亿零一": 1000000001,
+    u"一百亿零一": 10000000001,
+    u"一千零一亿一千零一万一千零一": 100110011001,
+    u"一千亿一千万一千零一": 100010001001,
+    u"一千亿零一": 100000000001,
+
+    u"十万": 100000,
+    u"十万零一": 100001,
+    u"十亿零一万零一": 1000010001,
+
+    u"拾万零壹": 100001,
+    u"拾亿零壹万零壹": 1000010001,
+
+    u'一千一': 1100,
+    u'一千一零一': 1101,
+    u'一千零十亿': 101000000000,
+    u'一一': 11,
+    u'一二三': 123,
+}
+
+count = 0
+error = 0
+for c, v in TEST_SUIT.items():
+    #continue
+    #print(c)
+    r = convert(c)
+    count += 1
+    if v != r:
+        error += 1
+        print('ERROR', c, v, r)
+
+print('SUM: {} ERROR: {}'.format(count, error))
+
