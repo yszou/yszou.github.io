@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>汉字数字转阿拉伯数字 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">汉字数字转阿拉伯数字</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2019-11-08 11:31 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">问题来源</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">要处理的问题</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">回溯的优化</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_blank">编码</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_blank">4.1. 基本配置准备</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_blank">4.2. 解析中文</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_blank">4.3. 生成阿拉伯数字</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_blank">4.4. 更多测试用例</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_blank">4.5. 完整实现</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 问题来源</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个问题，是看到有人提到带中文数字的章节标题，要排序的问题引起的。比如对于：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">title_list <span style="color: #000000; font-weight: bold">=</span> [
+<span style="color: #dd1144">&#39;第一章&#39;</span>,
+<span style="color: #dd1144">&#39;第三章&#39;</span>,
+<span style="color: #dd1144">&#39;第五章&#39;</span>,
+<span style="color: #dd1144">&#39;第四章&#39;</span>,
+<span style="color: #dd1144">&#39;第二章&#39;</span>,
+]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+想“正确”排序的话，你直接 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">title_list.sort()</code> 是不行地：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">zys@tower:~$ python3
+Python <span style="color: #009999">3</span>.7.1 <span style="color: #000000; font-weight: bold">(</span>default, Apr  <span style="color: #009999">1</span> <span style="color: #009999">2019</span>, <span style="color: #009999">01</span>:01:48<span style="color: #000000; font-weight: bold">)</span> 
+<span style="color: #000000; font-weight: bold">[</span>GCC <span style="color: #009999">7</span>.3.0<span style="color: #000000; font-weight: bold">]</span> on linux
+Type <span style="color: #dd1144">&quot;help&quot;</span>, <span style="color: #dd1144">&quot;copyright&quot;</span>, <span style="color: #dd1144">&quot;credits&quot;</span> or <span style="color: #dd1144">&quot;license&quot;</span> <span style="color: #000000; font-weight: bold">for</span> more information.
+&gt;&gt;&gt; <span style="color: #008080">title_list</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span>
+... <span style="color: #dd1144">&#39;第一章&#39;</span>,
+... <span style="color: #dd1144">&#39;第三章&#39;</span>,
+... <span style="color: #dd1144">&#39;第五章&#39;</span>,
+... <span style="color: #dd1144">&#39;第四章&#39;</span>,
+... <span style="color: #dd1144">&#39;第二章&#39;</span>,
+... <span style="color: #000000; font-weight: bold">]</span>
+&gt;&gt;&gt; title_list.sort<span style="color: #000000; font-weight: bold">()</span>
+&gt;&gt;&gt; title_list
+<span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;第一章&#39;</span>, <span style="color: #dd1144">&#39;第三章&#39;</span>, <span style="color: #dd1144">&#39;第二章&#39;</span>, <span style="color: #dd1144">&#39;第五章&#39;</span>, <span style="color: #dd1144">&#39;第四章&#39;</span><span style="color: #000000; font-weight: bold">]</span>
+&gt;&gt;&gt; 
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+原因是在具体编码的码表中，“三”并不一定排在“二”前面，码表的编撰可不会特别考虑中文的排序这种事。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，对于不同的编码，这几个数字字符的相对位置，可能会有差异。上面的例子，只代表 Unicode 的一个结果。你转成 GB18030 或者 BIG5 的字节，结果可能不同。但这也足够说明，中文的数字依赖字典序是不可靠的。编码不同，结果就不同，这里的“字典序”本身就没有标准可言，如果你假设 Unicode ，那事实上这些字符的顺序也不是我们希望的“1 2 3 4”这样的顺序。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，这里就引出，我们可以把中文数字，转成阿拉伯数字，然后使用整数大小来排序就可以准确控制了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+光是 “一”，“二”，“三” 这些单个数字，倒是好办，我们写死一位数的映射都可以解决问题。接下来要说的，自然是更一般性的处理方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">一千零一亿一千零一万一千零一
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 要处理的问题</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看上面的中文数字，直观地，可以看出中文数字其实是由“数字”和“单位”构成的：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">数字就是“一”，“二”，“三”这些。
+</li>
+<li style="margin: 10px auto;">单位则是“千”，“万”，“亿”。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里我们先明确一下“十”这个“搅屎棍”的位置，它到底算数字，还是算单位。从我们日常习惯用法中看，它是两者都有的：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">用于单位，“一十”，“一十五万”。
+</li>
+<li style="margin: 10px auto;">用于数字，“一千零十万”。（注意区分，“一千”个“十万”，和“一千零十”个“万”的不同）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们会把“十”作为单位处理，把它当数字时的情况作为特例。这样面对的特例，要比作为数字少得多。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们能正确解析出汉字数字中的“数字”与“单位”的话，那么通过映射与简单运算，就可以得到需要的阿拉伯数字结果。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如对于：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">一千零一亿一千零一万一千零一
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们可以解析到：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">1001
+</li>
+<li style="margin: 10px auto;">亿
+</li>
+<li style="margin: 10px auto;">1001
+</li>
+<li style="margin: 10px auto;">万
+</li>
+<li style="margin: 10px auto;">1001
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那最后的结果就很容易了，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1001 * 10^8 + 1001 * 10^4 + 1001</code>。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实际的问题当然没这么简单，上面的结果没问题，但首先你要能得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1001</code> 啊：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">1
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">亿
+</li>
+<li style="margin: 10px auto;">1
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+</li>
+<li style="margin: 10px auto;">1
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这才是我们从文字中看到的状况。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的结构，像是一颗树，按这个方向，为了方便定义节点和分支，我们可以整理得到：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">亿
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">1
+    </li>
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">1
+    </li>
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">1
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">1
+    </li>
+    <li style="margin: 10px auto;">千
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+继续分解：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">亿
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+        <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+        <li style="margin: 10px auto;">1
+        </li>
+        </ul>
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+        <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+        <li style="margin: 10px auto;">1
+        </li>
+        </ul>
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">1
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">千
+        <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+        <li style="margin: 10px auto;">1
+        </li>
+        </ul>
+    </li>
+    <li style="margin: 10px auto;">零
+    </li>
+    <li style="margin: 10px auto;">1
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于这个结构，针对每一个节点，我们从下往上的顺序计算，就可以计算出每个节点的值——平行节点的值相加，父子节点的值相乘，过而得到最终值。再推广一下，整颗树从下往上顺序遍历就可以算出结果。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的分拆过程，有助于我们看到这个问题更深的一些信息，这些信息就是我们设计代码的参考。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们的分拆，在思维上最开始可能是依据结果的倒推（我们知道“一千零一亿一千零一万一千零一”就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1001 * 10^8 + 1001 * 10^4 + 1001</code>），但我们写代码需要的是正向的逻辑，所以回到最初，去找出我们直觉上的逻辑依据：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一千零一亿一千零一万一千零一
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们怎么发现中间这些字应该提出来作为子节点？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一千零一<strong style="color: red; font-weight: normal;">亿</strong>一千零一<strong style="color: red; font-weight: normal;">万</strong>一千零一
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个问题不难。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面介绍了“数字”和“单位”的概念，我们把原始汉字中这两者分开：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一<em style="color: #d75100; font-style: normal;">千</em>零一<em style="color: #d75100; font-style: normal;">亿</em>一<em style="color: #d75100; font-style: normal;">千</em>零一<em style="color: #d75100; font-style: normal;">万</em>一<em style="color: #d75100; font-style: normal;">千</em>零一
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+只看标色的“单位”，单位的值我们可以以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10</code> 的指数来表示，从左右到绘制到直角坐标系上就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="text-align: center;">
+<svg 
+ width="600" height="480"
+ viewBox="0 0 600 480"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+
+<title>Gnuplot</title>
+<desc>Produced by GNUPLOT 5.2 patchlevel 2 </desc>
+
+<g id="gnuplot_canvas">
+
+<rect x="0" y="0" width="600" height="480" fill="none"/>
+<defs>
+
+	<circle id='gpDot' r='0.5' stroke-width='0.5'/>
+	<path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+	<path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+	<path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+	<rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+	<use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+	<path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+	<use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+	<use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+	<use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+	<path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+	<use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+	<filter id='textbox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='white' flood-opacity='1' result='bgnd'/>
+	  <feComposite in='SourceGraphic' in2='bgnd' operator='atop'/>
+	</filter>
+	<filter id='greybox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='lightgrey' flood-opacity='1' result='grey'/>
+	  <feComposite in='SourceGraphic' in2='grey' operator='atop'/>
+	</filter>
+</defs>
+<g fill="none" color="white" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,401.4 L71.2,401.4 M575.0,401.4 L566.0,401.4  '/>	<g transform="translate(53.9,405.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,358.8 L71.2,358.8 M575.0,358.8 L566.0,358.8  '/>	<g transform="translate(53.9,362.7)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >100</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,316.2 L71.2,316.2 M575.0,316.2 L566.0,316.2  '/>	<g transform="translate(53.9,320.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >1000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,273.6 L71.2,273.6 M575.0,273.6 L566.0,273.6  '/>	<g transform="translate(53.9,277.5)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,231.0 L71.2,231.0 M575.0,231.0 L566.0,231.0  '/>	<g transform="translate(53.9,234.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">5</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,188.5 L71.2,188.5 M575.0,188.5 L566.0,188.5  '/>	<g transform="translate(53.9,192.4)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">6</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,145.9 L71.2,145.9 M575.0,145.9 L566.0,145.9  '/>	<g transform="translate(53.9,149.8)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">7</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,103.3 L71.2,103.3 M575.0,103.3 L566.0,103.3  '/>	<g transform="translate(53.9,107.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">8</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,444.0 L62.2,435.0 M62.2,18.1 L62.2,27.1  '/>	<g transform="translate(62.2,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M147.7,444.0 L147.7,435.0 M147.7,18.1 L147.7,27.1  '/>	<g transform="translate(147.7,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 1</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M233.1,444.0 L233.1,435.0 M233.1,18.1 L233.1,27.1  '/>	<g transform="translate(233.1,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M318.6,444.0 L318.6,435.0 M318.6,18.1 L318.6,27.1  '/>	<g transform="translate(318.6,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 3</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M404.1,444.0 L404.1,435.0 M404.1,18.1 L404.1,27.1  '/>	<g transform="translate(404.1,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M489.5,444.0 L489.5,435.0 M489.5,18.1 L489.5,27.1  '/>	<g transform="translate(489.5,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 5</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M575.0,444.0 L575.0,435.0 M575.0,18.1 L575.0,27.1  '/>	<g transform="translate(575.0,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+	<g id="gnuplot_plot_1" ><title>gnuplot_plot_1</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(148,   0, 211)'  d='M147.7,316.2 L233.1,103.3 L318.6,316.2 L404.1,273.6 L489.5,316.2  '/></g>
+	</g>
+	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt5' transform='translate(147.7,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(233.1,103.3) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(318.6,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(404.1,273.6) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(489.5,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+</g>
+	</g>
+	<g id="gnuplot_plot_3" ><title>gnuplot_plot_3</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt6' transform='translate(233.1,103.3) scale(9.00)' color='rgb(229,  30,  16)'/>
+	<use xlink:href='#gpPt6' transform='translate(404.1,273.6) scale(9.00)' color='rgb(229,  30,  16)'/>
+</g>
+	</g>
+<g fill="none" color="white" stroke="rgb(229,  30,  16)" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="black" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+</g>
+</svg>
+
+</div>
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从图上可以看出，我们要提出来的节点，正好是“波峰”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再找个例子看看：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一<em style="color: #d75100; font-style: normal;">千</em>一<em style="color: #d75100; font-style: normal;">百</em> <em style="color: #d75100; font-style: normal;">万</em> 零 <em style="color: #d75100; font-style: normal;">十</em>一<em style="color: #d75100; font-style: normal;">亿</em>一<em style="color: #d75100; font-style: normal;">千</em>一<em style="color: #d75100; font-style: normal;">百</em>一<em style="color: #d75100; font-style: normal;">十</em>一<em style="color: #d75100; font-style: normal;">万</em>一<em style="color: #d75100; font-style: normal;">千</em>一<em style="color: #d75100; font-style: normal;">百</em>一<em style="color: #d75100; font-style: normal;">十</em>一
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="text-align: center;">
+<svg 
+ width="600" height="480"
+ viewBox="0 0 600 480"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+
+<title>Gnuplot</title>
+<desc>Produced by GNUPLOT 5.2 patchlevel 2 </desc>
+
+<g id="gnuplot_canvas">
+
+<rect x="0" y="0" width="600" height="480" fill="none"/>
+<defs>
+
+	<circle id='gpDot' r='0.5' stroke-width='0.5'/>
+	<path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+	<path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+	<path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+	<rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+	<use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+	<path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+	<use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+	<use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+	<use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+	<path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+	<use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+	<filter id='textbox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='white' flood-opacity='1' result='bgnd'/>
+	  <feComposite in='SourceGraphic' in2='bgnd' operator='atop'/>
+	</filter>
+	<filter id='greybox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='lightgrey' flood-opacity='1' result='grey'/>
+	  <feComposite in='SourceGraphic' in2='grey' operator='atop'/>
+	</filter>
+</defs>
+<g fill="none" color="white" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,401.4 L71.2,401.4 M575.0,401.4 L566.0,401.4  '/>	<g transform="translate(53.9,405.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,358.8 L71.2,358.8 M575.0,358.8 L566.0,358.8  '/>	<g transform="translate(53.9,362.7)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >100</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,316.2 L71.2,316.2 M575.0,316.2 L566.0,316.2  '/>	<g transform="translate(53.9,320.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >1000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,273.6 L71.2,273.6 M575.0,273.6 L566.0,273.6  '/>	<g transform="translate(53.9,277.5)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,231.0 L71.2,231.0 M575.0,231.0 L566.0,231.0  '/>	<g transform="translate(53.9,234.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">5</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,188.5 L71.2,188.5 M575.0,188.5 L566.0,188.5  '/>	<g transform="translate(53.9,192.4)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">6</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,145.9 L71.2,145.9 M575.0,145.9 L566.0,145.9  '/>	<g transform="translate(53.9,149.8)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">7</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,103.3 L71.2,103.3 M575.0,103.3 L566.0,103.3  '/>	<g transform="translate(53.9,107.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">8</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,444.0 L62.2,435.0 M62.2,18.1 L62.2,27.1  '/>	<g transform="translate(62.2,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M141.1,444.0 L141.1,435.0 M141.1,18.1 L141.1,27.1  '/>	<g transform="translate(141.1,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M220.0,444.0 L220.0,435.0 M220.0,18.1 L220.0,27.1  '/>	<g transform="translate(220.0,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M298.9,444.0 L298.9,435.0 M298.9,18.1 L298.9,27.1  '/>	<g transform="translate(298.9,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M377.8,444.0 L377.8,435.0 M377.8,18.1 L377.8,27.1  '/>	<g transform="translate(377.8,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 8</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M456.7,444.0 L456.7,435.0 M456.7,18.1 L456.7,27.1  '/>	<g transform="translate(456.7,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M535.6,444.0 L535.6,435.0 M535.6,18.1 L535.6,27.1  '/>	<g transform="translate(535.6,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 12</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+	<g id="gnuplot_plot_1" ><title>gnuplot_plot_1</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(148,   0, 211)'  d='M101.6,316.2 L141.1,358.8 L180.5,273.6 L220.0,401.4 L259.4,103.3 L298.9,316.2 L338.3,358.8 L377.8,401.4
+		L417.2,273.6 L456.7,316.2 L496.1,358.8 L535.6,401.4  '/></g>
+	</g>
+	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt5' transform='translate(101.6,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(141.1,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(180.5,273.6) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(220.0,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(259.4,103.3) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(298.9,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(338.3,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(377.8,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(417.2,273.6) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(456.7,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(496.1,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(535.6,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+</g>
+	</g>
+	<g id="gnuplot_plot_3" ><title>gnuplot_plot_3</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt6' transform='translate(180.5,273.6) scale(9.00)' color='rgb(229,  30,  16)'/>
+	<use xlink:href='#gpPt6' transform='translate(259.4,103.3) scale(9.00)' color='rgb(229,  30,  16)'/>
+	<use xlink:href='#gpPt6' transform='translate(417.2,273.6) scale(9.00)' color='rgb(229,  30,  16)'/>
+</g>
+	</g>
+<g fill="none" color="white" stroke="rgb(229,  30,  16)" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="black" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+</g>
+</svg>
+
+</div>
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+中文的习惯，报数是从大单位到小单位报，所以单位的连线应该是一直向下的。而突然向上，出现波峰，那么肯定是某个大单位的阶段性结束，前面说的那些都是为了“修辞”这个大单位的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如上图的，一<em style="color: #d75100; font-style: normal;">千</em>一<em style="color: #d75100; font-style: normal;">百</em>，单位是变小的，但马上接了一个<em style="color: #d75100; font-style: normal;">万</em>，至此，“万”这个范围，就结束了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接着万，后面是 <em style="color: #d75100; font-style: normal;">十</em>，这是一个缩小的单位，没有特殊，再来就是<em style="color: #d75100; font-style: normal;">亿</em>，它是一个比“万”大的单位，同理，意味着“亿”这个范围结束了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后面还有一个极点，在 <em style="color: #d75100; font-style: normal;">万</em> 上，也是同样的道理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再往上看一层，整个过程，波峰处的单位顺序是 <em style="color: #d75100; font-style: normal;">万</em> - <em style="color: #d75100; font-style: normal;">亿</em> - <em style="color: #d75100; font-style: normal;">万</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是否意味着子节点是这三个呢？
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">亿
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+答案是否定的，“万亿”，是“万” x “亿”，不是“万” + “亿”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以正确的结构应该是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">亿
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">万
+        <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+        <li style="margin: 10px auto;">x
+        </li>
+        <li style="margin: 10px auto;">x
+        </li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从 <em style="color: #d75100; font-style: normal;">万</em> - <em style="color: #d75100; font-style: normal;">亿</em> - <em style="color: #d75100; font-style: normal;">万</em> 要得到这样的结构，又有什么规则？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回溯。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果从左往右扫，即当碰到一个更大的单位时，需要回溯之前的节点，之前所有不比它大的单位，都应该成为其子节点。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+到此，一般性的规则就介绍完了。（其实就这么点）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+运用这个规则，就可以把中文数字，转成一个树结构，进而运算出阿拉伯数字结果。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 回溯的优化</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这点算是经验之谈吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当一个场景，如果你从左到右遍历，需要回溯处理。那么换个方向，从右到左遍历，可能就不需要回溯了。如果遍历对象长度很大，这通常会带来可观的性能提升，及代码编写上的简单。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看之前示例的图和树结果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="text-align: center;">
+<svg 
+ width="600" height="480"
+ viewBox="0 0 600 480"
+ xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+>
+
+<title>Gnuplot</title>
+<desc>Produced by GNUPLOT 5.2 patchlevel 2 </desc>
+
+<g id="gnuplot_canvas">
+
+<rect x="0" y="0" width="600" height="480" fill="none"/>
+<defs>
+
+	<circle id='gpDot' r='0.5' stroke-width='0.5'/>
+	<path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+	<path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+	<path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+	<rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+	<circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+	<use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+	<path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+	<use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+	<use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+	<use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+	<use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+	<path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+	<use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+	<filter id='textbox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='white' flood-opacity='1' result='bgnd'/>
+	  <feComposite in='SourceGraphic' in2='bgnd' operator='atop'/>
+	</filter>
+	<filter id='greybox' filterUnits='objectBoundingBox' x='0' y='0' height='1' width='1'>
+	  <feFlood flood-color='lightgrey' flood-opacity='1' result='grey'/>
+	  <feComposite in='SourceGraphic' in2='grey' operator='atop'/>
+	</filter>
+</defs>
+<g fill="none" color="white" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,401.4 L71.2,401.4 M575.0,401.4 L566.0,401.4  '/>	<g transform="translate(53.9,405.3)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,358.8 L71.2,358.8 M575.0,358.8 L566.0,358.8  '/>	<g transform="translate(53.9,362.7)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >100</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,316.2 L71.2,316.2 M575.0,316.2 L566.0,316.2  '/>	<g transform="translate(53.9,320.1)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >1000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,273.6 L71.2,273.6 M575.0,273.6 L566.0,273.6  '/>	<g transform="translate(53.9,277.5)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10000</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,231.0 L71.2,231.0 M575.0,231.0 L566.0,231.0  '/>	<g transform="translate(53.9,234.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">5</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,188.5 L71.2,188.5 M575.0,188.5 L566.0,188.5  '/>	<g transform="translate(53.9,192.4)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">6</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,145.9 L71.2,145.9 M575.0,145.9 L566.0,145.9  '/>	<g transform="translate(53.9,149.8)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">7</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,103.3 L71.2,103.3 M575.0,103.3 L566.0,103.3  '/>	<g transform="translate(53.9,107.2)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="end">
+		<text><tspan font-family="Arial" >10</tspan><tspan font-family="Arial"  font-size="9.6" dy="-6.00px">8</tspan><tspan font-size="12.0" dy="6.00"></tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,444.0 L62.2,435.0 M62.2,18.1 L62.2,27.1  '/>	<g transform="translate(62.2,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 0</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M141.1,444.0 L141.1,435.0 M141.1,18.1 L141.1,27.1  '/>	<g transform="translate(141.1,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 2</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M220.0,444.0 L220.0,435.0 M220.0,18.1 L220.0,27.1  '/>	<g transform="translate(220.0,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 4</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M298.9,444.0 L298.9,435.0 M298.9,18.1 L298.9,27.1  '/>	<g transform="translate(298.9,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 6</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M377.8,444.0 L377.8,435.0 M377.8,18.1 L377.8,27.1  '/>	<g transform="translate(377.8,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 8</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M456.7,444.0 L456.7,435.0 M456.7,18.1 L456.7,27.1  '/>	<g transform="translate(456.7,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 10</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M535.6,444.0 L535.6,435.0 M535.6,18.1 L535.6,27.1  '/>	<g transform="translate(535.6,465.9)" stroke="none" fill="black" font-family="Arial" font-size="12.00"  text-anchor="middle">
+		<text><tspan font-family="Arial" > 12</tspan></text>
+	</g>
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+	<g id="gnuplot_plot_1" ><title>gnuplot_plot_1</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='rgb(148,   0, 211)'  d='M101.6,316.2 L141.1,358.8 L180.5,273.6 L220.0,401.4 L259.4,103.3 L298.9,316.2 L338.3,358.8 L377.8,401.4
+		L417.2,273.6 L456.7,316.2 L496.1,358.8 L535.6,401.4  '/></g>
+	</g>
+	<g id="gnuplot_plot_2" ><title>gnuplot_plot_2</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt5' transform='translate(101.6,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(141.1,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(180.5,273.6) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(220.0,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(259.4,103.3) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(298.9,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(338.3,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(377.8,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(417.2,273.6) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(456.7,316.2) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(496.1,358.8) scale(9.00)' color='rgb(  0, 114, 178)'/>
+	<use xlink:href='#gpPt5' transform='translate(535.6,401.4) scale(9.00)' color='rgb(  0, 114, 178)'/>
+</g>
+	</g>
+	<g id="gnuplot_plot_3" ><title>gnuplot_plot_3</title>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<use xlink:href='#gpPt6' transform='translate(180.5,273.6) scale(9.00)' color='rgb(229,  30,  16)'/>
+	<use xlink:href='#gpPt6' transform='translate(259.4,103.3) scale(9.00)' color='rgb(229,  30,  16)'/>
+	<use xlink:href='#gpPt6' transform='translate(417.2,273.6) scale(9.00)' color='rgb(229,  30,  16)'/>
+</g>
+	</g>
+<g fill="none" color="white" stroke="rgb(229,  30,  16)" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="2.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="black" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+	<path stroke='black'  d='M62.2,18.1 L62.2,444.0 L575.0,444.0 L575.0,18.1 L62.2,18.1 Z  '/></g>
+<g fill="none" color="black" stroke="currentColor" stroke-width="1.00" stroke-linecap="butt" stroke-linejoin="miter">
+</g>
+</g>
+</svg>
+
+</div>
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">亿
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">万
+        <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+        <li style="margin: 10px auto;">x
+        </li>
+        <li style="margin: 10px auto;">x
+        </li>
+        </ul>
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">万
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;">x
+    </li>
+    <li style="margin: 10px auto;">x
+    <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+    </li>
+    </ul>
+</li>
+<li style="margin: 10px auto;">x
+</li>
+<li style="margin: 10px auto;">x
+</li>
+<li style="margin: 10px auto;">x
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从左到右遍历之所以要回溯，是因为相对于这个树结构，从左到右遍历的过程是后找到父节点的。当你确定了一个父节点之后，它的子节点你需要重新组织调整。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果我们把方向反过来，从右到左遍历的话，对于这个树，总是先遇到父节点。需要做的判断，仅仅是当前节点是否结束，然后开始一个新的父节点，并不需要不断折返来调整节点结构。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+新节点开始的规则也简单明了，就是碰到了一个比之前都大的单位。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这些规则弄明白之后，编码就相对容易了。剩下的更多时间，是处理各种不合逻辑的例外情况，毕竟，人说话是依赖“习惯”，而不是“逻辑”。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 编码</h1>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. 基本配置准备</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就是数字和单位的映射，一些信息可以从网上搜索到：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">num_map <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&#39;零&#39;</span>: <span style="color: #009999">0</span>,
+    <span style="color: #dd1144">u&#39;〇&#39;</span>: <span style="color: #009999">0</span>,
+    <span style="color: #dd1144">u&#39;两&#39;</span>: <span style="color: #009999">2</span>,
+    <span style="color: #dd1144">u&#39;一&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">u&#39;二&#39;</span>: <span style="color: #009999">2</span>, <span style="color: #dd1144">u&#39;三&#39;</span>: <span style="color: #009999">3</span>, <span style="color: #dd1144">u&#39;四&#39;</span>: <span style="color: #009999">4</span>, <span style="color: #dd1144">u&#39;五&#39;</span>: <span style="color: #009999">5</span>, <span style="color: #dd1144">u&#39;六&#39;</span>: <span style="color: #009999">6</span>, <span style="color: #dd1144">u&#39;七&#39;</span>: <span style="color: #009999">7</span>, <span style="color: #dd1144">u&#39;八&#39;</span>: <span style="color: #009999">8</span>, <span style="color: #dd1144">u&#39;九&#39;</span>: <span style="color: #009999">9</span>,
+    <span style="color: #dd1144">u&#39;壹&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">u&#39;贰&#39;</span>: <span style="color: #009999">2</span>, <span style="color: #dd1144">u&#39;叁&#39;</span>: <span style="color: #009999">3</span>, <span style="color: #dd1144">u&#39;肆&#39;</span>: <span style="color: #009999">4</span>, <span style="color: #dd1144">u&#39;伍&#39;</span>: <span style="color: #009999">5</span>, <span style="color: #dd1144">u&#39;陆&#39;</span>: <span style="color: #009999">6</span>, <span style="color: #dd1144">u&#39;柒&#39;</span>: <span style="color: #009999">7</span>, <span style="color: #dd1144">u&#39;捌&#39;</span>: <span style="color: #009999">8</span>, <span style="color: #dd1144">u&#39;玖&#39;</span>: <span style="color: #009999">9</span>,
+    <span style="color: #dd1144">u&#39;廿&#39;</span>: <span style="color: #009999">20</span>,
+    <span style="color: #dd1144">u&#39;卅&#39;</span>: <span style="color: #009999">30</span>,
+    <span style="color: #dd1144">u&#39;卌&#39;</span>: <span style="color: #009999">40</span>,
+    <span style="color: #dd1144">u&#39;圩&#39;</span>: <span style="color: #009999">50</span>,
+    <span style="color: #dd1144">u&#39;圆&#39;</span>: <span style="color: #009999">60</span>,
+    <span style="color: #dd1144">u&#39;进&#39;</span>: <span style="color: #009999">70</span>,
+    <span style="color: #dd1144">u&#39;枯&#39;</span>: <span style="color: #009999">80</span>,
+    <span style="color: #dd1144">u&#39;枠&#39;</span>: <span style="color: #009999">90</span>,
+}
+rank_map <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&#39;十&#39;</span>: <span style="color: #009999">10</span>, <span style="color: #dd1144">u&#39;百&#39;</span>: <span style="color: #009999">100</span>, <span style="color: #dd1144">u&#39;千&#39;</span>: <span style="color: #009999">1000</span>, <span style="color: #dd1144">u&#39;万&#39;</span>: <span style="color: #009999">10000</span>, <span style="color: #dd1144">u&#39;亿&#39;</span>: <span style="color: #009999">100000000</span>,
+    <span style="color: #dd1144">u&#39;拾&#39;</span>: <span style="color: #009999">10</span>, <span style="color: #dd1144">u&#39;佰&#39;</span>: <span style="color: #009999">100</span>, <span style="color: #dd1144">u&#39;仟&#39;</span>: <span style="color: #009999">1000</span>,
+    <span style="color: #dd1144">u&#39;兆&#39;</span>: <span style="color: #009999">10</span> <span style="color: #000000; font-weight: bold">**</span> <span style="color: #009999">16</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后面如果找到新的词，也可以直接添加进去。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. 解析中文</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一步做的事，是把原始中文字符转换成我们好处理的，中间状态的数据结构：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先用比较直接简单的例子来随时测试我们代码的基本功能，如： <em style="color: #d75100; font-style: normal;">四千五百万八千零一</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简单地使用一个 <em style="color: #d75100; font-style: normal;">dict</em> ，有 <em style="color: #d75100; font-style: normal;">type</em> 和 <em style="color: #d75100; font-style: normal;">value</em> 两个值就好。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+设计上，一点技巧，一是把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">0</code> 单独处理，因为其实我们知道 <em style="color: #d75100; font-style: normal;">零</em> 有些特殊，但还没有事例来说明它到底特殊在哪里，所以，给它一点特殊待遇，专门设计一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">zero</code> 的类型。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另一个，是在最后添加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">complete</code> 类型。这个明确的收尾信息，可以方便我们处理一些兜底工作，有助于更好的代码结构。（这个场景，类似于在一个迭代过程中，有一个临时容器。当迭代结束后，因为在迭代里面的代码并不知道迭代何时结束，所以一般你需要在迭代外再额外处理一下这个临时容器。如果在迭代过程中有一个明确的结束信号，比如明确知道这是最后一个条目了，那么在迭代内部就可以完成所有工作，代码会好看点。）
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;四千五百万八千零一&#39;</span>
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">parse</span>(s):
+
+    gen <span style="color: #000000; font-weight: bold">=</span> []
+
+    <span style="color: #000000; font-weight: bold">for</span> c <span style="color: #000000; font-weight: bold">in</span> s:
+        <span style="color: #000000; font-weight: bold">if</span> c <span style="color: #000000; font-weight: bold">in</span> num_map:
+            <span style="color: #000000; font-weight: bold">if</span> num_map[c] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+                gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;zero&#39;</span>})
+            <span style="color: #000000; font-weight: bold">else</span>:
+                gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: num_map[c]})
+
+        <span style="color: #000000; font-weight: bold">if</span> c <span style="color: #000000; font-weight: bold">in</span> rank_map:
+            gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: rank_map[c]})
+
+    gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;complete&#39;</span>})
+    <span style="color: #000000; font-weight: bold">return</span> gen
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+执行 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">parse</code> 可以得到这样的结果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">[
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">4</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">1000</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">5</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">100</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">10000</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">8</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">1000</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;zero&#39;</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">1</span>},
+    {<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;complete&#39;</span>}
+]
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于理想状态，这个结果足够我们进行接下来的工作了。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. 生成阿拉伯数字</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一步的一个正常过程，就是前面我们讲“规则”的过程。先做一个从左到右的正向遍历，不加回溯，处理一些最简单场景。接着加入更多场景，发现不加回溯搞不定。最后想到，换个方面遍历更直接方便。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+项目上的代码并不是一蹴而就的，中间会经历很多次的重构。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里就直接给出反向遍历的一个简单结果：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">generate</span>(token_list):
+
+    gen <span style="color: #000000; font-weight: bold">=</span> token_list[:<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>]
+    gen<span style="color: #000000; font-weight: bold">.</span>reverse()
+    gen<span style="color: #000000; font-weight: bold">.</span>append(token_list[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+
+    block <span style="color: #000000; font-weight: bold">=</span> []
+    level_rank <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+    current_rank <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+    <span style="color: #000000; font-weight: bold">for</span> o <span style="color: #000000; font-weight: bold">in</span> gen:
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;number&#39;</span>:
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> block:
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+            block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>]<span style="color: #000000; font-weight: bold">.</span>append(o[<span style="color: #dd1144">&#39;value&#39;</span>] <span style="color: #000000; font-weight: bold">*</span> current_rank)
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;rank&#39;</span>:
+            rank <span style="color: #000000; font-weight: bold">=</span> o[<span style="color: #dd1144">&#39;value&#39;</span>]
+
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> block:
+                level_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+                <span style="color: #000000; font-weight: bold">continue</span>
+
+            <span style="color: #000000; font-weight: bold">if</span> rank <span style="color: #000000; font-weight: bold">&gt;</span> level_rank:
+                level_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+            <span style="color: #000000; font-weight: bold">else</span>:
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank <span style="color: #000000; font-weight: bold">*</span> level_rank
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;zero&#39;</span>:
+            <span style="color: #000000; font-weight: bold">continue</span>
+
+        <span style="color: #000000; font-weight: bold">if</span> (o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;complete&#39;</span>):
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">isinstance</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>], <span style="color: #0086B3">list</span>):
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">sum</span>(block)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">token_list</code> 先作了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">reverse</code> 。
+</li>
+<li style="margin: 10px auto;">遍历过程中，小心处理 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">number</code> 值和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rank</code> 值就好。（这点可能需要反复调试和思考）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最终，这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">generate</code> 就可以得到我们期望的结果， <em style="color: #d75100; font-style: normal;">45008001</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不错的开始。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面一直在提“理想状况”，是我们的代码只是针对 <em style="color: #d75100; font-style: normal;">45008001</em> 这一个普通例子完成。接下来，像这种业务场景，我们就可以做很多的测试用例，然后来“测试驱动完善”了。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.4. 更多测试用例</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面的测试用例，绝大部分，是从： <a href="https://github.com/HaveTwoBrush/cn2an/blob/master/cn2an/cn2an_test.py" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/HaveTwoBrush/cn2an/blob/master/cn2an/cn2an_test.py</a> 这里获取的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">TEST_SUIT <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&quot;一&quot;</span>: <span style="color: #009999">1</span>,
+    <span style="color: #dd1144">u&quot;两&quot;</span>: <span style="color: #009999">2</span>,
+    <span style="color: #dd1144">u&quot;十&quot;</span>: <span style="color: #009999">10</span>,
+    <span style="color: #dd1144">u&quot;十一&quot;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&quot;一十一&quot;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&quot;一百一十一&quot;</span>: <span style="color: #009999">111</span>,
+    <span style="color: #dd1144">u&quot;一千一百一十一&quot;</span>: <span style="color: #009999">1111</span>,
+    <span style="color: #dd1144">u&quot;一万一千一百一十一&quot;</span>: <span style="color: #009999">11111</span>,
+    <span style="color: #dd1144">u&quot;一十一万一千一百一十一&quot;</span>: <span style="color: #009999">111111</span>,
+    <span style="color: #dd1144">u&quot;一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">1111111</span>,
+    <span style="color: #dd1144">u&quot;一千一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">11111111</span>,
+    <span style="color: #dd1144">u&quot;一亿一千一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">111111111</span>,
+    <span style="color: #dd1144">u&quot;一十一亿一千一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">1111111111</span>,
+    <span style="color: #dd1144">u&quot;一百一十一亿一千一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">11111111111</span>,
+    <span style="color: #dd1144">u&quot;一千一百一十一亿一千一百一十一万一千一百一十一&quot;</span>: <span style="color: #009999">111111111111</span>,
+    <span style="color: #dd1144">u&quot;壹&quot;</span>: <span style="color: #009999">1</span>,
+    <span style="color: #dd1144">u&quot;拾&quot;</span>: <span style="color: #009999">10</span>,
+    <span style="color: #dd1144">u&quot;拾壹&quot;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&quot;壹拾壹&quot;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&quot;壹佰壹拾壹&quot;</span>: <span style="color: #009999">111</span>,
+    <span style="color: #dd1144">u&quot;壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">1111</span>,
+    <span style="color: #dd1144">u&quot;壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">11111</span>,
+    <span style="color: #dd1144">u&quot;壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">111111</span>,
+    <span style="color: #dd1144">u&quot;壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">1111111</span>,
+    <span style="color: #dd1144">u&quot;壹仟壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">11111111</span>,
+    <span style="color: #dd1144">u&quot;壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">111111111</span>,
+    <span style="color: #dd1144">u&quot;壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">1111111111</span>,
+    <span style="color: #dd1144">u&quot;壹佰壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">11111111111</span>,
+    <span style="color: #dd1144">u&quot;壹仟壹佰壹拾壹亿壹仟壹佰壹拾壹万壹仟壹佰壹拾壹&quot;</span>: <span style="color: #009999">111111111111</span>,
+    <span style="color: #dd1144">u&quot;一百零一&quot;</span>: <span style="color: #009999">101</span>,
+    <span style="color: #dd1144">u&quot;一千零一&quot;</span>: <span style="color: #009999">1001</span>,
+    <span style="color: #dd1144">u&quot;一千零一十一&quot;</span>: <span style="color: #009999">1011</span>,
+    <span style="color: #dd1144">u&quot;一千一百零一&quot;</span>: <span style="color: #009999">1101</span>,
+    <span style="color: #dd1144">u&quot;一万零一&quot;</span>: <span style="color: #009999">10001</span>,
+    <span style="color: #dd1144">u&quot;一万零一十一&quot;</span>: <span style="color: #009999">10011</span>,
+    <span style="color: #dd1144">u&quot;一万零一百一十一&quot;</span>: <span style="color: #009999">10111</span>,
+    <span style="color: #dd1144">u&quot;一十万零一&quot;</span>: <span style="color: #009999">100001</span>,
+    <span style="color: #dd1144">u&quot;一百万零一&quot;</span>: <span style="color: #009999">1000001</span>,
+    <span style="color: #dd1144">u&quot;一千万零一&quot;</span>: <span style="color: #009999">10000001</span>,
+    <span style="color: #dd1144">u&quot;一千零一万一千零一&quot;</span>: <span style="color: #009999">10011001</span>,
+    <span style="color: #dd1144">u&quot;一千零一万零一&quot;</span>: <span style="color: #009999">10010001</span>,
+    <span style="color: #dd1144">u&quot;一亿零一&quot;</span>: <span style="color: #009999">100000001</span>,
+    <span style="color: #dd1144">u&quot;一十亿零一&quot;</span>: <span style="color: #009999">1000000001</span>,
+    <span style="color: #dd1144">u&quot;一百亿零一&quot;</span>: <span style="color: #009999">10000000001</span>,
+    <span style="color: #dd1144">u&quot;一千零一亿一千零一万一千零一&quot;</span>: <span style="color: #009999">100110011001</span>,
+    <span style="color: #dd1144">u&quot;一千亿一千万一千零一&quot;</span>: <span style="color: #009999">100010001001</span>,
+    <span style="color: #dd1144">u&quot;一千亿零一&quot;</span>: <span style="color: #009999">100000000001</span>,
+
+    <span style="color: #dd1144">u&quot;十万&quot;</span>: <span style="color: #009999">100000</span>,
+    <span style="color: #dd1144">u&quot;十万零一&quot;</span>: <span style="color: #009999">100001</span>,
+    <span style="color: #dd1144">u&quot;十亿零一万零一&quot;</span>: <span style="color: #009999">1000010001</span>,
+
+    <span style="color: #dd1144">u&quot;拾万零壹&quot;</span>: <span style="color: #009999">100001</span>,
+    <span style="color: #dd1144">u&quot;拾亿零壹万零壹&quot;</span>: <span style="color: #009999">1000010001</span>,
+
+    <span style="color: #dd1144">u&#39;一千一&#39;</span>: <span style="color: #009999">1100</span>,
+    <span style="color: #dd1144">u&#39;一千一零一&#39;</span>: <span style="color: #009999">1101</span>,
+    <span style="color: #dd1144">u&#39;一千零十亿&#39;</span>: <span style="color: #009999">101000000000</span>,
+    <span style="color: #dd1144">u&#39;一一&#39;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&#39;一二三&#39;</span>: <span style="color: #009999">123</span>,
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+拿着这些测试用例去验证 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">parse</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">generate</code> 肯定会发现很多异常的，错误的情况。再针对这些错误的用例，去补充，修改代码就好。语言不是数学，追求系统层面的完备我觉得没必要，特殊情况一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">if</code> 就行，实在不行，就再加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">if</code> 。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.5. 完整实现</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面是一个我多次修改后的一个相对完整的实现，已经通过上面列出的所有测试。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+
+num_map <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&#39;零&#39;</span>: <span style="color: #009999">0</span>,
+    <span style="color: #dd1144">u&#39;〇&#39;</span>: <span style="color: #009999">0</span>,
+    <span style="color: #dd1144">u&#39;两&#39;</span>: <span style="color: #009999">2</span>,
+    <span style="color: #dd1144">u&#39;一&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">u&#39;二&#39;</span>: <span style="color: #009999">2</span>, <span style="color: #dd1144">u&#39;三&#39;</span>: <span style="color: #009999">3</span>, <span style="color: #dd1144">u&#39;四&#39;</span>: <span style="color: #009999">4</span>, <span style="color: #dd1144">u&#39;五&#39;</span>: <span style="color: #009999">5</span>, <span style="color: #dd1144">u&#39;六&#39;</span>: <span style="color: #009999">6</span>, <span style="color: #dd1144">u&#39;七&#39;</span>: <span style="color: #009999">7</span>, <span style="color: #dd1144">u&#39;八&#39;</span>: <span style="color: #009999">8</span>, <span style="color: #dd1144">u&#39;九&#39;</span>: <span style="color: #009999">9</span>,
+    <span style="color: #dd1144">u&#39;壹&#39;</span>: <span style="color: #009999">1</span>, <span style="color: #dd1144">u&#39;贰&#39;</span>: <span style="color: #009999">2</span>, <span style="color: #dd1144">u&#39;叁&#39;</span>: <span style="color: #009999">3</span>, <span style="color: #dd1144">u&#39;肆&#39;</span>: <span style="color: #009999">4</span>, <span style="color: #dd1144">u&#39;伍&#39;</span>: <span style="color: #009999">5</span>, <span style="color: #dd1144">u&#39;陆&#39;</span>: <span style="color: #009999">6</span>, <span style="color: #dd1144">u&#39;柒&#39;</span>: <span style="color: #009999">7</span>, <span style="color: #dd1144">u&#39;捌&#39;</span>: <span style="color: #009999">8</span>, <span style="color: #dd1144">u&#39;玖&#39;</span>: <span style="color: #009999">9</span>,
+    <span style="color: #dd1144">u&#39;廿&#39;</span>: <span style="color: #009999">20</span>,
+    <span style="color: #dd1144">u&#39;卅&#39;</span>: <span style="color: #009999">30</span>,
+    <span style="color: #dd1144">u&#39;卌&#39;</span>: <span style="color: #009999">40</span>,
+    <span style="color: #dd1144">u&#39;圩&#39;</span>: <span style="color: #009999">50</span>,
+    <span style="color: #dd1144">u&#39;圆&#39;</span>: <span style="color: #009999">60</span>,
+    <span style="color: #dd1144">u&#39;进&#39;</span>: <span style="color: #009999">70</span>,
+    <span style="color: #dd1144">u&#39;枯&#39;</span>: <span style="color: #009999">80</span>,
+    <span style="color: #dd1144">u&#39;枠&#39;</span>: <span style="color: #009999">90</span>,
+}
+rank_map <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&#39;十&#39;</span>: <span style="color: #009999">10</span>, <span style="color: #dd1144">u&#39;百&#39;</span>: <span style="color: #009999">100</span>, <span style="color: #dd1144">u&#39;千&#39;</span>: <span style="color: #009999">1000</span>, <span style="color: #dd1144">u&#39;万&#39;</span>: <span style="color: #009999">10000</span>, <span style="color: #dd1144">u&#39;亿&#39;</span>: <span style="color: #009999">100000000</span>,
+    <span style="color: #dd1144">u&#39;拾&#39;</span>: <span style="color: #009999">10</span>, <span style="color: #dd1144">u&#39;佰&#39;</span>: <span style="color: #009999">100</span>, <span style="color: #dd1144">u&#39;仟&#39;</span>: <span style="color: #009999">1000</span>,
+    <span style="color: #dd1144">u&#39;兆&#39;</span>: <span style="color: #009999">10</span> <span style="color: #000000; font-weight: bold">**</span> <span style="color: #009999">16</span>
+}
+
+
+s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">u&#39;一兆零一&#39;</span>
+
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">convert</span>(s):
+    gen <span style="color: #000000; font-weight: bold">=</span> []
+    last_rank <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+
+    <span style="color: #999988">#十 起头,其它 rank 起头, 都要补一,否则后面逻辑无法统一解释</span>
+    <span style="color: #000000; font-weight: bold">if</span> s[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">in</span> rank_map:
+        gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">1</span>})
+
+    <span style="color: #000000; font-weight: bold">for</span> c <span style="color: #000000; font-weight: bold">in</span> s:
+        <span style="color: #000000; font-weight: bold">if</span> c <span style="color: #000000; font-weight: bold">in</span> num_map:
+            <span style="color: #000000; font-weight: bold">if</span> num_map[c] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+                <span style="color: #999988">#前面是数字,要补 rank , 1101</span>
+                <span style="color: #000000; font-weight: bold">if</span> gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;number&#39;</span>:
+                    gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #0086B3">int</span>(last_rank <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">10</span>)})
+
+                gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;zero&#39;</span>})
+            <span style="color: #000000; font-weight: bold">else</span>:
+                <span style="color: #999988">#连着两个数字, 如 一一</span>
+                <span style="color: #000000; font-weight: bold">if</span> gen <span style="color: #000000; font-weight: bold">and</span> (gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;number&#39;</span>):
+                    gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #009999">10</span>})
+                gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;number&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: num_map[c]})
+
+        <span style="color: #000000; font-weight: bold">if</span> c <span style="color: #000000; font-weight: bold">in</span> rank_map:
+
+            <span style="color: #999988"># 连续两个 rank ,合并</span>
+            <span style="color: #999988"># 十 有歧义,如果它前面带零不能合,如 一千零十亿, 还要把它改成数字</span>
+            <span style="color: #999988"># 不带零要合, 如 一十万零一</span>
+            last_rank <span style="color: #000000; font-weight: bold">=</span> rank_map[c]
+            <span style="color: #000000; font-weight: bold">if</span> gen <span style="color: #000000; font-weight: bold">and</span> gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;rank&#39;</span>:
+                <span style="color: #000000; font-weight: bold">if</span> (<span style="color: #0086B3">len</span>(gen) <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #009999">1</span>) <span style="color: #000000; font-weight: bold">and</span> (gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;value&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">10</span>) <span style="color: #000000; font-weight: bold">and</span> (gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">2</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;zero&#39;</span>):
+                    gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;number&#39;</span>
+                    gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: rank_map[c]})
+                <span style="color: #000000; font-weight: bold">else</span>:
+                    gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;value&#39;</span>] <span style="color: #000000; font-weight: bold">*=</span> rank_map[c]
+                <span style="color: #000000; font-weight: bold">continue</span>
+
+            gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: rank_map[c]})
+
+    <span style="color: #999988">#补末位的省略, 如 一千一</span>
+    <span style="color: #000000; font-weight: bold">if</span> gen <span style="color: #000000; font-weight: bold">and</span> <span style="color: #0086B3">len</span>(gen) <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #009999">1</span>:
+        <span style="color: #000000; font-weight: bold">if</span> (gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;number&#39;</span>) <span style="color: #000000; font-weight: bold">and</span> (gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">2</span>][<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;rank&#39;</span>):
+            gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;rank&#39;</span>, <span style="color: #dd1144">&#39;value&#39;</span>: <span style="color: #0086B3">int</span>(gen[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">2</span>][<span style="color: #dd1144">&#39;value&#39;</span>] <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">10</span>)})
+
+    gen<span style="color: #000000; font-weight: bold">.</span>reverse()
+    gen<span style="color: #000000; font-weight: bold">.</span>append({<span style="color: #dd1144">&#39;type&#39;</span>: <span style="color: #dd1144">&#39;complete&#39;</span>})
+
+    block <span style="color: #000000; font-weight: bold">=</span> []
+    level_rank <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+    current_rank <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+    <span style="color: #000000; font-weight: bold">for</span> o <span style="color: #000000; font-weight: bold">in</span> gen:
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;number&#39;</span>:
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> block:
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+            block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>]<span style="color: #000000; font-weight: bold">.</span>append(o[<span style="color: #dd1144">&#39;value&#39;</span>] <span style="color: #000000; font-weight: bold">*</span> current_rank)
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;rank&#39;</span>:
+            rank <span style="color: #000000; font-weight: bold">=</span> o[<span style="color: #dd1144">&#39;value&#39;</span>]
+
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> block:
+                level_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+                <span style="color: #000000; font-weight: bold">continue</span>
+
+            <span style="color: #000000; font-weight: bold">if</span> rank <span style="color: #000000; font-weight: bold">&gt;</span> level_rank:
+                level_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+            <span style="color: #000000; font-weight: bold">else</span>:
+                current_rank <span style="color: #000000; font-weight: bold">=</span> rank <span style="color: #000000; font-weight: bold">*</span> level_rank
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+                block<span style="color: #000000; font-weight: bold">.</span>append([])
+
+        <span style="color: #000000; font-weight: bold">if</span> o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;zero&#39;</span>:
+            <span style="color: #000000; font-weight: bold">continue</span>
+
+        <span style="color: #000000; font-weight: bold">if</span> (o[<span style="color: #dd1144">&#39;type&#39;</span>] <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;complete&#39;</span>):
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">isinstance</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>], <span style="color: #0086B3">list</span>):
+                block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">sum</span>(block[<span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span>])
+
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">sum</span>(block)
+
+
+<span style="color: #000000; font-weight: bold">if</span> <span style="color: #008080">__name__</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    <span style="color: #000000; font-weight: bold">print</span>(s, convert(s))
+
+
+<span style="color: #999988"># from: https://github.com/HaveTwoBrush/cn2an/blob/master/cn2an/cn2an_test.py</span>
+
+TEST_SUIT <span style="color: #000000; font-weight: bold">=</span> {
+    <span style="color: #dd1144">u&quot;一&quot;</span>: <span style="color: #009999">1</span>,
+    <span style="color: #dd1144">u&quot;两&quot;</span>: <span style="color: #009999">2</span>,
+
+    <span style="color: #000000; font-weight: bold">...</span>
+
+    <span style="color: #dd1144">u&#39;一千一&#39;</span>: <span style="color: #009999">1100</span>,
+    <span style="color: #dd1144">u&#39;一千一零一&#39;</span>: <span style="color: #009999">1101</span>,
+    <span style="color: #dd1144">u&#39;一千零十亿&#39;</span>: <span style="color: #009999">101000000000</span>,
+    <span style="color: #dd1144">u&#39;一一&#39;</span>: <span style="color: #009999">11</span>,
+    <span style="color: #dd1144">u&#39;一二三&#39;</span>: <span style="color: #009999">123</span>,
+}
+
+count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+error <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+<span style="color: #000000; font-weight: bold">for</span> c, v <span style="color: #000000; font-weight: bold">in</span> TEST_SUIT<span style="color: #000000; font-weight: bold">.</span>items():
+    r <span style="color: #000000; font-weight: bold">=</span> convert(c)
+    count <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+    <span style="color: #000000; font-weight: bold">if</span> v <span style="color: #000000; font-weight: bold">!=</span> r:
+        error <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+        <span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&#39;ERROR&#39;</span>, c, v, r)
+
+<span style="color: #000000; font-weight: bold">print</span>(<span style="color: #dd1144">&#39;SUM: {} ERROR: {}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(count, error))
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'han-number-convert';
+  var disqus_url = 'https://www.zouyesheng.com/han-number-convert.html';
+  var disqus_title = '汉字数字转阿拉伯数字';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABnUlEQVR4nN1XMa7bMAx9jAPIG30D
++SKx0SN1LODfqHBP1aVWchH5BvImA2peB2dqP/4UDi0XARz4wEc+ihTib9tP7ziBf80LLgDcgoZu
+wZUA4IsdWiTpyAA+AO/Iaod2Ajbpwa5J7Z0ViBLsmDwfj6zdG9l9flncD9EA+PbH2nlbtGfdHhpA
+sprXjSKC+1p9e9sCdpGzZW4kyUWZGPk0QwUsGrx7aPCAzrRlEox58kVykzCgYZHc2OV2wsW72F58
+QIHufTtgsp5nRTJ8e8P3tUDfekO0e56gP2Xvi6zV6/KquO8aIwMYc0MA1wRoMJ2TaJJ8xZceg8ro
+Hlu11VtFGZR0JBPGPFkqYNE5uZibRLL6Mlqrm6kMSmLMQAEM9QYumOBihi8DDmJNu0QdC7SuOmdg
+F5mT5V6icwIAj0ErYMwkSTJyJsY8eS5q2yUAHJ91884U7QQhCXbX1EIDCvDNck5ikx73/KvnnLHK
+p/yquB949bzuozCVYQvmaBepHoOegdtL4/5px84V85WOxwduOydx3AGJzDBWgPzHF9VvAtEQ14ee
+i78AAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2019 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
