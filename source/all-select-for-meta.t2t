@@ -1,0 +1,222 @@
+从“全选”说元信息的设计与应用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/all-select-for-meta.html
+%!format: !email
+%%toc
+
+
+
+# 什么是元信息 #
+
+
+在代码世界中，一般我们提到“元”， *meta* 这个词时，它的意义基本都是一样的，即指产生 XX 的 XX 。比如，元编程，就是实现用来产生代码的代码。再比如 Python 中有“元类”，这东西就是实例化之后可以得到“类”（普通类实例化之后得到“实例”）。这里说的“元信息”，指可以得到信息的那些信息，先不用纠结这里说的信息是什么。类似的例子，就像照片的 exif 信息，它就是照片的一种元数据，你用这些 exif 信息，在同样条件下，理论上可以拍出同样的照片（当然，自然界的光影条件没有“同样”）
+
+我们还可以从某它一些层面，去解释这个“元信息”的意义。比如失量图和位图，我们可以把前者看成它记录的是如何画图，即记录的是过程，把后者看成是画图的结果。当把规则设计好之后，从过程得到结果相对是容易的。所以要把失量图转成位图，也是容易的。但是反过来要想把位图转成失量图，逻辑上是不可行的，因为本身不存在过程信息，当初如何得到这个结果的过程已经丢失了。我们这样说的前提，是假设图的得到，是一笔一笔绘制出来的结果。（如果是相机那种，位图的像素点本身也是一种过程描述了）
+
+如果使用场景只在乎结果，自然不需要再保存过程信息。丢失过程信息的回报，可能是更小的文件尺寸，或者是更好兼容性等。
+
+提这些，是想说明，我们在实现一个系统，或者功能时，数据结构的设计对象，除了常规的以结果为导向设计外，还可以以过程为导向设计。当然，后者常常极具挑战，通常也有巨大的回报，它会使你的系统表现出惊人的扩展性。某些功能在以结果为导向的设计下，会觉得好难，但换一种形式，当你找到了实现了一种过程记录的方式后，也许实现这些功能就会变得非常自然，就是随手一写那种程度。
+
+接下来，我尝试以“全选”这个功能，来演示一下。
+
+
+
+# 全选的场景 #
+
+这里说的“全选”，是指针对一个不定的列表（也许是延迟加载，也许是分页），当我们点了“全选”之后，这个操作的结果就是所有成员，而不是当前能看到的部分成员。同时，对于单个成员也有是否选中的操作，即，你可以先“全选”，然后再取消某个成员的选择，那么结果应该是全部减去这一个成员。
+
+大概这个页面的意思：
+
+```text
+[v] 全选
+
+[v] A
+[v] B
+[ ] C
+[v] D
+[v] E
+
+< 1 / 100 >
+```
+
+点选了“全选”，取消选择了 *C* ，这时如果翻到第二页，那么结果是：
+
+```
+[v] 全选
+
+[v] A2
+[v] B2
+[v] C2
+[v] D2
+[v] E2
+
+< 2 / 100 >
+```
+
+延迟加载也类似。
+
+为了演示方便，我们先做一个数据的随机生成器：
+
+
+```javascript
+class ItemStore {
+    constructor(){
+        this.data = [];
+        this.isStop = false;
+        this.start();
+
+        return;
+        setInterval(() => {
+            console.log(this.fetch());
+        }, 2000);
+
+    }
+
+    fetch(){
+        return this.data.splice(0);
+    }
+
+    start(){
+        if(!!this.isStop){return}
+        const r = Math.random() * 1000 * 2;
+        setTimeout(() => {
+            const item = this.genItem();
+            this.data.push(item);
+            this.start();
+        }, r);
+    }
+
+    getRandomChar(){
+        const n = 65 + parseInt(Math.random() * 26, 10);
+        return String.fromCharCode(n);
+    }
+
+    randomChar(num){
+        const r = [];
+        for(let i = 0, l = num; i < l; i++){
+            r.push(this.getRandomChar())
+        }
+        return r.join('')
+    }
+
+    genItem(){
+        const obj = {
+            name: this.randomChar(8)
+        };
+        return obj;
+    }
+
+}
+```
+
+这里的 ``ItemStore`` 实例化之后，随时调用它的 ``fetch()`` ，将不定地返回一些信息。
+
+不加具体交互实现时，要做的东西大概就是：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>React</title>
+<script crossorigin src="https://s.zys.me/js/react/react.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/react-dom.min.js"></script>
+<script crossorigin src="https://s.zys.me/js/react/babel.min.js"></script>
+</head>
+<body>
+  <div id="place"></div>
+
+  <script type="text/babel">
+class ItemStore {
+...
+}
+  </script>
+
+  <script type="text/babel">
+    class Demo extends React.Component {
+      constructor(props){
+        super(props);
+        this.state = {itemList: []};
+        this.store = new ItemStore();
+        setInterval(() => {
+          const data = this.store.fetch();
+          this.setState({
+            itemList: [
+              ...this.state.itemList,
+              ...data
+            ]
+          })
+        }, 1000);
+      }
+
+      genAllAction(){
+        return (
+        <div>[ ] 全选</div>
+        )
+      }
+
+      genItemList(){
+        return this.state.itemList.map(o => {
+          return <div key={o.name}>[ ] {o.name}</div>
+        })
+      }
+
+      render(){
+        return (
+        <div>
+          <div>提交</div>
+          <div>---------------------</div>
+          {this.genAllAction()}
+          <div>---------------------</div>
+          <div>
+            {this.genItemList()}
+          </div>
+        </div>
+        )
+      }
+    }
+
+    ReactDOM.render(<Demo />, window['place']);
+  </script>
+</body>
+</html>
+```
+
+内容长这样：
+
+```text
+提交
+---------------------
+[ ] 全选
+---------------------
+[ ] JFSZZWYK
+[ ] RVATFDON
+[ ] VCYGSHYC
+[ ] WSJNCJCM
+[ ] WHYKSVIC
+[ ] GSXDBXGJ
+[ ] ZOWIRTES
+...
+```
+
+
+# 传统实现思路 #
+
+-
+
+
+
+# 记录过程的思路 #
+
+
+- 
+
+
+
+
+
+
+
