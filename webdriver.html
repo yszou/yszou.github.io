@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>WebDriver 和 Chrome Headless - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">WebDriver 和 Chrome Headless</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2020-03-12 02:03 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_blank">基本概念</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_blank">1.1. WebDriver</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_blank">1.2. Chrome 下的 WebDriver 实现</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_blank">1.3. Chrome Headless</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_blank">简单使用 Chrome Headless</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_blank">WebDriver 控制 Chrome Headless</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_blank">截图对比</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_blank">复用实例</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 基本概念</h1>
+
+<a class="anchor" name="toc2"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.1. WebDriver</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">WebDriver</em> 是 W3C 的一套规范，来源于 <em style="color: #d75100; font-style: normal;">Selenium</em> 这个自动化测试 Web 相关场景的项目。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<a href="https://w3c.github.io/webdriver/" style="color: #0184b7; text-decoration: none" target="_blank">https://w3c.github.io/webdriver/</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它定义了一套 Resuful 风格的，针对浏览器的，可用于编程控制行为，获取状态的服务接口（自动化测试最初的诉求）。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.2. Chrome 下的 WebDriver 实现</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Chrome</em> / <em style="color: #d75100; font-style: normal;">Chromium</em> 有单独的 WebDriver 实现： <a href="https://sites.google.com/a/chromium.org/chromedriver/" style="color: #0184b7; text-decoration: none" target="_blank">https://sites.google.com/a/chromium.org/chromedriver/</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应已安装的 Chrome 版本，下载 WebDriver 之后，是一个可执行文件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个可执行文件的作用，实际上是在本机实现了一套 HTTP 服务，默认在 9515 端口上，基本的列表在：<a href="https://chromium.googlesource.com/chromium/src/+/master/docs/chromedriver_status.md" style="color: #0184b7; text-decoration: none" target="_blank">https://chromium.googlesource.com/chromium/src/+/master/docs/chromedriver_status.md</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 POST 到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/session</code> 创建新会话之后（参数是 json 形式，需要带 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sessionId</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">capabilities</code>），创建成功之后，你可以看到一个新的 Chrome 被启动，通过对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sessionId</code> ，你就可以使用其它服务对这个 Chrome 进行操作了，包括打开指定 URL ，获取 DOM 状态，截图什么的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实际使用中，我们也可以直接使用 <em style="color: #d75100; font-style: normal;">Selenium</em> 模块，它有对这个 <em style="color: #d75100; font-style: normal;">WebDriver</em> 服务的封装。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">1.3. Chrome Headless</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Chrome 的“无头浏览器”模式，是指在没有 X 等图形桌面的环境下，执行完整的 Chrome 功能，通过命令行启动 Chrome 时，带上参数 <em style="color: #d75100; font-style: normal;">headless</em> 可以以“无头浏览器”模式启动。一般，直接在命令行使用，我们只是配合 <em style="color: #d75100; font-style: normal;">screenshot</em> 完成截图。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但加上前面介绍的 WebDriver ，我们可以在没有 X 的服务器上，启动并 Daemon 化一个 Chrome 浏览器，它可以做测试用，而这里我要说的，是把它当成一个图表渲染工具使用。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 简单使用 Chrome Headless</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 Chrome Headless 做图表渲染工具，简单来说，就是运用像 ECharts 这类工具，在 html - css - js - canvas / svg 这套运行于浏览器环境的技术体系下，完成需要的图表绘制。这在， Web 项目中，可能是一个平常的操作，但在服务端没有浏览器环境的下，要画出一个好看的，并且易于控制的图表，在以往，其实并不是容易的事。可编程控制的图表绘制，在 Python 中，一般方案是 <em style="color: #d75100; font-style: normal;">matplotlib</em> ，对于数据类图表应用，它已经很出色了。但如果你进去想要控制一些细节的话，其实也挻难的。总的来说，这类场景，即使是 Python ，即使有 matplotlib ，同样的数据类图表应用，也很难与浏览器上的，一众基于 canvas / svg 的方案相比（平衡投入与产出情况下）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+数据类图表应用，需要产出的大多是位图。利用 Chrome 的“无头浏览器”模式，直接截图就可以得到。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先完成一个 ECharts Demo 的页面， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.html</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+&lt;<span style="color: #000080">title</span>&gt;Echarts&lt;/<span style="color: #000080">title</span>&gt;
+&lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://s.zys.me/js/echarts/echarts.min.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span> <span style="color: #008080">style</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;width: 1000px; height: 800px;&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/javascript&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">var</span> option <span style="color: #000000; font-weight: bold">=</span> {
+      animation<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">false</span>,
+     ...
+    };
+    <span style="color: #000000; font-weight: bold">var</span> chart <span style="color: #000000; font-weight: bold">=</span> echarts.init(<span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+    chart.setOption(option);
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">python3 -m http.server</code> ，让它在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://localhost:8080/demo.html</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接着使用 Chrome ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">google-chrome --headless --disable-gpu --screenshot --hide-scrollbars --window-size<span style="color: #000000; font-weight: bold">=</span>1000x800 http://localhost:8000/demo.html
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（其它命令行参数，可以在这里找到： <a href="https://cs.chromium.org/chromium/src/headless/app/headless_shell_switches.cc" style="color: #0184b7; text-decoration: none" target="_blank">https://cs.chromium.org/chromium/src/headless/app/headless_shell_switches.cc</a>）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，就可以在当前目录，得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">screenshot.png</code> 的位图图表了。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. WebDriver 控制 Chrome Headless</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">selenium</em> 对 WebDriver 的封装，具体文档在： <a href="https://www.selenium.dev/selenium/docs/api/py/index.html" style="color: #0184b7; text-decoration: none" target="_blank">https://www.selenium.dev/selenium/docs/api/py/index.html</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先实现像命令行一样的功能：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">selenium</span> <span style="color: #000000; font-weight: bold">import</span> webdriver
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">selenium.webdriver.remote.webdriver</span> <span style="color: #000000; font-weight: bold">import</span> WebDriver
+
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">main</span>():
+    options <span style="color: #000000; font-weight: bold">=</span> webdriver<span style="color: #000000; font-weight: bold">.</span>ChromeOptions()
+    options<span style="color: #000000; font-weight: bold">.</span>binary_location <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;/usr/bin/google-chrome-stable&#39;</span>
+    <span style="color: #999988">#options.add_argument(&#39;headless&#39;)</span>
+    options<span style="color: #000000; font-weight: bold">.</span>add_argument(<span style="color: #dd1144">&#39;hide-scrollbars&#39;</span>)
+    options<span style="color: #000000; font-weight: bold">.</span>add_argument(<span style="color: #dd1144">&#39;window-size=1000x800&#39;</span>)
+    <span style="color: #999988">#options.add_experimental_option(&quot;detach&quot;, True)</span>
+
+
+    driver <span style="color: #000000; font-weight: bold">=</span> webdriver<span style="color: #000000; font-weight: bold">.</span>Chrome(<span style="color: #dd1144">&#39;/home/zys/chromedriver&#39;</span>, options<span style="color: #000000; font-weight: bold">=</span>options)
+    <span style="color: #999988">#driver = WebDriver(command_executor=&#39;http://127.0.0.1:9515&#39;, desired_capabilities=options.to_capabilities())</span>
+
+    driver<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;http://localhost:8000/demo.html&#39;</span>)
+    driver<span style="color: #000000; font-weight: bold">.</span>get_screenshot_as_file(<span style="color: #dd1144">&#39;/home/zys/selenium.png&#39;</span>)
+    <span style="color: #999988">#buffer = driver.get_screenshot_as_png()</span>
+    <span style="color: #999988">#print(buffer)</span>
+
+
+<span style="color: #000000; font-weight: bold">if</span> <span style="color: #008080">__name__</span> <span style="color: #000000; font-weight: bold">==</span> <span style="color: #dd1144">&#39;__main__&#39;</span>:
+    main()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个代码直接执行，不开 <em style="color: #d75100; font-style: normal;">headless</em> 选项情况下，执行完之后， Chrome 实例会销毁。如果使用 Remote 的方式连到 9515 ，则实例不会销毁，同时可以通过 <em style="color: #d75100; font-style: normal;">session_id</em> 属性得到会话标识。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要整合进应用也很容易：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">os.path</span>
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">.base</span> <span style="color: #000000; font-weight: bold">import</span> BaseHandler
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">.base_session</span> <span style="color: #000000; font-weight: bold">import</span> BaseSessionHandler
+<span style="color: #000000; font-weight: bold">from</span> <span style="color: #555555">app.config</span> <span style="color: #000000; font-weight: bold">import</span> CONF
+
+ENV <span style="color: #000000; font-weight: bold">=</span> CONF<span style="color: #000000; font-weight: bold">.</span>get(<span style="color: #dd1144">&#39;general&#39;</span>, <span style="color: #dd1144">&#39;env&#39;</span>)
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">HeadlessHandler</span>(BaseHandler):
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+        driver <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">getattr</span>(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>application, <span style="color: #dd1144">&#39;web_driver&#39;</span>, <span style="color: #999999">None</span>)
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> driver:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(<span style="color: #dd1144">&#39;no webdriver is running&#39;</span>)
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;url&#39;</span>, <span style="color: #999999">None</span>)
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> url:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(<span style="color: #dd1144">&#39;need a url&#39;</span>)
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        driver<span style="color: #000000; font-weight: bold">.</span>start_session(<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>application<span style="color: #000000; font-weight: bold">.</span>capabilities)
+        width <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #009999">1000</span>)
+        height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #009999">800</span>)
+
+        <span style="color: #000000; font-weight: bold">if</span> width <span style="color: #000000; font-weight: bold">and</span> height:
+            <span style="color: #000000; font-weight: bold">try</span>:
+                width <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(width)
+                height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">int</span>(height)
+                driver<span style="color: #000000; font-weight: bold">.</span>set_window_size(width, height)
+            <span style="color: #000000; font-weight: bold">except</span>:
+                <span style="color: #000000; font-weight: bold">pass</span>
+
+        driver<span style="color: #000000; font-weight: bold">.</span>get(url)
+        <span style="color: #0086B3">buffer</span> <span style="color: #000000; font-weight: bold">=</span> driver<span style="color: #000000; font-weight: bold">.</span>get_screenshot_as_png()
+        driver<span style="color: #000000; font-weight: bold">.</span>close()
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>set_header(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;image/png&#39;</span>)
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(<span style="color: #0086B3">buffer</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这整个应用中使用，需要稍加注意的，就是调度和部署的形式。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 中使用，需要作 <em style="color: #d75100; font-style: normal;">session</em> 的隔离。
+</li>
+<li style="margin: 10px auto;">启动一个 Chrome 实例，大概会占 150M - 200M 的内存。
+</li>
+<li style="margin: 10px auto;">一台机器上，可以只启动一个 <em style="color: #d75100; font-style: normal;">chrome_driver</em> ，通过 <em style="color: #d75100; font-style: normal;">--port</em> 指定监听的端口。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后，因为所有的 Chrome 实例，都是在 <em style="color: #d75100; font-style: normal;">chrome_driver</em> 那边管理的，所以，应用中启动了实例，但是应用停止，或者重启时，旧的实例，需要注意，记得手工清除掉，否则会一直占用资源。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">exit</span>(sign, frame):
+    <span style="color: #000000; font-weight: bold">if</span> web_driver:
+        web_driver<span style="color: #000000; font-weight: bold">.</span>quit()
+    server<span style="color: #000000; font-weight: bold">.</span>stop()
+    ioloop <span style="color: #000000; font-weight: bold">=</span> tornado<span style="color: #000000; font-weight: bold">.</span>ioloop<span style="color: #000000; font-weight: bold">.</span>IOLoop<span style="color: #000000; font-weight: bold">.</span>current()
+    ioloop<span style="color: #000000; font-weight: bold">.</span>add_callback(ioloop<span style="color: #000000; font-weight: bold">.</span>stop)
+
+signal<span style="color: #000000; font-weight: bold">.</span>signal(signal<span style="color: #000000; font-weight: bold">.</span>SIGTERM, <span style="color: #0086B3">exit</span>)
+signal<span style="color: #000000; font-weight: bold">.</span>signal(signal<span style="color: #000000; font-weight: bold">.</span>SIGINT, <span style="color: #0086B3">exit</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我是通过系统信号的方式，确保调用到实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">quit()</code> 方法。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 截图对比</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的 <em style="color: #d75100; font-style: normal;">WebDriver</em> 方式直接对比命令行 <em style="color: #d75100; font-style: normal;">Headless</em> 方式:
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Headless2Handler</span>(BaseHandler):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get</span>(<span style="color: #999999">self</span>):
+
+        url <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;url&#39;</span>, <span style="color: #999999">None</span>)
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> url:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(<span style="color: #dd1144">&#39;need a url&#39;</span>)
+            <span style="color: #000000; font-weight: bold">return</span>
+
+        width <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;width&#39;</span>, <span style="color: #009999">1000</span>)
+        height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_argument(<span style="color: #dd1144">&#39;height&#39;</span>, <span style="color: #009999">800</span>)
+
+        tf <span style="color: #000000; font-weight: bold">=</span> tempfile<span style="color: #000000; font-weight: bold">.</span>mktemp()
+        image_file <span style="color: #000000; font-weight: bold">=</span> tf <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;.png&#39;</span>
+        cmd <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;google-chrome --headless --hide-scrollbars --window-size={},{} --screenshot=&quot;{}&quot; --disable-gpu --no-sandbox {}&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(
+            width, height, image_file, url)
+        subprocess<span style="color: #000000; font-weight: bold">.</span>call(cmd, shell<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">True</span>)
+
+        data <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>
+        <span style="color: #000000; font-weight: bold">with</span> <span style="color: #0086B3">open</span>(image_file, <span style="color: #dd1144">&#39;rb&#39;</span>) <span style="color: #000000; font-weight: bold">as</span> f:
+            data <span style="color: #000000; font-weight: bold">=</span> f<span style="color: #000000; font-weight: bold">.</span>read()
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>set_header(<span style="color: #dd1144">&#39;content-type&#39;</span>, <span style="color: #dd1144">&#39;image/png&#39;</span>)
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>write(data)
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>finish()
+        os<span style="color: #000000; font-weight: bold">.</span>remove(image_file)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从效率上来说，结果两者是差不多的。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 复用实例</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用了 WebDriver ，理论上来说，一个 Headless 的 Chrome 实例，在整个应用的生命周期中，是可以只初始化启动一次的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面 <em style="color: #d75100; font-style: normal;">Headless</em> 的例子，每次请求都重复初始化 <em style="color: #d75100; font-style: normal;">sessionId</em> ，是因为如果直接复用实例，直接 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">driver.get(url)</code> ，则会报一个 <em style="color: #d75100; font-style: normal;">sessionId</em> 不合法的错误。怀疑是 <em style="color: #d75100; font-style: normal;">selenium</em> 或者 <em style="color: #d75100; font-style: normal;">Chrome</em> 自身的 BUG 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后来，想到了另一种绕过去的办法，就是实例中的页面只加载一次，之后，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">driver.execute_script(js_code)</code> 来控制页面内容，访问指定页面，可以使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">driver<span style="color: #000000; font-weight: bold">.</span>execute_script(<span style="color: #dd1144">&#39;location.href = &quot;{}&quot;&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(url));
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，这个 <em style="color: #d75100; font-style: normal;">driver</em> 的状态，就直接在每次请求之间被复用，省了初始化的巨大开销。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在我的一台捉襟见肘的服务器上，启动 Chrome，或者初始化会话，大概需要 4 秒。而复用 <em style="color: #d75100; font-style: normal;">driver</em> 之后，同样的逻辑，单个请求，就可以快 4 秒！
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同理，对于图表绘制场景，我们可以让 <em style="color: #d75100; font-style: normal;">driver</em> 在初始化后，访问 CDN 上的一个 HTML 页面，这个页面会加载 <em style="color: #d75100; font-style: normal;">ECharts</em> 之类的资源，同时在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">window</code> 上定义一个全局的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render(echarts_option)</code> 函数。 Web 服务的请求，可以带上完整的 <em style="color: #d75100; font-style: normal;">ECharts</em> 绘图配置，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">driver.execute_script()</code> 执行，然后截图。省去 Chrome 初始化的开销，这个得到绘图结果的过程可以极快，我的服务器上，浏览器里请求-响应完整的耗时，可以在 400ms 以内。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+真实的业务服务器上，估计可以 200ms 完成。这个水平应该可以 PK  Nodejs 上直接的 canvas API 兼容性方案了（让 ECharts 可以直接在 Nodejs 环境完成渲染），但是完整的浏览器页面的能力，完全超越仅 canvas API 的能力（试试用 canvas 画一个排版好的花哨的表格，有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;table&gt;</code> + CSS 能打？）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+200ms 的基准还要突破，一个思路，是在一个页面同时完成多个图表渲染，得到图表之后，应用层再按规则切割。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'webdriver';
+  var disqus_url = 'https://www.zouyesheng.com/webdriver.html';
+  var disqus_title = 'WebDriver 和 Chrome Headless';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABr0lEQVR4nN2XPW7cMBCFv7EWkDrq
+BtRFrLWb3GkBA5axAXKsiLsXoW5AdVxA2pfCSZO49ARI2BCYYsg38978mPjz3B4+MMK/ZkUz0M68
+RKy8CiBWvz+YJKBJ7d6/Da20uSJebcDK11gBSDa5x1dxWrprafIn+/3tHN6vY2FZv1xeBt/XUJLU
+Jk3oHs5qpc2TJTIzWLfYXZfbcDM7eGKTJN3DFjVDlCQ5Ykv9bp2VbxnCxO1oNjhyclzbvJrdBnta
+lbvLZ/n92GqF2B11gBGo5qluNPOalUojRojVNLlWrkLs4DRo5mVhpMmeeQPWp3DO9kCTu9TvnixR
+nJbwvQes7Edsca3K12WK63PZB+09tHNwVPd7JDvWNnWXcFjqY++YN5RKo0rYIiblNvlycuRkIS2H
+hXGdqDLfbhoOsapvck39L507qjucc3sPG3UMGxAcO87PHjAHZawQlXz7WzKzboRY1UMn37nEJHEt
++xBmoOKpN5QKsU2lye0cJjDfSAIwcjquz4tyHdfJHZsKYFLW3XdWJiiT+ibXx/7t2F3C9Df2AHQP
+G9V09puC7D/eqH4AYmv0iN0hZNsAAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2020 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
