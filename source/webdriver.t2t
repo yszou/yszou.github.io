@@ -1,0 +1,251 @@
+WebDriver 和 Chrome Headless
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/webdriver.html
+%!format: !email
+%%toc
+
+
+# 基本概念 #
+
+## WebDriver ##
+
+*WebDriver* 是 W3C 的一套规范，来源于 *Selenium* 这个自动化测试 Web 相关场景的项目。
+
+https://w3c.github.io/webdriver/
+
+它定义了一套 Resuful 风格的，针对浏览器的，可用于编程控制行为，获取状态的服务接口（自动化测试最初的诉求）。
+
+
+## Chrome 下的 WebDriver 实现 ##
+
+*Chrome* / *Chromium* 有单独的 WebDriver 实现： https://sites.google.com/a/chromium.org/chromedriver/
+
+对应已安装的 Chrome 版本，下载 WebDriver 之后，是一个可执行文件。
+
+这个可执行文件的作用，实际上是在本机实现了一套 HTTP 服务，默认在 9515 端口上，基本的列表在：https://chromium.googlesource.com/chromium/src/+/master/docs/chromedriver_status.md
+
+在 POST 到 ``/session`` 创建新会话之后（参数是 json 形式，需要带 ``sessionId`` 和 ``capabilities``），创建成功之后，你可以看到一个新的 Chrome 被启动，通过对应的 ``sessionId`` ，你就可以使用其它服务对这个 Chrome 进行操作了，包括打开指定 URL ，获取 DOM 状态，截图什么的。
+
+实际使用中，我们也可以直接使用 *Selenium* 模块，它有对这个 *WebDriver* 服务的封装。
+
+
+## Chrome Headless ##
+
+Chrome 的“无头浏览器”模式，是指在没有 X 等图形桌面的环境下，执行完整的 Chrome 功能，通过命令行启动 Chrome 时，带上参数 *headless* 可以以“无头浏览器”模式启动。一般，直接在命令行使用，我们只是配合 *screenshot* 完成截图。
+
+但加上前面介绍的 WebDriver ，我们可以在没有 X 的服务器上，启动并 Daemon 化一个 Chrome 浏览器，它可以做测试用，而这里我要说的，是把它当成一个图表渲染工具使用。
+
+
+
+# 简单使用 Chrome Headless #
+
+使用 Chrome Headless 做图表渲染工具，简单来说，就是运用像 ECharts 这类工具，在 html - css - js - canvas / svg 这套运行于浏览器环境的技术体系下，完成需要的图表绘制。这在， Web 项目中，可能是一个平常的操作，但在服务端没有浏览器环境的下，要画出一个好看的，并且易于控制的图表，在以往，其实并不是容易的事。可编程控制的图表绘制，在 Python 中，一般方案是 *matplotlib* ，对于数据类图表应用，它已经很出色了。但如果你进去想要控制一些细节的话，其实也挻难的。总的来说，这类场景，即使是 Python ，即使有 matplotlib ，同样的数据类图表应用，也很难与浏览器上的，一众基于 canvas / svg 的方案相比（平衡投入与产出情况下）。
+
+数据类图表应用，需要产出的大多是位图。利用 Chrome 的“无头浏览器”模式，直接截图就可以得到。
+
+先完成一个 ECharts Demo 的页面， ``demo.html`` ：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Echarts</title>
+<script crossorigin src="https://s.zys.me/js/echarts/echarts.min.js"></script>
+</head>
+<body>
+  <div id="app" style="width: 1000px; height: 800px;"></div>
+  <script type="text/javascript">
+    var option = {
+      animation: false,
+     ...
+    };
+    var chart = echarts.init(document.getElementById('app'));
+    chart.setOption(option);
+  </script>
+</body>
+</html>
+```
+
+然后 ``python3 -m http.server`` ，让它在 ``http://localhost:8080/demo.html`` 。
+
+接着使用 Chrome ：
+
+```bash
+google-chrome --headless --disable-gpu --screenshot --hide-scrollbars --window-size=1000x800 http://localhost:8000/demo.html
+```
+
+（其它命令行参数，可以在这里找到： https://cs.chromium.org/chromium/src/headless/app/headless_shell_switches.cc）
+
+这样，就可以在当前目录，得到一个 ``screenshot.png`` 的位图图表了。
+
+
+# WebDriver 控制 Chrome Headless #
+
+
+*selenium* 对 WebDriver 的封装，具体文档在： https://www.selenium.dev/selenium/docs/api/py/index.html
+
+先实现像命令行一样的功能：
+
+```python
+# -*- coding: utf-8 -*-
+
+from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
+
+def main():
+    options = webdriver.ChromeOptions()
+    options.binary_location = '/usr/bin/google-chrome-stable'
+    #options.add_argument('headless')
+    options.add_argument('hide-scrollbars')
+    options.add_argument('window-size=1000x800')
+    #options.add_experimental_option("detach", True)
+
+
+    driver = webdriver.Chrome('/home/zys/chromedriver', options=options)
+    #driver = WebDriver(command_executor='http://127.0.0.1:9515', desired_capabilities=options.to_capabilities())
+
+    driver.get('http://localhost:8000/demo.html')
+    driver.get_screenshot_as_file('/home/zys/selenium.png')
+    #buffer = driver.get_screenshot_as_png()
+    #print(buffer)
+
+
+if __name__ == '__main__':
+    main()
+```
+
+这个代码直接执行，不开 *headless* 选项情况下，执行完之后， Chrome 实例会销毁。如果使用 Remote 的方式连到 9515 ，则实例不会销毁，同时可以通过 *session_id* 属性得到会话标识。
+
+
+要整合进应用也很容易：
+
+```
+# -*- coding: utf-8 -*-
+
+import os.path
+from .base import BaseHandler
+from .base_session import BaseSessionHandler
+from app.config import CONF
+
+ENV = CONF.get('general', 'env')
+
+class HeadlessHandler(BaseHandler):
+
+    def get(self):
+        driver = getattr(self.application, 'web_driver', None)
+        if not driver:
+            self.write('no webdriver is running')
+            return
+
+        url = self.get_argument('url', None)
+        if not url:
+            self.write('need a url')
+            return
+
+        driver.start_session(self.application.capabilities)
+        width = self.get_argument('width', 1000)
+        height = self.get_argument('height', 800)
+
+        if width and height:
+            try:
+                width = int(width)
+                height = int(height)
+                driver.set_window_size(width, height)
+            except:
+                pass
+
+        driver.get(url)
+        buffer = driver.get_screenshot_as_png()
+        driver.close()
+
+        self.set_header('content-type', 'image/png')
+        self.write(buffer)
+```
+
+这整个应用中使用，需要稍加注意的，就是调度和部署的形式。
+
+- ``Handler`` 中使用，需要作 *session* 的隔离。
+- 启动一个 Chrome 实例，大概会占 150M - 200M 的内存。
+- 一台机器上，可以只启动一个 *chrome_driver* ，通过 *--port* 指定监听的端口。
+
+
+然后，因为所有的 Chrome 实例，都是在 *chrome_driver* 那边管理的，所以，应用中启动了实例，但是应用停止，或者重启时，旧的实例，需要注意，记得手工清除掉，否则会一直占用资源。
+
+```python
+def exit(sign, frame):
+    if web_driver:
+        web_driver.quit()
+    server.stop()
+    ioloop = tornado.ioloop.IOLoop.current()
+    ioloop.add_callback(ioloop.stop)
+
+signal.signal(signal.SIGTERM, exit)
+signal.signal(signal.SIGINT, exit)
+```
+
+我是通过系统信号的方式，确保调用到实例的 ``quit()`` 方法。
+
+
+
+# 截图对比 #
+
+上面的 *WebDriver* 方式直接对比命令行 *Headless* 方式:
+
+```python
+class Headless2Handler(BaseHandler):
+    def get(self):
+
+        url = self.get_argument('url', None)
+        if not url:
+            self.write('need a url')
+            return
+
+        width = self.get_argument('width', 1000)
+        height = self.get_argument('height', 800)
+
+        tf = tempfile.mktemp()
+        image_file = tf + '.png'
+        cmd = 'google-chrome --headless --hide-scrollbars --window-size={},{} --screenshot="{}" --disable-gpu --no-sandbox {}'.format(
+            width, height, image_file, url)
+        subprocess.call(cmd, shell=True)
+
+        data = ''
+        with open(image_file, 'rb') as f:
+            data = f.read()
+
+        self.set_header('content-type', 'image/png')
+        self.write(data)
+        self.finish()
+        os.remove(image_file)
+```
+
+从效率上来说，结果两者是差不多的。
+
+
+# 复用实例 #
+
+使用了 WebDriver ，理论上来说，一个 Headless 的 Chrome 实例，在整个应用的生命周期中，是可以只初始化启动一次的。
+
+前面 *Headless* 的例子，每次请求都重复初始化 *sessionId* ，是因为如果直接复用实例，直接 ``driver.get(url)`` ，则会报一个 *sessionId* 不合法的错误。怀疑是 *selenium* 或者 *Chrome* 自身的 BUG 。
+
+后来，想到了另一种绕过去的办法，就是实例中的页面只加载一次，之后，通过 ``driver.execute_script(js_code)`` 来控制页面内容，访问指定页面，可以使用：
+
+```python
+driver.execute_script('location.href = "{}"'.format(url));
+```
+
+这样，这个 *driver* 的状态，就直接在每次请求之间被复用，省了初始化的巨大开销。
+
+在我的一台捉襟见肘的服务器上，启动 Chrome，或者初始化会话，大概需要 4 秒。而复用 *driver* 之后，同样的逻辑，单个请求，就可以快 4 秒！
+
+同理，对于图表绘制场景，我们可以让 *driver* 在初始化后，访问 CDN 上的一个 HTML 页面，这个页面会加载 *ECharts* 之类的资源，同时在 ``window`` 上定义一个全局的 ``render(echarts_option)`` 函数。 Web 服务的请求，可以带上完整的 *ECharts* 绘图配置，通过 ``driver.execute_script()`` 执行，然后截图。省去 Chrome 初始化的开销，这个得到绘图结果的过程可以极快，我的服务器上，浏览器里请求-响应完整的耗时，可以在 400ms 以内。
+
+真实的业务服务器上，估计可以 200ms 完成。这个水平应该可以 PK  Nodejs 上直接的 canvas API 兼容性方案了（让 ECharts 可以直接在 Nodejs 环境完成渲染），但是完整的浏览器页面的能力，完全超越仅 canvas API 的能力（试试用 canvas 画一个排版好的花哨的表格，有 ``<table>`` + CSS 能打？）。
+
+200ms 的基准还要突破，一个思路，是在一个页面同时完成多个图表渲染，得到图表之后，应用层再按规则切割。
+
+
