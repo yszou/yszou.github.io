@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
 <head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
     <meta charset="UTF-8" />
     <title>Docker简单使用 - YS.Zou</title>
     <meta name="generator" content="http://txt2tags.org" />
@@ -13,28 +14,28 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">Docker简单使用</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2016-10-25 22:46 更新</span>
+                <span>2020-03-22 13:38 更新</span>
             </div>
         </div>
 
 <div class="toc">
 
   <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">安装</a>
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">安装</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">一些概念</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">一些概念</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">基本命令</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">基本命令</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">Dockerfile</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">Dockerfile</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">网络</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">网络</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">分区挂载和数据卷</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">分区挂载和数据卷</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">镜像服务器</a>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">镜像服务器</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">参考</a>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">参考</a>
   </li>
   </ol>
 
@@ -44,72 +45,55 @@
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 安装</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-照着官方文档 <a href="http://docs.docker.com/installation/ubuntulinux/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/installation/ubuntulinux/</a> 做吧.
+照着官方文档 <a href="https://docs.docker.com/install/linux/docker-ce/ubuntu/" style="color: #0184b7; text-decoration: none" target="_blank">https://docs.docker.com/install/linux/docker-ce/ubuntu/</a> 做吧.
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-一般就是:
+删除旧的包，如果有的话：
 </p>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">更新工具:
-</li>
-</ul>
-
-
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-get update
-$ sudo apt-get install apt-transport-https ca-certificates
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo apt-get remove docker docker-engine docker.io containerd runc
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">添加软件源的 KEY:
-</li>
-</ul>
-
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更新源，并安装依赖的工具：
+</p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 \
-                   --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo apt-get update
+sudo apt-get install \
+     apt-transport-https \
+     ca-certificates \
+     curl \
+     gnupg-agent \
+     software-properties-common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">添加软件源:
-<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
-</li>
-</ul>
-
-<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
-<tr>
-<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Ubuntu version</th>
-<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Repository</th>
-</tr>
-<tr>
-<td style="border: 1px solid gray; padding: 3px 10px;">Precise 12.04 (LTS)</td>
-<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-precise main</code></td>
-</tr>
-<tr>
-<td style="border: 1px solid gray; padding: 3px 10px;">Trusty 14.04 (LTS)</td>
-<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-trusty main</code></td>
-</tr>
-<tr>
-<td style="border: 1px solid gray; padding: 3px 10px;">Xenial 16.04 (LTS)</td>
-<td style="border: 1px solid gray; padding: 3px 10px;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">deb https://apt.dockerproject.org/repo ubuntu-xenial main</code></td>
-</tr>
-</table>
-
-<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;">更新源列表并安装:
-</li>
-</ul>
-
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+添加 Docker 的源：
+</p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$ sudo apt-get update
-$ sudo apt-get install docker-engine
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-get update
+sudo add-apt-repository \
+   &quot;deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable&quot;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo apt-get install docker-ce docker-ce-cli containerd.io
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -136,7 +120,7 @@ $ sudo gpasswd -a zys docker
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull ubuntu:14.04
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull ubuntu:18.04
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -149,7 +133,7 @@ $ sudo gpasswd -a zys docker
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run ubuntu:14.04 <span style="color: #0086B3">echo</span> <span style="color: #dd1144">&quot;Hello World&quot;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run ubuntu:18.04 <span style="color: #0086B3">echo</span> <span style="color: #dd1144">&quot;Hello World&quot;</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -207,7 +191,7 @@ $ sudo gpasswd -a zys docker
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -t ubuntu:14.04 nc -l 8000
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -t ubuntu:14.04 nc -l <span style="color: #009999">8000</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -274,7 +258,7 @@ e1d0c9193025  ubuntu:14.04  nc -l 8000  5 seconds ago  Up 4 seconds         sill
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">telnet 172.17.0.82 8000
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">telnet <span style="color: #009999">172</span>.17.0.82 <span style="color: #009999">8000</span>
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -502,7 +486,7 @@ docker 容器的网络, 是相对于实体机的私有网络. 在网桥配置下
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -p 18888:8888 zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p <span style="color: #009999">5000</span>:22 -p <span style="color: #009999">18888</span>:8888 zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -548,7 +532,7 @@ ssh root@realip -p5000
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /home/zys/temp:/root/volumn zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p <span style="color: #009999">5000</span>:22 -v /home/zys/temp:/root/volumn zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -561,7 +545,7 @@ ssh root@realip -p5000
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p <span style="color: #009999">5000</span>:22 -v /root/a --name<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -586,7 +570,7 @@ ssh root@realip -p5000
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p 5000:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -d -p <span style="color: #009999">5000</span>:22 --volumes-from<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">test</span> zys:common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -630,7 +614,7 @@ docker 的镜像服务器 <em style="color: #d75100; font-style: normal;">docker
 </ul>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-<em style="color: #d75100; font-style: normal;">docker-registry</em> 的实现也是开源的, 在 github <a href="https://github.com/dotcloud/docker-registry" style="color: #0184b7; text-decoration: none">https://github.com/dotcloud/docker-registry</a> 上拿下源码就可以跑起来.
+<em style="color: #d75100; font-style: normal;">docker-registry</em> 的实现也是开源的, 在 github <a href="https://github.com/dotcloud/docker-registry" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/dotcloud/docker-registry</a> 上拿下源码就可以跑起来.
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 拿下源码之后, 项目中有一个 Dockerfile 文件, 我们可以开始构建镜像了. build 之前, 因为 GFW 的原因, 我们可以先把 Dockerfile 调整一下, 包括两部分:
@@ -658,56 +642,56 @@ docker 的镜像服务器 <em style="color: #d75100; font-style: normal;">docker
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -p 5000:5000 registry
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker run -p <span style="color: #009999">5000</span>:5000 registry
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-访问 <a href="http://localhost:5000" style="color: #0184b7; text-decoration: none">http://localhost:5000</a> 能得到响应, 一个 <em style="color: #d75100; font-style: normal;">docker-registry</em> 服务就起来了.
+访问 <a href="http://localhost:5000" style="color: #0184b7; text-decoration: none" target="_blank">http://localhost:5000</a> 能得到响应, 一个 <em style="color: #d75100; font-style: normal;">docker-registry</em> 服务就起来了.
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 现在你可以把镜像提交到上面去:
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker tag xxx 127.0.0.1:5000/zephyr/common
-docker push 127.0.0.1:5000/zephyr/common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker tag xxx <span style="color: #009999">127</span>.0.0.1:5000/zephyr/common
+docker push <span style="color: #009999">127</span>.0.0.1:5000/zephyr/common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-完成之后, 在浏览器中访问 <a href="http://localhost:5000/v1/search" style="color: #0184b7; text-decoration: none">http://localhost:5000/v1/search</a> 可以看到列表.
+完成之后, 在浏览器中访问 <a href="http://localhost:5000/v1/search" style="color: #0184b7; text-decoration: none" target="_blank">http://localhost:5000/v1/search</a> 可以看到列表.
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 获取镜像:
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull 127.0.0.1:5000/zephyr/common
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">docker pull <span style="color: #009999">127</span>.0.0.1:5000/zephyr/common
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-<em style="color: #d75100; font-style: normal;">docker-registry</em> 本身是设计成一套 Web API 的, 具体文档在 <a href="http://docs.docker.com/reference/api/registry_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/registry_api/</a> .
+<em style="color: #d75100; font-style: normal;">docker-registry</em> 本身是设计成一套 Web API 的, 具体文档在 <a href="http://docs.docker.com/reference/api/registry_api/" style="color: #0184b7; text-decoration: none" target="_blank">http://docs.docker.com/reference/api/registry_api/</a> .
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-<em style="color: #d75100; font-style: normal;">docker</em> 本身的服务, 也是有一套基于网络的 API 可供使用的, 文档在 <a href="http://docs.docker.com/reference/api/docker_remote_api/" style="color: #0184b7; text-decoration: none">http://docs.docker.com/reference/api/docker_remote_api/</a> .
+<em style="color: #d75100; font-style: normal;">docker</em> 本身的服务, 也是有一套基于网络的 API 可供使用的, 文档在 <a href="http://docs.docker.com/reference/api/docker_remote_api/" style="color: #0184b7; text-decoration: none" target="_blank">http://docs.docker.com/reference/api/docker_remote_api/</a> .
 </p>
 
 <a class="anchor" name="toc8"></a>
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 参考</h1>
 
 <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-<li style="margin: 10px auto;"><a href="http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/" style="color: #0184b7; text-decoration: none">http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/</a>
+<li style="margin: 10px auto;"><a href="http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/" style="color: #0184b7; text-decoration: none" target="_blank">http://www.colorscode.net/2014/01/04/howto-build-image-with-automatic-startup-ssh-service-from-dockerfile/</a>
 </li>
-<li style="margin: 10px auto;"><a href="http://www.oschina.net/translate/docker-network-configuration" style="color: #0184b7; text-decoration: none">http://www.oschina.net/translate/docker-network-configuration</a>
+<li style="margin: 10px auto;"><a href="http://www.oschina.net/translate/docker-network-configuration" style="color: #0184b7; text-decoration: none" target="_blank">http://www.oschina.net/translate/docker-network-configuration</a>
 </li>
-<li style="margin: 10px auto;"><a href="http://opjasee.com/2014/06/27/docker-data-storage/" style="color: #0184b7; text-decoration: none">http://opjasee.com/2014/06/27/docker-data-storage/</a>
+<li style="margin: 10px auto;"><a href="http://opjasee.com/2014/06/27/docker-data-storage/" style="color: #0184b7; text-decoration: none" target="_blank">http://opjasee.com/2014/06/27/docker-data-storage/</a>
 </li>
-<li style="margin: 10px auto;"><a href="http://www.cnblogs.com/xguo/p/3829329.html" style="color: #0184b7; text-decoration: none">http://www.cnblogs.com/xguo/p/3829329.html</a>
+<li style="margin: 10px auto;"><a href="http://www.cnblogs.com/xguo/p/3829329.html" style="color: #0184b7; text-decoration: none" target="_blank">http://www.cnblogs.com/xguo/p/3829329.html</a>
 </li>
 </ul>
 
@@ -724,7 +708,7 @@ body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-ind
 </style>
     
 
-<script type="text/javascript" src="http://s.zys.me/js/jq/jquery.min.js"></script>
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
 <script type="text/javascript">
 
 $(function(){
@@ -817,7 +801,7 @@ $(function(){
     }
 
     function is_mobile(){
-        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
             return true;
         }
         return false;
@@ -1010,12 +994,12 @@ $(function(){
 <script type="text/javascript">
   var disqus_shortname = 'zys';
   var disqus_identifier = 'docker';
-  var disqus_url = 'http://zouyesheng.com/docker.html';
+  var disqus_url = 'https://www.zouyesheng.com/docker.html';
   var disqus_title = 'Docker简单使用';
 
   (function() {
    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-   dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>
@@ -1023,34 +1007,32 @@ $(function(){
     
 
 <script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-29492100-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
 </script>
     
 
-<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABoElEQVR4nN2XMY7bMBREHy0BdCoq
-XTr6JNbmWAGEmFkskGPsVUTnItQBFqA6CrA1KTZdXO4vEpZT8PNjZv4fOvH32Q4PQPjXUDQDfqaT
-37kIIDa7NzhJOCW4hoSXbpa95Ur0e1DhHCQ/M1n2BoCrP8bG2n/0vY/RKxBy/XYyrxZUkLstaABG
-Jctqcs7hKpFfFTbnekuVSJLmoKJciZIkM5WgmUvxc0i0UQmckrEm43qpUyQPRM4feO8D1FWWo1xa
-jgBNztTdO1NsYyV6VfDZljdJ8juX4nOdopdulrxduZ/WA7CNsV+2p9XQAQc0vBCy+thc7YSiIW89
-rt5fm4a6fGHdXPu0U8y2KVKd8HtIKCtFzsGUN+i0Pq23uH2Hxc+WvKGZrgATEBIy1SSSVLSHFBml
-0kZLvx3Iw/3kvi7KwP10zMOLpQPG2knPAHkgal63k3XmUu3URt2iz7azxEkiD9Pin9eepuFnsc5c
-UqK59/1m2NuflKXPb68AtOPwZp4nc51grLwPFEO/ZUk+VyJjhUYwziXgZy7FZ3NNuv/4R/Ub27gQ
-VgZDfG0AAAAASUVORK5CYII=
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABrUlEQVR4nN2XMY7bQAxFH1cGxt3o
+BuOLWPIeKWUAATsL+x65isZ7EekGo04GZP8U2S4uzSJhyYIE+Tn//zHxd9zeniTh38sWM9uz5NlO
+yw4zs4NjN5NEaUkQN4K0+c22g6VNmEBqf/yinAb3/R7bu2GzphfXfZ69LjmZtfeDbzdUJIVSh7R2
+NArSlla/2WRmAMRz/Xm4me08Z5MkldpMawdJkuQ2GxrjWfTKKUgSVhvPbqU2kx4xo6KN8IiuuMG9
+t/cK+44LsITJFbecNAJrXz8URlw3+Yjnib4232LQxey5ya8K6zXmOUg5qczy2+QbLLd+f2yBK8Ns
+Jz49NUBpN69WSatsl/SZzq5XUhsF1YG1ixk94tn5SqRSB4Ikd578mjf2cElcuR+Wvr14Kk4X7bB2
+DKC2mWKpL6r7NFQqhJEPScpg9cMTN0nSSKNQlJNKxRO3P54rbqxqB/ZExxfw7bn6OWPvc2ZlcfRc
+qFRSeMQtaYwb4MuTAHzNO+i4pDDSuPIkwLEdwGZNK8vNkyeJmrjCvFd7P2ByVNNvz2UK0+0U83w7
+varus7D/+Ef1G2AIAPtzWN9GAAAAAElFTkSuQmCC
 " title="本文二维码网址" /></div>
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="http://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2020 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
