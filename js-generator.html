@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
 <head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
     <meta charset="UTF-8" />
     <title>使用生成器展平异步回调结构，JS篇 - YS.Zou</title>
     <meta name="generator" content="http://txt2tags.org" />
@@ -13,28 +14,28 @@
             <h1 style="text-align: center; font-size: 26px; margin: 0;">使用生成器展平异步回调结构，JS篇</h1>
             <div class="user" style="margin: 20px auto; text-align: center;">
                 <span>邹业盛</span>
-                <span>2016-01-10 16:55 更新</span>
+                <span>2020-03-25 18:31 更新</span>
             </div>
         </div>
 
 <div class="toc">
 
   <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
-  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none">前言</a>
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">前言</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none">期望的结果</a>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">期望的结果</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none">生成器的工作方式</a>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">生成器的工作方式</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none">尝试处理异步结构</a>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">尝试处理异步结构</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none">更通用一点</a>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">更通用一点</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none">更有想像力一点</a>
+  <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">更有想像力一点</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none">事件环境下的同步思维</a>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">事件环境下的同步思维</a>
   </li>
-  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none">最后的完整代码</a>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">最后的完整代码</a>
   </li>
   </ol>
 
@@ -44,10 +45,10 @@
 <h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 前言</h1>
 
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-2012 年的时候，我去详细了解过 Python 的 Tornado 框架中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">gen.py</code> 这套工具， <a href="http://www.zouyesheng.com/generator-for-async.html" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/generator-for-async.html</a> ，因为觉得它用于异步环境的编程中实在太方便了，而且，适用性上几乎没有成本，你的定义部分代码完全不需要因为这套工具而作任何改动，这套工具完全是“使用时”的一种可选形式。
+2012 年的时候，我去详细了解过 Python 的 Tornado 框架中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">gen.py</code> 这套工具， <a href="http://www.zouyesheng.com/generator-for-async.html" style="color: #0184b7; text-decoration: none" target="_blank">http://www.zouyesheng.com/generator-for-async.html</a> ，因为觉得它用于异步环境的编程中实在太方便了，而且，适用性上几乎没有成本，你的定义部分代码完全不需要因为这套工具而作任何改动，这套工具完全是“使用时”的一种可选形式。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-那时我想的就是，如果在遍地是 <em style="color: #d75100; font-style: normal;">callback</em> 的 Javascript 中也有这样的东西可用就好了。后来每每跟人谈论起 js 中的回调控制工具时，我都会提到老赵之前做的 <em style="color: #d75100; font-style: normal;">wind.js</em> <a href="https://github.com/JeffreyZhao/wind" style="color: #0184b7; text-decoration: none">https://github.com/JeffreyZhao/wind</a> ，这东西牛逼爆了。生成器是一个语法机制，在没有生成器的情况下， <em style="color: #d75100; font-style: normal;">wind.js</em> 自己作编译，实现了 CPS 变换的功能，我觉得这几乎是原有 js 语法规则基础上，解决异步回调的结构控制问题的极限了。（不过好像 js 社区更热衷于 Promise 这种程度的工具，真是不能理解）
+那时我想的就是，如果在遍地是 <em style="color: #d75100; font-style: normal;">callback</em> 的 Javascript 中也有这样的东西可用就好了。后来每每跟人谈论起 js 中的回调控制工具时，我都会提到老赵之前做的 <em style="color: #d75100; font-style: normal;">wind.js</em> <a href="https://github.com/JeffreyZhao/wind" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/JeffreyZhao/wind</a> ，这东西牛逼爆了。生成器是一个语法机制，在没有生成器的情况下， <em style="color: #d75100; font-style: normal;">wind.js</em> 自己作编译，实现了 CPS 变换的功能，我觉得这几乎是原有 js 语法规则基础上，解决异步回调的结构控制问题的极限了。（不过好像 js 社区更热衷于 Promise 这种程度的工具，真是不能理解）
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 后来 js 新的标准中，加入了“生成器 Generator”这个机制， Chrome 和 Firefox 目前也都支持了。前段时间看它时，发现跟 Python 中的生成器工作方式基本是一样的，只有“返回值”那块，js 是用一个对象包装了一下。于是，我就想，把 Tornado 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">gen.py</code> 这套工具在 js 中实现吧。
@@ -68,7 +69,7 @@ Tornado 的 <code style="margin: auto 3px; color: #228b22; font-family: monospac
 
 <div class="code" style="margin: 25px auto;">
 <div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">callback</span>(response):
-    <span style="color: #000000; font-weight: bold">print</span> response
+    <span style="color: #0086B3">print</span> response
 
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url, cb):
     fetch(url, cb)
@@ -83,10 +84,10 @@ get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#3
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #3c5d5d; font-weight: bold">@gen.engine</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #3c5d5d; font-weight: bold">@gen</span><span style="color: #000000; font-weight: bold">.</span>engine
 <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_http_response</span>(url):
     response <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> gen<span style="color: #000000; font-weight: bold">.</span>Task(fetch, url)
-    <span style="color: #000000; font-weight: bold">print</span> response
+    <span style="color: #0086B3">print</span> response
 
 get_http_response(<span style="color: #dd1144">&#39;http://www.zouyesheng.com&#39;</span>)
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
@@ -387,7 +388,7 @@ run()
 这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Task</code> 的实现是一个典型的 Currying 化的应用，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Task</code> 中把函数扒得只剩 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">callback</code> 参数，这样在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">engine</code> 中就可以简单地无差别处理了。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
-如果对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Array.prototype.slice.call(arguments, 1)</code> 这行的使用不太明白，可以参见 <a href="http://www.zouyesheng.com/js-context.html#toc3" style="color: #0184b7; text-decoration: none">http://www.zouyesheng.com/js-context.html#toc3</a> 。
+如果对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Array.prototype.slice.call(arguments, 1)</code> 这行的使用不太明白，可以参见 <a href="http://www.zouyesheng.com/js-context.html#toc3" style="color: #0184b7; text-decoration: none" target="_blank">http://www.zouyesheng.com/js-context.html#toc3</a> 。
 </p>
 <p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
 到这里，最开始的那个期望的目标，我们已经实现，现在我们可以这样使用：
@@ -781,9 +782,9 @@ engine(<span style="color: #000000; font-weight: bold">function*</span>(){
 </p>
 
 <div class="code" style="margin: 25px auto;">
-<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;a&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
-<span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;b&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
-<span style="color: #000080">&lt;div</span> <span style="color: #008080">id=</span><span style="color: #dd1144">&quot;c&quot;</span><span style="color: #000080">&gt;&lt;/div&gt;</span>
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;a&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;b&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+&lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;c&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
 </pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
 
 </div>
@@ -1086,7 +1087,7 @@ $(function(){
     }
 
     function is_mobile(){
-        if(window.devicePixelRatio > 1 || navigator.userAgent.indexOf('Android') >= 0){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
             return true;
         }
         return false;
@@ -1304,20 +1305,20 @@ ga('send', 'pageview');
 </script>
     
 
-<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsklEQVR4nN2XMY6cQBBFXw1IkDU3
-aC5iWB9pQ0usl9XsPXwU07MXgRt0RwYJ5jsYO/I4mw7sCn/wS6+k31Vt4s/aTndE+PfUYGY1aVzs
-KZWYmbUZu5kkQgNc3E4l7fnYSkiNxwTVj+b5G+FpyD7fT83RbsWi+cG+99VLGpdVzdHm7YaCpCrE
-wQOFKmn3az42mRkAVYhf2s2szMkmSQqx0Ap4SVI2NjS5s+g13maKxSJftxNd2he9NXjgsOrwW750
-o6Adeo1e0kh1JSNbiZpnPweDek1SfXmM79/YrrzOVYjFrCtA58acCfhQ6dNXN4Jp9AqL5qwJGD0d
-hSTt0EfysaGJQmuv83zL2+TOORNg8bCatPXV1Y0L3aN875augBQHNDllfyc/4oCdXOkhvbSpb95z
-bpzOlV6H7dC58+xCfJDvffWS9qW+UAQr4pttp5Q5AZImCmkCr5AzAb9vLoYFGKhx53xsv26uDtg+
-R1hJGXfACZK1WDza6nvDYr3PygZAaN6hV+mriawJAKBzu6/VvM7ZJ+k03y68S3ppMVU5Jykzw1RS
-d25ctqdH+d4r+49/VD8ByLz8hwfym/MAAAAASUVORK5CYII=
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABnElEQVR4nN2XMY7jMAxFH8cBlE65
+gXyRtXfulSDe8RxMzlxEvoHcOYCTP0Wyze6Uw2L3NwJY8OPzkwRl4m9cX74Iwr8XncxsrwMzl8Va
+M7PWjQ1NkkKOA3ScFaQtrY5slRTuNMI0pJA5+rE9o5c4zOjQlG/O+3W0n699yMvw3Xn/xMO3qZ7L
+StySr28vyMyAWx+neeBqtvPU9sSW1l5DkiQ59mSGBBxZu6iydnH0ZJvqWStRRRnAfOctA4/p7iUF
+50qqktaORpKGFCTXSt7jQLjHsQCN1o6zH9sLVmF5na+tMrd2/1FvnltZUqGXtBK3JFVXbSw7lLm1
+WIXrz+g63TluhMwRuih5a7P6zvJaG4W3xdr9dHD1bdJY6CDRcS449ySAchyLxkpaP+Tq21QbhUlj
+Cfc4gFU8N5ckKXNEk7akjCPb8+ay2sh627GHc3G8FEwSPw63FtPASjy59mQlhRw36DgCvpV8oil6
+4z2tXRz8enL3eGy2NJuY9zBunv+AqIIOTVHmV++r7ffNFU/t9XRoCpdl82Oz//hH9Qk8LA2VWnhB
+8wAAAABJRU5ErkJggg==
 " title="本文二维码网址" /></div>
     
 
 <div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
-&copy;2010-2016 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+&copy;2010-2020 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
 </div>
     
 <!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
