@@ -1,0 +1,221 @@
+Python 的 asyncio
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 概述 #
+
+*asyncio* 是 Python 在 3.4 版本（2014 年）添加的一个自带的标准模块。如果以前在 Python 中用过 *Twisted* 或者 *Tornado* ，那么你大概已经知道这东西是干嘛用的了。
+
+以 *Tornado* 来说的话，它的 ``IOLoop`` ， ``gen.asynchronous`` ， ``gen.Task`` 等等，曾经提供了一套非常方便的异步处理机制（2011 年时候吧）。不过 *Tornado* 只是一个第三方的模块，很多时候还被人只用在 Web 应用领域，当时的一个情况就是，你可以在 Tornado 下为 Redis 写一个异步的客户端的，但是它只是 Tornado Only 的。以前我在项目中和别人合作的时候，我是不能用别人的 SDK 的，因为 SDK 中的网络处理都是同步的，要求别人提供基于 Tornado IOLoop 的异步 SDK 也不合理，所以那时起我就养成了一个习惯，先把 SDK 放一边，文档请先给我，排除个别 SDK 代码真的太尴尬外，那时真的是在项目中容不下同步 IO 的。
+
+补充一点以前的经历，是想说明，在我看来， *asyncio* 的意义不在于提供了一组工具，在此之前， *Twisted* 中早就有相应功能了，而是， *asyncio* 作为“标准库”，它代表着 Python 下的异步 IO 处理的一个规范。有了这个规范， Python 下的所有异步 IO 场景，就可以打通。而不再是，当你找别人要异步 SDK 时，还纠结用的是 *Twisted* ，还是 *Tornado* ，或者其它的什么模块。事实上， *asyncio* 出来之后， Tornado 的版本迭代中，都一直是在往 *asyncio* 的方向走的。从 PEP-3156 的文档中，https://www.python.org/dev/peps/pep-3156/ ，也能看到更多当年的思考。
+
+现在去看 *asyncio* 的文档， https://docs.python.org/3.7/library/asyncio.html ，觉得它的内容已经很丰富了，还加入了 ``async`` ``await`` 新的语法在里面。而我的观念，还在 ``yield`` 那个时候，同时我到现在仍然认为， ``yield`` 生成器，配合传统的 ``callback`` 定义的方式，是一种简单，兼容性好，功能强大的机制。没有 *Future* ，没有 ``async`` ``await`` ，没有 ``yield from`` ，一样把问题解决得很好了。
+
+当然，时代是在变以的，作为使用者，不曾对编码苦恼，觉得 ``print`` 远比 ``print()`` 方便的我，也对 Python 3.x 没啥感觉，但 2.x 已经过去了。
+
+现在我觉得代码前面挂一个 ``async`` 真丑，但它已经早来了。
+
+下面我会按我的理解，去补一些缺失的东西，然后细细了解一下 *asyncio* 。
+
+
+# yield #
+
+关于生成器不用多说了，自认为还是会用的： https://www.zouyesheng.com/generator-for-async.html
+
+一个例子：
+
+```python
+# -*- coding: utf-8 -*-
+
+def f():
+    print('start')
+    i = yield 1
+    print(i, 'yield return')
+
+
+g = f()
+r = g.send(None)
+print(r, 'first')
+r = g.send('xxx')
+print(r, 'last')
+```
+
+``yield`` 实质上是两个执行序列的交替通信（是不是和 ``callback`` 绝配）。
+
+再给个例子：
+
+```python
+# -*- coding: utf-8 -*-
+
+import time
+
+def fa():
+    while True:
+        i = yield 'a'
+        print('a => ', i)
+
+
+def fb():
+    while True:
+        i = yield 'b'
+        print('b => ', i)
+
+a = fa()
+b = fb()
+
+v = a.send(None)
+v += b.send(None)
+
+while True:
+    v += a.send(v)
+    v += b.send(v)
+    time.sleep(1)
+```
+
+
+
+# yield from #
+
+``yield from`` 是 Python 3.3 新加的语法。
+
+``yield from [1,2,3]`` 这种静态的方式就不多说了，它只是把多个 ``yield x`` 简写成一行而已。与 ``yield`` 一样，生成器的重点是考虑运行时的多个动态状态之间的通信。
+
+``yield from`` 的作用，就是像一个连接生成器与外部环境的“桥”，把生成器吐出的值，及它可以接收的值包装起来了：
+
+
+```python
+# -*- coding: utf-8 -*-
+
+import time
+
+def fa():
+    v = ''
+    c = 0
+    while True:
+        v += yield v
+        c += 1
+        if c == 5:
+            return 'finish'
+
+
+def f():
+    r = yield from fa()
+    print(r)
+
+
+g = f()
+r = g.send(None)
+while True:
+    r = g.send('-')
+    print(r)
+    time.sleep(1)
+```
+
+``f()`` 中同样的功能，不用 ``yield from`` 也可以的：
+
+```python
+def f():
+    g = fa()
+    s = g.send(None)
+    while True:
+        s = yield s
+        s = g.send(s)
+
+    #r = yield from fa()
+    #print(r)
+```
+
+不过，这样就多了一个 ``while True`` ，而且还没法直接处理 ``return 'finsih'`` 。
+
+
+
+# Event Loop 和 Future #
+
+*Event Loop* 是异步环境必须的一个执行上下文。
+
+比如，对于：
+
+```python
+def f(callback):
+    ...
+
+f(lambda: None)
+```
+
+``f()`` 执行完之后，这段代码从顺序角度看，就执行完毕了。但是从逻辑上来说，传入的 ``callback`` ，可能还没有被调用，整个代码的逻辑并没有结束。事实上，我们是无法知道 ``callback`` 会不会被调用，什么时候被调用。所以， Python 中要处理异步环境，就需要一个显示的，明确知道何时可以结束，或者永远不结束的执行上下文。 *Tornado* 提供了 ``IOLoop`` ，在 ``asyncio`` 中， ``asyncio.run()`` 和 ``asyncio.get_running_loop()`` 是相关的作用。
+
+
+*Future* 的行为，类似于 js 中的 *Promise* 。它在 Python 中，作用像是一个接口规范，作为 ``asyncio`` 提供的底层 API ，现在上层应用一般是不会直接用到的。
+
+我以前使用 tornado 时，是先用了 ``gen`` 那套工具，后面 tornado 才加入的 *Future* ，所以我一般不太明白在已经有了 ``yield`` 语法支持下的情况，为什么还要搞一套的 *Future* ，除非在 ``yield`` 语法之前， *Future* 的使用与定义就已经存在了。后面更像是传统一样，便把它作为异步编程的一个底层工具融入了“标准”。
+
+比较 *Future* 和 *Promise* ，就像是对象风格与函数风格去做同一件事的作法一样。在 *Future* 中，可以做的事：
+
+- 通过 ``add_done_callback()`` 添加回调函数。
+- 通过 ``set_result()`` 和 ``set_exception()`` 配置结果或者异常。
+- ...等
+
+
+相比 *Promise* 的 API 风格， *Future* 是明确更直观的。（ Python 中的匿名函数太别扭， *Promise* 那套也不适用， *Future* 这类风格更合适）
+
+最后，在 ``asyncio`` ，有一个 *awaitable* 的概念，表示可以搭配 ``await`` 语法使用的对象， *Future* 是一种 *awaitable* 的对象。
+
+
+# async 和 await #
+
+这一组语法是在 Python 3.5 中加入的，专门用于处理“并发”场景的语法（注意区分，异步和并发，不同范围的概念）。
+
+
+``async def`` 总是定义一个并发函数，哪怕它里面并没有 ``await`` 语句：
+
+```python
+async def f():
+    return 123
+
+print(f())
+```
+
+上面代码是合法的。或者不一样点：
+
+```python
+import asyncio
+
+async def f():
+    print('go')
+    await asyncio.sleep(5)
+    print(123)
+
+
+asyncio.run(f())
+
+async def a():
+    await asyncio.gather(f(), f(), f(), f(), f(), f())
+
+print('ok')
+asyncio.run(a())
+```
+
+``async`` 和 ``await`` 配合，再加上 ``asyncio`` 中提供的流程调度工具，并发/异步场景处理起来就非常方便了。
+
+
+``async def`` 是定义并发函数，对应的语法，还有 ``async with`` 和 ``async for`` 。
+
+
+## async for ##
+
+``async for`` 作用与 ``for`` 相同，只不用它作用于异步的迭代器。异步迭代器需要使用 ``__aiter__`` 和 ``__anext__`` 这两个参照传统 iterable 对象的方法。
+
+
+
+
+
+
+
+
