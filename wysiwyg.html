@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>前端可视化编辑器的实现套路(未完待续) - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">前端可视化编辑器的实现套路(未完待续)</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2020-05-13 13:23 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">关于可视化编辑器</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">最简单便最核心的概念</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">2.1. Placeholder</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">2.2. Message</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">堆积组件</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">3.1. 一个简单组件的流程</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">3.2. move</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">3.3. resize</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">3.4. 单选和多选</a>
+      <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+      <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">3.4.1. 单选中</a>
+      </li>
+      <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">3.4.2. 多选中</a>
+      </li>
+      </ul>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">3.5. 提升下降</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 关于可视化编辑器</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“可视化编辑器”，顾名思义，就是在编辑内容过程中可以即时看到最终呈现结果的一种编辑界面工具。典型的，有富文本编辑器，及其它自定义组件的编辑器，比如 BI 系统的报表编辑器，后面会说的，是后者。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面 google analytics 中的“信息中心”配置页面，就是一个相对简单的可视化编辑器。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-ga.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先说明一下，这篇文章，仅从纯技术角度，去尝试给出可视化编辑器的一些实现方法。至于真实产品层面，功能多少的取舍，不同实现方案在投入成本与实际效用之间的平衡，本文不讨论。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 最简单便最核心的概念</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不管一个可视化编辑器看起来多么炫酷，要实现它，最基本，最核心的概念，却是非常的简单，想明白之后，为后面各种功能的实现已经铺平了道路。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+三个核心概念：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">Placeholder ，页面上可以接收数据的地方。
+</li>
+<li style="margin: 10px auto;">Message ，传递的是怎么数据。
+</li>
+<li style="margin: 10px auto;">State ，状态转换。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+光说这三个东西，可能会比较抽象。举例来说，页面上某块地方是一个 <em style="color: #d75100; font-style: normal;">Placeholder</em> ，你就可以把“组件”拖到上面去，这个拖入行为会带有相关的 <em style="color: #d75100; font-style: normal;">Message</em> ，因为这个拖入行为，会造成页面上相关“组件”的 <em style="color: #d75100; font-style: normal;">State</em> 变化。比如，某个容器中会多出一个组件，或者，某个组件的样子发生了变化。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+  &lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+  &lt;<span style="color: #000080">title</span>&gt;WYSIWYG&lt;/<span style="color: #000080">title</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  &lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> Placeholder <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      onDrop <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        console.log(e.clientX, e.clientY);
+        <span style="color: #000000; font-weight: bold">let</span> data <span style="color: #000000; font-weight: bold">=</span> e.nativeEvent.dataTransfer.getData(<span style="color: #dd1144">&#39;text/plain&#39;</span>);
+        <span style="color: #000000; font-weight: bold">this</span>.props.onMessage(data);
+        e.preventDefault();
+      }
+
+      onDragOver <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        e.preventDefault();
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+          onDrop<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDrop}
+          onDragOver<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDragOver}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">class</span> Message <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      dragStart <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        e.nativeEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.props.data);
+        e.nativeEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+      }
+
+      render() {
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+          draggable
+          onDragStart<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.dragStart} <span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+
+    <span style="color: #000000; font-weight: bold">class</span> Playground <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {data<span style="color: #000000; font-weight: bold">:</span> []};
+      }
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+            { <span style="color: #000000; font-weight: bold">this</span>.state.data.map( (o, i) =&gt; {<span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div key<span style="color: #000000; font-weight: bold">=</span>{i.toString()}<span style="color: #000000; font-weight: bold">&gt;</span>{o}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;}) }</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;gray&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>Placeholder onMessage<span style="color: #000000; font-weight: bold">=</span>{d =&gt; <span style="color: #000000; font-weight: bold">this</span>.setState({data<span style="color: #000000; font-weight: bold">:</span> [...<span style="color: #000000; font-weight: bold">this</span>.state.data, d]})}<span style="color: #000000; font-weight: bold">&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Placeholder&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Message data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #009999">123</span>}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Message&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>Playground <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在上面代码中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Message</code> 都比较清楚。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">State</code> 的状态转换，在这里，只表现为添加了一行文本，具体实现是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this.setState</code> 。当然，这只是为了演示，而做的一个最简单例子，实际场景下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Message</code> 的互动而影响的结果，这块其实是有很多想象力的。后面，会挨着演示一些效果的实现。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. Placeholder</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> 在上面代码中的实现，只是一个外层的包裹，这是因为 <em style="color: #d75100; font-style: normal;">React</em> 的限制，所以只能以这种不好看的方式来实现“节点上的抽象能力”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> ，说两个注意点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onMessage</code> 中，除了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">data</code> ，一般，我们还需要把事件触发时的位置信息传递出去。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this.props.children</code> 不一定是专门做的一块接受拖入的区域，不要在这个地方限制了你的思维。任何地方，都可以作为 <em style="color: #d75100; font-style: normal;">Placeholder</em> ，关于这个，后面也会有一些演示。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Placeholder <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  onDrop <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+    <span style="color: #000000; font-weight: bold">let</span> data <span style="color: #000000; font-weight: bold">=</span> e.nativeEvent.dataTransfer.getData(<span style="color: #dd1144">&#39;text/plain&#39;</span>);
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!</span>data){
+        <span style="color: #000000; font-weight: bold">this</span>.props.onMessage(data, e.clientX, e.clientY);
+    }
+    e.preventDefault();
+  }
+
+  onDragOver <span style="color: #000000; font-weight: bold">=</span> e =&gt; { e.preventDefault() }
+
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}} onDrop<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDrop}
+                onDragOver<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDragOver}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. Message</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Message</code> 也说两点：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">可以扩展一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">src</code> ，作为拖动时随鼠标的图像。这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Image</code> 因为涉及加载 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">src</code> ，所以需要预先处理。
+</li>
+<li style="margin: 10px auto;">同 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this.props.children</code> 可以是任何东西，不一定是专门设计的“组件”。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Message <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+
+  componentWillMount(){
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!this</span>.props.src){<span style="color: #000000; font-weight: bold">return</span>}
+    <span style="color: #000000; font-weight: bold">const</span> img <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Image();
+    img.src <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.props.src;
+    <span style="color: #000000; font-weight: bold">this</span>.img <span style="color: #000000; font-weight: bold">=</span> img;
+  }
+
+  dragStart <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+    e.nativeEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.props.data);
+    e.nativeEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!this</span>.img){
+      e.nativeEvent.dataTransfer.setDragImage(<span style="color: #000000; font-weight: bold">this</span>.img, <span style="color: #009999">10</span>, <span style="color: #009999">10</span>);
+    }
+  }
+
+  render() {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+      draggable
+      onDragStart<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.dragStart} <span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 堆积组件</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里说的“组件”，是指那些可以被拖入的，狭义上的“组件”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个可视化编辑器，在正常的产品流程中，前期开发完之后，剩下的，也基本就是堆组件的过程。所以，这里我们把“组件”单独拿出来演示一下。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“组件”的本质，其实是一个数据格式规范，扩展一下，还有加载机制。最简单的格式描述，只需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">params</code> 就可以了。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 一个简单组件的流程</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们把前面的代码，整理重构一下，同时做一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">TextShape</code> 的文本组件：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-demo-init.png" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">&lt;!DOCTYPE html&gt;</span>
+&lt;<span style="color: #000080">html</span> <span style="color: #008080">lang</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;zh-cmn-Hans&quot;</span>&gt;
+&lt;<span style="color: #000080">head</span>&gt;
+  &lt;<span style="color: #000080">meta</span> <span style="color: #008080">charset</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;utf-8&quot;</span> /&gt;
+  &lt;<span style="color: #000080">title</span>&gt;WYSIWYG&lt;/<span style="color: #000080">title</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react@16/umd/react.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/react-dom@16/umd/react-dom.development.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">crossorigin</span> <span style="color: #008080">src</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://unpkg.com/babel-standalone@6.15.0/babel.js&quot;</span>&gt;&lt;/<span style="color: #000080">script</span>&gt;
+  &lt;<span style="color: #000080">style</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/css&quot;</span>&gt;
+  &lt;/<span style="color: #000080">style</span>&gt;
+&lt;/<span style="color: #000080">head</span>&gt;
+&lt;<span style="color: #000080">body</span>&gt;
+  &lt;<span style="color: #000080">div</span> <span style="color: #008080">id</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;app&quot;</span>&gt;&lt;/<span style="color: #000080">div</span>&gt;
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> Placeholder <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      onDrop <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        <span style="color: #000000; font-weight: bold">let</span> data <span style="color: #000000; font-weight: bold">=</span> e.nativeEvent.dataTransfer.getData(<span style="color: #dd1144">&#39;text/plain&#39;</span>);
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!</span>data){
+          <span style="color: #000000; font-weight: bold">var</span> bounds <span style="color: #000000; font-weight: bold">=</span> e.currentTarget.getBoundingClientRect();
+          <span style="color: #000000; font-weight: bold">this</span>.props.onMessage(JSON.parse(data), e.clientX <span style="color: #000000; font-weight: bold">-</span> bounds.left, e.clientY <span style="color: #000000; font-weight: bold">-</span> bounds.top);
+        }
+        e.preventDefault();
+      }
+
+      onDragOver <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        e.preventDefault();
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+          onDrop<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDrop}
+          onDragOver<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onDragOver}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+    <span style="color: #000000; font-weight: bold">class</span> Message <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+
+      componentWillMount(){
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!this</span>.props.src){<span style="color: #000000; font-weight: bold">return</span>}
+        <span style="color: #000000; font-weight: bold">const</span> img <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Image();
+        img.src <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.props.src;
+        <span style="color: #000000; font-weight: bold">this</span>.img <span style="color: #000000; font-weight: bold">=</span> img;
+      }
+
+      dragStart <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+        e.nativeEvent.dataTransfer.setData(<span style="color: #dd1144">&#39;text/plain&#39;</span>, JSON.stringify(<span style="color: #000000; font-weight: bold">this</span>.props.data));
+        e.nativeEvent.dataTransfer.effectAllowed <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;copy&#39;</span>;
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!this</span>.img){
+          e.nativeEvent.dataTransfer.setDragImage(<span style="color: #000000; font-weight: bold">this</span>.img, <span style="color: #009999">10</span>, <span style="color: #009999">10</span>);
+        }
+      }
+
+      render() {
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+          draggable
+          onDragStart<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.dragStart} <span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+    <span style="color: #000000; font-weight: bold">class</span> BaseShape <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #999988">// width, height</span>
+        <span style="color: #999988">// type, params</span>
+      }
+
+      getStyle(){
+        <span style="color: #000000; font-weight: bold">return</span> {width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">this</span>.props.width, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">this</span>.props.height};
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>此组件没有实现渲染方法<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+    BaseShape.create <span style="color: #000000; font-weight: bold">=</span> obj =&gt; {
+      <span style="color: #000000; font-weight: bold">const</span> map <span style="color: #000000; font-weight: bold">=</span> {
+        <span style="color: #dd1144">&#39;text&#39;</span><span style="color: #000000; font-weight: bold">:</span> TextShape
+      }
+
+      <span style="color: #000000; font-weight: bold">const</span> Shape <span style="color: #000000; font-weight: bold">=</span> map[obj.type];
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>Shape {...obj} <span style="color: #000000; font-weight: bold">/&gt;</span>
+    }
+
+    <span style="color: #000000; font-weight: bold">class</span> TextShape <span style="color: #000000; font-weight: bold">extends</span> BaseShape {
+      getStyle(){
+        <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">super</span>.getStyle();
+        style[<span style="color: #dd1144">&#39;padding&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;10px&#39;</span>;
+        style[<span style="color: #dd1144">&#39;border&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;1px solid #ccc&#39;</span>;
+        <span style="color: #000000; font-weight: bold">return</span> style;
+      }
+      render(){
+        <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.getStyle();
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle()}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.params.text}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+  &lt;/<span style="color: #000080">script</span>&gt;
+
+
+  &lt;<span style="color: #000080">script</span> <span style="color: #008080">type</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span>&gt;
+
+    <span style="color: #000000; font-weight: bold">class</span> Playground <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+      constructor(props){
+        <span style="color: #000000; font-weight: bold">super</span>(props);
+        <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {shapeList<span style="color: #000000; font-weight: bold">:</span> []};
+      }
+
+      getId(){
+        <span style="color: #000000; font-weight: bold">return</span> (<span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()).getTime().toString();
+      }
+
+      onMessage <span style="color: #000000; font-weight: bold">=</span> (shape, x, y) =&gt; {
+        <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>shape.__ZYS__){<span style="color: #000000; font-weight: bold">return</span>}
+        <span style="color: #000000; font-weight: bold">this</span>.setState({
+          shapeList<span style="color: #000000; font-weight: bold">:</span> [
+            ...<span style="color: #000000; font-weight: bold">this</span>.state.shapeList,
+            {
+              ...shape,
+              x, y,
+              id<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">this</span>.getId(),
+            }
+          ]
+        });
+      }
+
+      genShapeList <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+          <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y}} key<span style="color: #000000; font-weight: bold">=</span>{o.id}<span style="color: #000000; font-weight: bold">&gt;</span>{BaseShape.create(o)}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+        });
+      }
+
+      render(){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Message data<span style="color: #000000; font-weight: bold">=</span>{{__ZYS__<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;text&#39;</span>, params<span style="color: #000000; font-weight: bold">:</span> {text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;文本&#39;</span>}, width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">200</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">30</span>}}
+                   src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://www.zouyesheng.com/img/imagemagick.jpg&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Message&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;white&#39;</span>, border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid #ccc&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>Placeholder onMessage<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMessage}<span style="color: #000000; font-weight: bold">&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+                {<span style="color: #000000; font-weight: bold">this</span>.genShapeList()}
+              <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Placeholder&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+    }
+
+    ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>Playground <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+  &lt;/<span style="color: #000080">script</span>&gt;
+&lt;/<span style="color: #000080">body</span>&gt;
+&lt;/<span style="color: #000080">html</span>&gt;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码有点多了，大体结构是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+  <span style="color: #000000; font-weight: bold">class</span> Placeholder <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+    onDrop <span style="color: #000000; font-weight: bold">=</span> e =&gt; { }
+    onDragOver <span style="color: #000000; font-weight: bold">=</span> e =&gt; { }
+    render(){ }
+  }
+
+  <span style="color: #000000; font-weight: bold">class</span> Message <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+
+    dragStart <span style="color: #000000; font-weight: bold">=</span> e =&gt; { }
+    render() { }
+  }
+
+<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+
+
+<span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+  <span style="color: #000000; font-weight: bold">class</span> BaseShape <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+    getStyle(){ }
+    render(){ }
+  }
+  BaseShape.create <span style="color: #000000; font-weight: bold">=</span> obj =&gt; { }
+  <span style="color: #000000; font-weight: bold">class</span> TextShape <span style="color: #000000; font-weight: bold">extends</span> BaseShape { }
+<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+
+
+<span style="color: #000000; font-weight: bold">&lt;</span>script type<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;text/babel&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+
+  <span style="color: #000000; font-weight: bold">class</span> Playground <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+    onMessage <span style="color: #000000; font-weight: bold">=</span> (shape, x, y) =&gt; { }
+    genShapeList <span style="color: #000000; font-weight: bold">=</span> () =&gt; { }
+
+    render(){
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>Message data<span style="color: #000000; font-weight: bold">=</span>{{}}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Message&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Placeholder onMessage<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMessage}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+              {<span style="color: #000000; font-weight: bold">this</span>.genShapeList()}
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Placeholder&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    }
+  }
+
+  ReactDOM.render(<span style="color: #000000; font-weight: bold">&lt;</span>Playground <span style="color: #000000; font-weight: bold">/&gt;</span>, <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;app&#39;</span>));
+<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/script&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到，我们只是在代码组织层面作了整理，并没有任何新的东西。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. move</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+组件被放置到页面上之后，<em style="color: #d75100; font-style: normal;">move</em> 和 <em style="color: #d75100; font-style: normal;">resize</em> 是接下来可以有的两个操作。但是根据实际功能需求，并不是每个组件都一定可以做这两个事的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">move</em> 要比 <em style="color: #d75100; font-style: normal;">resize</em> 好处理一些，我们先做 <em style="color: #d75100; font-style: normal;">move</em> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Move <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  onMouseDown <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+    console.log(<span style="color: #dd1144">&#39;down&#39;</span>);
+    <span style="color: #0086B3">document</span>.addEventListener(<span style="color: #dd1144">&#39;mousemove&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.onMouseMove);
+    <span style="color: #0086B3">document</span>.addEventListener(<span style="color: #dd1144">&#39;mouseup&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.onMouseUp);
+    <span style="color: #000000; font-weight: bold">this</span>.dom.style.cursor <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;move&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.dom.style.userSelect <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;none&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.ox <span style="color: #000000; font-weight: bold">=</span> e.pageX;
+    <span style="color: #000000; font-weight: bold">this</span>.oy <span style="color: #000000; font-weight: bold">=</span> e.pageY;
+    <span style="color: #000000; font-weight: bold">this</span>.props.onMouseDown();
+  }
+  onMouseMove <span style="color: #000000; font-weight: bold">=</span> e =&gt; {
+    console.log(e.pageX, <span style="color: #000000; font-weight: bold">this</span>.ox);
+    <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(e.pageX <span style="color: #000000; font-weight: bold">-</span> <span style="color: #000000; font-weight: bold">this</span>.ox, e.pageY <span style="color: #000000; font-weight: bold">-</span> <span style="color: #000000; font-weight: bold">this</span>.oy);
+  }
+  onMouseUp <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    console.log(<span style="color: #dd1144">&#39;up&#39;</span>);
+    <span style="color: #0086B3">document</span>.removeEventListener(<span style="color: #dd1144">&#39;mousemove&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.onMouseMove);
+    <span style="color: #0086B3">document</span>.removeEventListener(<span style="color: #dd1144">&#39;mouseup&#39;</span>, <span style="color: #000000; font-weight: bold">this</span>.onMouseUp);
+    <span style="color: #000000; font-weight: bold">this</span>.dom.style.cursor <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;default&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.dom.style.userSelect <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.props.onMouseUp();
+  }
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+                ref<span style="color: #000000; font-weight: bold">=</span>{dom =&gt; <span style="color: #000000; font-weight: bold">this</span>.dom <span style="color: #000000; font-weight: bold">=</span> dom}
+                onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMouseDown} <span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Playground <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  constructor(props){ ... }
+
+  getId(){ ... }
+
+  onMessage <span style="color: #000000; font-weight: bold">=</span> (shape, x, y) =&gt; { ... }
+
+  onMove(o) {
+    <span style="color: #000000; font-weight: bold">let</span> dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> ox <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> oy <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">return</span> (dx, dy) =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>dom){
+        dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;n&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id);
+        ox <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.left.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+        oy <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.top.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+      }
+      o.x <span style="color: #000000; font-weight: bold">=</span> ox <span style="color: #000000; font-weight: bold">+</span> dx;
+      o.y <span style="color: #000000; font-weight: bold">=</span> oy <span style="color: #000000; font-weight: bold">+</span> dy;
+      dom.style.left <span style="color: #000000; font-weight: bold">=</span> o.x <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      dom.style.top <span style="color: #000000; font-weight: bold">=</span> o.y <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+    }
+  }
+
+  onUp <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.setState({
+      shapeList<span style="color: #000000; font-weight: bold">:</span> [...<span style="color: #000000; font-weight: bold">this</span>.state.shapeList]
+    });
+  }
+
+  genShapeList <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+          {BaseShape.create(o)}
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    });
+  }
+
+  render(){ ... }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+代码没什么好说的，传统的拖动实现方式。嗯，即使是在 <em style="color: #d75100; font-style: normal;">React</em> 环境，也可以直接操作节点，相关的数据做好同步就可以了。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. resize</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">resize</em> 要麻烦一些，我想实现像 <em style="color: #d75100; font-style: normal;">dia</em> <a href="https://wiki.gnome.org/Apps/Dia" style="color: #0184b7; text-decoration: none" target="_blank">https://wiki.gnome.org/Apps/Dia</a> 中那样的效果：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-dia.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实现过程需要处理一些细节：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">因为“边”和 <em style="color: #d75100; font-style: normal;">Move</em> 是叠在一起的，所以，要小心调整顺序，处理冒泡。
+</li>
+<li style="margin: 10px auto;">周围 8 个点，要处理成“看的和用的不同”，看着的 8 个点太小，但是可操作范围我们需要扩大，如下图。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-resize.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Resize</em> 中因为是挨个手动处理 8 个点，所以代码有些长：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Resize <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+
+  getSmallStyle <span style="color: #000000; font-weight: bold">=</span> p =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> wrapper <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">20</span>;
+    <span style="color: #000000; font-weight: bold">const</span> side <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">5</span>;
+    <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> {
+      width<span style="color: #000000; font-weight: bold">:</span> side,
+      height<span style="color: #000000; font-weight: bold">:</span> side,
+      backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;#00ff00&#39;</span>,
+      border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid black&#39;</span>,
+      position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>,
+      left<span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">Math</span>.floor((wrapper <span style="color: #000000; font-weight: bold">-</span> side) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>),
+      top<span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">Math</span>.floor((wrapper <span style="color: #000000; font-weight: bold">-</span> side) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>)
+    }
+    <span style="color: #000000; font-weight: bold">return</span> style;
+  }
+
+  getStyle <span style="color: #000000; font-weight: bold">=</span> p =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> side <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">20</span>;
+    <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> {
+      width<span style="color: #000000; font-weight: bold">:</span> side,
+      height<span style="color: #000000; font-weight: bold">:</span> side,
+      backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;transparent&#39;</span>,
+      border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid transparent&#39;</span>,
+      position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>
+    }
+    <span style="color: #000000; font-weight: bold">const</span> v <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">-</span><span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #0086B3">Math</span>.ceil(side <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>);
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">0</span>){style.left <span style="color: #000000; font-weight: bold">=</span> v; style.top <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">1</span>){style.left <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;50%&#39;</span>; style.marginLeft <span style="color: #000000; font-weight: bold">=</span> v; style.top <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">2</span>){style.right <span style="color: #000000; font-weight: bold">=</span> v; style.top <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">3</span>){style.left <span style="color: #000000; font-weight: bold">=</span> v; style.top <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;50%&#39;</span>; style.marginTop <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">4</span>){style.right <span style="color: #000000; font-weight: bold">=</span> v; style.top <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;50%&#39;</span>; style.marginTop <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">5</span>){style.left <span style="color: #000000; font-weight: bold">=</span> v; style.bottom <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">6</span>){style.left <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;50%&#39;</span>; style.marginLeft <span style="color: #000000; font-weight: bold">=</span> v; style.bottom <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">if</span>(p <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">7</span>){style.right <span style="color: #000000; font-weight: bold">=</span> v; style.bottom <span style="color: #000000; font-weight: bold">=</span> v;}
+    <span style="color: #000000; font-weight: bold">return</span> style;
+  }
+
+  onMove <span style="color: #000000; font-weight: bold">=</span> (dx, dy) =&gt; {
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">0</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(<span style="color: #000000; font-weight: bold">-</span>dx, <span style="color: #000000; font-weight: bold">-</span>dy, dx, dy);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">1</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(<span style="color: #009999">0</span>, <span style="color: #000000; font-weight: bold">-</span>dy, <span style="color: #009999">0</span>, dy);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">2</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(dx, <span style="color: #000000; font-weight: bold">-</span>dy, <span style="color: #009999">0</span>, dy);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">3</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(<span style="color: #000000; font-weight: bold">-</span>dx, <span style="color: #009999">0</span>, dx, <span style="color: #009999">0</span>);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">4</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(dx, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">5</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(<span style="color: #000000; font-weight: bold">-</span>dx, dy, dx, <span style="color: #009999">0</span>);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">6</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(<span style="color: #009999">0</span>, dy, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>);
+    }
+    <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">7</span>){
+      <span style="color: #000000; font-weight: bold">this</span>.props.onMouseMove(dx, dy, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>);
+    }
+  }
+
+  onDown <span style="color: #000000; font-weight: bold">=</span> p =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">=</span> p;
+  }
+
+  onUp <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.current <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.props.onMouseUp();
+  }
+
+  stop <span style="color: #000000; font-weight: bold">=</span> e =&gt; {e.stopPropagation()}
+
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}} ref<span style="color: #000000; font-weight: bold">=</span>{dom =&gt; <span style="color: #000000; font-weight: bold">this</span>.dom <span style="color: #000000; font-weight: bold">=</span> dom}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">0</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">0</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;nw-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">0</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">1</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">1</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;n-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">1</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">2</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">2</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;ne-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">2</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">3</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">3</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;w-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">3</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">4</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">4</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;e-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">4</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">5</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">5</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;sw-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">5</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">6</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">6</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;s-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">6</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">7</span>)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.stop}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onDown(<span style="color: #009999">7</span>)} onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp} cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;se-resize&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">7</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      {<span style="color: #000000; font-weight: bold">this</span>.props.children}
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">genShapeList</code> 中，注意 <em style="color: #d75100; font-style: normal;">Move</em> 和 <em style="color: #d75100; font-style: normal;">Resize</em> 的顺序。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onResizeMove</code> 中也是直接处理节点属性的方式。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">onResizeMove(o){
+    <span style="color: #000000; font-weight: bold">let</span> dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> shapeDom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> ox <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> oy <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> ow <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">let</span> oh <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+    <span style="color: #000000; font-weight: bold">return</span> (dw, dh, dx, dy) =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!</span>dom){
+        dom <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id);
+        shapeDom <span style="color: #000000; font-weight: bold">=</span> dom.getElementsByClassName(<span style="color: #dd1144">&#39;shape&#39;</span>)[<span style="color: #009999">0</span>];
+        ox <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.left.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+        oy <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.top.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+        ow <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.width.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+        oh <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">parseInt</span>(dom.style.height.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>);
+      }
+      o.x <span style="color: #000000; font-weight: bold">=</span> ox <span style="color: #000000; font-weight: bold">+</span> dx;
+      o.y <span style="color: #000000; font-weight: bold">=</span> oy <span style="color: #000000; font-weight: bold">+</span> dy;
+      o.width <span style="color: #000000; font-weight: bold">=</span> ow <span style="color: #000000; font-weight: bold">+</span> dw;
+      o.height <span style="color: #000000; font-weight: bold">=</span> oh <span style="color: #000000; font-weight: bold">+</span> dh;
+      dom.style.left <span style="color: #000000; font-weight: bold">=</span> o.x <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      dom.style.top <span style="color: #000000; font-weight: bold">=</span> o.y <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      dom.style.width <span style="color: #000000; font-weight: bold">=</span> o.width <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      dom.style.height <span style="color: #000000; font-weight: bold">=</span> o.height <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      shapeDom.style.width <span style="color: #000000; font-weight: bold">=</span> o.width <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+      shapeDom.style.height <span style="color: #000000; font-weight: bold">=</span> o.height <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+    }
+}
+
+genShapeList <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y, width<span style="color: #000000; font-weight: bold">:</span> o.width, height<span style="color: #000000; font-weight: bold">:</span> o.height}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>Resize onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onResizeMove(o)} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+          {BaseShape.create(o)}
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Resize&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  });
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Shape</code> 的节点，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">className="shape"</code> 作为节点查找的条件，用于直接控制节点的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">width</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">height</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> TextShape <span style="color: #000000; font-weight: bold">extends</span> BaseShape {
+  getStyle(){
+    <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">super</span>.getStyle();
+    style[<span style="color: #dd1144">&#39;padding&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;3px&#39;</span>;
+    style[<span style="color: #dd1144">&#39;boxSizing&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;border-box&#39;</span>;
+    style[<span style="color: #dd1144">&#39;border&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;1px solid #ccc&#39;</span>;
+    <span style="color: #000000; font-weight: bold">return</span> style;
+  }
+  render(){
+    <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>.getStyle();
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle()} className<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;shape&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.params.text}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 单选和多选</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“选中”这套机制，本身的实现很容易。但是，引入多选概念之后，相应的交互操作，会有框选和 Shift 点击，并且多选和后面的“编组”功能又有直接关系，要做的事还有点多的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在实现方法上，还是参考 <em style="color: #d75100; font-style: normal;">dia</em> 的形式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-dia-select.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它区分了“单选中”和“多选中”两种状态：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">这两种状态互斥。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Shape</em> 上的 <em style="color: #d75100; font-style: normal;">MouseDown</em> 总是切换为“单选中”状态（然后可以 <em style="color: #d75100; font-style: normal;">move</em>）。
+</li>
+<li style="margin: 10px auto;">“单选中”时，就是可以 <em style="color: #d75100; font-style: normal;">resize</em> 的时候。
+</li>
+<li style="margin: 10px auto;">空的地方 <em style="color: #d75100; font-style: normal;">MouseUp</em> 可以取消“单选中”和“多选中”。
+</li>
+<li style="margin: 10px auto;">可以框选得到“多选中”状态。
+</li>
+<li style="margin: 10px auto;">可以 <em style="color: #d75100; font-style: normal;">Shift 点击</em> 得到“多选中”状态。
+</li>
+<li style="margin: 10px auto;">“多选中”状态时，不能 <em style="color: #d75100; font-style: normal;">resize</em> 。
+</li>
+<li style="margin: 10px auto;">“多选中”状态时，可以整体 <em style="color: #d75100; font-style: normal;">move</em> 。
+</li>
+</ul>
+
+<a class="anchor" name="toc10"></a>
+<h3 style="font-size: 16px; margin: 25px auto;">3.4.1. 单选中</h3>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从简单的“单选中”开始。要做的事，主要是调度 <em style="color: #d75100; font-style: normal;">Resize</em> ， <em style="color: #d75100; font-style: normal;">Resize</em> 的框和点，本身就是“单选中”的视觉表示了。我们前面已经对 <em style="color: #d75100; font-style: normal;">Resize</em> 作了抽象，所以这里的修改是很容易的事，额外处理一下 <em style="color: #d75100; font-style: normal;">MouseDown</em> 事件就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+具体代码中，我先做了三种壳：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> NotSelected <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+      onMouseUp<span style="color: #000000; font-weight: bold">=</span>{e =&gt; e.stopPropagation()}
+      onMouseDownCapture<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.props.onMouseDown}<span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> SingleSelected <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}
+                onMouseUp<span style="color: #000000; font-weight: bold">=</span>{e =&gt; e.stopPropagation()} <span style="color: #000000; font-weight: bold">&gt;</span>{<span style="color: #000000; font-weight: bold">this</span>.props.children}<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> MultiSelected <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这层壳，一方面是整合事件处理，另一方面，也是隔离整个画布相关冒泡行为的地方。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，上面代码中的阻止冒泡，是为了在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onMouseUp</code> 事件上，不影响画布的“取消选择”逻辑。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> Playground <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  constructor(props){
+    <span style="color: #000000; font-weight: bold">super</span>(props);
+    <span style="color: #000000; font-weight: bold">this</span>.state <span style="color: #000000; font-weight: bold">=</span> {shapeList<span style="color: #000000; font-weight: bold">:</span> [], singleSelected<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">null</span>, multiSelected<span style="color: #000000; font-weight: bold">:</span> []};
+  }
+
+  ...
+
+
+  cancelSelected <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.setState({singleSelected<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">null</span>, multiSelected<span style="color: #000000; font-weight: bold">:</span> []});
+  }
+
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>Message data<span style="color: #000000; font-weight: bold">=</span>{{__ZYS__<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;text&#39;</span>, params<span style="color: #000000; font-weight: bold">:</span> {text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;文本&#39;</span>}, width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">200</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">30</span>}}
+               src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://www.zouyesheng.com/img/imagemagick.jpg&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Message&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;white&#39;</span>, border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid #ccc&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}}
+        onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.cancelSelected}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>Placeholder onMessage<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMessage}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+            {<span style="color: #000000; font-weight: bold">this</span>.genShapeList()}
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Placeholder&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面准备好之后，最后调整 <em style="color: #d75100; font-style: normal;">Shape</em> 的生成逻辑， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">genShapeList</code> 就好了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">onSingleMouseDown <span style="color: #000000; font-weight: bold">=</span> shape =&gt; {
+  <span style="color: #000000; font-weight: bold">this</span>.setState({singleSelected<span style="color: #000000; font-weight: bold">:</span> shape.id})
+}
+
+genShapeList <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+
+  <span style="color: #999988">// 空状态</span>
+  <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!this</span>.state.singleSelected <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #000000; font-weight: bold">!this</span>.state.multiSelected.length){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y, width<span style="color: #000000; font-weight: bold">:</span> o.width, height<span style="color: #000000; font-weight: bold">:</span> o.height}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>NotSelected onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onSingleMouseDown(o)}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>HiddenResize onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onResizeMove(o)} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+              {BaseShape.create(o)}
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/HiddenResize&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/NotSelected&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    });
+  }
+
+  <span style="color: #999988">// 单选状态</span>
+  <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">!!this</span>.state.singleSelected){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+      <span style="color: #000000; font-weight: bold">if</span>(o.id <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">this</span>.state.singleSelected){
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y, width<span style="color: #000000; font-weight: bold">:</span> o.width, height<span style="color: #000000; font-weight: bold">:</span> o.height}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>SingleSelected<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+              <span style="color: #000000; font-weight: bold">&lt;</span>Resize onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onResizeMove(o)} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+                {BaseShape.create(o)}
+              <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Resize&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/SingleSelected&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      }
+
+      <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y, width<span style="color: #000000; font-weight: bold">:</span> o.width, height<span style="color: #000000; font-weight: bold">:</span> o.height}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>NotSelected onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; <span style="color: #000000; font-weight: bold">this</span>.onSingleMouseDown(o)}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+            <span style="color: #000000; font-weight: bold">&lt;</span>HiddenResize onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onResizeMove(o)} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+              {BaseShape.create(o)}
+            <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/HiddenResize&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/NotSelected&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    });
+  }
+
+  <span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">this</span>.state.multiSelected.length <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #009999">2</span>){
+  
+  }
+
+
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> o.x, top<span style="color: #000000; font-weight: bold">:</span> o.y, width<span style="color: #000000; font-weight: bold">:</span> o.width, height<span style="color: #000000; font-weight: bold">:</span> o.height}} key<span style="color: #000000; font-weight: bold">=</span>{o.id} id<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&#39;n-&#39;</span> <span style="color: #000000; font-weight: bold">+</span> o.id}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>Move onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMove(o)} onMouseDown<span style="color: #000000; font-weight: bold">=</span>{() =&gt; {}} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>Resize onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onResizeMove(o)} onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+          {BaseShape.create(o)}
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Resize&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  });
+
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一些重复的代码现在不用管，等功能阶段性做完，再重构整理就好。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-single-select.gif" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h3 style="font-size: 16px; margin: 25px auto;">3.4.2. 多选中</h3>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多选的实现，在之前 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Playground</code> 中已经留了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">multiSelected</code> 来处理了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们先从“框选矩形”的实现开始着手：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> SelectBox <span style="color: #000000; font-weight: bold">extends</span> React.Component {
+  onMouseDown <span style="color: #000000; font-weight: bold">=</span> (ox, oy) =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.ox <span style="color: #000000; font-weight: bold">=</span> ox;
+    <span style="color: #000000; font-weight: bold">this</span>.oy <span style="color: #000000; font-weight: bold">=</span> oy;
+  }
+  onMouseMove <span style="color: #000000; font-weight: bold">=</span> (dx, dy) =&gt; {
+    <span style="color: #000000; font-weight: bold">let</span> p <span style="color: #000000; font-weight: bold">=</span> [];
+    <span style="color: #999988">// 4 个象限，4 种情况</span>
+    <span style="color: #000000; font-weight: bold">if</span>(dx <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">&amp;&amp;</span> dy <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #009999">0</span>){p <span style="color: #000000; font-weight: bold">=</span> [dx, dy, <span style="color: #000000; font-weight: bold">this</span>.ox, <span style="color: #000000; font-weight: bold">this</span>.oy]};
+    <span style="color: #000000; font-weight: bold">if</span>(dx <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">&amp;&amp;</span> dy <span style="color: #000000; font-weight: bold">&lt;=</span> <span style="color: #009999">0</span>){p <span style="color: #000000; font-weight: bold">=</span> [dx, <span style="color: #000000; font-weight: bold">-</span>dy, <span style="color: #000000; font-weight: bold">this</span>.ox, <span style="color: #000000; font-weight: bold">this</span>.oy <span style="color: #000000; font-weight: bold">+</span> dy]};
+    <span style="color: #000000; font-weight: bold">if</span>(dx <span style="color: #000000; font-weight: bold">&lt;=</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">&amp;&amp;</span> dy <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #009999">0</span>){p <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #000000; font-weight: bold">-</span>dx, dy, <span style="color: #000000; font-weight: bold">this</span>.ox <span style="color: #000000; font-weight: bold">+</span> dx, <span style="color: #000000; font-weight: bold">this</span>.oy]};
+    <span style="color: #000000; font-weight: bold">if</span>(dx <span style="color: #000000; font-weight: bold">&lt;=</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">&amp;&amp;</span> dy <span style="color: #000000; font-weight: bold">&lt;=</span> <span style="color: #009999">0</span>){p <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #000000; font-weight: bold">-</span>dx, <span style="color: #000000; font-weight: bold">-</span>dy, <span style="color: #000000; font-weight: bold">this</span>.ox <span style="color: #000000; font-weight: bold">+</span> dx, <span style="color: #000000; font-weight: bold">this</span>.oy <span style="color: #000000; font-weight: bold">+</span> dy]};
+
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.width <span style="color: #000000; font-weight: bold">=</span> p[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.height <span style="color: #000000; font-weight: bold">=</span> p[<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.left <span style="color: #000000; font-weight: bold">=</span> p[<span style="color: #009999">2</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.top <span style="color: #000000; font-weight: bold">=</span> p[<span style="color: #009999">3</span>] <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;px&#39;</span>;
+  }
+  onMouseUp <span style="color: #000000; font-weight: bold">=</span> () =&gt; {
+    <span style="color: #000000; font-weight: bold">this</span>.props.onMouseUp(
+      <span style="color: #0086B3">parseInt</span>(<span style="color: #000000; font-weight: bold">this</span>.box.style.width.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>),
+      <span style="color: #0086B3">parseInt</span>(<span style="color: #000000; font-weight: bold">this</span>.box.style.height.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>),
+      <span style="color: #0086B3">parseInt</span>(<span style="color: #000000; font-weight: bold">this</span>.box.style.left.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>),
+      <span style="color: #0086B3">parseInt</span>(<span style="color: #000000; font-weight: bold">this</span>.box.style.top.replace(<span style="color: #dd1144">&#39;px&#39;</span>, <span style="color: #dd1144">&#39;&#39;</span>), <span style="color: #009999">10</span>)
+    );
+    <span style="color: #000000; font-weight: bold">this</span>.ox <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.oy <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.width <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.height <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.left <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">this</span>.box.style.top <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+  }
+  render() {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>, border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px dashed #ccc&#39;</span>, left<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>, top<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>, width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}} ref<span style="color: #000000; font-weight: bold">=</span>{dom =&gt; <span style="color: #000000; font-weight: bold">this</span>.box <span style="color: #000000; font-weight: bold">=</span> dom}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>Move cursor<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;default&#39;</span>
+            onMouseDown<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMouseDown}
+            onMouseMove<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMouseMove}
+            onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMouseUp}<span style="color: #000000; font-weight: bold">&gt;</span> {<span style="color: #000000; font-weight: bold">this</span>.props.children} <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Move&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+4 个象限的情况要单独处理一下，本身移动的计算使用现成的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Move</code> 就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SelectBox</code> 修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Placeholder</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">render()</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">render(){
+  <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #000000; font-weight: bold">&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>Message data<span style="color: #000000; font-weight: bold">=</span>{{__ZYS__<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>, type<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;text&#39;</span>, params<span style="color: #000000; font-weight: bold">:</span> {text<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;文本&#39;</span>}, width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">200</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">30</span>}}
+             src<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;https://www.zouyesheng.com/img/imagemagick.jpg&quot;</span><span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">100</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;red&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Message&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">500</span>, backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;white&#39;</span>, border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid #ccc&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}}
+      onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.cancelSelected}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>Placeholder onMessage<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onMessage}<span style="color: #000000; font-weight: bold">&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>SelectBox onMouseUp<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.onBoxMouseUp}<span style="color: #000000; font-weight: bold">&gt;</span>
+          <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+            {<span style="color: #000000; font-weight: bold">this</span>.genShapeList()}
+          <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/SelectBox&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/Placeholder&gt;</span>
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">onBoxMouseUp</code> 就是计算哪些 <em style="color: #d75100; font-style: normal;">Shape</em> 被选中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">onBoxMouseUp <span style="color: #000000; font-weight: bold">=</span> (w, h, x, y) =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> rightDown <span style="color: #000000; font-weight: bold">=</span> [x <span style="color: #000000; font-weight: bold">+</span> w, y <span style="color: #000000; font-weight: bold">+</span> h];
+  <span style="color: #000000; font-weight: bold">const</span> selected <span style="color: #000000; font-weight: bold">=</span> [];
+  <span style="color: #000000; font-weight: bold">this</span>.state.shapeList.map(o =&gt; {
+    <span style="color: #000000; font-weight: bold">if</span>(o.x <span style="color: #000000; font-weight: bold">&gt;=</span> x <span style="color: #000000; font-weight: bold">&amp;&amp;</span> o.y <span style="color: #000000; font-weight: bold">&gt;=</span> y){
+      <span style="color: #000000; font-weight: bold">const</span> rd <span style="color: #000000; font-weight: bold">=</span> [o.x <span style="color: #000000; font-weight: bold">+</span> o.width, o.y <span style="color: #000000; font-weight: bold">+</span> o.height];
+      <span style="color: #000000; font-weight: bold">if</span>(rd[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">&lt;=</span> rightDown[<span style="color: #009999">0</span>] <span style="color: #000000; font-weight: bold">&amp;&amp;</span> rd[<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">&lt;=</span> rightDown[<span style="color: #009999">1</span>]){
+        selected.push(o.id);
+      }
+    }
+  });
+  <span style="color: #000000; font-weight: bold">if</span>(selected.length <span style="color: #000000; font-weight: bold">===</span> <span style="color: #009999">1</span>){
+    <span style="color: #000000; font-weight: bold">this</span>.setState({singleSelected<span style="color: #000000; font-weight: bold">:</span> selected[<span style="color: #009999">0</span>], multiSelected<span style="color: #000000; font-weight: bold">:</span> []})
+  } <span style="color: #000000; font-weight: bold">else</span> {
+    <span style="color: #000000; font-weight: bold">this</span>.setState({singleSelected<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">null</span>, multiSelected<span style="color: #000000; font-weight: bold">:</span> selected})
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后修改 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">genShapeList</code> 中的多选部分：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">//</span><span style="color: #bbbbbb"> </span>多选状态<span style="color: #bbbbbb"></span>
+<span style="color: #000000; font-weight: bold">if</span>(this.<span style="color: #000000; font-weight: bold">state</span>.multiSelected.length<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">&gt;=</span><span style="color: #bbbbbb"> </span><span style="color: #009999">2</span>)<span style="color: #a61717; background-color: #e3d2d2">{</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">  </span>const<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">map</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">=</span><span style="color: #bbbbbb"> </span><span style="color: #a61717; background-color: #e3d2d2">{}</span>;<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">  </span>this.<span style="color: #000000; font-weight: bold">state</span>.multiSelected.<span style="color: #000000; font-weight: bold">map</span>(o<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">=&gt;</span><span style="color: #bbbbbb"> </span><span style="color: #a61717; background-color: #e3d2d2">{</span><span style="color: #000000; font-weight: bold">map[</span>o<span style="color: #000000; font-weight: bold">]</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">=</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">true</span><span style="color: #a61717; background-color: #e3d2d2">}</span>);<span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">  </span><span style="color: #000000; font-weight: bold">return</span><span style="color: #bbbbbb"> </span>this.<span style="color: #000000; font-weight: bold">state</span>.shapeList.<span style="color: #000000; font-weight: bold">map</span>(o<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">=&gt;</span><span style="color: #bbbbbb"> </span><span style="color: #a61717; background-color: #e3d2d2">{</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #000000; font-weight: bold">if</span>(<span style="color: #000000; font-weight: bold">map[</span>o.id<span style="color: #000000; font-weight: bold">]</span>)<span style="color: #a61717; background-color: #e3d2d2">{</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">      </span><span style="color: #000000; font-weight: bold">return</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">&lt;</span>div<span style="color: #bbbbbb"> </span>style<span style="color: #000000; font-weight: bold">=</span><span style="color: #a61717; background-color: #e3d2d2">{{</span><span style="color: #000000; font-weight: bold">position</span><span style="color: #a61717; background-color: #e3d2d2">:</span><span style="color: #bbbbbb"> </span><span style="color: #dd1144">&#39;absolute&#39;</span>,<span style="color: #bbbbbb"> </span><span style="color: #990000; font-weight: bold">left</span><span style="color: #a61717; background-color: #e3d2d2">:</span><span style="color: #bbbbbb"> </span>o.x,<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">top</span><span style="color: #a61717; background-color: #e3d2d2">:</span><span style="color: #bbbbbb"> </span>o.y,<span style="color: #bbbbbb"> </span><span style="color: #990000; font-weight: bold">width</span>:<span style="color: #bbbbbb"> </span>o.width,<span style="color: #bbbbbb"> </span><span style="color: #990000; font-weight: bold">height</span>:<span style="color: #bbbbbb"> </span>o.height<span style="color: #a61717; background-color: #e3d2d2">}}</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">key=</span><span style="color: #a61717; background-color: #e3d2d2">{</span>o.id<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #bbbbbb"> </span>id<span style="color: #000000; font-weight: bold">=</span><span style="color: #a61717; background-color: #e3d2d2">{</span><span style="color: #dd1144">&#39;n-&#39;</span><span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">+</span><span style="color: #bbbbbb"> </span>o.id<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span><span style="color: #000000; font-weight: bold">&lt;</span>MultiSelected<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">          </span><span style="color: #000000; font-weight: bold">&lt;</span>Move<span style="color: #bbbbbb"> </span>onMouseMove<span style="color: #000000; font-weight: bold">=</span><span style="color: #a61717; background-color: #e3d2d2">{</span>this.onMultiMove(o)<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #bbbbbb"> </span>onMouseDown<span style="color: #000000; font-weight: bold">=</span><span style="color: #a61717; background-color: #e3d2d2">{</span>()<span style="color: #bbbbbb"> </span><span style="color: #000000; font-weight: bold">=&gt;</span><span style="color: #bbbbbb"> </span><span style="color: #a61717; background-color: #e3d2d2">{}}</span><span style="color: #bbbbbb"> </span>onMouseUp<span style="color: #000000; font-weight: bold">=</span><span style="color: #a61717; background-color: #e3d2d2">{</span>this.onUp<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span><span style="color: #000000; font-weight: bold">&lt;</span>FakeResize<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">              </span><span style="color: #a61717; background-color: #e3d2d2">{</span>BaseShape.<span style="color: #000000; font-weight: bold">create</span>(o)<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">            </span><span style="color: #000000; font-weight: bold">&lt;/</span>FakeResize<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">          </span><span style="color: #000000; font-weight: bold">&lt;/</span>Move<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">        </span><span style="color: #000000; font-weight: bold">&lt;/</span>MultiSelected<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">      </span><span style="color: #000000; font-weight: bold">&lt;/</span>div<span style="color: #000000; font-weight: bold">&gt;</span><span style="color: #bbbbbb"></span>
+<span style="color: #bbbbbb">    </span><span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">    </span>...<span style="color: #bbbbbb"></span>
+
+<span style="color: #bbbbbb">  </span><span style="color: #a61717; background-color: #e3d2d2">}</span>);<span style="color: #bbbbbb"></span>
+<span style="color: #a61717; background-color: #e3d2d2">}</span><span style="color: #bbbbbb"></span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">FakeResize</code> 是只显示点，没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Resize</code> 功能的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Resize</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> FakeResize <span style="color: #000000; font-weight: bold">extends</span> Resize {
+  getSmallStyle <span style="color: #000000; font-weight: bold">=</span> p =&gt; {
+    <span style="color: #000000; font-weight: bold">const</span> wrapper <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">20</span>;
+    <span style="color: #000000; font-weight: bold">const</span> side <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">5</span>;
+    <span style="color: #000000; font-weight: bold">const</span> style <span style="color: #000000; font-weight: bold">=</span> {
+      width<span style="color: #000000; font-weight: bold">:</span> side,
+      height<span style="color: #000000; font-weight: bold">:</span> side,
+      backgroundColor<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;#008800&#39;</span>,
+      border<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;1px solid black&#39;</span>,
+      position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;absolute&#39;</span>,
+      left<span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">Math</span>.floor((wrapper <span style="color: #000000; font-weight: bold">-</span> side) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>),
+      top<span style="color: #000000; font-weight: bold">:</span> <span style="color: #0086B3">Math</span>.floor((wrapper <span style="color: #000000; font-weight: bold">-</span> side) <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>)
+    }
+    <span style="color: #000000; font-weight: bold">return</span> style;
+  }
+
+  render(){
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;100%&#39;</span>, position<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;relative&#39;</span>}} ref<span style="color: #000000; font-weight: bold">=</span>{dom =&gt; <span style="color: #000000; font-weight: bold">this</span>.dom <span style="color: #000000; font-weight: bold">=</span> dom}<span style="color: #000000; font-weight: bold">&gt;</span>
+      <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{{width<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>, height<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">0</span>}}<span style="color: #000000; font-weight: bold">&gt;</span>
+
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">0</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">0</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">1</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">1</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">2</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">2</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">3</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">3</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">4</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">4</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">5</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">5</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">6</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">6</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+        <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getStyle(<span style="color: #009999">7</span>)}<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">&lt;</span>div style<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #000000; font-weight: bold">this</span>.getSmallStyle(<span style="color: #009999">7</span>)}<span style="color: #000000; font-weight: bold">&gt;&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt; &lt;/div&gt;</span>
+
+      <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+      {<span style="color: #000000; font-weight: bold">this</span>.props.children}
+    <span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #a61717; background-color: #e3d2d2">/div&gt;</span>
+  }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完成之后的效果如下图：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="img/wysiwyg-multi-select.gif" alt="" style="border: 1px solid gray;"/>
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 提升下降</h2>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'wysiwyg';
+  var disqus_url = 'https://www.zouyesheng.com/wysiwyg.html';
+  var disqus_title = '前端可视化编辑器的实现套路(未完待续)';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABxUlEQVR4nN2XPYrcQBCFv5IGJEet
+0FkLfI6RdiNfw9cwCCyYAV/DN1n17ik2a92glfWAZp4DLw7sCbcDu5KGCqqon/fqtYm/7VLdccK/
+5kUL0CxMHkvfBOBzqWwHTNBCHbwqfjSZ66eSFW/WY+ns7QEg2Fy8v/LziqU6vnPcP+zw6xkTELqp
+L5sNBUlN0Ixu7qRG2sttSYXMDLbdty/rpb+YHUrWJkm6ud1nwEuSitWGFrfTSKfI4Gafh5J4Q0r4
+DJMHSqO7Qv4U2lGHFYBs2kvO7UYdFVIddQOfTXPJTgbtvlGayAMTedSp3JZUHLvzupk/xRbq2Ibu
+2hdkrpdUR7eAz5auI7YWnFsF2+y3B669e+qgWVxBdFcMQDvwPYA7rPnY1bEkT6aJbNp9Nik2oeRO
+VgycaY/deW2HbSbLys6NCYVUxxw6fDuqKCsv4LE0kXE74IpenFGKWqhjC2evkN4p7n1vMLP22OHz
+ALQqqUt+3+7dNzfwWlxR5mKzHlkTeHbzao/pveLesTcVNPB13D7c+PLx83bpXwsrPNNhbQegeerO
+RfHmFAldHXMwG9tnN5fM9qa5Lj2D29ftMRXkSfuPf1Q/AQlM6SD6Mzv5AAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2020 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
