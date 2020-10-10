@@ -10,6 +10,52 @@ Clojure学习
 
 # 准备环境 #
 
+## 安装 mit-scheme ##
+
+因为 clojure 的语法与 *scheme* 还是有区别的，在学习阶段，如果要安装 scheme 的话，可以这样处理。
+
+首先在 https://www.gnu.org/software/mit-scheme/ 官网下载对应平台的二进制文件。这里虽然说的是二进制文件，但是安装还是需要编译的。
+
+然后，可以参考 https://www.gnu.org/software/mit-scheme/documentation/stable/mit-scheme-user/Unix-Installation.html 操作。
+
+就是通常的：
+
+```bash
+./configure --prefix=/opt/mit-scheme
+make
+sudo make install
+```
+
+完成之后，可以得到对应的 *bin* 目录，里面有 ``scheme`` 可执行文件。
+
+要直接“执行”一个 *scm* 文件的话，可以：
+
+```bash
+scheme --quiet < FILE
+```
+
+``scheme`` 中的标准输出和换行是：
+
+```scheme
+(display (+ 1 1))
+(newline)
+```
+
+
+一般会在 ``/opt/mit-scheme/bin`` 下做一个 ``runscheme.sh`` ：
+
+```bash
+/opt/mit-scheme/bin/scheme --quiet < "$1"
+```
+
+再调整系统的 *PATH* 就可以了。（比如在 ``/etc/profile`` 中加）
+
+VIM 中的文件类型对应配置在 ``~/.vim/ftplugin/scheme.vim`` ：
+
+```vim
+noremap <F2> :!runscheme.sh <C-R>=expand("%:p")<CR><Enter>
+```
+
 
 ## 使用 lein ##
 
