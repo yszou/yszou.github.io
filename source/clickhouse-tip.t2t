@@ -1,0 +1,108 @@
+Clickhouse的实践操作
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/clickhouse-tip.html
+%!format: !email
+%%toc
+
+
+
+Clickhouse 在标准 SQL 上，添加了很多非常适合开发者使用的新功能。
+
+
+# 快速准备环境 #
+
+先为后续的演示准备一下数据，从已有的数据中复制出来。
+
+复制建表：
+
+```sql
+create table sf as table;
+```
+
+复制数据：
+
+```sql
+insert into sf select * from table;
+```
+
+``sf`` 是一个典型的使用 *MergeTree* 引擎的表。
+
+
+```sql
+desc sf;
+```
+
+```txt
+┌─name──────────────┬─type──────────────────────┐
+│ grass_date        │ DateTime('UTC')           │
+│ id                │ String                    │
+│ case_session_id   │ String                    │
+│ case_country      │ String                    │
+│ case_origin       │ String                    │
+│ case_last_cast    │ String                    │
+│ case_created_date │ Nullable(DateTime('UTC')) │
+└───────────────────┴───────────────────────────┘
+```
+
+是一份用户访问并留下评价的事实记录。
+
+
+# 使用 Merge 做数据分块 #
+
+*Merge* 是一个简单实用的特殊引擎，行为像一个只读的表分区（注意与 *MergeTree* 的 ``partitioning key`` 区分）。当你查询一个 Merge 引擎的表时，它会自动按规则去查询本机的其它的表。一个常用的使用形式是。
+
+- ``sf`` 表，作为可写的“最新数据”。
+- ``sf_xx`` ，作为已经验证的旧数据。
+
+
+这样做不是为了效率，而是为了维护。除 ``sf`` 表之外，其它的 ``sf_xx`` 是经过验证的数据。但 ``sf`` 的表数据未经过验证，可能里面的数据有错。因为 *clickhouse* 不支持数据的修改，所以，一旦数据有错，那么整批数据就需要重新装载。你当然不希望一个运行了几个小时的任务的结果被清除。但是一批一两分钟就可以重置好的数据，就无所谓了。所以，区分验证过和未验证的数据，非常重要。
+
+我这里按一天一批数据分一下（现在是 2021-10-14 ，里面的数据只有 2021-10-10 到 2021-10-13 的）：
+
+
+```sql
+create table sf_1010 as sf;
+create table sf_1011 as sf;
+create table sf_1012 as sf;
+create table sf_1013 as sf;
+```
+
+分数据：
+
+```sql
+insert into sf_1010 select * from sf where grass_date >= '2021-10-10' and grass_date < '2021-10-11';
+insert into sf_1011 select * from sf where grass_date >= '2021-10-11' and grass_date < '2021-10-12';
+insert into sf_1012 select * from sf where grass_date >= '2021-10-12' and grass_date < '2021-10-13';
+insert into sf_1013 select * from sf where grass_date >= '2021-10-13' and grass_date < '2021-10-14';
+```
+
+删除旧表，并把 ``sf_1013`` 改名：
+
+```sql
+drop table sf;
+rename table sf_1013 to sf;
+```
+
+把装有最新数据有 ``sf_1013`` 改成写 ``sf`` ，这样对于写入端来说，写入的表，永远只关心 ``sf`` 就好了。
+
+创建一个使用 *Merge* 的 ``sf_full`` ，用于所有（以 ``sf`` 开头的所有表）数据的查询：
+
+```sql
+create table sf_full as sf Engine = Merge(currentDatabase(), '^sf');
+```
+
+检查一下结果：
+
+```sql
+select min(grass_date), max(grass_date) from sf_full;
+select min(grass_date), max(grass_date) from sf;
+select min(grass_date), max(grass_date) from sf_1010;
+```
+
+注意，这时 ``sf_1010`` 这些表，是仍然可以直接查的，根据设计，它可以是一层天然的分区。
+
+
+

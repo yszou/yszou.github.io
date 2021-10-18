@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>如何更有效率地拉取数据 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">如何更有效率地拉取数据</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2021-10-19 03:25 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">背景</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">问题定义</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">问题解决</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">3.1. 理解情况</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">3.2. 如何才能更有效率</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">3.3. 判断数据是否获取完整</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">3.4. 兜底解决极限情况</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">3.5. 最小粒度和时间区间原则</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">3.6. 时间片的工具</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">整体代码</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 背景</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以前从来没有想过，拉取数据这事，要把它做得好一点点，也不是那么容易和直接的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不同于自己能控制的系统中的数据的导入导出，当你用别个系统提供的有限的手段，去处理量大一点的待获取数据时，就会发现有很多很现实的问题需要自己想办法去解决。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果是自己系统，比如 clickhouse 吧，直接：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">clickhouse-client --query<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;select * from xx FORMAT csv&quot;</span> &gt; out.csv
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就可以把“全部”数据都导出到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">out.csv</code> 文件中了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一次性地这个“全部”可以是多少呢？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于 2G 左右的数据量，6, 7 个字段数量的话大概是 1 亿条，你机器内存比 16G 多一点就可以一次导出了，导出的文件不到 15G ， tar.gz 能压缩到 2G 内。即使内存不够，通过时间分片一下，2, 3 次也很容易处理完。整体时间应该不会超过 5 分钟。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过，如果是从其它系统拉取数据，假设单次最多 5000 条，那么 1 亿条最少需要请求 2 万次，平均每次 1 秒时间，就是 2 万秒时间， 5 个多小时吧。但是注意，这是完全理想情况，现实中如果不附加额外的处理机制，只是简单写写，要想顺利完成全部数据的获取，这 5 个小时可能变成 50 个小时。即使尽量优化，最终的时间最快估计也要 10+ 个小时。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为，在保证可行的前提下，你是没有办法得知单次请求如何才能取到足够的 5000 条数据的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">order</span> <span style="color: #000000; font-weight: bold">by</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">asc</span> <span style="color: #000000; font-weight: bold">limit</span> <span style="color: #009999">5000</span> <span style="color: #000000; font-weight: bold">offset</span> <span style="color: #000000; font-weight: bold">?</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">offset</em> 在 100 万的时候，系统估计已经跑不动了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通常这种情况，我们是通过一个单调键（一般是日期），不断顺序地获取数据：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> t <span style="color: #000000; font-weight: bold">where</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&gt;=</span> A <span style="color: #000000; font-weight: bold">and</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&lt;</span> B
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是这时，就没有办法保证 <em style="color: #d75100; font-style: normal;">[A, B)</em> 段正好有 5000 条数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+嗯，我是想说，在 <em style="color: #d75100; font-style: normal;">[A, B)</em> 如果有 1000 万的数据被直接查询，那系统也肯定挂了，不是对方挂就是你自己挂，或者中间请求超时挂，反正结果一样，你数据拿不全。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 问题定义</h1>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">通过 SQL ，获取 1 亿条数据，假设是 2 年范围的吧。
+</li>
+<li style="margin: 10px auto;">单次最多获取 5000 条。
+</li>
+<li style="margin: 10px auto;">单次请求，假设需要 1 秒时间。
+</li>
+<li style="margin: 10px auto;">这 1 亿条都是历史事实数据，即不会再变化的数据。
+</li>
+<li style="margin: 10px auto;">如何能在尽量短的时间内，把数据全部获取完？
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，只关注获取的策略本身就行，不用额外考虑系统的鲁棒性，假设网络环境稳定，系统也不会有任何不良反应。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们也不考虑“并发”。可以理解成，这本身是并发之后面对的状况，本来有 10 亿数据， 10 个并发，现在还剩 1 亿要想办法去解决。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于并发，多说几句，有两个方向可以处理并发时的数据分片：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+按时间，或者其它单调键分片。比如 2 年的时间，分成 4 个半年，4 个任务并行执行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这可能是最直观的分片处理办法，但是，这种方式会给任务的中断与恢复带来麻烦。同时在“部署”时，也必须依赖其它的配套机制，才能把 4 个任务顺利分派出去。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另一种分片方式，是依赖某个维度字段分，比如，按类型，或按国家，每个并行的任务是处理的不同类型，或者不同国家的数据。执行时，就是带了一个过滤条件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种方式不会带来任何的额外问题，但是任务数量，受限于维度字段本身的成员数量及数据事实上的分布情况。比如，想并发 4 个任务，那么这个维度的成员数量，必须 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&gt;= 4</code> ，一般也要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt; 10</code> ，就是它的数量本身和最终的任务数，要能匹配。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，无论用哪种方式执行并行的任务，最终的时间肯定是大大的多于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1/4</code> 总时间的，原因是数据的分布本身不均匀，时间上不均匀，维度上也不均匀。所以最终的完成时间依赖分到数据最多的那个任务的时间（也是一个木桶原理的例子）。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 问题解决</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面介绍解决问题的各个单项思路。因为每个单项之间是相互依赖的，所以，很难有一个正确的顺序。尽量单个地能把一个点说清楚吧。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 理解情况</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+1 亿条数据，每次 5000 条，理解情况 20000 次就能拿完，共计 20000 秒， 5.5 小时。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+什么情况下能达到这种最理解的情况？在你曾经拥有过这 1 亿条数据的情况下。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（其实，服务提供方应该提供下面说的数据，这有利于整体系统的效率）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，你以前数据已经全量获取过，但是某一天你的磁盘坏了，要重新获取。如果你之前保存过这理想 20000 次的时间区间分布，那么恭喜你，依赖这些精准的时间区间，你每次请求几乎都可以拿到 5000 条数据。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以使用类似以下的 SQL ，来对于全量数据，得到每 5000 条数据的时间区间分布：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">min</span>(grass_date) <span style="color: #000000; font-weight: bold">as</span> t, <span style="color: #000000; font-weight: bold">max</span>(grass_date) <span style="color: #000000; font-weight: bold">+</span> <span style="color: #0086B3">INTERVAL</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">SECOND</span>, <span style="color: #000000; font-weight: bold">sum</span>(ct), <span style="color: #000000; font-weight: bold">g</span> <span style="color: #000000; font-weight: bold">from</span>
+(
+    <span style="color: #000000; font-weight: bold">select</span> grass_date, ct, <span style="color: #000000; font-weight: bold">c</span> , intDiv(<span style="color: #000000; font-weight: bold">c</span>, <span style="color: #009999">4990</span>) <span style="color: #000000; font-weight: bold">as</span> <span style="color: #000000; font-weight: bold">g</span> <span style="color: #000000; font-weight: bold">from</span> 
+    (
+        <span style="color: #000000; font-weight: bold">select</span> grass_date, <span style="color: #000000; font-weight: bold">count</span>(id) <span style="color: #000000; font-weight: bold">as</span> ct, <span style="color: #000000; font-weight: bold">sum</span>(ct) over (<span style="color: #000000; font-weight: bold">order</span> <span style="color: #000000; font-weight: bold">by</span> grass_date) <span style="color: #000000; font-weight: bold">as</span> <span style="color: #000000; font-weight: bold">c</span> <span style="color: #000000; font-weight: bold">from</span>
+        data_table
+        <span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> grass_date
+    )
+)
+<span style="color: #000000; font-weight: bold">group</span> <span style="color: #000000; font-weight: bold">by</span> <span style="color: #000000; font-weight: bold">g</span> <span style="color: #000000; font-weight: bold">order</span> <span style="color: #000000; font-weight: bold">by</span> t;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">这是在 clickhouse 上实际可用的一条 SQL 。（你直接在服务提供方的环境下，想通过 SQL 在有限时间内得到这个结果不一定现实）
+</li>
+<li style="margin: 10px auto;">它依赖窗口函数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">sum(ct) over (...)</code> 功能，及其它的整除 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">intDiv</code> ，日期运算 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+ INTERVAL 1 SECOND</code> 功能。
+</li>
+<li style="margin: 10px auto;">使用 4990 而不是 5000 ，是因为在“秒”这个粒度上，可能刚好在临界值上不止 1 条数据。尽量避免结果中有重叠的时间段。
+</li>
+<li style="margin: 10px auto;">最小粒度，比如“秒”，内，有多于 5000 条的数据的话，那么时间段的重叠不可避免。这需要额外处理。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我在 SQL 方面并不擅长，如果不使用窗口函数，或者不使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">from</code> 子查询，也能达到目的，请告诉我。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最终的数据类似于：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">&quot;2021-10-10 00:00:00&quot;,&quot;2021-10-10 00:19:00&quot;,4987,0
+&quot;2021-10-10 00:19:01&quot;,&quot;2021-10-10 00:35:48&quot;,4988,1
+&quot;2021-10-10 00:35:48&quot;,&quot;2021-10-10 00:51:19&quot;,4991,2
+&quot;2021-10-10 00:51:19&quot;,&quot;2021-10-10 01:06:03&quot;,4992,3
+&quot;2021-10-10 01:06:03&quot;,&quot;2021-10-10 01:20:31&quot;,4990,4
+&quot;2021-10-10 01:20:31&quot;,&quot;2021-10-10 01:34:16&quot;,4990,5
+&quot;2021-10-10 01:34:16&quot;,&quot;2021-10-10 01:47:32&quot;,4990,6
+&quot;2021-10-10 01:47:32&quot;,&quot;2021-10-10 01:59:16&quot;,4988,7
+&quot;2021-10-10 01:59:16&quot;,&quot;2021-10-10 02:11:10&quot;,4992,8
+&quot;2021-10-10 02:11:10&quot;,&quot;2021-10-10 02:22:10&quot;,4991,9
+&quot;2021-10-10 02:22:10&quot;,&quot;2021-10-10 02:33:09&quot;,4989,10
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+请求时，按 1，2 列的时间区间去请求数据，得到的就是第 3 列的数据量。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. 如何才能更有效率</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到一般情况，没有上帝视角。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果每次都能获取到被允许的上限（比如 5000 条）的数据条数，则整体取数请求数最少，花的总时间也越少。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里补充一下，一般分析型的数据系统，单次请求的“固定成本”远比数据量的“变动成本”要大得多，也就是说，一次取 2000 条，花 1 秒，一次取 1 条，可能也要花 1 秒。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在不了解数据分布的情况下，是没有办法做到每次都刚好取到 5000 条数据的，所以，我们的方向就是，只能不断去试，碰到具体情况，再动态调节。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">先根据数据总量，比如 2 年 1 亿条数据，可以算出平均每天 27 万。
+</li>
+<li style="margin: 10px auto;">晚上肯定没那么多业务量，所以算平均小时的数据量，按 1 天 18 小时算， 27 万 / 18 小时，平均每小时就是 15 万。
+</li>
+<li style="margin: 10px auto;">15 万对于 5000 ，还太大，继续减小粒度，平均每分钟 2500 条。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果仅从平均条数看，应该每 2 分钟取数一次。这样，1 小时的范围要取数 30 次，2 年就要取数 52 万次，一次 1 秒，共计 144 小时。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实际的情况还要远多于 144 小时，因为很多时间段是 0 数据的同时，还有一些时间段数据不止 5000 条，不能一次取完。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+144 小时对比理想情况的 5.5 小时，相差巨大吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有人可能会说，想快，为啥不 1 天取一次，这样不到 1000 轮就可以取完。这个问题前面已经说过了，每次只能取 5000 ，要取完平均每天 27 万的数据：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> <span style="color: #000000; font-weight: bold">data</span> <span style="color: #000000; font-weight: bold">where</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&gt;=</span> A <span style="color: #000000; font-weight: bold">and</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&lt;</span> B <span style="color: #000000; font-weight: bold">limit</span> <span style="color: #009999">5000</span> <span style="color: #000000; font-weight: bold">offset</span> <span style="color: #009999">265000</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+平均情况下，都可能出现 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset 265000</code> ，碰到极限一点的情况， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 再大，对方系统不挂，请求也肯定超时。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而且，取同样的数，系统执行上，随着 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 的变大，系统的响应时间也会变慢，那时本来 1 秒响应的，可能变成 10 秒响应。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，不能使用过大的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> ，要把 144 小时的时间减少，只能调节每次迭代的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[A, B)</code> 范围。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+考虑数据的业务背景，数据量的分布，肯定是服从固定的分布规律的，比如，每天下午 14 点到 16 点，是业务量最大，也是数据量最大的时候。半夜一般就没什么数据量。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为没有办法事先得到具体的分布（也没有必要事先关心），所以，我们的思路变成，在过程中，根据实际的数据，不断地去刻画这种分布的内在规律，再把积累的信息，用于后面的时间范围分配。比如，当发现 14 点 16 点数据量很大的时候，就每 2 分钟迭代一次。而晚上几乎没有数据，就直接取 6 小时的时间范围。这样可以整体上减少请求量，大幅度提高效率。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+目前我的做法是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">维护一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg = []</code> 的列表，用于保存 1 天中，每一个分钟的，不断更新的平均数据量。这个列表一共有 1440 个成员。
+</li>
+<li style="margin: 10px auto;">每次通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[A, B)</code> 范围，获取到具体数据时，结果都会反馈到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 当中。比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[A, B)</code> 的范围是 1 天，获取了 3000 条数据，那么计算一下，平均摊到每分钟的量是 2 左右。再通过保存的每分钟的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_count</code> 计数，重新更新 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 中每个成员的值。
+</li>
+<li style="margin: 10px auto;">我把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg = []</code> 中的值初始化为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">5000 / 粒度</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_count</code> 初始值都是 1 。
+</li>
+<li style="margin: 10px auto;">后面会讲到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Timeline</code> ，它返回迭代时间范围时，会根据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 预计算这个范围内的数据量，如果数据量不够 5000 ，则不会返回，会加大时间范围，继续判断，直接某个时间范围，根据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 中的值计算出来的数据量不少于 5000 ，才返回这个时间区间。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，初始选择以 10 分钟为粒度迭代，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 中的每分钟平均值就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">5000 / 10 = 500</code> 条。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第一天，每个迭代得到的时间区间，肯定都是 10 分钟一个，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">500 * 10</code> ，刚好 5000 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设很不幸，每一天跑完，0 条数量。那么这时，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_count</code> 中的成员都 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+1</code> ，重新计算后的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> 中的每个成员的值现在都是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">250</code> 了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+第二天再迭代的时候，返回的时间区，就都会以 20 分钟为间隔了。因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">250 * 20 = 5000</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个过程也可以看成，系统认为数据数量少，可以尝试更大的时间范围，以便可以更快的迭代完整个过程。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，现实中，肯定不会整天没有数据，而是晚上没有数据，白天某个时间段有很多的数据。所以，通过积累的每分钟平均数据量，就可以实现“当发现 14 点 16 点数据量很大的时候，我就每 2 分钟迭代一次。而晚上几乎没有数据，就直接取 6 小时的时间范围”。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 判断数据是否获取完整</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下一步介绍碰到数据量很大的时间片时，如何处理。在此之前，先简单说一下，某个时间片数据是否取完的判断。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在面对限制返回条数的服务上，我们可以顶着上限去 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">limit</code> ，但是无法直接判断在指定时间区间内的所有数据，是否已经全部返回。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">select</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">from</span> <span style="color: #000000; font-weight: bold">data</span> <span style="color: #000000; font-weight: bold">limit</span> <span style="color: #009999">5000</span> <span style="color: #000000; font-weight: bold">where</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&gt;=</span> A <span style="color: #000000; font-weight: bold">and</span> <span style="color: #0086B3">date</span> <span style="color: #000000; font-weight: bold">&lt;</span> B
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于这条 SQL ，如果返回的数据 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt; 5000</code> ，那么可以断定数据全部取完。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">== 5000</code> 的情况，则数据可能没有取完。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们不能在取数前先通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select count()</code> 检查数据条数再选择具体的取数策略，因为多一次查询就会多 1 秒时间，整体上，理想情况下就会多出一倍的时间。只在必要的使用使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">select count()</code> 进行查询。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一般，如果碰到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">== 5000</code> 的情况，那么同样的取数，我们会加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 再次尝试。直到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 我们认为已经超大，甚至是再通过这种方式尝试获取所有数据，已经不行了。这时，就要切换到其它的方案上。 
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 兜底解决极限情况</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面，有了一个大体上的优化过程，不过现实中什么情况都可能出现，平均数统计只是历史数据，下一个迭代就可能碰到一个巨大的数据量。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+目前的兜底方案：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">如果一次 5000 没有取完数据，则加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 最多会尝试 10 轮，即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 最大会到 45000 。
+</li>
+<li style="margin: 10px auto;">如果 10 轮之后，数据还没有完（大于 50000 了），则将时间范围区间缩小一半，用一半的区间，再去递归取数。
+</li>
+<li style="margin: 10px auto;">时间范围最多减少到只有 1 秒，在 1 秒范围内， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 将不再受限。
+</li>
+<li style="margin: 10px auto;">因为我们的精度只做到 1 秒。1 秒之内，数据量再大到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 搞不定的程度，就没有通用的办法了。
+</li>
+<li style="margin: 10px auto;">目前，实际遇到的，1 秒最多不超过 5 万条，离 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">offset</code> 的上限还远。
+</li>
+</ul>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 最小粒度和时间区间原则</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最小粒度只能取到“秒”，不能取“毫秒”，保存数据的时候就应该考虑清楚这个问题。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">原则上，需要精度的地方，都应该避免使用小数。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">timestamp</em> 的定义，就是“秒”。
+</li>
+<li style="margin: 10px auto;">不同的环境，一定能取到整数的秒，不一定能取到整数的毫秒。
+</li>
+<li style="margin: 10px auto;">“日期表示”，一般到 YYYY-mm-dd HH:MM:SS ，带上毫秒会写成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">YYYY-mm-dd HH:MM:SS.xxx</code>。
+</li>
+<li style="margin: 10px auto;">大部分数据场景连真正的“实时”都尚且做不到，或者说没有必要，那精确到毫秒除了增加处理和维护成本也毫无意义。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对时间区间进行分片的时候，我们需要遵循“前闭后开”的原则，即 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[A, B)</code> 这样的区间。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+个人使用过程中体会到的好处有：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在连续分片中可以自然衔接，避免重叠造成重复数据。比如第一个迭代是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[A, B)</code> ，下一个就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[B, C)</code> 。
+</li>
+<li style="margin: 10px auto;">对于“直到现在”的场景，不取“当前时间”是合理的。
+</li>
+<li style="margin: 10px auto;">大部分场景我使用 Python ，这个原则与 Python 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">range</code> 对象是一致的。
+</li>
+</ul>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.6. 时间片的工具</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它最基本 API ，大概如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">timeline <span style="color: #000000; font-weight: bold">=</span> Timeline(start, end, grain, factor)
+<span style="color: #000000; font-weight: bold">for</span> start, end timeline<span style="color: #000000; font-weight: bold">.</span>iter():
+    sql <span style="color: #000000; font-weight: bold">=</span> get_sql(start, end)
+    count <span style="color: #000000; font-weight: bold">=</span> get_data(sql)
+    timeline<span style="color: #000000; font-weight: bold">.</span>add_statistics(start, end, count)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">end</code> ，是时间线的范围。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">grain</code> 粒度，表示的是这个对象的相关行为，是按“天”，“小时”，或者是“分钟”。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">factor</code> 是进一步对粒度的拆分，表示的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1 / factor</code> 粒度，如果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2</code> ，就是“半天”，“半小时”，“半分钟”等。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">iter()</code> 会返回一个可迭代对象，使用它可以遍历完整的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[start, end)</code> 区间，每次的跨度，和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">grain</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">factor</code> 有关。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Timeline</code> 的最主要作用是三个：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">处理粒度的边界问题。
+</li>
+<li style="margin: 10px auto;">方便在粒度条件下迭代时间区间。
+</li>
+<li style="margin: 10px auto;">维护前面提到的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">day_per_minute_avg</code> ，通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">add_statistics</code> 的反馈，动态改变 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">iter()</code> 每次弹出的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">end</code> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Timeline</code> 的大体代码结构是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+ 
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">datetime</span>
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Statistics</span>(<span style="color: #0086B3">object</span>):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">datetime_to_order</span>(<span style="color: #999999">self</span>, dt):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, init_minute_value<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">0</span>):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>len <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">24</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">60</span>
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>value <span style="color: #000000; font-weight: bold">=</span> [init_minute_value] <span style="color: #000000; font-weight: bold">*</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>len
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>counter <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">*</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>len
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">record</span>(<span style="color: #999999">self</span>, start, end, value):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">get_value</span>(<span style="color: #999999">self</span>, start, end):
+        <span style="color: #000000; font-weight: bold">if</span> start <span style="color: #000000; font-weight: bold">&gt;=</span> end: <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>
+        n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+        current <span style="color: #000000; font-weight: bold">=</span> start
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+            n <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+            current <span style="color: #000000; font-weight: bold">=</span> current <span style="color: #000000; font-weight: bold">+</span> datetime<span style="color: #000000; font-weight: bold">.</span>timedelta(minutes<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>)
+            <span style="color: #000000; font-weight: bold">if</span> current <span style="color: #000000; font-weight: bold">&gt;=</span> end: <span style="color: #000000; font-weight: bold">break</span>
+
+        <span style="color: #000000; font-weight: bold">if</span> n <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+            <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>
+
+
+        result <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+        order <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>datetime_to_order(start)
+
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+            <span style="color: #000000; font-weight: bold">if</span> n <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>: <span style="color: #000000; font-weight: bold">break</span>
+            idx <span style="color: #000000; font-weight: bold">=</span> order <span style="color: #000000; font-weight: bold">%</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>len
+            result <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>value[idx]
+            n <span style="color: #000000; font-weight: bold">-=</span> <span style="color: #009999">1</span>
+            order <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+
+        <span style="color: #000000; font-weight: bold">return</span> result
+
+
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Timeline</span>(<span style="color: #0086B3">object</span>):
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__init__</span>(<span style="color: #999999">self</span>, start<span style="color: #000000; font-weight: bold">=None</span>, end<span style="color: #000000; font-weight: bold">=None</span>, grain<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;days&#39;</span>):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__contains__</span>(<span style="color: #999999">self</span>, timeline):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">expand</span>(<span style="color: #999999">self</span>, timeline, force<span style="color: #000000; font-weight: bold">=False</span>):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">__str__</span>(<span style="color: #999999">self</span>):
+        <span style="color: #000000; font-weight: bold">...</span>
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">setup_statistics</span>(<span style="color: #999999">self</span>, want, delta):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>iter_want <span style="color: #000000; font-weight: bold">=</span> want
+        sum_minute <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+        current <span style="color: #000000; font-weight: bold">=</span> delta
+        mark <span style="color: #000000; font-weight: bold">=</span> datetime<span style="color: #000000; font-weight: bold">.</span>timedelta(minutes<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>)
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+            <span style="color: #000000; font-weight: bold">if</span> current <span style="color: #000000; font-weight: bold">&lt;=</span> mark:
+                <span style="color: #000000; font-weight: bold">break</span>
+            current <span style="color: #000000; font-weight: bold">-=</span> mark
+            sum_minute <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #009999">1</span>
+
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>statistics <span style="color: #000000; font-weight: bold">=</span> Statistics(want <span style="color: #000000; font-weight: bold">/</span> sum_minute)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">add_statistics</span>(<span style="color: #999999">self</span>, start, end, value):
+        <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>statistics<span style="color: #000000; font-weight: bold">.</span>record(start, end, value)
+
+    <span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">iter</span>(<span style="color: #999999">self</span>, grain<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hours&#39;</span>, factor<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>, want<span style="color: #000000; font-weight: bold">=None</span>):
+        per <span style="color: #000000; font-weight: bold">=</span> datetime<span style="color: #000000; font-weight: bold">.</span>timedelta(<span style="color: #000000; font-weight: bold">**</span>{grain: <span style="color: #009999">1</span>})
+        per <span style="color: #000000; font-weight: bold">=</span> per <span style="color: #000000; font-weight: bold">/</span> factor
+        <span style="color: #000000; font-weight: bold">if</span> want <span style="color: #000000; font-weight: bold">is</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #000000; font-weight: bold">None</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>setup_statistics(want, per)
+
+        start <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>start
+        <span style="color: #0086B3">range</span> <span style="color: #000000; font-weight: bold">=</span> []
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+            end <span style="color: #000000; font-weight: bold">=</span> start <span style="color: #000000; font-weight: bold">+</span> per
+            <span style="color: #000000; font-weight: bold">if</span> end <span style="color: #000000; font-weight: bold">&gt;=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>end:
+                <span style="color: #000000; font-weight: bold">yield</span> start, <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>end
+                <span style="color: #000000; font-weight: bold">return</span>
+
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #000000; font-weight: bold">not</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>statistics:
+                <span style="color: #000000; font-weight: bold">yield</span> start, end
+                start <span style="color: #000000; font-weight: bold">=</span> end
+                <span style="color: #000000; font-weight: bold">continue</span>
+
+            <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">range</span>:
+                <span style="color: #0086B3">range</span>[<span style="color: #009999">1</span>] <span style="color: #000000; font-weight: bold">=</span> end
+            <span style="color: #000000; font-weight: bold">else</span>:
+                <span style="color: #0086B3">range</span> <span style="color: #000000; font-weight: bold">=</span> [start, end]
+
+            v <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>statistics<span style="color: #000000; font-weight: bold">.</span>get_value(<span style="color: #0086B3">range</span>[<span style="color: #009999">0</span>], <span style="color: #0086B3">range</span>[<span style="color: #009999">1</span>])
+            <span style="color: #000000; font-weight: bold">if</span> (v <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>iter_want) <span style="color: #000000; font-weight: bold">and</span> (<span style="color: #0086B3">abs</span>(v <span style="color: #000000; font-weight: bold">-</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>iter_want) <span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #009999">1</span>):
+                start <span style="color: #000000; font-weight: bold">=</span> end
+                <span style="color: #000000; font-weight: bold">continue</span>
+            <span style="color: #000000; font-weight: bold">else</span>:
+                <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #0086B3">range</span>[<span style="color: #009999">0</span>], <span style="color: #0086B3">range</span>[<span style="color: #009999">1</span>]
+                <span style="color: #0086B3">range</span> <span style="color: #000000; font-weight: bold">=</span> []
+                start <span style="color: #000000; font-weight: bold">=</span> end
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 整体代码</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Timeline</code> ，整体的功能代码就很简单了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #3c5d5d; font-weight: bold">@tornado</span><span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>coroutine
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">fetch_seriously</span>(<span style="color: #999999">self</span>, count, start, end, grain, factor):
+    <span style="color: #dd1144">&#39;1秒内数据量可能很大，没有通用办法&#39;</span>
+
+    c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch(start, end, grain, factor)
+    <span style="color: #000000; font-weight: bold">return</span> c
+
+
+<span style="color: #3c5d5d; font-weight: bold">@tornado</span><span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>coroutine
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">fetch_carefully</span>(<span style="color: #999999">self</span>, start, end, grain, factor):
+    <span style="color: #dd1144">&#39;数据量可能很大，不断减半时间区间&#39;</span>
+
+    sql <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_count_sql(start, end)
+    res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>service<span style="color: #000000; font-weight: bold">.</span>query(sql)<span style="color: #000000; font-weight: bold">.</span>call()
+    <span style="color: #000000; font-weight: bold">if</span> res[<span style="color: #dd1144">&#39;code&#39;</span>] <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #009999">0</span>:
+        <span style="color: #000000; font-weight: bold">raise</span> <span style="color: #990000; font-weight: bold">Exception</span>(res[<span style="color: #dd1144">&#39;msg&#39;</span>])
+
+    count <span style="color: #000000; font-weight: bold">=</span> res[<span style="color: #dd1144">&#39;data&#39;</span>][<span style="color: #009999">0</span>][<span style="color: #dd1144">&#39;count&#39;</span>]
+    <span style="color: #000000; font-weight: bold">if</span> count <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>: <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>
+
+    <span style="color: #999988">#数据量已经在正常范围内了，可以取数操作</span>
+    <span style="color: #000000; font-weight: bold">if</span> count <span style="color: #000000; font-weight: bold">&lt;</span> (<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>limit <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">10</span>):
+        c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch(start, end, grain, factor)
+        <span style="color: #000000; font-weight: bold">return</span> c
+
+    diff <span style="color: #000000; font-weight: bold">=</span> (end <span style="color: #000000; font-weight: bold">-</span> start)<span style="color: #000000; font-weight: bold">.</span>total_seconds()
+    half <span style="color: #000000; font-weight: bold">=</span> math<span style="color: #000000; font-weight: bold">.</span>floor(diff <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">2</span>)
+    <span style="color: #000000; font-weight: bold">if</span> half <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">0</span>:
+        c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch_seriously(count, start, end, grain, factor)
+        <span style="color: #000000; font-weight: bold">return</span> c
+
+    half_dt <span style="color: #000000; font-weight: bold">=</span> start <span style="color: #000000; font-weight: bold">+</span> datetime<span style="color: #000000; font-weight: bold">.</span>timedelta(seconds<span style="color: #000000; font-weight: bold">=</span>half)
+    pre <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch_carefully(start, half_dt, grain, factor)
+    post <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch_carefully(half_dt, end, grain, factor)
+    <span style="color: #000000; font-weight: bold">return</span> pre <span style="color: #000000; font-weight: bold">+</span> post
+
+
+<span style="color: #3c5d5d; font-weight: bold">@tornado</span><span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>coroutine
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">fetch</span>(<span style="color: #999999">self</span>, start, end, grain, factor):
+    data <span style="color: #000000; font-weight: bold">=</span> []
+    offset <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+    limit <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>limit
+    count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+    <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+        sql <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_sql(start, end, offset, limit)
+        res <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>service<span style="color: #000000; font-weight: bold">.</span>query(sql)<span style="color: #000000; font-weight: bold">.</span>call()
+        <span style="color: #000000; font-weight: bold">if</span> res[<span style="color: #dd1144">&#39;code&#39;</span>] <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #009999">0</span>: <span style="color: #000000; font-weight: bold">raise</span> <span style="color: #990000; font-weight: bold">Exception</span>(res[<span style="color: #dd1144">&#39;msg&#39;</span>])
+        data<span style="color: #000000; font-weight: bold">.</span>extend(res[<span style="color: #dd1144">&#39;data&#39;</span>])
+
+        <span style="color: #999988">#数据取完了</span>
+        <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">len</span>(res[<span style="color: #dd1144">&#39;data&#39;</span>]) <span style="color: #000000; font-weight: bold">&lt;</span> limit: <span style="color: #000000; font-weight: bold">break</span>
+        <span style="color: #000000; font-weight: bold">else</span>: offset <span style="color: #000000; font-weight: bold">+=</span> limit
+
+        <span style="color: #999988"># no ways</span>
+        <span style="color: #000000; font-weight: bold">if</span> (end <span style="color: #000000; font-weight: bold">-</span> start)<span style="color: #000000; font-weight: bold">.</span>total_seconds() <span style="color: #000000; font-weight: bold">&lt;=</span> <span style="color: #009999">1</span>: <span style="color: #000000; font-weight: bold">continue</span>
+
+        <span style="color: #999988">#达到上限，开始时间区间减半的方案</span>
+        <span style="color: #000000; font-weight: bold">if</span> offset <span style="color: #000000; font-weight: bold">&gt;=</span> (<span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>limit <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">10</span>):
+            count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch_carefully(start, end, grain, factor)
+            <span style="color: #000000; font-weight: bold">return</span> count
+
+    count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">len</span>(data)
+
+    obj_list_filter <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">filter</span>(<span style="color: #000000; font-weight: bold">lambda</span> o: o[<span style="color: #dd1144">&#39;message_id&#39;</span>] <span style="color: #000000; font-weight: bold">in</span> to_insert_id_set, data)
+
+    <span style="color: #000000; font-weight: bold">try</span>:
+        result_count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>insert(obj_list_filter)
+    <span style="color: #000000; font-weight: bold">except</span> <span style="color: #990000; font-weight: bold">Exception</span> <span style="color: #000000; font-weight: bold">as</span> e:
+        <span style="color: #000000; font-weight: bold">yield</span> tornado<span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>sleep(<span style="color: #009999">5</span>)
+        <span style="color: #000000; font-weight: bold">try</span>:
+            result_count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>insert(obj_list_filter)
+        <span style="color: #000000; font-weight: bold">except</span> <span style="color: #990000; font-weight: bold">Exception</span> <span style="color: #000000; font-weight: bold">as</span> e:
+            result_count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+            <span style="color: #000000; font-weight: bold">raise</span> <span style="color: #990000; font-weight: bold">Exception</span>(traceback<span style="color: #000000; font-weight: bold">.</span>format_exc())
+
+    <span style="color: #000000; font-weight: bold">return</span> count
+
+
+
+<span style="color: #3c5d5d; font-weight: bold">@tornado</span><span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>coroutine
+<span style="color: #000000; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">execute</span>(<span style="color: #999999">self</span>):
+    <span style="color: #0086B3">range</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_range()
+    timeline <span style="color: #000000; font-weight: bold">=</span> Timeline(start<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">range</span>[<span style="color: #009999">0</span>], end<span style="color: #000000; font-weight: bold">=</span><span style="color: #0086B3">range</span>[<span style="color: #009999">1</span>], grain<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_grain())
+    <span style="color: #0086B3">iter</span> <span style="color: #000000; font-weight: bold">=</span> timeline<span style="color: #000000; font-weight: bold">.</span>iter(grain<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_grain(), factor<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_factor(), want<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>limit)
+
+    <span style="color: #000000; font-weight: bold">for</span> start, end <span style="color: #000000; font-weight: bold">in</span> <span style="color: #0086B3">iter</span>:
+        retry <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>
+        <span style="color: #000000; font-weight: bold">while</span> <span style="color: #000000; font-weight: bold">True</span>:
+            <span style="color: #000000; font-weight: bold">try</span>:
+                count <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">yield</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>fetch(start, end, grain<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_grain(), factor<span style="color: #000000; font-weight: bold">=</span><span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>get_factor())
+            <span style="color: #000000; font-weight: bold">except</span>:
+                retry <span style="color: #000000; font-weight: bold">+=</span><span style="color: #009999">1</span> 
+                <span style="color: #000000; font-weight: bold">if</span> retry <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">10</span>: <span style="color: #000000; font-weight: bold">raise</span> <span style="color: #990000; font-weight: bold">Exception</span>(traceback<span style="color: #000000; font-weight: bold">.</span>format_exc())
+                <span style="color: #000000; font-weight: bold">yield</span> tornado<span style="color: #000000; font-weight: bold">.</span>gen<span style="color: #000000; font-weight: bold">.</span>sleep(<span style="color: #009999">10</span>)
+            <span style="color: #000000; font-weight: bold">else</span>:
+                <span style="color: #000000; font-weight: bold">break</span>
+
+        <span style="color: #999988"># 数据量太大，看成是异常情况。为避免影响统计效果，不计入统计</span>
+        <span style="color: #000000; font-weight: bold">if</span> count <span style="color: #000000; font-weight: bold">&lt;</span> <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>limit <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">100</span>:
+            timeline<span style="color: #000000; font-weight: bold">.</span>add_statistics(start, end, count)
+        <span style="color: #000000; font-weight: bold">else</span>:
+            <span style="color: #999999">self</span><span style="color: #000000; font-weight: bold">.</span>logger<span style="color: #000000; font-weight: bold">.</span>info(<span style="color: #dd1144">&#39;HUGE NUMBER [{}] at [{}, {}]&#39;</span><span style="color: #000000; font-weight: bold">.</span>format(count, start, end))
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'how-to-fetch-data';
+  var disqus_url = 'https://www.zouyesheng.com/how-to-fetch-data.html';
+  var disqus_title = '如何更有效率地拉取数据';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABrklEQVR4nN2XQY7bMAxFH+0A8k65
+gQL0HBN3jlUgaFy4B+lR7JmLyDeQV1UAJ7+LcTftLIeLVhsBXPCD/Pz6lIm/z615Jwj/WhRNQJi4
+gJWrAFL1Qjtggg5adT8bfoTK/ZNnxaudsPKd22eA2Qb3/ioNC1ba/MF5/ziHt6svwHy8nHzR0Cwp
+zBoIUxwVpM1vShpkZrBuCVtup5vZwbM2SdIjbqmeIUmS3GpDU9wI0pDCIw5vkI6dtGXMa28bt2ZV
+7l4+Ku/70TP3vntVyABU0+bJ2yMOaC6k8IBUTYNfJ9EEKaiQ9OBC7TX6TUlDrzHXlzjO1tDmbj7e
+T468yQY6uPf05d5jiyNvDVa+2PoVqDpCmKKjuhuIQfHbESAelvp0bLMj2mw3W59LO3esyt1rceWt
+1yF1siFV4kCVuepNhd96i1KQt96uGStX1XPcgOjoOLsHzBpzBZJmT3/bdy6VVlghhYmLqwdI4iUO
+1KcjVDz1tg/IrCFpigOYr5vu4zhmTMq1L45uuqOptKp9uWY9PL1737kmLokzpDBFR73tO5fpAHBZ
+1ufi+E7af/yj+gURGQG+r6LMFgAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2021 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
