@@ -1,0 +1,1139 @@
+Go学习笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: https://www.zouyesheng.com/go.html
+%!format: !email
+%%toc
+
+
+# 安装 #
+
+新版本的 Go 的编译器，是使用 go 自己实现的，不是用 C ，所以，直接下载源码是编译不了的，所以也不用折腾了。直接到官网下载二进制可执行文件就行了，比如 https://golang.org/dl/go1.17.3.linux-amd64.tar.gz 。解压后使用 ``bin`` 里面的 ``go`` 命令即可。
+
+
+# Hello World #
+
+创建一个 ``demo.go`` 文件：
+
+```go
+package main
+
+func main() {
+    println("Hello World!")
+}
+```
+
+注意两点，要直接可执行，需要在 ``main`` 中的 ``main`` 函数。
+
+之后可以直接：
+
+```go
+go run demo.go
+```
+
+也可以：
+
+```bash
+go build demo.go
+./demo
+```
+
+``-o`` 参数是可用的
+
+```bash
+go build -o a demo.go
+./a
+```
+
+
+# 变量声明与赋值 #
+
+go 有不同的数据类型，变量与数据类型是需要绑定的。
+
+```go
+var text string
+text = "Hello World!"
+```
+
+这样是正确的，也可以直接：
+
+```go
+var text = "hello world"
+```
+
+go 有自动的类型推断，可以知道 ``text`` 的类型是 ``string`` 。
+
+还有一种声明方式，涉及“重声明”机制：
+
+先看：
+
+```go
+var text = "1"
+var text = "2"
+```
+
+这样写，是不能通过编译的，因为 ``text`` 已经声明过。你可以重新赋值，但是不能重新声明：
+
+```go
+var text = "1"
+text = "2"
+```
+
+这样没问题。
+
+本来声明和赋值是很清楚的，但是当赋值的能力涉及到“模式匹配”，或者说“多值赋值”（我现在还不知道 go 有没有模式匹配能力）时，问题就麻烦一点了。
+
+```go
+var a, b = "1", "2"
+a, b = "3", "3"
+```
+
+如果多值当中，有新声明的变量要“声明且赋值”，有旧的变量要“重新赋值”，那怎么办？
+
+```go
+var a, b = "1", "2"
+var c, b = "3", "3"
+```
+
+语法上选择了 ``a, b`` 可以省略多余的 ``var`` ，那么第二行就不能解释成只新声明 ``c`` ，不声明 ``b`` 了。
+
+也许是为了解决这种状况， ``go`` 搞了一个 ``:=`` 出来：
+
+```go
+func main() {
+    var a, b = "1", "2"
+    c, b := "3", "3"
+    e := "s"
+    fmt.Printf("%v %v %v %v\n", a, b, c, e)
+}
+```
+
+
+``:=`` 的规则就是，左侧至少需要一个新声明的变量，这样，它就会自动对旧变量作不声明，只重赋值，感觉是在给编译器擦屁股。
+
+
+
+
+# 数据类型 #
+
+## 基本静态类型 ##
+
+基本静态类型，我个人把它们看成四大类：
+
+- 布尔型
+- 整数型
+- 浮点型
+- 字节，字符，字符串
+
+
+说具体的类型之前，先介绍一个工具， ``unsafe.Sizeof`` ，它可以输出变量所占的“字节数”。
+
+```go
+package main
+
+import (
+    "fmt"
+    "unsafe"
+)
+
+func main() {
+    var b bool
+    b = true
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+}
+```
+
+你能看到 ``1`` 的输出，所以 布尔型的数据，也会占 1 个 Byte ，即 8 Bits 。
+
+
+布尔型，整数，浮点，都比较简单，直接列出下面的表格就可以了：
+
+
+|| 类型名                        | 名称       | 占用字节 | 范围 ||
+| bool                           | 布尔量     | 1        | true 和 false |
+| uint8, uint16, uint32, uint64  | 无符号整数 | 1,2,4,8  | 255, 65535, 42亿, MAX |
+| int8, int16, int32, int64      | 有符号整数 | 1,2,4,8  | 127, 32767, 21亿, MAX |
+| float32, float64               | 有符号浮点 | 4,8      | MAX
+
+
+另外还有一个 ``int`` 的类型，听说会因为操作系统的位数不同，而使用 ``int32`` 或者 ``int64`` ，在我的本机上是 ``int64`` ，占 8 个字节。
+
+
+## 类型别名 ##
+
+通过 ``type`` ，可以指定一个自定义的类型名字：
+
+```go
+type myInt int32
+var n myInt
+```
+
+## 字节，字符，字符串 ##
+
+go 中，还是有双引号表示“字符串”，单引号表示“字符”的传统方法。不过，这里的“字符”指的是 Unicode 真字符，占 4 个字节。
+
+```go
+func main() {
+    var b  = 'a'
+    var c  =  b + 1
+    var d  =  '\xFF'
+    var e = "abcdefghikk918298371jkjfkhh832"
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b)
+    fmt.Printf("%v\n", c)
+    fmt.Printf("%v\n", d)
+    fmt.Printf("%v\n", unsafe.Sizeof(e))
+    fmt.Printf("%v\n", e)
+}
+```
+
+上面的例子，可以看出：
+
+- ``'a'`` 是一个字符，占 4 个字节。本身是 ``uint32`` 。它有一个专门的类型名叫 ``rune`` 。
+- 使用使用 ``'\xFF'`` 来表示“字符”。
+- ``e`` 这个字符串占了 16 个字节，所以，字符串应该不是一个基本类型，更像是一个内置的对象。
+
+
+``rune`` 是字符， go 中自然有对应的“字节”类型，就是 ``byte`` 。
+
+```go
+func main() {
+    var b byte
+    b  = 'a'
+    var c  =  b + 1
+    var d  =  '\xFF'
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b)
+    fmt.Printf("%v\n", c)
+    fmt.Printf("%v\n", d)
+}
+```
+
+直接把 ``b`` 声明成 ``byte`` 之后，上面的代码都是完全没问题的， ``byte`` 本身是 ``uint8`` 。
+
+对于 ``rune`` ，它的数字值，是字符对应的 Unicode 编码的直接运算值：
+
+```go
+func main() {
+    var b rune
+    b  = '邹'
+    var c  =  b + 1
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b)
+    fmt.Printf("%v\n", c)
+}
+```
+
+``邹`` 的 Unicode 是 ``\x90B9`` ，直接看成数字就是 37049 。
+
+简单来说，就是对于 ``byte`` 和 ``rune`` ，你可以直接用数字搞。
+
+字符串我现在搞不懂，暂时把它当成内置对象看了。
+
+
+## 数组与切片 ##
+
+其实我一直“数组”的这个名字比较纠结，因为它里面不一定是“数字”啊，所以，一般我喜欢叫它们“列表”。
+
+go 中，列表是一种静态类型，即大小固定，值传递。
+
+```go
+func main() {
+    var b [3]bool
+    b = [3]bool{true, true}
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b[0])
+}
+```
+
+这种写法下，需要把 ``[3]bool`` 整体看成是一种类型，而不是只看 ``[]bool`` 。
+
+在 go 中， ``[]bool`` 长度留空的列表，不是列表类型，而是“切片”类型！
+
+
+```go
+func main() {
+    type myBoolList [3]bool
+    var b myBoolList
+    b = myBoolList{true, true}
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b[0])
+}
+```
+
+这样处理是正确的。
+
+```go
+func main() {
+    type myBoolList []bool
+    var b myBoolList
+    b = myBoolList{true, true}
+    fmt.Printf("%v\n", unsafe.Sizeof(b))
+    fmt.Printf("%v\n", b[0])
+}
+```
+
+这样处理也正确，但是你会看到 ``[]bool`` 的对象，会占用 24 个字节，所以“切片”已经不是一种静态结构了。
+
+如果要实现“自动分配固定长度”的列表，需要使用 ``[...]`` 语法：
+
+```go
+var b = [...]bool{true, true}
+fmt.Printf("%v\n", unsafe.Sizeof(b))
+fmt.Printf("%v\n", b[0])
+```
+
+这样， ``b`` 就只占 2 个字节。但是不能使用：
+
+```go
+type myBoolList [...]bool
+```
+
+这种 ``myBoolList`` 算啥？没法解释。
+
+切片可以直接单独直观地使用：
+
+```go
+func main() {
+    var b = [...]int32{1,2,3,4}
+    var a = b[1:2]
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a[0])
+}
+```
+
+区间取值是前闭后开，前后都可以省略：
+
+```go
+var a = b[:]
+```
+
+但是不支持负值索引。
+
+
+
+## 映射 ##
+
+映射，也叫字典， *map* 。这种类型，或者说这种对象， go 的封装程度是比较高的：
+
+```go
+func main() {
+    var a map[int32]int32
+    a = map[int32]int32{}
+    a[1] = 123
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a[1])
+}
+```
+
+声明时，通过直观的语法声明 ``key`` 和 ``value`` 的类型即可。
+
+还可以直接声明和赋值一起：
+
+```go
+var a = map[int32]int32{1: 123}
+var b = map[string]int32{"1": 123}
+```
+
+猜测任何 *hashable* 的对象都可以作为 ``key`` ，后面验证一下。
+
+
+## 结构体与函数 ##
+
+类似 C 中一样，通过 ``type`` 我们可以声明一个类型的“别名”，也可以直接通过 ``type`` 声明新的类型：
+
+```go
+func main() {
+    type point struct {
+        x int32
+        y int32
+    }
+    var a = point{x: 1, y: 2}
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a.x)
+}
+```
+
+也可以：
+
+```go
+var a point
+a.x = 1; a.y = 2
+```
+
+但是不可以：
+
+```go
+var a point = {x: 1, y: 2}
+```
+
+
+还可以使用 ``new`` ，像指标那样操作：
+
+```go
+var a = new(point)
+a.x = 1; a.y = 2
+fmt.Printf("%v\n", (*a).y)
+```
+
+这里把“函数”和结构体一起讲，是希望突出一个关键的语言特性，即我们常看到的一种说法——“函数是一等公民”。
+
+在 go 中，函数是一种基本类型，可以被用于成员定义，参数传入，返回。
+
+```go
+func main() {
+    type point struct {
+        x int32
+        y int32
+        add func(int32, int32) int32
+    }
+    var a point
+    a.x = 1; a.y = 2
+    a.add = func(a int32, b int32) int32 {
+        return a + b
+    }
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a.add(a.x, a.y))
+}
+```
+
+``point`` 的 ``add`` 成员，是一个函数，函数签名是两个 ``int32`` 的参数，返回 ``int32`` 。
+
+实际的实现中，我们直接给 ``a.add`` 赋值一个匿名函数。
+
+
+## 函数与可变参数 ##
+
+上一部分说了到了函数是基本类型，那么就就必要细看一下函数的行为。
+
+作为类型声明：
+
+```go
+func main() {
+    type onePFunc func(int32) string
+    var a onePFunc = func(a int32) string {
+        return "hello"
+    }
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a(1))
+}
+```
+
+这里的 ``a`` 参数，没有用到，编译器也不会提醒的。但是某个 ``import`` 的东西没有用到，却会提醒。
+
+作为结构体成员：
+
+```go
+func main() {
+    type hasFunc struct {
+        f func(int32) string
+    }
+    var a = hasFunc{f: func(a int32) string {return "hello"}}
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a.f(1))
+}
+```
+
+作为参数：
+
+```go
+func main() {
+    var a = func(f func(int32) int32) int32{
+        return f(1)
+    }
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a(func(n int32) int32 { return n+1}))
+}
+```
+
+作为函数返回：
+
+```go
+func main() {
+    var a = func(n int32) func() int32{
+        return func() int32 {
+            return n + 1
+        }
+    }
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a(2)())
+}
+```
+
+立即执行：
+
+```go
+func main() {
+    var a = 123;
+    (func(){
+        a = 456
+    })()
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a)
+}
+```
+
+go 中处理函数参数可变的方式，是使用可变参数，而不是使用“同名但是签名不同”。但是我没有找到返回可变类型的办法，如果返回的类型是可变的，那只能通过“接口”之类的机制再做一层抽象。
+
+可变参数在 go 中的处理，对于同种类型，作为最后一个参数，可以统一作为一个“切片”：
+
+```go
+func main() {
+    var a = func(a int32, b ...int32) int32 {
+        return a + b[1]
+    };
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a(1, 2, 3, 4))
+}
+```
+
+
+## 接口 ##
+
+go 中没有“类”，但是它却搞了一个“接口”的概念出来。所以，“接口的实现”只能放到 ``struct`` 中去做。
+
+另外，接口不能写在函数中。
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "unsafe"
+)
+
+type Runable interface {
+    run(string) string
+}
+
+type Person struct {
+    name string
+}
+
+func (p Person) run(name string) string {
+    return p.name + ":" + name + ":" + "running"
+}
+
+func main() {
+
+    var a = Person{name: "abc"}
+
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", a.run("haha"))
+}
+```
+
+
+上面代码中的：
+
+```go
+func (p Person) run(name string) string {
+    return p.name + ":" + name + ":" + "running"
+}
+```
+
+这个语法在我看来是很丑的。它的作用给 ``Person`` 这种类型添加了一个 ``run()`` 的方法。
+
+首先，“方法”本身和“接口”并没有必然的联系，上面的代码中即使不定义 ``Runable`` 的接口，也不影响 ``Person`` 类型多一个 ``run()`` 方法。
+
+其次， ``Person`` 的类型中，它的成员可以直接有一个名为 ``run`` 的函数：
+
+```go
+type Person struct {
+    name string
+    run func(string) string
+}
+```
+
+那么这种情况， ``Person`` 算不算是实现了 ``Runable`` 接口呢？
+
+``struct`` 本身应该是一个完整的结构，但它的方法却要和其它一些成员分开来写，这太别扭了。
+
+还有，从上面的流程看，“接口”好像除了在编译期做一些检查，在运行期是完全没必要存在的。不知道 go 中怎么处理动态接口，或者一些运行时加载的功能怎么处理。
+
+
+接口定义之后，我们就可以面向接口做函数的签名了：
+
+```go
+func main() {
+
+    var a = Person{name: "abc"}
+    var f = func(r Runable) string {
+        return r.run("waa")
+    }
+
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", f(a))
+}
+```
+
+顺便我们可以检查一下，对于：
+
+```go
+type Person struct {
+    name string
+    run func(string) string
+}
+```
+
+这种，即使我们给了 ``run`` 的一个实现，编译器也不认为 ``Person`` 实现了 ``Runable`` 接口：
+
+```go
+package main
+
+import (
+    "fmt"
+    "unsafe"
+)
+
+type Runable interface {
+    run(string) string
+}
+
+type Person struct {
+    name string
+    run func(string) string
+}
+
+
+func main() {
+
+    var a = Person{name: "abc", run: func(name string) string {return name + " is running"}}
+    var f = func(r Runable) string {
+        return r.run("waa")
+    }
+
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v\n", f(a))
+}
+```
+
+编译会报错，说 ``Person.run`` 是一个 *field* ，不是一个 *method* 。
+
+同时，你也不能给 ``int`` 添加一个方法：
+
+```go
+func (i int) run() string {
+    return "running"
+}
+```
+
+报的错是，不能一个 ``non-local`` 类型添加新的方法。
+
+
+# 流程控制和操作符 #
+
+go 的流程控制语句很简单，一共只有：
+
+- ``if``  ``else``
+- ``for`` , ``break``, ``continue``, ``range``
+- ``switch``
+- ``goto``
+
+
+go 专门提供了 ``goto`` ，嗯，很暴力。
+
+
+## if ##
+
+``if`` 后面不用加括号：
+
+```go
+func main() {
+    if true {
+        println("hello")
+    }
+}
+```
+
+``if`` 后面强制需要 ``bool`` 类型，给个 ``1`` 是不行的。同时，各种类型的转换，也是使用特定的函数，比较死板。
+
+
+go 的运算符没有什么特别的，“与否非”分别是 ``&&``， ``||``， ``!`` ：
+
+```go
+func main() {
+    if (1 > 1) && (2 > 0) {
+        println("hello")
+    } else {
+        println("world")
+    }
+}
+```
+
+
+## for ##
+
+
+``for`` 是一个通用的迭代实现，它只看成是流程控制时同时有传统的 ``while`` 和 ``for`` 的作用：
+
+传统 ``for`` 的形式是典型的三段：
+
+```go
+for i := 0; i < 10; i++ {
+    println(i)
+}
+```
+
+``for`` 里面的变量声明及赋值，就只能用 ``:=`` 了。
+
+三段可以任意省略。
+
+全省，就是一个死循环：
+
+```go
+var count int = 0;
+for {
+    println(count)
+    count++
+    if count == 10 { break }
+}
+```
+
+``for`` 后面只跟一个表达式，则它的行为跟传统的 ``while`` 一样：
+
+```go
+var count int = 0;
+for count < 10 {
+    println(count)
+    count++
+}
+```
+
+
+本身的功能说完，就来看 ``for`` 的迭代表现。这里，应该说更像在语法层面给 ``for`` 和 ``range`` 开的后门。
+
+是的， ``range`` 是一个 *statement* ，但是同时，你又可以像函数那么用它（有点像 Python2.x 时的 *print*）。
+
+
+```go
+var l = [3]int{2,3,4}
+for a, n := range l {
+    fmt.Printf("%v\n", unsafe.Sizeof(a))
+    fmt.Printf("%v: %v\n", a, n)
+}
+```
+
+遍历“列表”，两个值，一个是索引，另一个是列表成员值。
+
+“切片”的行为同“列表”是一样的。
+
+如果是 ``map`` 的话，则会迭代 ``key`` 和 ``vlaue`` ：
+
+```go
+func main() {
+    var l = map[string]int{"a": 3, "b": 9, "c": 4}
+    for a, n := range l {
+        fmt.Printf("%v\n", unsafe.Sizeof(a))
+        fmt.Printf("%v: %v\n", a, n)
+    }
+
+}
+```
+
+
+对于 ``string`` 则是字符索引和字符值（整数）：
+
+```go
+func main() {
+    var l = "hello"
+    for a, n := range l {
+        fmt.Printf("%v\n", unsafe.Sizeof(a))
+        fmt.Printf("%v: %v\n", a, n)
+    }
+
+}
+```
+
+
+## switch ##
+
+``switch`` 是结构化的多路 ``if`` ，我其实比较怀疑在 ``map`` 简单好用的情况下它会有多少的出场率。
+
+可以针对一个变量：
+
+```go
+func main() {
+    var l = 3;
+    switch l {
+        case 1:
+            println("1")
+        case 2:
+            println("2")
+        default:
+            println("other")
+    }
+}
+```
+
+针对单个变量时可以作多值判断：
+
+```go
+func main() {
+    var l = 1;
+    switch l {
+        case 1,2,3:
+            println("2")
+        default:
+            println("other")
+    }
+}
+```
+
+
+可以把逻辑表达式放在 ``case`` 中：
+
+```go
+func main() {
+    var l = 3;
+    switch {
+        case l == 1:
+            println("1")
+        case l == 2:
+            println("2")
+        default:
+            println("other")
+    }
+}
+```
+
+
+可以通过 ``fallthrough`` 实现 ``next`` 的功能，同时会跳过 ``case`` 的逻辑判断：
+
+```go
+func main() {
+    var l = 1;
+    switch {
+        case l == 1:
+            println("1")
+            fallthrough
+        case l == 2:
+            println("2")
+            break
+        case l == 3:
+            println("3")
+        default:
+            println("other")
+    }
+}
+```
+
+
+## goto ##
+
+
+```go
+func main() {
+    var l = [3]int{1,2,3}
+
+
+    for _, i := range l {
+        if i == 3 {
+            goto exit
+        }
+        println(i)
+    }
+
+    exit:
+    println("exit")
+}
+```
+
+注意一下 ``label`` 的语法，以 ``:`` 结尾。在行前加一个 ``label`` 对它之后的语句并没有额外影响。
+
+
+# 错误和异常 #
+
+## 错误 ##
+
+go 中官方定义了专门的 ``errors`` 工具，和 ``error`` 接口：
+
+```go
+type error interface {
+    Error() string
+}
+```
+
+所以，错误本身，并没有什么特别的，用它或者不用它，不影响你写代码：
+
+```go
+package main
+
+import (
+    "errors"
+)
+
+
+func getError() error {
+    return errors.New("this is a error")
+}
+
+type Cls struct {
+    name string
+}
+
+func (c Cls) Error() string {
+    return c.name
+}
+
+func main() {
+    var e error = getError()
+    var c Cls = Cls{name: "haha"}
+    println(e.Error())
+    println(c.Error())
+}
+```
+
+
+## 异常 panic, recover, defer ##
+
+go 中的异常，不像传统的 ``throw`` ``catch`` 那套，至少名字上不是。
+
+看一个异常的例子：
+
+```go
+package main
+
+func div(i int) int {
+    return 10 / i
+}
+
+func main() {
+    var i int = div(0)
+    println(i)
+}
+```
+
+说到异常，最先想到的就是 ``N / 0`` （当然，js 中有 ``Infinity`` 或者 ``NaN`` 人家就是不用异常） ，但是，你不能直接写 ``1 / 0`` ，编译器还是可以发现的，用函数包装一下编译器就不和你墨迹了。
+
+成功编译，在执行的时候，就能看到报错，及调用栈。
+
+要捕捉异常，在 go 中使用 ``recover()`` 函数，是的，一个函数。但是现在问题变成，这个函数如果放在前面，那么调用它时还没有异常。如果放在后面，因为异常中断了程序，无法调用。
+
+结果， go 搞了一个 ``defer`` 语句，来把指定的语句在当前函数执行完后执行，有点 js 中 ``setTimeout`` 的感觉啊。
+
+
+```go
+func main() {
+    defer func(){
+        var p = recover()
+        println("here xxxx", p)
+    }()
+    var i int = div(0)
+    println(i)
+}
+```
+
+这样一加，你就等于把异常处理了，能看到正常的 ``here xxxx`` 输出。
+
+要手动抛出异常，可以使用 ``panic()`` 函数，它接受任何参数（反正是一个空接口）：
+
+```go
+func main() {
+    defer func(){
+        var p = recover()
+        println("here xxxx", p)
+    }()
+    panic("hello")
+    println("over")
+}
+```
+
+看起来没异常的样子，倒像是一个 ``pipe`` 。
+
+go 没有 ``try`` 的结构，异常只会延函数调用往上传播，直到被捕捉：
+
+```go
+package main
+
+
+func aaa() {
+    panic("throw in aaa")
+}
+
+func aa() {
+    defer func(){
+        var p = recover()
+        if p != nil {
+            println("aa", p)
+            panic(p)
+        }
+    }()
+    aaa()
+}
+
+func a() {
+    defer func(){
+        var p = recover()
+        if p != nil {
+            println("a", p)
+        }
+    }()
+    aa()
+}
+
+func main() {
+    a()
+    println("over")
+}
+```
+
+
+# goroutine, 通道, 并发 #
+
+这些被看成是 go 的特点。 *goroutine* ，有些人称其为 go程，或者“协程”，我喜欢叫它“上下文”。
+
+*通道* 是一种数据类型，听说是用于不同上下文的信息交换，行为类似操作系统的 *pipe* 。
+
+*goroutine* 肯定是很轻量的东西，随时创建，创建销毁。但是我目前不清楚，它们到底是不是可以“并行”， go 本身是不是可以在多个进程间调度它们，在保持看起来是同一个运行时的前提下。
+
+
+``go`` 语句可以开启一个 *goroutine* ：
+
+```go
+func main() {
+    go func(){
+        println("in go")
+    }()
+    println("over")
+}
+```
+
+直接运行，你会发现看不到 ``in go`` ，打印 ``over`` 之后就结束了，嗯……，暂停一下才能看到 ``go func()`` 的输出：
+
+```go
+package main
+
+import (
+    "time"
+)
+
+func main() {
+    go func(){
+        println("in go")
+    }()
+    println("over")
+    time.Sleep(5 * time.Second)
+}
+```
+
+go 原生提供了 *goroutine* ，但不像 js 那种会默认自己控制一个 ``event loop`` ，也不像 Python 的某些工具，会显式地提供 ``event.start()`` 。
+
+不过 *通道* 倒是提供了默认的“阻塞”特性：
+
+```go
+package main
+
+func main() {
+    var ch = make(chan string)
+    var callback = func() {
+        println("in go")
+        var s string = <-ch
+        println(s)
+        println("here")
+    }
+    go callback()
+    ch <- "write"
+    println("over")
+}
+```
+
+这段代码可以确定地得到：
+
+```text
+in go
+write
+here
+over
+```
+
+这样的输出，看起来就像是 ``ch <- "write"`` 之后，再执行 ``callback()`` 一样。
+
+如果你不把 ``ch`` 的读放在 ``callback()`` 中，在外面就立即读出：
+
+```go
+go callback()
+ch <- "write"
+var s string = <-ch
+println(s)
+println("over")
+```
+
+那么编译时就会给出死锁错误。
+
+关于死锁，我试，你先读或者先写，都会死，似乎只有通过 *goroutine* “同时”读写才行。
+
+
+但是，如果你从来就不往 ``ch`` 里写任何东西，又可以正常编译：
+
+```go
+func main() {
+    var ch = make(chan string)
+    var callback = func() {
+        println("in go")
+        var s string = <-ch
+        println(s)
+        println("here")
+    }
+    go callback()
+    println("over")
+}
+```
+
+最终只会有 ``over`` 输出就是了。
+
+挻矛盾的，至少 ``<-ch`` 会阻塞的说法不准确。
+
+```go
+func main() {
+    var ch = make(chan string)
+    var callback = func() {
+        println("in go")
+        var s string = <-ch
+        println(s)
+        println("here")
+    }
+    go callback()
+    time.Sleep(5 * time.Second)
+    ch <- "write"
+    println("over")
+}
+```
+
+这段代码，最终只会输出：
+
+```text
+in go
+over
+```
+
+目前搞不懂。
+
+下面来求证最开始的那个问题， *goroutine* 是否在多进程上调度，写个死循环：
+
+
+```go
+package main
+
+func main() {
+    var count int = 0
+    for {
+        go func(){
+            count += 1
+            println(count)
+            for {}
+        }()
+    }
+    println("over")
+}
+```
+
+通过操作系统的监控，可以发现能跑满所有 CPU 核心，哈，真香！
+
+不过剩下的问题是，go 中哪些数据类型是进程安全的了。
+
+
+
