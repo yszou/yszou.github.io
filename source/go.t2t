@@ -312,6 +312,33 @@ var a = b[:]
 
 但是不支持负值索引。
 
+使用 ``len()`` 函数可以获取数组和切片的长度（注意，数组是定长，它的长度不一定等于成员个数）：
+
+
+```go
+var l = [5]int{1,2,3}
+println(len(l))
+```
+
+```go
+var l = []int{1,2,3}
+println(len(l))
+```
+
+```go
+var l = [...]int{1,2,3}
+println(len(l))
+```
+
+切片可变化，使用 ``append()`` 可以在尾部添加成员，并返回新的引用：
+
+```go
+var l = []int{1,2,3}
+println(len(l))
+l = append(l, 2, 3, 4)
+println(len(l))
+```
+
 
 
 ## 映射 ##
@@ -338,6 +365,43 @@ var b = map[string]int32{"1": 123}
 ```
 
 猜测任何 *hashable* 的对象都可以作为 ``key`` ，后面验证一下。
+
+获取一个不存在的 ``key`` ，不会引发错误：
+
+```go
+var m = map[string]string{}
+m["a"] = "123"
+var s string = m["b"]
+println(s == "")
+```
+
+没有办法直接判断 ``key`` 是否存在，只能取值，通过第二个返回值判断：
+
+```go
+var m = map[string]string{}
+m["a"] = "123"
+s, ok := m["b"]
+println(s == "")
+println(ok)
+```
+
+使用 ``delete`` 函数删除 ``key`` ：
+
+```go
+var m = map[string]string{}
+var s string
+var ok bool
+
+m["a"] = "123"
+s, ok = m["a"]
+println(s == "")
+println(ok)
+delete(m, "a")
+s, ok = m["a"]
+println(s == "")
+println(ok)
+```
+
 
 
 ## 结构体与函数 ##
@@ -1135,5 +1199,220 @@ func main() {
 
 不过剩下的问题是，go 中哪些数据类型是进程安全的了。
 
+
+
+# 指针，空间分配和存续 #
+
+go 里面有像 C 中一样的指针，同时可以使用 ``new()`` 来分配一块指定类型所需大小的空间：
+
+```go
+var p *int = new(int)
+*p = 123
+println(*p)
+println(p)
+return
+```
+
+语法上，使用 ``*`` 对指针进行求值，使用 ``&`` 可以获取地址（并赋值给指针）：
+
+```go
+var m = map[string]string{"a": "123"}
+var p *map[string]string
+p = &m
+fmt.Println((*p)["a"])
+```
+
+``new`` 分配的空间，由 go 统一管理，即使退出函数，也不会直接释放：
+
+```go
+func alloc() *int {
+    var p *int = new(int)
+    return p
+}
+
+func main() {
+    var p *int = alloc()
+    *p = 123
+    println(p)
+    println(&p)
+    println(*p)
+}
+```
+
+仅对于 *切片*， *映射*， *通道* ，可以使用 ``make()`` 来分配空间（但是我们可以不单独做 ``make`` ，而是声明时直接完成初始化了，这时，空间的分配由系统自动处理，可能会比初始值大）：
+
+```go
+var s []int = []int{1,2,3}
+var s2 []int
+s2 = make([]int, 20)
+fmt.Println(s)
+fmt.Println(s2)
+return
+```
+
+go 里没有单独的指向函数的指针，感觉也不需要，函数本身就是“第一公民”。
+
+
+# 链表 #
+
+链表的实现在 ``container/list`` 中的两个对象， *List* 和 *Element* 。
+
+*Element* 比较简单，它的成员有：
+
+- ``Value interface{}``
+- ``Next() *Element``
+- ``Prev() *Element``
+
+
+*List* 的方法多一些：
+
+- static ``list.New() *List`` 初始化一个列表
+- ``Init() *List`` 初始化或者清空列表
+- ``Back() *Element`` 最后一个元素
+- ``Front() *Element`` 第一个元素
+- ``InsertAfter(v interface{}, mark *Element) *Element`` 在 ``mark`` 后面添加
+- ``InsertBefore(v interface{}, mark *Element) *Element`` 在 ``mark`` 前面添加
+- ``Len() int`` 链表长度
+- ``MoveAfter(e *Element, mark *Element)`` 把 ``e`` 移动到 ``mark`` 后面
+- ``MoveBefore(e *Element, mark *Element)`` 把 ``e`` 移动到 ``mark`` 前面
+- ``MoveToBack(e *Element)`` 把 ``e`` 放到最后
+- ``MoveToFront(e *Element)`` 把 ``e`` 放到最前
+- ``PushBack(v interface{}) *Element`` 在末尾追加
+- ``PushFront(v interface{}) *Element`` 在最前面添加
+- ``PushBackList(l *List)`` 复制 ``l`` 并在末尾连接
+- ``PushFrontList(l *List)`` 复制 ``l``并在最前面连接
+- ``Remove(e *Element) interface{}`` 删除指定元素，同时返回元素的 ``Value``
+
+
+简单的例子：
+
+```go
+package main
+
+import (
+    "container/list"
+    "fmt"
+)
+
+
+func show(l *list.List) {
+    var e *list.Element
+    e = l.Front()
+    if e == nil { return }
+    for {
+        fmt.Print(e.Value)
+        e = e.Next()
+        if e == nil { break }
+        fmt.Print(" -> ")
+    }
+}
+
+
+func main() {
+    var p *list.List = list.New()
+    (*p).PushBack(2)
+    p.PushBack("3")
+    show(p)
+}
+```
+
+用自己 ``PushBackList`` 的例子：
+
+```go
+func main() {
+    var p *list.List = list.New()
+    var e *list.Element = (*p).PushBack(2)
+    p.PushBack("3")
+    show(p)
+    println("\n\n")
+    p.PushBackList(p)
+    e.Value = 88
+    show(p)
+}
+```
+
+最后的输出是： ``88 -> 3 -> 2 -> 3`` ，能看出 ``p`` 是复制了一份添加的。
+
+
+# 字符与字节 #
+
+先说一个限制，或者说一个前提，go 的源码限制为必须使用 UTF-8 编码。
+
+前面说过， *rune* 是“字符”， *byte* 类型是字节。注意，“字符串” 是 *string* ，所以这里有三种数据类型。
+
+```go
+func main() {
+    var s = "中文"
+    fmt.Println(len(s))
+}
+```
+
+上面的输出是 ``6`` ，所以，“字符串”应该被叫作“字节串”。
+
+类型的转换在 go 中，倒是很直观，直接“声明”就可以完成转换了：
+
+```go
+func main() {
+    var s = "中文go"
+    var ss = []rune(s)
+    fmt.Println(len(ss))
+}
+```
+
+转换成 ``[]rune`` 就可以正确得到“字符个数”。 ``byte`` 同理：
+
+```go
+func main() {
+    var s = "中文go"
+    var ss = []byte(s)
+    fmt.Println(len(ss), len(s))
+}
+```
+
+转成字符串也是直接的：
+
+```go
+func main() {
+    var b = []byte{'\x01', '\x64'}
+    var ss = []rune{'中', '文'}
+    fmt.Println(ss)
+    var s = string(ss)
+    var bs = string(b)
+    fmt.Println(s, bs)
+}
+```
+
+这些转换，都是基于 UTF-8 这个前提的。对于其它编码的情况怎么处理呢。
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 文件IO #
+
+
+
+# 命令行参数 #
+
+
+
+# 日志 #
+
+
+
+
+# 测试 #
+
+
+
+# 名字空间，包与项目结构 #
 
 
