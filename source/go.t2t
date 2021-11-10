@@ -1336,6 +1336,8 @@ func main() {
 
 # 字符与字节 #
 
+## rune, byte, string ##
+
 先说一个限制，或者说一个前提，go 的源码限制为必须使用 UTF-8 编码。
 
 前面说过， *rune* 是“字符”， *byte* 类型是字节。注意，“字符串” 是 *string* ，所以这里有三种数据类型。
@@ -1348,6 +1350,7 @@ func main() {
 ```
 
 上面的输出是 ``6`` ，所以，“字符串”应该被叫作“字节串”。
+
 
 类型的转换在 go 中，倒是很直观，直接“声明”就可以完成转换了：
 
@@ -1382,21 +1385,182 @@ func main() {
 }
 ```
 
-这些转换，都是基于 UTF-8 这个前提的。对于其它编码的情况怎么处理呢。
+这些转换，都是基于 UTF-8 这个前提的。对于其它编码的情况怎么处理呢，哪只能依赖额外的模块了。
+
+目前使用的是 ``golang.org/x/text`` ：
+
+```go
+package main
+
+import (
+    "fmt"
+    "golang.org/x/text/encoding/simplifiedchinese"
+)
+
+func UTF8toGBK(s []byte) []byte {
+    b, err := simplifiedchinese.GBK.NewEncoder().Bytes(s)
+    if err != nil {
+        panic(err)
+    }
+    return b
+}
+func GBKtoUTF8(s []byte) []byte {
+    b, err := simplifiedchinese.GBK.NewDecoder().Bytes(s)
+    if err != nil {
+        panic(err)
+    }
+    return b
+}
 
 
+func main() {
+    var b []byte = UTF8toGBK([]byte("中文"))
+    fmt.Println(b)
+    var u []byte = GBKtoUTF8(b)
+    fmt.Println(u)
+    var s = string(u)
+    fmt.Println(s)
+}
+```
+
+基本上，go 中的做法都是基于 UTF-8 的字节数据做直接的转换操作。
+
+相较而言， Python3.x 中的字符串是抽象的真正的“字符串”，和字节没有直接关系的处理方式，我觉得是更现代的做法。
 
 
+## strings 更多及“零值可用” ##
+
+*string* 在 go 中，本来是一块不可变的字节内容，但是字符串的处理却又是很常见的场景，所以 go 提供了额外的工具来处理字符串的读写。
+
+首先一定要记住的一点，就是“字节串”，而不是“字符串”：
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    var s string = "中文"
+    fmt.Println(s[:3])
+    fmt.Println(string([]rune(s)[:1]))
+}
+```
+
+上面的代码都会输出“中”字。
 
 
+如果对字符串的读写处理，有更多的一些需求，比如性能（普通的字符串拼接因为要重新分配空间，所以频繁的操作成本还是比较大的）， go 中有专门的工具：
+
+```go
+package main
+
+import (
+    "strings"
+)
+
+func main() {
+    var s strings.Builder
+    println(s.String(), s.Len(), s.Cap())
+    s.WriteByte('a')
+    s.WriteString("哈哈")
+    s.WriteRune('中')
+    s.Write([]byte("文"))
+    println(s.String(), s.Len(), s.Cap())
+    s.Grow(100)
+    s.WriteString("123455669990")
+    println(s.String(), s.Len(), s.Cap())
+    println(strings.ToTitle(s.String()))
+    s.Reset()
+    println(s.String(), s.Len(), s.Cap())
+}
+```
+
+关于上面的代码：
+
+- ``strings.Builder`` 不需要显式的初始化，直接就可以用。这是 go 的 *零值可用* 机制。至于哪些东西是 *零值可用* 的，不一定。
+- ``strings`` 这个包，除了 ``Builder`` ，还提供了其它针对字符串的工具，但是这些工具不能作用于 ``Builder`` 对象。
+- 要获取 ``Builder`` 的长度，需要用 ``Len()`` 方法，你不能用 ``len(builder)`` ， ``len()`` 没办法通用（说好的“面向接口”呢）。
+- ``Cap()`` 是获取当前对象的空间大小信息， ``Write()`` 的东西超出了预分配的大小， ``builder`` 会自动“整理重分配”。
+- 你可以通过 ``Grow()`` 自己预先调整空间，结果是“至少”那么多。 ``Reset()`` 是重置，看起来可能也会直接释放空间。
 
 
-
-
-
+go 的种种，真的谈不上美感，也许，实用吧。
 
 
 # 文件IO #
+
+go 中的文件相关功能，由 ``os`` 包提供支持，但是同时，还有像 ``io/ioutil`` 之类的工具封装。
+
+``os`` 包中，有对 *File* ， *fd*，及各种具体的文件类型，文件权限的处理。
+
+我去翻 ``os`` 的 API 时，找到了两个“打开文件”的方法，一个是 ``Open()`` 另一个 ``OpenFile()`` ，第一个只是为“读”打开，第二个有“读写”。这时我才知道， go 中，是不支持“参数默认值”机制的。
+
+不支持“参数默认值”是一种设计上的选择，无疑会带来很多的不便，但是我并不认为会带来多少“意图清晰”的收益。
+
+当然，如果你在网上搜索一下为什么 go 不支持参数默认值，就会看到很多“屁话”，这种感觉，就像很多人无脑说 OSX 的设计是多么好一样，好到把 Enter 用成“改名”都是一种优越感（吐）。
+
+直接用 ``os`` 读取完整的文件，还是有些麻烦的：
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "strings"
+    "io"
+)
+
+func main() {
+    file, err := os.Open("/home/zys/temp/demo.go")
+    if err != nil {
+        fmt.Println(err)
+        panic(err)
+    }
+
+    var data strings.Builder
+    for {
+        var buff []byte = make([]byte, 10)
+        _, err := file.Read(buff)
+        if err == io.EOF { break }
+        data.Write(buff)
+    }
+    fmt.Println(data.String())
+}
+```
+
+每次只能读取具体大小的字节，通过判断 ``EOF`` 决定下一步行为。
+
+直接使用 ``ioutil`` 会方便一些：
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+    "io/ioutil"
+)
+
+func main() {
+    file, err := os.Open("/home/zys/temp/demo.go")
+    if err != nil {
+        fmt.Println(err)
+        panic(err)
+    }
+    content, err := ioutil.ReadAll(file)
+    fmt.Println(string(content))
+
+    content2, err := ioutil.ReadFile("/home/zys/temp/demo.go")
+    fmt.Println(string(content2))
+}
+```
+
+
+
 
 
 
