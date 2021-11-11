@@ -12,6 +12,8 @@ Go学习笔记
 
 新版本的 Go 的编译器，是使用 go 自己实现的，不是用 C ，所以，直接下载源码是编译不了的，所以也不用折腾了。直接到官网下载二进制可执行文件就行了，比如 https://golang.org/dl/go1.17.3.linux-amd64.tar.gz 。解压后使用 ``bin`` 里面的 ``go`` 命令即可。
 
+过程中，要使用第三方的包，或者要找官方包的文档，可以在 https://pkg.go.dev/ 搜索。
+
 
 # Hello World #
 
@@ -434,7 +436,7 @@ var a point = {x: 1, y: 2}
 ```
 
 
-还可以使用 ``new`` ，像指标那样操作：
+还可以使用 ``new`` ，像指针那样操作：
 
 ```go
 var a = new(point)
@@ -1491,11 +1493,14 @@ go 的种种，真的谈不上美感，也许，实用吧。
 
 # 文件IO #
 
+
+## 文件读写 ##
+
 go 中的文件相关功能，由 ``os`` 包提供支持，但是同时，还有像 ``io/ioutil`` 之类的工具封装。
 
 ``os`` 包中，有对 *File* ， *fd*，及各种具体的文件类型，文件权限的处理。
 
-我去翻 ``os`` 的 API 时，找到了两个“打开文件”的方法，一个是 ``Open()`` 另一个 ``OpenFile()`` ，第一个只是为“读”打开，第二个有“读写”。这时我才知道， go 中，是不支持“参数默认值”机制的。
+我去翻 ``os`` 的 API 时，找到了两个“打开文件”的方法，一个是 ``Open()`` 另一个 ``OpenFile()`` ，第一个只是为“读”打开，第二个有“读写”。这时我才知道， go 中，是不支持“参数默认值”机制的。如果一定要做，可以通过“可变参数”自己折腾。
 
 不支持“参数默认值”是一种设计上的选择，无疑会带来很多的不便，但是我并不认为会带来多少“意图清晰”的收益。
 
@@ -1559,24 +1564,309 @@ func main() {
 }
 ```
 
+写文件也是类似的：
+
+```go
+package main
+
+import (
+    "fmt"
+    "os"
+)
+
+func main() {
+    file, err := os.OpenFile("/home/zys/temp/demo.txt", os.O_RDWR|os.O_CREATE, 0755)
+    if err != nil {
+        fmt.Println(err)
+        panic(err)
+    }
+    n, err := file.Write([]byte("890"))
+    n2, err := file.WriteString("中文")
+    println(n, n2)
+}
+```
+
+## 标准输入输出 ##
 
 
+``os.Stdin``, ``os.Stdout``, ``os.Stderr`` 是三个 ``File Like`` 的对象。
+
+
+标准输出和错误输出都很简单：
+
+```go
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    os.Stdout.WriteString("123")
+    os.Stderr.WriteString("123")
+}
+```
+
+
+输入处理直接地可以是：
+
+```
+package main
+
+import (
+    "os"
+    "fmt"
+    "strings"
+)
+
+func main() {
+    var s strings.Builder
+    for {
+        var buff []byte = make([]byte, 1)
+        _, err := os.Stdin.Read(buff)
+        if err != nil {
+            break
+        }
+        if buff[0] == '\n' {
+            fmt.Println(s.String())
+            break
+        }
+        s.Write(buff)
+    }
+}
+```
+
+## File Like ##
+
+
+（暂时没找到现成的方案）
 
 
 
 # 命令行参数 #
 
+完善一些的工具是 ``flag`` 包，最直接的处理是使用 ``os.Args`` 。
+
+```go
+package main
+
+import (
+    "os"
+)
+
+func main() {
+    for idx, args := range os.Args {
+        println(idx, args)
+    }
+}
+```
+
+编译后执行：
+
+```bash
+./demo --abc = 123 -b 1 "1 2 3"
+```
+
+能看到输出的内容是：
+
+```text
+0 ./demo
+1 --abc
+2 =
+3 123
+4 -b
+5 1
+6 1 2 3
+```
+
+基本上就是以空格分割，但是额外处理了引号。
 
 
 # 日志 #
 
+go 官方自带了一个 ``log`` 包，有基本的配置能力，不过，最重要的 *Level* 没有，这就有点尴尬。自己处理的话，只能不同的 *Level* 单独定义一个“实例”，然后通过配置再处理 output 。当然，第三方有一些功能更完整的包。
 
+
+```go
+package main
+
+import (
+    "os"
+    "log"
+)
+
+func main() {
+    InfoLog := log.New(os.Stdout, "INFO ", log.Ldate|log.Ltime|log.Lshortfile)
+    ErrorLog := log.New(os.Stdout, "ERROR ", log.Ldate|log.Ltime|log.Lshortfile)
+    InfoLog.Print("here")
+    ErrorLog.Print("here")
+}
+```
+
+``INFO`` 部分是 *Prefix* ， ``log.Ldate...`` 是 *Flags* ，就提供了有限的几个配置。
 
 
 # 测试 #
 
+官方自带的测试支持，主要在两个方面，一是 ``go`` 这个命令行工具，专门有一组 ``go test`` 的功能，这套功能配合约定的“文件名”，“函数”等，可以直接一键运行项目中的测试用例。另一方面，官方提供了 ``testing`` 这个包，里面有测试的基本的功能实现，但是没有断言……
+
+
+## 功能测试 ##
+
+这里的几个规则包括：
+
+- 文件名以 ``_test`` 结束。
+- 函数以 ``Test`` 开头，参数是 ``*testing.T`` 。
+- 或者一个 ``TestMain`` 的函数，参数是 ``*testing.M`` 。
+
+
+下面的代码写在 ``demo_test.go`` 文件中。
+
+```go
+package main
+
+import "testing"
+
+func add(a int, b int) int {
+    return a + b
+}
+
+func TestAdd(t *testing.T) {
+    t.Run("first", func(t *testing.T){
+        if add(1, 2) == 3 {
+            t.Fail()
+        }
+    })
+
+    t.Run("second", func(t *testing.T){
+        if add(1, 2) == 3 {
+        }
+    })
+}
+
+func TestXX(t *testing.T) {
+    t.Run("first", func(t *testing.T){
+        if add(1, 2) == 3 {
+        }
+    })
+
+    t.Run("second", func(t *testing.T){
+        t.Run("another", func(t *testing.T){
+            if add(1, 2) == 3 {
+                t.Fail()
+            }
+        })
+    })
+}
+
+
+func setup() {
+    println("setup")
+}
+
+func teardown() {
+    println("teardown")
+}
+
+func TestMain(m *testing.M) {
+    setup()
+    m.Run()
+    teardown()
+}
+```
+
+执行的时候：
+
+```bash
+go test demo_test.go
+```
+
+这样只能看到 *Fail* 的用例。要看全部的测试用例，可以：
+
+```bash
+go test demo_test.go -test.v
+```
+
+
+## 性能测试 ##
+
+这里的几个规则包括：
+
+- 文件名以 ``_test`` 结束。
+- 函数以 ``Benchmark`` 开头，参数是 ``*testing.B`` 。
+- 或者一个 ``TestMain`` 的函数，参数是 ``*testing.M`` 。
+- 执行的时间要加上 ``bench`` 。
+
+
+```go
+package main
+
+import "testing"
+import "strings"
+
+func add(a string, b string) string {
+    return a + b
+}
+
+func add2(a string, b string) string {
+    var s strings.Builder
+    s.WriteString(a)
+    s.WriteString(b)
+    return s.String()
+}
+
+func BenchmarkAdd(b *testing.B) {
+    b.Run("add", func (b *testing.B) {
+        b.ResetTimer()
+        for i := 0; i < b.N; i++ {
+            add("1", "2")
+        }
+    })
+    b.Run("add2", func (b *testing.B) {
+        b.ResetTimer()
+        for i := 0; i < b.N; i++ {
+            add2("1", "2")
+        }
+    })
+}
+
+
+func TestMain(t *testing.M) {
+    t.Run()
+}
+```
+
+和功能测试一样的，只是 ``*testing.B`` 提供了不同的功能。
+
+执行的时候：
+
+```bash
+go test -bench=. demo_test.go -test.v
+```
+
+
+# 并发与锁 #
+
+
+## 竞态 ##
+
+## 原子操作 ##
+
+## 互斥锁 ##
+
+## 条件变量 ##
+
+## 并发计数器 ##
+
+## 上下文 ##
+
+## 缓存共享池 ##
+
+
 
 
 # 名字空间，包与项目结构 #
+
+
 
 
