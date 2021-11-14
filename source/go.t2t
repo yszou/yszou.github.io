@@ -1847,12 +1847,254 @@ go test -bench=. demo_test.go -test.v
 
 # 并发与锁 #
 
+作为一个把并发并行作为特性来设计的语言，却还有如此复杂多样的处理机制，同时，我看语法层面，对于是否“并行安全”也没有单独的语法设计，即，当你使用某个数据结构，或者某个方法的时候，除非看文档，否则，你是不是不知道它是否是并行安全的。如此，我觉得，可能是会存在层层加锁的问题。
+
+## go 的调度能力 ##
+
+这个前面其实提到过。下面的死循环代码是可以跑满所有 CPU 核心的：
+
+```go
+package main
+
+func main() {
+    var count int = 0
+    for {
+        go func(){
+            count += 1
+            println(count)
+            for {}
+        }()
+    }
+    println("over")
+}
+```
+
+但是不用 *goroutine* 的编译后的 go 程序，就没有特别之处了：
+
+```go
+package main
+
+func main() {
+    var count int64 = 0
+    var a float64 = 3.1415926
+    var m = map[float64]float64{}
+    for {
+        for {
+            count += 1
+            a = a * float64(count) / float64(count)
+            m[float64(count)] = a + 0.0001
+            if count % 10000 == 0 {
+                println(count, a)
+            }
+        }
+    }
+    println("over")
+}
+```
+
+可以看到，程序会在多个 CPU 核心之间调度。
+
 
 ## 竞态 ##
 
+即使是最简单的数据结构，最简单的操作，也不要以为它们是并行安全的：
+
+
+```go
+package main
+
+import "fmt"
+import "time"
+
+func main() {
+    var count int = 0
+    for i := 0; i < 100; i++ {
+        go func(){
+            for j := 0; j < 100; j++ {
+                count += 1
+            }
+        }()
+    }
+    time.Sleep(5 * time.Second)
+    fmt.Println("count is", count)
+}
+```
+
+多执行几次，一定会看到 ``count`` 最后的结果是会比 10000 小的。 go 虽然可以在多 CPU 核心之间并行调整，也可以帮你把所有进程同步的事做好，但是，数据结构及操作行为的并行同步的工作，必须要你自己处理。也许有的数据结构是并行安全的，那也需要你自己去确认。
+
+
 ## 原子操作 ##
 
+“原子操作”的意思，是 CPU 指令中本身提供了并行安全的计算指令，直接在相应的内存地址上使用这些指令，那么 CPU 本身会保证它们的操作是原子性的，不会遇到并行计算的问题。不过，这些操作基本只支持整数，也只支持有限的一些简单运算。
+
+go 通过 ``sync/atomic`` 包来提供这方面的支持。
+
+```go
+package main
+
+import "fmt"
+import "sync/atomic"
+import "time"
+
+func main() {
+    var count int32 = 0
+    for i := 0; i < 100; i++ {
+        go func(){
+            for j := 0; j < 100; j++ {
+                atomic.AddInt32(&count, 1)
+            }
+        }()
+    }
+    time.Sleep(2 * time.Second)
+    fmt.Println("count is", count)
+}
+```
+
+通过 ``atomic.AddInt32`` 执行的加1，是不会有并行问题的，所以，结果必然是 ``10000`` 。
+
+
+``atomic`` ，提供了针对整数和指针的这几类操作：
+
+- 加法，*Add* 。（你可以加一个负数）
+- 比较和交换， *CompareAndSwap* ，如果当前值和指定值相同，则赋值为新值，返回 ``true`` 。
+- getter， *Load*
+- setter， *Store*
+
+
+同时， ``atomic`` 还提供了一个比如通用的 ``Value`` 类型，我猜，可能是内部使用指针实现了一些操作吧。
+
+*Load* 和 *Store* 单独看别以为是字面上那么简单，它后面还涉及“指令序”等知识。
+
+所以，原子操作的功能，像我们这种对底层不太了解的人，尽量少碰了。
+
+
 ## 互斥锁 ##
+
+互斥锁就是通常我们理解的“锁”，这里要注意，它是一种工具，而不是一种保证机制。工具的意思是，大家都用 ``Lock()`` ，那么可以达到同步的目的。而如果有并行内容它本身不使用 ``Lock()`` ，那么它是可以无视其它并行使用了 ``Lock()`` 的事实的。
+
+go 中通过 ``sync.Mutex`` 提供锁的功能支持。
+
+```go
+package main
+
+import "fmt"
+import "sync"
+import "time"
+
+
+func main() {
+    var count int = 0
+    var m sync.Mutex
+    for i := 0; i < 100; i++ {
+        go func(){
+            for j := 0; j < 100; j++ {
+                m.Lock()
+                count += 1
+                m.Unlock()
+            }
+        }()
+    }
+    time.Sleep(2 * time.Second)
+    fmt.Println("count is", count)
+}
+```
+
+同样是锁, go 中还有控制得更细一些的 ``RWMutex`` ，即区分了读写的锁，它的规则是：
+
+- 同一时间只能一个写。
+- 同一时间可以多个读。
+- 读写互斥。
+
+
+它的方法多两个：
+
+- ``Lock()`` 写锁定
+- ``Unlock()`` 写释放
+- ``RLock()`` 读锁定
+- ``RUnlock()`` 读释放
+
+
+前面的例子，加写锁可以，只加读锁是没用的：
+
+```go
+package main
+
+import "fmt"
+import "sync"
+import "time"
+
+
+func main() {
+    var count int = 0
+    var m sync.RWMutex
+    for i := 0; i < 100; i++ {
+        go func(){
+            for j := 0; j < 100; j++ {
+                m.RLock()
+                count += 1
+                m.RUnlock()
+            }
+        }()
+    }
+    time.Sleep(2 * time.Second)
+    fmt.Println("count is", count)
+}
+```
+
+下面的例子，是模拟一个写要很长时间，而且中途还会写入不完整内容，读也要很长时间，而且还有多个读的场景：
+
+```go
+package main
+
+import "fmt"
+import "sync"
+import "time"
+import "io"
+
+
+func writer(callback func(string, error)) {
+    for {
+        fmt.Println("I am writing...")
+        callback("xxx", nil)
+        time.Sleep(5 * time.Second)
+        callback(time.Now().Format("2006-01-02 15:04:05"), io.EOF)
+    }
+}
+
+
+func main() {
+    var current *string = new(string)
+    var m sync.RWMutex
+    go writer(func(s string, err error){
+        if err == nil {
+            m.Lock()
+        }
+        *current = s
+        fmt.Println("Writed", s)
+        if err == io.EOF {
+            m.Unlock()
+        }
+    })
+
+    for i := 0; i < 3; i++ {
+        go func(){
+            for {
+                m.RLock()
+                fmt.Println("I am reading...")
+                time.Sleep(2 * time.Second)
+                fmt.Println("Read out ", *current)
+                m.RUnlock()
+            }
+        }()
+    }
+
+    time.Sleep(30 * time.Second)
+}
+```
+
+不加锁，基本上永远只能读到不完整的 ``xxx``。``RLock()`` 换成 ``Lock()`` 的话，读的部分就严重阻塞了，没有了并发能力。
+
+
 
 ## 条件变量 ##
 
