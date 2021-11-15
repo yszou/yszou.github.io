@@ -814,6 +814,36 @@ func main() {
 }
 ```
 
+``range`` 还可以持续读取一个通道，行为像生成器：
+
+```go
+package main
+
+import "fmt"
+import "time"
+
+
+func gen() chan int {
+    var ch = make(chan int)
+    var i = 0
+    go func(){
+        for {
+            i += 1
+            ch <- i
+            time.Sleep(1 * time.Second)
+        }
+    }()
+    return ch
+}
+
+func main() {
+    for i := range gen() {
+        fmt.Println(i)
+    }
+}
+```
+
+
 
 ## switch ##
 
@@ -2095,12 +2125,148 @@ func main() {
 不加锁，基本上永远只能读到不完整的 ``xxx``。``RLock()`` 换成 ``Lock()`` 的话，读的部分就严重阻塞了，没有了并发能力。
 
 
-
-## 条件变量 ##
-
 ## 并发计数器 ##
 
-## 上下文 ##
+并发计数器，就可以看成是一个简单的计数器实现，只是额外处理了并行安全。
+
+go 中在 ``sync.WaitGroup`` ，主要有 3 个方法：
+
+- ``Add()``
+- ``Done()``
+- ``Wait()``
+
+
+```go
+package main
+
+import "fmt"
+import "sync"
+
+func main() {
+    var counter sync.WaitGroup
+    counter.Add(10)
+    for i := 0; i < 10; i++ {
+        var n = i
+        go func(){
+            defer counter.Done()
+            fmt.Println(n)
+        }()
+    }
+    counter.Wait()
+}
+```
+
+它的使用还是比较简单的，不过要注意，不要在 *goroutine* 中调用 ``Add()`` ，可能你在 ``Add()`` 之前 ``Wait()`` 都结束了，所以记得把 ``Add()`` 和 ``Wait()`` 保持在同一个上下文中。
+
+同时，这个工具和 *goroutine* 也没有必然联系，如果你想，可以在任何场景下使用。
+
+
+## 锁的条件应用 ##
+
+这里说的“条件应用”，指的是 ``sync.Cond`` 。它是基于锁的一套上层工具，提供了一种跨上下文的“通知机制”，并且这个“通知”过程是伴随锁状态的交替的。这也是我觉得比较诡异的地方，形式上，感觉完全可以把锁的使用封装在内部啊。
+
+``sync.Cond`` 主要提供三个方法：
+
+- ``sync.NewCond(l Lock)`` 初始化。
+- ``cond.Wait()`` 阻塞等待通知。
+- ``cond.Signal() / cond.Broadcase()`` 通知使用 ``Wait()`` 阻塞的地方。
+
+
+一个例子：
+
+```go
+package main
+
+import "fmt"
+import "sync"
+import "time"
+
+
+func main() {
+    var cond = sync.NewCond(new(sync.Mutex))
+    var counter sync.WaitGroup
+    var c = 10
+    counter.Add(c)
+    for i := 0; i < c; i++ {
+        var n = i
+        go func(){
+            cond.L.Lock()
+            cond.Wait()
+            defer counter.Done()
+            fmt.Println("start", n)
+            time.Sleep(10 * time.Second)
+            fmt.Println("end", n)
+            cond.L.Unlock()
+        }()
+    }
+
+    go func(){
+        for {
+            time.Sleep(5 * time.Second)
+            fmt.Println("out")
+            cond.Signal()
+            //cond.Broadcast()
+        }
+    }()
+    counter.Wait()
+}
+```
+
+
+- 初始化 ``cond`` 使用： ``sync.Newcond(new(sync.Mutex))`` 。
+- 代码的执行行为，就是“通知”之后， 10 个 *goroutine* 共花 100 秒全部执行一遍输出，然后结束。
+- ``cond.L.Lock()`` / ``cond.L.Unlock()`` 都需要显式手动控制不太理解。
+- ``Wait()`` 的实现里面，其实有对 ``L`` 的加锁，释放的操作。
+- ``Signal()`` / ``Broadcast()`` 不会阻塞，它们跟锁没关系。只是可能得不到任何响应就是了。
+- 与其说是 ``Wait()`` 阻塞了，不如说是 ``Wait()`` 前一行的 ``Lock()`` 阻塞了。
+- 与锁有关的 ``Wait()`` 配合与锁无关的 ``Signal()`` / ``Broadcast()`` ，在锁之上实现了新的抽象层作为多个上下文的同步工具。
+- 不说 ``channel`` ，这个例子不直接用 ``cond`` ，要实现竞态的一组 *goroutine* ，被不关心竞态的一个 *goroutine* 调度，你自己做出来的估计也就是像 ``cond`` 这样的工具实现了。
+
+
+## 层级 Context ##
+
+前面介绍了 ``WaitGroup`` ，它是一个简单，限制比较大的工具。
+
+``Context`` 则是一个使用“通道”实现的，比较灵活的工具，它的功能也很简单，就是在合适的时候，手动发出“取消信号”。重点在于，这个“合适的时候”，包括内置的计时器。
+
+
+```go
+package main
+
+import "context"
+import "fmt"
+import "time"
+
+func main() {
+    var root = context.Background()
+    var current = 0
+    context, cancel := context.WithCancel(root)
+    for i := 0; i < 10; i++ {
+        go func() {
+            for {
+                current += 1
+                time.Sleep(1 * time.Second)
+
+                fmt.Println(current)
+                if current > 20 {
+                    cancel()
+                    fmt.Println("cancel")
+                }
+            }
+        }()
+    }
+    <-context.Done()
+    fmt.Println("complete")
+}
+```
+
+``context`` 本身是层级结构， ``Background()`` 可以得到一个根， ``WithCancel()`` 又继续得到一个子。当 ``cancel()`` 的时候，这个信息会往父级传递，然后 ``context.Done()`` 这个通道会关闭。
+
+注意，上面的例子，只是 ``main()`` 执行完毕，并没有显式地去处理 ``goroutine`` 的结束问题。
+
+
+
+
 
 ## 缓存共享池 ##
 
