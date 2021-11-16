@@ -470,6 +470,7 @@ func main() {
 实际的实现中，我们直接给 ``a.add`` 赋值一个匿名函数。
 
 
+
 ## 函数与可变参数 ##
 
 上一部分说了到了函数是基本类型，那么就就必要细看一下函数的行为。
@@ -688,6 +689,107 @@ func (i int) run() string {
 ```
 
 报的错是，不能一个 ``non-local`` 类型添加新的方法。
+
+
+## 结构体，值使用和指针使用 ##
+
+我们可以以值，或者以指针来使用结构体，参数传递的东西不同的区别：
+
+```
+package main
+
+import "fmt"
+
+type Add interface {
+    add(int, int) int
+    add2(int, int) int
+}
+
+type point struct {
+    x int32
+    y int32
+}
+
+func (p point) add(a int, b int) int {
+    p.x = 9
+    return a + b
+}
+
+func (p *point) add2(a int, b int) int {
+    p.x = 9
+    return a + b
+}
+
+func main() {
+    var p point = point{}
+    p.x = 1; p.y = 2
+    p.add(2, 3)
+    fmt.Println(p)
+
+    var p2 *point = &point{}
+    p2.x = 1; p2.y = 2
+    p2.add2(2, 3)
+    fmt.Println(p2)
+}
+```
+
+上面例子， ``add2`` 因为使用了指标，所以我们可以把 ``p2`` 的 ``x`` 改了。而 ``add`` 因为是直接使用的值，传递时已经复制了对象，所以改的 ``p.x`` 已经不是 ``main()`` 中的 ``p`` 了。
+
+当然，这里接口的实现，跟 ``p`` 和 ``p2`` 使用两种不同的初始化方式没有关系。不同的初始化方式在这里，只是单纯演示一下而已。
+
+
+## 类型断言，类型转换 ##
+
+go 专门有一种后置的“类型断言”语法，用于通用的 ``interface{}`` 往特定的类型的转换（基本类型，像整数，字符串，有专门的函数做转换）：
+
+```go
+package main
+
+import "fmt"
+
+type Point struct {
+    x int32
+    y int32
+}
+
+type Location struct {
+    x int32
+    y int32
+    z int32
+}
+
+func getType() interface{} {
+    return Point{x: 1, y: 2}
+}
+
+func getType2() interface{} {
+    return &Point{x: 1, y: 2}
+}
+
+func getType3() interface{} {
+    return Location{x: 1, y: 2}
+}
+
+
+func main() {
+    var p0 = getType()
+    var p1 interface{} = getType()
+    var p2 Point = getType().(Point)
+    var p3 *Point = getType2().(*Point)
+    var p4 interface{} = getType3()
+    var p5 = p4.(Location)
+    fmt.Println(p0, p1, p2, p3, p4, p5)
+
+    switch value := p4.(type) {
+    case Location:
+        fmt.Println("Location", value)
+    case Point:
+        fmt.Println("Point", value)
+    }
+}
+```
+
+即通过 ``p4.(Location)`` 来完成类型的转换（具象化）。
 
 
 # 流程控制和操作符 #
@@ -2264,16 +2366,183 @@ func main() {
 
 注意，上面的例子，只是 ``main()`` 执行完毕，并没有显式地去处理 ``goroutine`` 的结束问题。
 
+要显式处理 ``goroutine`` 我搜索到的方式都是把 ``context`` 传递给一个函数,函数内部再处理 ``Done()`` ，感觉挻别扭的。
 
+除了 ``WithCancel()`` ， ``context`` 还提供了 ``WithDeadline()`` 和 ``WithTimeout()`` ，它们两个其实是一样的，前者是给一个绝对时间，后者是给一个相对时间（绝对时间等于当前时间加相对时间）。
 
+```go
+package main
+
+import "context"
+import "fmt"
+import "time"
+
+func main() {
+    var root = context.Background()
+    var current = 0
+    context, cancel := context.WithTimeout(root, time.Second * 2)
+    for i := 0; i < 10; i++ {
+        go func() {
+            for {
+                current += 1
+                time.Sleep(5 * time.Second)
+
+                fmt.Println(current)
+                if current > 20 {
+                    cancel()
+                    fmt.Println("cancel")
+                }
+            }
+        }()
+    }
+    <-context.Done()
+
+    fmt.Println("here")
+    for {
+        time.Sleep(5 * time.Second)
+        break
+    }
+
+    fmt.Println("complete")
+}
+```
+
+上面的例子，能看到 2 秒之后， ``Done()`` 通道就有动作了，这里 ``go func()`` 里还在 ``Sleep`` 。同时也能看到，虽然代码已经跳到 ``here`` 那里了，但是上面的 ``goroutine`` 其实仍然不受影响地执行着的。
+
+要处理好 ``go func()`` 的退出，可以传入 ``context`` ，并使用 ``select`` ：
+
+```go
+package main
+
+import "context"
+import "fmt"
+import "time"
+
+func main() {
+    var root = context.Background()
+    var current = 0
+    ctx, cancel := context.WithTimeout(root, time.Second * 2)
+    for i := 0; i < 1; i++ {
+        go func(ctx context.Context) {
+            for {
+                select {
+                    case <-ctx.Done():
+                        fmt.Println("select return")
+                        return
+                    default:
+                        fmt.Println("select default")
+                        current += 1
+                        time.Sleep(5 * time.Second)
+
+                        fmt.Println(current)
+                        if current > 20 {
+                            cancel()
+                            fmt.Println("cancel")
+                        }
+                }
+            }
+        }(ctx)
+    }
+    <-ctx.Done()
+
+    fmt.Println("here")
+    for {
+        time.Sleep(5 * time.Second)
+        break
+    }
+
+    fmt.Println("complete")
+}
+```
+
+虽然时间上没有办法在 2 秒时就马上中断 ``go func()`` ，但是 ``select`` 中的 ``return`` 是总会执行到的，对于死循环的 ``goroutine`` 可以避免泄漏。
 
 
 ## 缓存共享池 ##
 
+这里的重点不是“池”，而是“缓存”，所以在使用时要记得，它可能随时消失。
+
+go 通过 ``sync.Pool`` 结构体提供了一个简单直接的并行安全的“单对象内存块缓存”方案。
+
+它通过“复用”来减轻内存变动的消耗，对于应用来说，只要得到一个可用的“对象”，本身也不必在乎这个对象是新的，还是二手的。
+
+
+```go
+package main
+
+import "fmt"
+
+type Foo struct {
+    name string
+    value string
+}
+
+func main() {
+    var f *Foo = &Foo{}
+    f.name = "123"
+    f.value = "333"
+    fmt.Printf("%v %p\n", f, f)
+
+
+    var f2 *Foo = &Foo{}
+    f2.name = "321"
+    f2.value = "889"
+    fmt.Printf("%v %p\n", f2, f2)
+}
+```
+
+（这里我们通过指针的方式使用结构体，而不是直接引用，是为了避免“值传递”时的内容复制行为）
+
+上面这个原始的例子是要拿两次 ``Foo`` ，然后每次给它们赋值 ``name`` 和 ``value`` 之后，打印出来。
+
+通过 ``f`` 和 ``f2`` 的地址值，可以看出来它们在两块内存上。
 
 
 
-# 名字空间，包与项目结构 #
+```go
+package main
+
+import "fmt"
+import "sync"
+
+type Foo struct {
+    name string
+    value string
+}
+
+func main() {
+    var cache sync.Pool
+    cache = sync.Pool{
+        New: func() interface{} {
+            fmt.Println("New")
+            return &Foo{}
+        },
+    }
+
+    var f *Foo = cache.Get().(*Foo)
+    f.name = "123"
+    f.value = "333"
+    fmt.Printf("%v %p\n", f, f)
+
+    f.name = ""
+    f.value = ""
+    cache.Put(f)
+
+    var f2 *Foo = cache.Get().(*Foo)
+    f2.name = "321"
+    f2.value = "889"
+    fmt.Printf("%v %p\n", f2, f2)
+}
+```
+
+这个改进后的使用 ``sync.Pool`` 的例子，能看到 ``f`` 和 ``f2`` 是在同一块内存位置，我们在 ``Put()`` 前把 ``Foo`` 的属性手动重置掉的话，对于 ``f2`` 来说，是用的旧东西，还是全新的东西，不重要。
+
+
+
+# 名字空间，包，项目结构 #
+
+
+
 
 
 
