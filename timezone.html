@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>数据场景多时区的处理 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">数据场景多时区的处理</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2021-11-18 20:00 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">会涉及多少个时间？</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">业务上关心的时间</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">使用时间戳还是日期</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">时区 API</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">4.1. python</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">4.2. js moment</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">前端交互的麻烦事</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">5.1. moment</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">5.2. 时间类组件</a>
+    </li>
+    </ul>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 会涉及多少个时间？</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设这样的场景：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+你，平时人在日本（你的电脑的时区是 +9），现在到泰国出差（泰国时区 +7），浏览巴西的数据（巴西时区 -3），访问的服务器是在新加坡（新加坡时区 +8），当时时间是 YYYY-MM-DD HH:mm:ss （标准时区 +0）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里涉及了 5 个时间，或者说，同一个时刻的 5 种表示。
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">作用</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">国家/地区</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区的小时偏移</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">客户端时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">日本</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+9</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">人所在地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">泰国</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+7</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">数据来源的地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">巴西</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">-3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">服务器所在地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">新加坡</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+8</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">当前标准时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">格林尼治</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">0</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这 5 个时间中，我们加一些必要的要求，可以去掉其中 2 个。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先，“人所在的地方时间”，除非业务上的特别要求，否则我们在处理时不会使用涉及地理位置的一些手段去额外处理“所在的地方”，只是单纯使用“客户端时间”就可以了。所以，这个时间可以不用管。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其次，“服务器所在的地方时间”，因为服务器本来就可能在多地部署，所以我们理应不必关心这个时间。那为了多地的服务器都有一致的响应表现，服务器相关的时间就应该统一，为了不额外添加一个时间，而“客户端时间”和“数据来源的地方时间”又是变化的，剩下的“标准时间”就是一个好的选择。即，把服务器时间处理成“标准时间”，那过程中我们就可以只关心 3 个时间了。
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">作用</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">国家/地区</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区的小时偏移</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">客户端时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">日本</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+9</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">数据来源的地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">巴西</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">-3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">当前标准时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">格林尼治</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">0</td>
+</tr>
+</table>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 业务上关心的时间</h1>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">作用</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">国家/地区</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区的小时偏移</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">客户端时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">日本</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+9</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">数据来源的地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">巴西</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">-3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">当前标准时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">格林尼治</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">0</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在这 3 个时间中，业务层面关心的时间只有 1 个，就是“数据来源的地方时间-巴西”，其它的都是实现时技术上的处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从交互上，访问巴西的数据，用户给出了一个时间限制，“2021-10-10 - 2021-10-12” ，这个 10 月 10 日到 10 月 12 日，当然表示的是巴西时间。你不能要求使用者在查询时，先人为地去把巴西时间换算到标准时间，或者其它时区的时间。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，只看一个地方，实际查询时，只要“2021-10-10 - 2021-10-12”的含义清楚，自然可以把它们转换到任何需要的时区上。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是，如果同时看巴西和和泰国的数据，给出了一个时间限制“2021-11-10 13:00:00 - 2021-11-12 17:30:00”，那这个日期就不好解释了。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">使用巴西时间或者泰国时间，都不可行，因为使用者无法控制。
+</li>
+<li style="margin: 10px auto;">使用固定的标准时间或者 +N 时间，虽然可行，但是对使用者不方便。同时，这个解释下取出的数据，没有意义。因为很有可能你把 A 地的业务高峰时间和 B 地的半夜睡觉时间的数据放在一起了。
+</li>
+<li style="margin: 10px auto;">所以，统一解释成“当地时间”，是最好的。即对巴西，它是 -3 的时间，对泰国，是 +9 的时间。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+为了支持“当地时间”的数据获取，在数据存储时，就需要一组“当地时间”的维度列。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那是否还需要一组“绝对时间/标准时间”的维度列呢？我个人看法是不需要，但是可以加一列时间戳，这个时间戳本身是“标准时间”，也是对“当前时间”的一个维度扩展。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+后面虽然会说到时间戳对人的使用不友好，但它对于数据模型的意义就是在于把它看成当地时间的维表中的一列而已。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，数据存储的宽表形式，日期方面大概有：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">当地时间</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区偏移</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区名</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">年月日</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">年</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">季</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">月</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">周</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">日</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">星期</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">年季</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">年月</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">年周</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">季月</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">月周</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">分</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">月日时</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时分</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时分秒</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时间戳</th>
+</tr>
+</table>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 使用时间戳还是日期</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+两个东西的性质：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">时间戳，任何时候没有歧义，对机器处理友好。但是对人不友好。
+</li>
+<li style="margin: 10px auto;">日期，如果是带时区偏移的日期，也没有歧义。机器处理解析会麻烦一些。对人友好。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不难看出这里面是有矛盾的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用时间戳，虽然对人不友好，但是任何时候，它肯定不会带来麻烦的问题。而同时，我们大多数时间使用日期，又是不带时区偏移的，这就容易出现误解或者付出额外解释或者沟通成本。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+个人的看法：带时区偏移的日期 &gt; 时间戳。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外，对于“带时区偏移的日期”，可以附加解释，当没有带上时区偏移时，系统会怎么处理。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 时区 API</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+首先说一下，不管有没有显示的处理时区，“日期”类的 API ，它表示的时刻的含义，任何时候都是明确的。如果没有显式配置时区，那么使用的就是“当前系统时区”。判断标准就是当把它们转换到时间戳时得到的值。除非 API 设计成，没有配置时区，不能转换到时间戳，否则，它们都隐式包含了时区信息。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+时区相关的操作，有两种：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">转移时区，时刻不会改变。即把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 12:00:00+8000</code> 变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 11:00:00+7000</code> 。
+</li>
+<li style="margin: 10px auto;">替换时区，时刻会改变。把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 12:00:00+8000</code> 变成了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 12:00:00+7000</code> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在具体场景下，先要想清楚，需要的是“转移”还是“替换”。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. python</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+python 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">datetime</code> 模块，直接有对时区偏移的支持。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">datetime.timezone</code> 构造时区对象（包括偏移和名称）
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">datetime.astimezone</code> 转移时区。
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">datetime.replace</code> 替换时区。
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">datetime</span>
+
+dt <span style="color: #000000; font-weight: bold">=</span> datetime<span style="color: #000000; font-weight: bold">.</span>datetime(<span style="color: #009999">2021</span>, <span style="color: #009999">10</span>, <span style="color: #009999">10</span>, <span style="color: #009999">12</span>, <span style="color: #009999">0</span>, <span style="color: #009999">0</span>)
+<span style="color: #0086B3">print</span>(dt<span style="color: #000000; font-weight: bold">.</span>isoformat(), dt<span style="color: #000000; font-weight: bold">.</span>tzinfo)
+
+tz <span style="color: #000000; font-weight: bold">=</span> datetime<span style="color: #000000; font-weight: bold">.</span>timezone(datetime<span style="color: #000000; font-weight: bold">.</span>timedelta(hours<span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">4</span>), <span style="color: #dd1144">&quot;MyTZ&quot;</span>)
+
+dt1 <span style="color: #000000; font-weight: bold">=</span> dt<span style="color: #000000; font-weight: bold">.</span>astimezone(tz<span style="color: #000000; font-weight: bold">=</span>tz)
+<span style="color: #0086B3">print</span>(dt1<span style="color: #000000; font-weight: bold">.</span>isoformat(), dt1<span style="color: #000000; font-weight: bold">.</span>tzinfo)
+
+dt2 <span style="color: #000000; font-weight: bold">=</span> dt<span style="color: #000000; font-weight: bold">.</span>replace(tzinfo<span style="color: #000000; font-weight: bold">=</span>tz)
+<span style="color: #0086B3">print</span>(dt2<span style="color: #000000; font-weight: bold">.</span>isoformat(), dt2<span style="color: #000000; font-weight: bold">.</span>tzinfo)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">2021-10-10T12:00:00 None
+2021-10-10T08:00:00+04:00 MyTZ
+2021-10-10T12:00:00+04:00 MyTZ
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. js moment</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">moment</code> 即使不添加额外依赖，对时区偏移也有现成的支持。而且在初始化时，也可以选择以“当地时间”初始化或者以“标准时间”初始化。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> m <span style="color: #000000; font-weight: bold">=</span> moment(<span style="color: #dd1144">&#39;2021-10-10 13:00:00&#39;</span>, <span style="color: #dd1144">&#39;YYYY-MM-DD HH:mm:ss&#39;</span>)
+m.format()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10T13:00:00+08:00</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> m <span style="color: #000000; font-weight: bold">=</span> moment.utc(<span style="color: #dd1144">&#39;2021-10-10 13:00:00&#39;</span>, <span style="color: #dd1144">&#39;YYYY-MM-DD HH:mm:ss&#39;</span>)
+m.format()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10T13:00:00Z</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">moment</code> 中，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">utcOffset(minutes, replace?)</code> 做时区操作：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">moment(<span style="color: #dd1144">&#39;2021-10-10 13:00:00&#39;</span>, <span style="color: #dd1144">&#39;YYYY-MM-DD HH:mm:ss&#39;</span>).utcOffset(<span style="color: #009999">60</span>).format()
+moment(<span style="color: #dd1144">&#39;2021-10-10 13:00:00&#39;</span>, <span style="color: #dd1144">&#39;YYYY-MM-DD HH:mm:ss&#39;</span>).utcOffset(<span style="color: #009999">60</span>, <span style="color: #000000; font-weight: bold">true</span>).format()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">2021-10-10T06:00:00+01:00
+2021-10-10T13:00:00+01:00
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 前端交互的麻烦事</h1>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. moment</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+本来使用“标准时区”就没有歧义的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">moment</code> 也支持直接用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">utc</code> 的方法得到日期。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">moment</code> 中有一些 API ，是必然要和确定的时区联系在一起，而不是单和客观时刻有关。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+典型的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">startOf('day')</code> 这套。同一个时刻，不同的时区，结果时刻就不同。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 22:00:00+8000</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-11 00:00:00+1000</code> 是同一个时刻。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前者结果是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-10 00:00:00+8000</code> ，后者是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-11 00:00:00+1000</code> ，两个结果完全不同。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. 时间类组件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说为了避免陷入多个时区混乱的泥潭，在系统对接时，使用带时区的日期，或者时间戳都行，没有歧义。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是前端交互的情况，有点像，你跟一个系统对接，那个系统的日期，就一定要用变化的当地时间，你跟它一起玩，每时每刻都要盯着日期，烦死了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里说的，就是那些日期筛选的组件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="./img/datepicker.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+本来这些组件，可以只做“形式化”上的处理，即，一方面按公历，生成界面。另一方面，仅以形式化给出用户操作了什么。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，用户点了图中的“14”，那回调中，组件只需要给到，用户点了： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021, Oct, 14, Last 7 Days</code> 这些信息，但是现在的组件都会自作多情，告诉你用户点了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2021-10-14</code> ，本地的，这个日期。这一下，误会就大了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+回到最开始的那个例子：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+你，平时人在日本（你的电脑的时区是 +9），现在到泰国出差（泰国时区 +7），浏览巴西的数据（巴西时区 -3），访问的服务器是在新加坡（新加坡时区 +8），当时时间是 YYYY-MM-DD HH:mm:ss （标准时区 +0）。
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">作用</th>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">国家/地区</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">时区的小时偏移</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">客户端时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">日本</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">+9</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">数据来源的地方时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">巴西</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">-3</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">当前标准时间</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">格林尼治</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">0</td>
+</tr>
+</table>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们要处理的是“巴西时间”，不是“客户端时间”。用户点了 14 号，我想要的是巴西时间的 14 号，你硬要告诉我用户点的是泰国的 14 号。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，使用这些组件要处理“巴西时间”时，每一步，都要自己额外处理一下转换。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">初始值输入。
+</li>
+<li style="margin: 10px auto;">当前值显示。
+</li>
+<li style="margin: 10px auto;">选择值的输出。
+</li>
+<li style="margin: 10px auto;">disable 值的判断。
+</li>
+</ul>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'timezone';
+  var disqus_url = 'https://www.zouyesheng.com/timezone.html';
+  var disqus_title = '数据场景多时区的处理';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
+AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
+ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
+2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
+8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
+vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
+cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2021 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
