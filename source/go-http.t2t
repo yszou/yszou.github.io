@@ -1,0 +1,410 @@
+Go 的 HTTP 服务端实现
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/go-http.html
+%!format: !email
+%%toc
+
+
+# 基本结构 #
+
+go 官方提供了 ``net/http`` 来做 HTTP 协议的客户端及服务端处理。这里只说服务端部分。
+
+虽然 go 的社区中有很多的 web 应用层框架，但是因为 ``net/http`` 的封装是比较高级的，所以社区建议也是以它为准。个人的理解，不管上层框架做了什么事，大概还是会依据相同的 API 设计。
+
+另外， ``net/http`` 是同步的实现，先随大流吧。
+
+```go
+package main
+
+import (
+    "net/http"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    response.Write([]byte("Hello"))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+基本结构上， ``net/http`` 已经是像一个 Web 服务框架了：
+
+- ``HandleFunc`` 完成路径的映射。
+- ``HelloHandler`` 处理逻辑，参数中一个“响应”，一个“请求”。
+- ``ListenAndServe`` 完成端口监听。
+
+
+作为静态语言，几行代码就完成了一个 Web 服务端的实现，还是很能体会到“时代进步”的。
+
+
+# 获取参数 #
+
+``http.Request`` 是一个面向数据的比较原始的对象，不是面向 HTTP 抽象概念的封装（你需要了解 HTTP 的原始报文，才知道这句话说的什么）。
+
+它没有提供像 ``GetParams()`` 之类的方法，只提供了 URL 对象，所以，你需要自己知道，获取 GET 参数得从 URL 中解析。
+
+
+## GET 和 URL 对象 ##
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var n string
+    var name []string = request.URL.Query()["name"]
+    if len(name) > 0 {
+        n = name[0]
+    }
+    response.Write([]byte("Hello " + n))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    fmt.Println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+通过 ``URL`` 的 ``Query()`` 方法返回的对象获取指定的参数。因为同名参数可以是多个（实践中几乎不会使用重复名字的参数），所以 ``name`` 是一个字符串列表，可能是一个空列表。所以在获取具体值之前要进行非空判断，否则会发生运行时错误。
+
+``request.URL`` 是一个单独的 ``url.URL`` 对象，结构上类似标准的 *URI* 。
+
+- ``[scheme:][//[userinfo@]host][/]path[?query][#fragment]``
+- 或者 ``scheme:opaque[?query][#fragment]``
+
+
+*URI* 的各部分，都可以直接取到。但是注意，这里没有 ``Hostname`` 和 ``Port`` ，这两个要通过方法获取。
+
+``query`` 部分的解析，由 ``Query()`` 方法单独处理，返回的是 ``Values`` 结构，实际上就是一个 *Map* 。
+
+这个 ``Values`` 提供了一个 ``Get()`` 方法，可以返回指定的 ``key`` 的第一个值，并且是 *decode* 之后的值。
+
+```go
+package main
+
+import "net/url"
+import "fmt"
+
+func main() {
+    u, err := url.Parse("https://zys.me?a=123&b=%E9%82%B9&b=1")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(u.Query().Get("b"))
+    fmt.Println(u.Query().Has("c"))
+}
+```
+
+``Get()`` 方法才应该是获取 ``GET`` 参数的正解：
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var n string = request.URL.Query().Get("name")
+    response.Write([]byte("Hello " + n))
+}
+```
+
+即使不存在 ``name`` 参数，也可以得到一个空字符串，不会报错。
+
+GET 的参数也可以从获取 POST 参数的 ``Form`` 中一起获取到。
+
+
+## 获取头 ##
+
+使用 ``request.Header`` 获取请求的头， ``Header`` 是一个 *map* ，但是它的 ``Get()`` 方法对头的名字做了兼容性处理。所以不需要担心大小写，横杠问题。
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var t string = request.Header.Get("Content-Type")
+    fmt.Println(t)
+    response.Write([]byte("Hello " + t))
+}
+```
+
+这里写 ``Content-Type`` 或者 ``Content-type`` 都可以正常工作的。可以简单理解成，横杠写对，无视大小写就可以了。
+
+
+
+## POST ##
+
+POST 参数的获取，先要调用一下 ``ParseForm()`` ，然后可以从 ``Form`` 这个 *map* 中获取。
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    request.ParseForm()
+    fmt.Println(request.Form)
+    var n string = request.Form.Get("name")
+    response.Write([]byte("Hello " + n))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    fmt.Println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+- ``request.Form`` 会包括 ``GET`` 和 ``POST`` 的参数。
+- 同名的参数会放在一个列表当中， ``POST`` 的在前， ``GET`` 的在后。（``Get()`` 会优先取到 ``POST`` 参数）
+
+
+如果请求的 *Content-Type* 不是 ``application/ x-www-form-urlencoded`` 的话：
+
+客户端请求：
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+res = requests.post('http://localhost:8888', data="123456", headers={"Content-Type": "plain/text"})
+print(res.text)
+```
+
+服务端处理：
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "io/ioutil"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var content_type string = request.Header.Get("Content-Type")
+    fmt.Println("Content-Type", content_type)
+
+    var body []byte
+    body, err := ioutil.ReadAll(request.Body)
+    if err != nil {
+        fmt.Println("Error", err)
+        return
+    }
+    response.Write([]byte("Hello "))
+    response.Write(body)
+    response.Write([]byte("  "))
+    response.Write([]byte(string(body)))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    fmt.Println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+- 通过 ``request.Body`` 获取原始内容。
+- ``request.Body`` 是一个 *io.ReadCloser* 接口实现。
+- ``request.Body`` 虽然有 ``Close()`` ，但是不需要手工关闭。
+
+
+## 获取文件 ##
+
+文件的处理跟 POST 参数差不多，使用 ``ParseMultiparseForm()`` 代替 ``ParseForm()`` ：
+
+客户端请求：
+
+```python
+# -*- coding: utf-8 -*-
+
+import requests
+f = open('/home/zys/temp/a.svg', 'rb')
+res = requests.post('http://localhost:8888', files={"file": f}, data={"name": "123"})
+print(res.text)
+```
+
+服务端处理：
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "io/ioutil"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    fmt.Println(request.Method)
+    var err error = request.ParseMultipartForm(1024 * 1024 * 5)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    file, file_header, err := request.FormFile("file")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
+    fmt.Println("file_name", file_header.Filename)
+    fmt.Println("file_size", file_header.Size)
+    fmt.Println(file_header.Header)
+
+    body, err := ioutil.ReadAll(file)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(string(body))
+
+    var name string = request.Form.Get("name")
+    response.Write([]byte("Hello " + name))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    fmt.Println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+- 先调用 ``request.ParseMultiparseForm(max)`` ，需要指定缓冲区的最大字节长度。它也会做 ``ParseForm()`` 的事。
+- 使用 ``request.FormFile()`` 获取指定参数的文件内容。
+- ``file_header`` 有文件基本信息，文件名，大小。
+- 文件内容是通过 ``file`` ，作为一个文件对象处理的。
+
+
+# 写头与非 200 响应 #
+
+``response.Header()`` 方法可以获取响应中的头对象， ``Set()`` 方法完成值的设置：
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var header http.Header = response.Header()
+    header.Set("Content-Type", "text/ttt")
+    response.Write([]byte("Hello"))
+}
+```
+
+状态码使用 ``response.WriteHeader()`` 方法处理（奇怪的名字）：
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    response.WriteHeader(503)
+    response.Write([]byte("Hello"))
+}
+```
+
+``response.WriteHeader()`` 的调用必须在第一个 ``response.Write()`` 前，否则 ``response.Write()`` 会写入 200 的状态码，之后再调用 ``response.WriteHeader()`` 也没有作用了。
+
+
+# 读写 Cookie #
+
+## Cookie 结构 ##
+
+*http.Cookie* 提供了 Cookie 的结构支持：
+
+```go
+type Cookie struct {
+	Name  string
+	Value string
+
+	Path       string    // optional
+	Domain     string    // optional
+	Expires    time.Time // optional
+	RawExpires string    // for reading cookies only
+
+	// MaxAge=0 means no 'Max-Age' attribute specified.
+	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'
+	// MaxAge>0 means Max-Age attribute present and given in seconds
+	MaxAge   int
+	Secure   bool
+	HttpOnly bool
+	SameSite SameSite
+	Raw      string
+	Unparsed []string // Raw text of unparsed attribute-value pairs
+}
+```
+
+同时，它还有一个 ``String()`` 方法，可以直接用于单条 cookie 头的设置：
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var cookie *http.Cookie = &http.Cookie{
+        Name: "first",
+        Value: "abcc",
+    }
+    response.Header().Add("Set-Cookie", cookie.String())
+    response.Write([]byte("Hello"))
+}
+```
+
+
+## 写 Cookie ##
+
+除了直接使用 ``response.Header().Add()`` ，把 cookie 作为普通头处理之外， *http* 也提供了一个 ``SetCookie()`` 静态函数：
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    var cookie *http.Cookie = &http.Cookie{
+        Name: "first",
+        Value: "abcc",
+    }
+    http.SetCookie(response, cookie)
+    response.Write([]byte("Hello"))
+}
+```
+
+
+## 读 Cookie ##
+
+*Cookie* 的获取，可以直接读取头自己解析，也可以通过 ``request`` 中的 ``Cookies()`` 和 ``Cookie(name)`` 方法处理。
+
+``Cookies()`` 返回的是一个 ``http.Cookie`` 对象的列表。 ``Cookie(name)`` 就是一个 ``http.Cookie`` 对象。
+
+```go
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("all", request.Cookies()[0])
+    var cookie *http.Cookie
+    cookie, err := request.Cookie("soup")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println("name", cookie.Name)
+    fmt.Println("value", cookie.Value)
+    response.Write([]byte("Hello"))
+}
+```
+
+
+# 多应用和路径映射 #
+
+
+# 回调触发的时机 #
+
+
+# 并发处理 #
+
+
+# Chunk 传输 #
+
+
+# WebSocket #
+
+
+
