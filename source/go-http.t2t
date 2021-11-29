@@ -169,7 +169,7 @@ func main () {
 - 同名的参数会放在一个列表当中， ``POST`` 的在前， ``GET`` 的在后。（``Get()`` 会优先取到 ``POST`` 参数）
 
 
-如果请求的 *Content-Type* 不是 ``application/ x-www-form-urlencoded`` 的话：
+如果请求的 *Content-Type* 不是 ``application/x-www-form-urlencoded`` 的话：
 
 客户端请求：
 
@@ -394,8 +394,326 @@ func HelloHandler(response http.ResponseWriter, request *http.Request) {
 
 # 多应用和路径映射 #
 
+在最前面，我们看到的代码示例是：
+
+```go
+package main
+
+import (
+    "net/http"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    response.Write([]byte("Hello"))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    println("Server is starting on 8888 ...")
+    http.ListenAndServe(":8888", nil)
+```
+
+``http`` 下的几个直接的方法，像 ``ListenAndServe`` 和 ``HandleFunc`` 明显是一些快捷方法。
+
+完整点的结构的话：
+
+- ``http.Server`` 是定义一个服务。
+- ``Multiplexer`` 是管理一套路径映射。 go 中没有 *Application* 的概念。
+- ``Handler`` 是一个接口。
+
+
+## Server 与多应用 ##
+
+``http.Server`` 可以定义一个 HTTP 服务，并且使用已有的路径映射。
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("all", request.Cookies()[0])
+    var cookie *http.Cookie
+    cookie, err := request.Cookie("soup")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println("name", cookie.Name)
+    fmt.Println("value", cookie.Value)
+    response.Write([]byte("Hello"))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    fmt.Println("Server is starting on 8888 ...")
+    go func(){
+        var srv = &http.Server{
+            Addr: "127.0.0.1:8889",
+        }
+        srv.ListenAndServe()
+    }()
+    http.ListenAndServe(":8888", nil)
+}
+```
+
+在一个 *goroutine* 有另一外监听到 *8889* 的服务，同时在“主进程”中，原来的 *8888* 也是活动的，这样程序就不会直接结束。此时，两个端口都可以正常响应。
+
+``http.HandleFunc()`` 会产生一个默认的 ``DefaultServeMux`` ， ``Server()`` 中没有指定 ``Handler`` 的话，就会使用它。
+
+通过 *goroutine* 配合 ``Server`` ，启动多个服务是简单的，go 中的 ``Server`` 另外一些有价值的 API ，是“优雅关闭”的内置支持。
+
+``Close()`` 方法会直接断掉连接，但是 ``Shutdown()`` 会等到当前连接已经处理完，才停止服务。这期间，会拒绝进的连接进入。
+
+
+## 信号处理 ##
+
+可以配合信号完成一个多服务的停止实现， go 中的信号处理直接就用的通道了：
+
+```
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "os"
+    "os/signal"
+    "syscall"
+    "context"
+    "time"
+)
+
+func HelloHandler(response http.ResponseWriter, request *http.Request) {
+    time.Sleep(10 * time.Second)
+    response.Write([]byte("Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+}
+
+func main () {
+    http.HandleFunc("/", HelloHandler)
+    var port_list = [...]int{8890, 8891, 8892, 8893}
+    var srv_list = [len(port_list)]*http.Server{}
+    for i, port := range port_list {
+        var srv = &http.Server{
+            Addr: ":" + strconv.Itoa(port),
+        }
+        srv_list[i] = srv
+        go func(){
+            srv.ListenAndServe()
+        }()
+    }
+    //http.ListenAndServe(":8888", nil)
+    var s_chan = make(chan os.Signal, 1)
+    signal.Notify(s_chan, syscall.SIGINT)
+    var root = context.Background()
+    for {
+        var s = <-s_chan
+        switch s {
+            case syscall.SIGINT:
+                fmt.Println("exit...")
+                for _, srv := range srv_list {
+                    srv.Shutdown(root)
+                }
+                os.Exit(0)
+        }
+    }
+}
+```
+
+运行这个服务，先访问 *8890* ，然后按 *Ctrl-C* ，再访问 *8891* 。
+
+可以看到， *8890* 没有中断，但是 *8891* 已经拒绝连接了。要等到 *8890* 的请求正常响应之后，整个服务才会退出。
+
+
+## Multiplexer 和 Handler ##
+
+
+``Multiplexer`` 是一组路径映射，关联路径和对应的 ``Handler`` 。
+
+
+``Handler`` 是一套接口，不是一个函数。前面使用 ``HandleFunc()`` 是一个简便方法。
+
+
+``Multiplexer`` 的实例配置好之后，就可以把实例放到 *Server* 中启动。
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "time"
+)
+
+type handler struct {
+    text string
+}
+
+func (h *handler) ServeHTTP(response http.ResponseWriter, request *http.Request){
+    response.Write([]byte(h.text + strconv.FormatInt(time.Now().Unix(), 10)))
+}
+
+
+func main () {
+    var mux = http.NewServeMux()
+    mux.Handle("/", &handler{"HAHAHA"})
+    var srv = &http.Server{
+        Addr: ":8888",
+        Handler: mux,
+    }
+    fmt.Println("8888...")
+    srv.ListenAndServe()
+}
+```
+
+*Server* 中的 ``Handler`` 参数，就是需要一个 ``Multiplexer`` 实例。
+
+而另一方法，``Handler`` 接口，只需要一个 ``ServeHTTP()`` 方法，所以 ``HandleFunc()`` 更直接方便。
+
+
+## Middleware ##
+
+不考虑错误处理，中间件可以分为“前置”和“后置”。不管是接收 ``Handler`` 实例返回新实例，还是接收函数，返回新函数，都是比较好处理的。
+
+不过 go 中没有 *Class* ，也没有继承（ ``struct`` 那套是什么鬼），所以函数式的方式我觉得更自然一些吧。
+
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "time"
+)
+
+
+func hello(response http.ResponseWriter, request *http.Request) {
+    response.Write([]byte("Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+}
+
+func pre_log(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+    return func(response http.ResponseWriter, request *http.Request){
+        fmt.Println("PRE_LOG")
+        handler(response, request)
+    }
+}
+
+
+func main () {
+    var mux = http.NewServeMux()
+    mux.HandleFunc("/", pre_log(hello))
+    var srv = &http.Server{
+        Addr: ":8888",
+        Handler: mux,
+    }
+    fmt.Println("8888...")
+    srv.ListenAndServe()
+}
+```
+
+高阶函数，跟 Python 的“装饰器”机制一样，不过 go 中就没有方便的语法糖可用了。
+
+这样只是“理论上可行”，实际项目中，估计还是从 ``mux.HandleFunc`` 这一层动手，封装出的形式会更好看一些。
+
+
 
 # 回调触发的时机 #
+
+``Server`` 的结构，我们只用了 ``Addr`` 和 ``Handler`` ，但是它里面还有一些比较细节的参数配置，比如读写的时间，头的最大长度等等。
+
+那么 Header 和 Body 既然是分开的，对于 ``HandleFunc`` 注册的函数，它是在 *Header* 完就调用了呢，还是要等 *Body* 完才调用？
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "time"
+)
+
+
+func hello(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("here")
+    response.Write([]byte("Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+    fmt.Println("finish")
+}
+
+
+func main () {
+    var mux = http.NewServeMux()
+    mux.HandleFunc("/", hello)
+    var srv = &http.Server{
+        Addr: ":8888",
+        Handler: mux,
+    }
+    fmt.Println("8888...")
+    srv.ListenAndServe()
+}
+```
+
+对于上面的代码，通过 *telnet* 进行测试：
+
+```text
+zys@shopee:/home/zys >>> telnet localhost 8888
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+POST / HTTP/1.1
+Host: localhost
+Content-Length: 3
+
+123
+HTTP/1.1 200 OK
+Date: Mon, 29 Nov 2021 18:43:08 GMT
+Content-Length: 15
+Content-Type: text/plain; charset=utf-8
+
+Hello1638211377
+```
+
+可以看出，头接收完之后，函数就已经执行完了，不会等 *Body* 部分。
+
+如果把 ``hello`` 改一下：
+
+```go
+func hello(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("here")
+    request.ParseForm()
+    var name string = request.Form.Get("name")
+    response.Write([]byte(name + "Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+    fmt.Println("finish")
+}
+```
+
+在请求的 ``Content-Type`` 头是可以处理的情况之下，比如是 ``application/x-www-form-urlencoded`` ，那么 ``request.ParseForm()`` 这行会阻塞，直到 *Body* 接收完毕，再继承执行。
+
+如果要直接读 ``request.Body`` ，也会阻塞：
+
+```go
+func hello(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("here")
+
+    var body []byte
+    body, err := ioutil.ReadAll(request.Body)
+    if err != nil {
+        fmt.Println("Error", err)
+        return
+    }
+
+    response.Write([]byte(string(body) + "Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+    fmt.Println("finish")
+}
+```
 
 
 # 并发处理 #
