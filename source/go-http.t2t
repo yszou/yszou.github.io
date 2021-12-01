@@ -719,10 +719,177 @@ func hello(response http.ResponseWriter, request *http.Request) {
 # 并发处理 #
 
 
+一个问题，在不启 *goroutine* 的情况下， ``net/http`` 自己的 ``HandleFunc`` 有并发处理能力吗？
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "time"
+)
+
+
+func hello(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("start")
+    time.Sleep(10 * time.Second)
+    response.Write([]byte("Hello" + strconv.FormatInt(time.Now().Unix(), 10)))
+    fmt.Println("finish")
+}
+
+func main () {
+    var mux = http.NewServeMux()
+    mux.HandleFunc("/", hello)
+    var srv = &http.Server{
+        Addr: ":8888",
+        Handler: mux,
+    }
+    fmt.Println("8888...")
+    srv.ListenAndServe()
+}
+```
+
+上面的服务启动之后，直接使用 *curl* 来验证，不要使用浏览器，因为浏览器本身对同一个地址有请求限制。
+
+结果是， ``HandleFunc`` 本身是有并发处理能力的。即，在第一个请求没有返回之前（看到了 ``start`` 没有看到 ``finish`` ），可以同时接收并处理后续请求（能看到更多的 ``start`` ）。
+
+好消息是， ``net/http`` 这一套直接拿到项目中使用，已经差不多了。坏消息是，如果自己要重新实现一套异步的 *http* 服务端实现， ``HandleFunc`` 这套东西都要自己重新做。
+
+
 # Chunk 传输 #
 
 
-# WebSocket #
+*Chunk 传输* 指响应头中没有 *Content-Length* ，即对返回内容长度不定的一种处理方式，有专门的头：
 
+```text
+Transfer-Encoding: chunked
+```
+
+从 TCP 的角度，就是连接不断，服务端不断给连接写入内容，在 API 设计上，一般需要显式的 *finish* ，否则这个响应返回，从逻辑上来说就认为是一直没有结束的。所以，如果一个 *Handler* 的 API 被设计成 ``return Response`` 的格式，就没办法直观地处理 *chunk* 这种情况。
+
+``net/http`` 的 API ，本来就是 ``Write()`` ，其实可以很容易处理 *chunk* 的情况，但在默认情况下，它的行为仍然还是 *Handler* 返回（ ``return`` ）之后，才会在响应中加上头，并把多次 ``Write()`` 的内容一并返回。
+
+要实现 *chunk* 传输，需要使用 ``http.Flusher`` 这个接口的 ``Flush()`` 方法：
+
+```go
+package main
+
+import (
+    "net/http"
+    "fmt"
+    "strconv"
+    "time"
+)
+
+
+func hello(response http.ResponseWriter, request *http.Request) {
+    fmt.Println("start")
+
+    flusher, ok := response.(http.Flusher)
+    if !ok {
+        panic("ERROR")
+    }
+
+    response.Write([]byte("\nHello " + strconv.FormatInt(time.Now().Unix(), 10)))
+    flusher.Flush()
+    time.Sleep(2 * time.Second)
+
+    response.Write([]byte("\nHello " + strconv.FormatInt(time.Now().Unix(), 10)))
+    flusher.Flush()
+    time.Sleep(2 * time.Second)
+
+    response.Write([]byte("\nHello " + strconv.FormatInt(time.Now().Unix(), 10)))
+    flusher.Flush()
+    time.Sleep(2 * time.Second)
+
+    response.Write([]byte("\nHello " + strconv.FormatInt(time.Now().Unix(), 10)))
+    fmt.Println("finish")
+}
+
+
+func main () {
+    var mux = http.NewServeMux()
+    mux.HandleFunc("/", hello)
+    var srv = &http.Server{
+        Addr: ":8888",
+        Handler: mux,
+    }
+    fmt.Println("8888...")
+    srv.ListenAndServe()
+}
+```
+
+- 仍然没有显式的 *finish* ，还是以函数结束为响应结束。现实当中使用的话，大概是需要自己使用 *goroutine* 做一些阻塞性操作。
+- ``response`` 本来是 ``http.ResponseWriter`` ，但是可以显式的转成 ``http.Flusher`` 。并且转换之后才能使用 ``Flusher()`` 。
+- 通过 *telnet* 可以清楚看到 *chunk* 传输的过程，浏览器不一定看得到。
+
+
+``http.Flusher`` 的转换机制，详细来说：
+
+- ``response`` 这个结构，本身已经实现了多个接口（有多套方法）。
+- 我们自己的 ``hello`` 这个函数，它的参数签名指定了 ``http.ResponseWriter`` 这个接口，所以 ``response`` 结构，就被作为 ``http.ResponseWriter`` 接口使用了。
+- 对于接口，在运行时，可以强制转换成另外的接口，但是不一定能成功转换，所以需要判断转换返回的第二个参数， ``ok`` ，如果成功是 ``true`` ，失败是 ``false`` 。因为 ``response`` 结构已经实现了 ``http.Flusher`` 接口，所以我们可以强制转换之后使用 ``Flush()`` 方法。
+
+
+关于转换的理解，可以看下面简单的小例子。
+
+```
+package main
+
+type Foo interface {
+    A()
+}
+
+type Bar interface {
+    B()
+}
+
+type Other interface {
+    C()
+}
+
+type Obj struct {}
+
+func (self Obj) A() {
+    println("A")
+}
+
+func (self Obj) B() {
+    println("B")
+}
+
+
+
+func test(a Foo) {
+    a.A()
+    //a.B()
+
+    b, ok := a.(Bar)
+    println(ok)
+    b.B()
+
+    _, ok2 := a.(Other)
+    println(ok2)
+}
+
+func main() {
+    var obj = &Obj{}
+    obj.A()
+    obj.B()
+
+    test(obj)
+}
+```
+
+这里还有一个小点，对于 ``func test(a Foo)`` 中的参数，以接口声明约束时，``a`` 是直接用结构，还是用指针，都可以。
+
+即， ``var obj Obj = Obj{}`` 和 ``var obj *obj = &Obj{}`` ，都可以。
+
+
+
+
+# JSON 处理 #
 
 
