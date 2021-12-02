@@ -892,4 +892,229 @@ func main() {
 
 # JSON 处理 #
 
+静态语言处理 json 是比较麻烦的， *decode* 时还可以通过方法跳过具体的对象构造（比如 *simpleJson* , https://pkg.go.dev/github.com/bitly/go-simplejson）， *encode* 就没好办法了。加上 go 的规则中，公开的方法或者属性还必须首字母大写，对于 *encode* 的 json 字符串，如果对于成员名有小写的要求，就还要在结构中额外配置 *tag* 。
+
+
+## encode ##
+
+``encoding/json`` 中的 ``Marshal()`` 方法，可以直接把结构体，或者成员是结构体的列表，转成 json 字符串。
+
+整数，字符串，布尔值，空值，列表，对象：
+
+```go
+package main
+
+import (
+    "fmt"
+    "encoding/json"
+)
+
+func main() {
+    var s string
+    var js []byte
+    var err error
+
+    js, err = json.Marshal("1")
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal(0)
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal(true)
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal(nil)
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal([]string{"1", "2"})
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal([]int{1, 2})
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal(map[string]string{"a": "123", "b": "453"})
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal(map[string]interface{}{"a": "123", "b": "453", "c": 123})
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+
+    js, err = json.Marshal([]interface{}{1, "2", true, nil, []string{"2", "3"}})
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+}
+```
+
+基本数据类型直接拼还是很容易的，也可以直接嵌套。
+
+
+结构体。
+
+```go
+package main
+
+import (
+    "fmt"
+    "encoding/json"
+)
+
+type Hello struct {
+    Name string `json:"name"`
+    Value int
+    World World `json:"www"`
+}
+
+type World struct {
+    Name string
+}
+
+func main() {
+    var s string
+    var js []byte
+    var err error
+
+    var hello = &Hello{
+        Name: "first",
+        Value: 123,
+        World: World{
+            Name: "second",
+        },
+    }
+    js, err = json.Marshal(hello)
+    if err != nil { panic(err) }
+    s = string(js)
+    fmt.Println("|" + s + "|")
+}
+```
+
+- 结构体可以直接嵌套。
+- 属性默认必须是大写字母开头。
+- 如果要小写字母作属性值，需要使用 tag ，格式是 ```json:"xxx"``` ，中间不能有多余的空格，也不少了双引号。
+
+
+## decode ##
+
+json 中的类型，非嵌套的，都是基本类型。嵌套的，都按 ``interface{}`` 处理。取值时，再把 ``interface{}`` 转成具体类型的。
+
+```go
+package main
+
+import (
+    "fmt"
+    "encoding/json"
+)
+
+func main() {
+    var js []byte
+    var result interface{}
+    var err error
+
+    js = []byte(`1`)
+    json.Unmarshal(js, &result)
+    var i float64
+    i = result.(float64)
+    fmt.Println(i)
+
+    js = []byte(`"1"`)
+    json.Unmarshal(js, &result)
+    var s string
+    s = result.(string)
+    fmt.Println(s)
+
+    js = []byte(`null`)
+    json.Unmarshal(js, &result)
+    var f interface{}
+    f = result
+    fmt.Println(f)
+
+    js = []byte(`true`)
+    json.Unmarshal(js, &result)
+    var b bool
+    b = result.(bool)
+    fmt.Println(b)
+
+    js = []byte(`[true, 123, "sss", null, [1, "2"]]`)
+    err = json.Unmarshal(js, &result)
+    fmt.Println(err)
+    var any []interface{}
+    any = result.([]interface{})
+    for i, obj := range any {
+        fmt.Println(i, obj)
+    }
+
+    js = []byte(`{"a": "123", "b": 345, "c": [{"x": 123}]}`)
+    err = json.Unmarshal(js, &result)
+    fmt.Println(err)
+    var any2 map[string]interface{}
+    any2 = result.(map[string]interface{})
+    for i, obj := range any2 {
+        fmt.Println(i, obj)
+    }
+
+    var c []interface{} = any2["c"].([]interface{})
+    fmt.Println(c[0])
+
+    var x map[string]interface{} = c[0].(map[string]interface{})
+    fmt.Println(x["x"])
+
+    var last float64 = x["x"].(float64)
+    fmt.Println(last)
+}
+```
+
+- ``nil`` 就是 ``interface{}``
+- json 中的整数，在 go 中按 ``float64`` 处理的。（记得 js 中本来就不区分整数和浮点）
+
+
+上面例子中的 ``result`` ，可以直接是一个结构体：
+
+```go
+package main
+
+import (
+    "fmt"
+    "encoding/json"
+)
+
+type Hello struct {
+    Name string `json:"abc"`
+    Value int
+    Mark bool `json:mark`
+}
+
+func main() {
+    var js = []byte(`{"abc": "xxx", "value": 123, "mark": true}`)
+    var result Hello
+    err := json.Unmarshal(js, &result)
+    fmt.Println(err)
+    fmt.Println(result.Name)
+    fmt.Println(result.Value)
+    fmt.Println(result.Mark)
+}
+
+```
+
+- 对于指定了结构体的 *decode* ，首字大写可以自动适配。
+- 写了 *tag* 的， *tag* 优先级最高。没有对应 *tag* 的属性，会再尝试 ``Name`` , ``name`` 。
+
+
+
+# 模板 #
+
 
