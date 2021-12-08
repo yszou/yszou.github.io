@@ -1117,4 +1117,277 @@ func main() {
 
 # 模板 #
 
+go 的官方模块中自带了模板的实现，是 ``text/template`` 及 ``html/template`` ， 这两个都有相同的接口， ``html`` 多了安全方面的处理。
+
+
+## 基本使用 ##
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "text/template"
+)
+
+type Hello struct {
+    Name string
+    Result string
+}
+
+func (self *Hello) Write(p []byte) (int, error)  {
+    self.Result += string(p)
+    return len(p), nil
+}
+
+
+func main() {
+    var hello *Hello = &Hello{Name: "hello"}
+    tpl, err := template.New("test").Parse("{{.Name}} xx here")
+    if err != nil {
+        panic(err)
+    }
+    err = tpl.Execute(hello, hello)
+    if err != nil {
+        panic(err)
+    }
+    fmt.Println(tpl.Name())
+    fmt.Println(hello.Result)
+}
+```
+
+- ``template`` 通过 ``New`` 创建，再调用 ``Parse`` 返回同一个对象实例。
+- ``Execute()`` 需要两个参数，第一个是实现了 ``Write()`` 接口的对象，第二个就是模板参数的“根对象”。
+- ``Execute()`` 并不会返回结果，因为 ``Execute()`` 的过程会多次调用 ``Write()`` ，结果放在哪里由接口实现决定。
+
+
+上面最后一点，用起来虽然麻烦一些，但是却是一种相对很通用的设计。比如，如果你要在 Web 应用中引入这套模板，那么 ``Write()`` 就可以实现成直接往连接写入响应内容。
+
+
+
+## 当前对象 ##
+
+当前对象，是指 ``{{ . }}`` 。
+
+```go
+package main
+
+import (
+    "text/template"
+    "os"
+)
+
+func main() {
+    var hello = map[string]string{"foo": "hello"}
+    tpl, err := template.New("test").Parse("{{.foo}} xx here")
+    if err != nil { panic(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    if err != nil { panic(err) }
+}
+```
+
+最普通的，就是 ``Execute()`` 传入的参数。
+
+在 ``range`` 迭代中，也是迭代的当前对象：
+
+```go
+func main() {
+    var hello = [...]int{1,2,3}
+    tpl, err := template.New("test").Parse(`
+    {{ range . }}
+    {{ . }} here
+    {{ end }}
+    `)
+    if err != nil { panic(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    if err != nil { panic(err) }
+}
+```
+
+上面会输出：
+
+```text
+
+    1 here
+
+    2 here
+
+    3 here
+
+```
+
+- ``{{ range . }}`` 这里的 ``.`` ，就是 ``{1,2,3}`` 列表。
+- ``{{ . }} here`` 就是迭代时的列表成员了。
+
+
+## 前后空行 ##
+
+这里一个，有时会比较实用的功能。
+
+上面的例子：
+
+```go
+func main() {
+    var hello = [...]int{1,2,3}
+    tpl, err := template.New("test").Parse(`
+    {{ range . }}
+    {{ . }} here
+    {{ end }}
+    `)
+    if err != nil { panic(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    if err != nil { panic(err) }
+}
+```
+
+输出是：
+
+```text
+
+    1 here
+
+    2 here
+
+    3 here
+
+```
+
+可以看到，前后和中间，都多出空行。因为在原模板中： ``{{ range . }}`` 和  ``{{ end }}`` 都是独占一行的。同时， ``{{ . }}`` 的前面也有多个空格及一个换行。
+
+把模板先写成一行比较容易了解换行的位置：
+
+```go
+tpl, err := template.New("test").Parse(`{{ range . }}{{ . }} here{{ end }}`)
+```
+
+我们想不要多余的空行与空格的话，容易想到：
+
+```go
+tpl, err := template.New("test").Parse(`
+    {{- range . }}
+    {{- . }} here
+    {{ end }}`)
+```
+
+``{{- ... }}`` 可以换左侧的换行和空格去掉，同理，``{{ ... -}}}`` 可以把右侧的换行和空格去掉。
+
+上面那样写，我们最后得到的结果是：
+
+```text
+1 here
+    2 here
+    3 here
+             
+```
+
+``2 here`` 前面的空格，是 ``{{ end }}`` 左侧到 ``here`` 为止的内容，这里就没有办法在保留换行的情况下，使用 ``{{- ...}}`` 去掉了。如果写成：
+
+```
+tpl, err := template.New("test").Parse(`
+    {{- range . }}
+    {{- . }} here
+    {{- end }}`)
+```
+
+结果会变成：
+
+```go
+1 here2 here3 here  
+```
+
+所以，要换行，不要空格，就只能手动调整模板：
+
+```go
+tpl, err := template.New("test").Parse(`
+    {{- range . }}
+    {{- . }} here
+{{ end }}`)
+```
+
+
+## 命令块 ##
+
+以前用过的模板，都会有像“引用”，“继承”之类的机制，可以在模板内部去做 *import* ，或者“重写块”。 go 的这个模板没有这些， ``Parse()`` 的时候，就是一个整体的字符串，但是里面，可以有多个片段，单独给片段命名之后，就可以重复引用了，有点像函数：
+
+```text
+{{ define "first" }} {{ . }} {{ end }}
+{{ template "first" 123 }}
+{{ template "first" 456 }}
+{{ template "first" 492 }}
+```
+
+这个模板就是先自己定义了一个 ``first`` 片段，然后通过 ``template`` 命令做了三次引用，引用时传递了数字作为参数。
+
+如果是从文件 ``Parse`` ，也可以一次性写多个文件：
+
+```go
+tpl, err := template.ParseFiles("demo.go"，"a.html", "b.html")
+```
+
+这里，对于定义就可以整合到一起处理。
+
+注意， ``ParseFiles`` 是运行时读取文件并解析的，不是编译时。
+
+
+## 函数 ##
+
+``{{ call }}`` 命令可以调用指定的传入的函数：
+
+```go
+tpl, err := template.New("test").Parse(`{{ call . 1 2 }}`)
+```
+
+虽然可以传入函数，但是模板中的使用限制还是非常大。不能嵌套调用，也不能对结果赋值。
+
+
+
+## 迭代 ##
+
+``{{ range }}`` 和 ``{{ end }}`` 可以完成迭代。
+
+```go
+func main() {
+    type item map[string]string
+    var array = [...]item{item{"a": "123"}, item{"a": "345"}, item{"a": "9993"}}
+    tpl, err := template.New("test").Parse(`
+    {{ range . }} {{ .a }} {{ end }}
+    `)
+    if err != nil { panic(err) }
+    err = tpl.Execute(os.Stdout, array)
+    if err != nil { panic(err) }
+}
+```
+
+
+## 条件判断 ##
+
+``{{ if }}`` ``{{ else }}`` ``{{ end }}`` 是一套，它们可以嵌套。
+
+但是，这里没有逻辑判断的能力，只能使用一些内置的函数：
+
+```go
+func main() {
+    type item map[string]int
+    var array = [...]item{item{"a": 123}, item{"a": 345}, item{"a": 9993}}
+    tpl, err := template.New("test").Parse(`
+    {{ range . }} {{if eq .a 123 }} ok {{ else }} error {{ end }} {{ end }}
+    `)
+    if err != nil { panic(err) }
+    err = tpl.Execute(os.Stdout, array)
+    if err != nil { panic(err) }
+}
+```
+
+``if`` 那里写成 ``{{ if .a == 123 }}`` 是不支持。
+
+
+``or`` ``and`` ``not`` 这三个逻辑关系，也是函数行为，前置，不能中置：
+
+```go
+{{ range . }} {{if or (eq .a 123) (eq .a 345) }} ok {{ else }} error {{ end }} {{ end }}
+```
+
+好在这里至少可以用括号了。
+
 
