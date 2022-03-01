@@ -1,0 +1,2346 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>TypeScript语言学习参考 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">TypeScript语言学习参考</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2015-11-18 00:00 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">概述与环境安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">声明与预置规则</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">类型</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">3.1. 基本类型</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">3.2. 函数声明</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">3.3. 类型聚合</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">操作符</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">4.1. 类型求值</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">4.2. 匹配赋值</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">控制结构</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">函数，声明，参数约束与默认值</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">6.1. 参数匹配与默认值</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">6.2. 参数类型约束</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">6.3. 新的函数书写形式</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">类</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">7.1. 构造函数，实例化</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">7.2. 继承</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_self">7.3. 成员类型</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_self">7.4. 静态成员，类引用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_self">7.5. 父类引用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_self">7.6. 接口</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_self">7.7. 多态</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none" target="_self">7.8. 元类</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none" target="_self">7.9. 反射</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc25" style="color: #0184b7; text-decoration: none" target="_self">7.10. 泛型</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc26" style="color: #0184b7; text-decoration: none" target="_self">名字空间与模块加载</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc27" style="color: #0184b7; text-decoration: none" target="_self">8.1. 名字空间</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc28" style="color: #0184b7; text-decoration: none" target="_self">8.2. 生成js模块</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc29" style="color: #0184b7; text-decoration: none" target="_self">8.3. tsconfig.json</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc30" style="color: #0184b7; text-decoration: none" target="_self">开发调试</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc31" style="color: #0184b7; text-decoration: none" target="_self">总结</a>
+  </li>
+  </ol>
+
+</div>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<strong style="color: red; font-weight: normal;">本文的内容对应 TypeScript 的 1.6.2 版本。</strong>
+</p>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 概述与环境安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">TypeScript</em> 是在 <em style="color: #d75100; font-style: normal;">JavaScript</em> 基础上被微软做出来的新语言，目的是补充 js 的语法，而变更的地方主要是有两点。一是加入了类型声明，二是加入了常见的基于“类”的面向对象语法。前者，“类型声明”使得代码的静态分析成为可能，后者则为组织 js 代码提供了一种更易于被人接受的形式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说得更具体一点的话，就是 <em style="color: #d75100; font-style: normal;">TypeScript</em> 以“为了更容易维护与合作”，在语法上给 <em style="color: #d75100; font-style: normal;">JavaScript</em> 添加了一些明确约束和通用的面向对象能力。比如，你可以明确声明变量的存在（在当前文件中没有，但是你自己清楚它在运行时是没有问题的，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">document</code> 在浏览器环境中），明确声明变量的类型（之后 <em style="color: #d75100; font-style: normal;">TypeScript</em> 的静态分析能力就会配合 IDE 的功能作代码检查了），还有声明函数返回类型，函数参数类型，典型的类，继承，私有方法，等等等等，也许你在其它语言中早已熟悉的东西。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">TypeScript</em> 目前可以看成是 js 的预处理方案，使用 ts 写的代码，通过编译器得到 js 代码，这里说的“编译”仅仅是在“当前文件”中对代码结构作变换，像变量名什么的是不会被更改的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 npm 可以直接完成 <em style="color: #d75100; font-style: normal;">TypeScript</em> 的安装：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">sudo npm install -g typescript
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装完成之后，在 node 的 bin 目录下，会有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsc</code> ，这个就是 <em style="color: #d75100; font-style: normal;">TypeScript</em> 的编译工具，使用它可以从一个 ts 文件编译得到一个 js 文件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tsc hello.ts
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，就可以在同目录中得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.js</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译工具还有其它的一些选项，具体的直接敲入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsc</code> 后看屏幕信息吧。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 声明与预置规则</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不管是从严谨，甚至是合理的角度，我个人认为代码中是不应该存在“无源之水”之类的东西，代码中的每一样东西应该都明确的知道从何而来。退一步说，也应该有一个统一的“全局空间”，“默认空间”之类的概念。不过这东西在 js 环境中确实是有些乱的。语言层面全局中即有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">parseInt</code> 这种函数，也有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Date</code> 这种对象，还有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Math</code> 这种名字空间？同时典型浏览器环境暴露在全局中的还有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">document</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">XMLHttpRequest</code> 这些。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当你在一个空白的文件中，写了一句：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> dt <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> <span style="color: #0086B3">Date</span>()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样的代码的时候， ts 怎么知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Date</code> 是什么？或者换一个，写了一句：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">$.ajax({});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 又怎么知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$</code> 是什么？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它当然不知道，所以，按理说，这种情况下，语法检查就会抛出“未定义的引用”这种错误。但是事实上，上面的代码拿到浏览器中，在加载了相关的资源文件之后，是可以正常运行的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+面对这种问题， ts 有一种 <em style="color: #d75100; font-style: normal;">Ambient Declarations</em> 的机制，用于显示声明一个外部的“我知道的东西”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">declare</span> <span style="color: #000000; font-weight: bold">var</span> $;
+$.ajax({});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">declare</code> 这句， ts 的语法检查就知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$</code> 是什么东西了（但它不管实际运行时它怎么来）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实际使用时，其实不加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">declare</code> ，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Date</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">document</code> 这些全局对象 ts 也“认识”的，因为在 ts 的机制中，已经预定义了一套声明，在安装目录的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/lib/lib.d.ts</code> 文件中，里面包含了浏览器 API 和 js 语言层面的已有对象。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 类型</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里提到的“类型”包含了两层意义，一方面表示“一个变量是什么东西”，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">var a = '1';</code> ，我们可以说这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 是一个字符串。另一方面，表示“如何描述一个变量是什么东西”，举个例子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> a:<span style="color: #445588; font-weight: bold">string</span>[];
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们声明了， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 是一个由数字串组成的列表。但是，如果我们想进一步声明： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 不光是一个列表，而且它的第一个成员是字符串，第二个成员是数字，这种情况光是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">string[]</code> 就不够了。这时需要写成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> a<span style="color: #000000; font-weight: bold">:</span>[<span style="color: #445588; font-weight: bold">string</span>, <span style="color: #445588; font-weight: bold">number</span>];
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">string[]</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[string, number]</code> 在 ts 中其实是两种不同的类型，前者是 <em style="color: #d75100; font-style: normal;">Array</em> ，后者是 <em style="color: #d75100; font-style: normal;">Tuple</em> 。但是，这两个东西的区别，其实只在“声明”时有，或者说区别只在于“约束”，而不在于实际的数据形式。即反过来看，你无法区别 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">['1', '1']</code> 这个值的类型，它对应的到底是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">string[]</code> 这个 <em style="color: #d75100; font-style: normal;">Array</em> ，还是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[string, string]</code> 这个 <em style="color: #d75100; font-style: normal;">Tuple</em> ，当然也可以说它两者都是，从这个角度来说，类型的意义，也仅仅是在于“约束”，跟实际的数据结构完全没有关系的（js 这种高高级的语言本来也不关心）。想明白这点，应该有助于减少纠结。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的一点点例子，也展示了 ts 中的类型的用法——后置声明。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 基本类型</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> a:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+<span style="color: #000000; font-weight: bold">var</span> b:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;abc&#39;</span>;
+<span style="color: #000000; font-weight: bold">var</span> c:<span style="color: #445588; font-weight: bold">boolean</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">true</span>;
+<span style="color: #000000; font-weight: bold">var</span> d:<span style="color: #445588; font-weight: bold">void</span>;
+<span style="color: #000000; font-weight: bold">var</span> e:<span style="color: #445588; font-weight: bold">any</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>;
+
+<span style="color: #000000; font-weight: bold">enum</span> Color { red <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">5</span>, blue <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>, green <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">3</span> }
+<span style="color: #000000; font-weight: bold">var</span> f:<span style="color: #445588; font-weight: bold">Color</span> <span style="color: #000000; font-weight: bold">=</span> Color.red;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">number</em> , <em style="color: #d75100; font-style: normal;">string</em> , <em style="color: #d75100; font-style: normal;">boolean</em> 这几个不用说了。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">void</em> 表示“空”，常用于函数返回值类型的声明。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">any</em> 表示“任意类型”。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">enum</em> 的写法，是 ts 自己扩展出的“枚举”类型，它实际上只能是数字的形式化表示。
+</li>
+</ul>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. 函数声明</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> func1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a:<span style="color: #445588; font-weight: bold">string</span>, b:<span style="color: #445588; font-weight: bold">number</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">1</span>;
+};
+
+<span style="color: #000000; font-weight: bold">function</span> func2(a:<span style="color: #445588; font-weight: bold">string</span>, b:<span style="color: #445588; font-weight: bold">number</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">1</span>;
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func3(a:<span style="color: #445588; font-weight: bold">string</span>, b:<span style="color: #445588; font-weight: bold">number</span>)<span style="color: #000000; font-weight: bold">:void</span>{
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+参数的类型声明，一样是放参数名后面。在参数部分之后，可以加上函数返回值的类型声明。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 类型聚合</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在声明类型的时候，类型与类型之间，是可以有逻辑关系的，比如“A类型，或者B类型”，甚至是“A类型，也是B类型”。推广一下，就是指定的对象实现了多个接口中的一个，或者，实现了所有的接口。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f(a:<span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 操作符</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整体上跟 js 是一样的，因为引入了类型，提几点：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f()<span style="color: #000000; font-weight: bold">:void</span>{
+    <span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {a: <span style="color: #445588; font-weight: bold">1</span>};
+    <span style="color: #000000; font-weight: bold">return</span> (<span style="color: #000000; font-weight: bold">delete</span> obj.a);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码有编译期错误，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">delete</code> 操作符的返回值是 <em style="color: #d75100; font-style: normal;">boolean</em> 类型。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">void</em> 也是一个操作符，它的返回值是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">undefined</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f()<span style="color: #000000; font-weight: bold">:void</span>{
+    <span style="color: #000000; font-weight: bold">var</span> obj <span style="color: #000000; font-weight: bold">=</span> {a: <span style="color: #445588; font-weight: bold">1</span>};
+    <span style="color: #000000; font-weight: bold">return</span> (<span style="color: #000000; font-weight: bold">void</span> (<span style="color: #000000; font-weight: bold">delete</span> obj.a));
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就对了。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. 类型求值</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">typeof</code> 这个操作符，本来是返回一个字符串。但是在 ts 中，如果它的使用位置是在一个“类型声明”中，则它的行为就是一个“类型求值”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>;
+<span style="color: #000000; font-weight: bold">function</span> f()<span style="color: #000000; font-weight: bold">:typeof</span> n{
+    <span style="color: #000000; font-weight: bold">return</span> (<span style="color: #000000; font-weight: bold">typeof</span> n);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码就是错的，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">f</code> 的返回值需要是一个 <em style="color: #d75100; font-style: normal;">number</em> ，但是实际上返回了一个 <em style="color: #d75100; font-style: normal;">string</em> 。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. 匹配赋值</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（这部分功能 ECMA 6 以上本来就支持了，ts 便不会再作额外转换）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 ts 中可以写：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> x:<span style="color: #445588; font-weight: bold">number</span>, y:<span style="color: #445588; font-weight: bold">number</span>;
+[x, y] <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>, <span style="color: #009999">2</span>, <span style="color: #009999">3</span>];
+console.log(x, y);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 会生成这样的 js 代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> x, y;
+_a <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>, <span style="color: #009999">2</span>, <span style="color: #009999">3</span>], x <span style="color: #000000; font-weight: bold">=</span> _a[<span style="color: #009999">0</span>], y <span style="color: #000000; font-weight: bold">=</span> _a[<span style="color: #009999">1</span>];
+console.log(x, y);
+<span style="color: #000000; font-weight: bold">var</span> _a;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+再扩展一下，可以给一个“默认值”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> [x, y, z<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;ok&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>, <span style="color: #009999">2</span>, <span style="color: #000000; font-weight: bold">undefined</span>];
+console.log(x, y, z);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">z</code> 在这里的行为是，当对应位置没有匹配时，取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ok</code> 。但是，如果写成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> [x, y, z<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;ok&#39;</span>] <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>, <span style="color: #009999">2</span>];
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就不行，会检查出类型不匹配。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面正确的例子对应生成的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> _a <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #009999">1</span>, <span style="color: #009999">2</span>], x <span style="color: #000000; font-weight: bold">=</span> _a[<span style="color: #009999">0</span>], y <span style="color: #000000; font-weight: bold">=</span> _a[<span style="color: #009999">1</span>], _b <span style="color: #000000; font-weight: bold">=</span> _a[<span style="color: #009999">2</span>], z <span style="color: #000000; font-weight: bold">=</span> _b <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">void</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">?</span> <span style="color: #dd1144">&#39;ok&#39;</span> <span style="color: #000000; font-weight: bold">:</span> _b;
+console.log(x, y, z);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+列表可以匹配，对象也可以匹配，形式上是把原始属性名映射到目标属性名：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> {x: <span style="color: #445588; font-weight: bold">a</span>, y: <span style="color: #445588; font-weight: bold">b</span>, z: <span style="color: #445588; font-weight: bold">c</span><span style="color: #000000; font-weight: bold">=false</span>} <span style="color: #000000; font-weight: bold">=</span> {x: <span style="color: #445588; font-weight: bold">1</span>, y: <span style="color: #445588; font-weight: bold">2</span>, z: <span style="color: #445588; font-weight: bold">undefined</span>};
+console.log(a, b, c);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+生成的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> _a <span style="color: #000000; font-weight: bold">=</span> { x<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">1</span>, y<span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span>, z<span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">undefined</span> }, a <span style="color: #000000; font-weight: bold">=</span> _a.x, b <span style="color: #000000; font-weight: bold">=</span> _a.y, _b <span style="color: #000000; font-weight: bold">=</span> _a.z, c <span style="color: #000000; font-weight: bold">=</span> _b <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">void</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">?</span> <span style="color: #000000; font-weight: bold">false</span> <span style="color: #000000; font-weight: bold">:</span> _b;
+console.log(a, b, c);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 控制结构</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（没有特殊的地方， ECMA 6 新增的语法不论）
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 函数，声明，参数约束与默认值</h1>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. 参数匹配与默认值</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说类型的时候，谈到过一点函数的定义形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> func1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a:<span style="color: #445588; font-weight: bold">string</span>, b:<span style="color: #445588; font-weight: bold">number</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">1</span>;
+};
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结合前面“匹配赋值”，函数在定义时就可以有“默认值”机制了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f({x: <span style="color: #445588; font-weight: bold">a</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>}){
+    console.log(a);
+}
+
+f({});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码从传入的对象中抽取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">x</code> 属性赋值给 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 变量，如果没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">x</code> 属性，则把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 变量的值赋值成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> ，对应的 js 代码为：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f(_a) {
+    <span style="color: #000000; font-weight: bold">var</span> _b <span style="color: #000000; font-weight: bold">=</span> _a.x, a <span style="color: #000000; font-weight: bold">=</span> _b <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">void</span> <span style="color: #009999">0</span> <span style="color: #000000; font-weight: bold">?</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">:</span> _b;
+    console.log(a);
+}
+f({});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+还可以复杂一点：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f({x: <span style="color: #445588; font-weight: bold">a</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>, pair<span style="color: #000000; font-weight: bold">:</span> [x, y]<span style="color: #000000; font-weight: bold">=</span>[<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>]}){
+    console.log(x, y);
+}
+
+f({pair<span style="color: #000000; font-weight: bold">:</span> [<span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #dd1144">&#39;2&#39;</span>]});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. 参数类型约束</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面在函数的参数中作了额外的事的话，类型约束上就没法直接做了。这种情况，就需要在整个参数对象上，定义一个 <em style="color: #d75100; font-style: normal;">接口</em> 来约束类型。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> FInfo {
+    x?: <span style="color: #445588; font-weight: bold">number</span>;
+    pair<span style="color: #000000; font-weight: bold">:</span> [<span style="color: #445588; font-weight: bold">string</span>, <span style="color: #445588; font-weight: bold">string</span>];
+}
+
+<span style="color: #000000; font-weight: bold">function</span> f({x: <span style="color: #445588; font-weight: bold">a</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #009999">1</span>, pair<span style="color: #000000; font-weight: bold">:</span> [x, y]<span style="color: #000000; font-weight: bold">=</span>[<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;b&#39;</span>]}<span style="color: #000000; font-weight: bold">:</span> FInfo){
+    console.log(x, y);
+}
+
+f({pair<span style="color: #000000; font-weight: bold">:</span> [<span style="color: #dd1144">&#39;1&#39;</span>, <span style="color: #dd1144">&#39;2&#39;</span>]});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+定义函数时，直接声明参数是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">FInfo</code> 类型，那么在编译期就可以用参数的有效性检查了。（ <em style="color: #d75100; font-style: normal;">interface</em> 只是约束，只在编译期起作用，对生成 js 代码没有任意影响）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+类型本身是可以有逻辑关系的，这个前面提过：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f(a:<span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果一个参数可以缺失，可以使用这种方式声明，加一个问号：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> f(a?:<span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">|</span><span style="color: #445588; font-weight: bold">number</span>{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. 新的函数书写形式</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 为函数表达式提供了一种更简单的写法，比如原来要写成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(a, b, c){<span style="color: #000000; font-weight: bold">return</span> a}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在 ts 中可以写为：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> (a, b, c) <span style="color: #000000; font-weight: bold">=&gt;</span> a;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <em style="color: #d75100; font-style: normal;">=&gt;</em> 箭头的语法，来作为一个函数表达式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+箭头的左边，是参数。右边，是函数体，左右边都有简写形式。上面的右边就简写了，完整的形式应该是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> (a, b, c) <span style="color: #000000; font-weight: bold">=&gt;</span> { <span style="color: #000000; font-weight: bold">return</span> a };
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当参数只有一个时，左边的括号可以省略：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> a <span style="color: #000000; font-weight: bold">=&gt;</span> a<span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>;
+<span style="color: #999988">//function(a){ return a+1 }</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果没有参数，则写为一个空括号：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #009999">1</span>;
+<span style="color: #999988">//function(){return 1}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意，箭头形式的函数表达式中， <em style="color: #d75100; font-style: normal;">this</em> 不是上下文，会被 ts 处理成一个简单的闭包变量。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.x;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+转成 js 是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> _this <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+<span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () { <span style="color: #000000; font-weight: bold">return</span> _this.x; };
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+箭头形式的函数表达式用在回调函数中很方便：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> n <span style="color: #000000; font-weight: bold">=</span> ([<span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>]).forEach((x) <span style="color: #000000; font-weight: bold">=&gt;</span> x<span style="color: #000000; font-weight: bold">+</span><span style="color: #009999">1</span>);
+console.log(n);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+生成的 js 是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> n <span style="color: #000000; font-weight: bold">=</span> ([<span style="color: #009999">1</span>, <span style="color: #009999">2</span>, <span style="color: #009999">3</span>]).forEach(<span style="color: #000000; font-weight: bold">function</span> (x) { <span style="color: #000000; font-weight: bold">return</span> x <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>; });
+console.log(n);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+带上类型也是一样的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> (x:<span style="color: #445588; font-weight: bold">number</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> x <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc15"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 类</h1>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.1. 构造函数，实例化</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 中有标准的 <em style="color: #d75100; font-style: normal;">class</em> 关键词了，定义一个类的方式变得直观：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">enum</span> Sex {male, female};
+<span style="color: #000000; font-weight: bold">class</span> People {
+    name: <span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;noname&#39;</span>;
+    sex: <span style="color: #445588; font-weight: bold">Sex</span>;
+
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>, sex: <span style="color: #445588; font-weight: bold">Sex</span>){
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">this</span>.sex <span style="color: #000000; font-weight: bold">=</span> sex;
+    }
+
+    get_name()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span>{
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.name;
+    }
+
+    set_name(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span>People{
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    }
+
+    get_sex()<span style="color: #000000; font-weight: bold">:</span>Sex{
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.sex;
+    }
+
+    set_sex(sex:<span style="color: #445588; font-weight: bold">Sex</span>)<span style="color: #000000; font-weight: bold">:</span>People{
+        <span style="color: #000000; font-weight: bold">this</span>.sex <span style="color: #000000; font-weight: bold">=</span> sex;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    }
+
+}
+
+<span style="color: #000000; font-weight: bold">var</span> p <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> People(<span style="color: #dd1144">&#39;hello&#39;</span>, Sex.male);
+console.log(p.get_name());
+console.log(p.set_name(<span style="color: #dd1144">&#39;world&#39;</span>).get_name());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码就是一个典型的“类”的定义，里面有它的属性和方法。我们还额外定义了一个枚举类型。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里在写法上的注意的是，“属性”结尾，可选一个分号结尾。“方法”结尾，一定不能要分号。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">constructor</code> 方法，强制为类的构造方法。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">new</code> 用于实例化一个类。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个类的方法实现中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this</code> ，仍然是 js 中的“上下文”，所以对于上述代码，我们写：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> p.get_name;
+console.log(f());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出的结果，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">undefined</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+为此，我们可以使用“属性”来代替“方法”，本来“函数”在 js 中就跟数字，字符串一样，是再普通不过的类型嘛。使用“箭头函数”把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this</code> 作为闭包变量使用，我们把前面的代码修改一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> People {
+    name: <span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;noname&#39;</span>;
+    sex: <span style="color: #445588; font-weight: bold">Sex</span>;
+
+    get_real_name <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=&gt;</span> {<span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.name};
+    set_real_name <span style="color: #000000; font-weight: bold">=</span> (name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span>People <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    };
+    
+    ... ...
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，再使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> get <span style="color: #000000; font-weight: bold">=</span> p.get_real_name;
+<span style="color: #000000; font-weight: bold">var</span> set <span style="color: #000000; font-weight: bold">=</span> p.set_real_name;
+console.log(get());
+set(<span style="color: #dd1144">&#39;real&#39;</span>);
+console.log(get());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果就不会有任何改变了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">People</code> 这个类定义，转换出来的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> People <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> () {
+    <span style="color: #000000; font-weight: bold">function</span> People(name, sex) {
+        <span style="color: #000000; font-weight: bold">var</span> _this <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;noname&#39;</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.get_real_name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () { <span style="color: #000000; font-weight: bold">return</span> _this.name; };
+        <span style="color: #000000; font-weight: bold">this</span>.set_real_name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> (name) {
+            _this.name <span style="color: #000000; font-weight: bold">=</span> name;
+            <span style="color: #000000; font-weight: bold">return</span> _this;
+        };
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">this</span>.sex <span style="color: #000000; font-weight: bold">=</span> sex;
+    }
+    People.prototype.get_name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () {
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.name;
+    };
+    People.prototype.set_name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> (name) {
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    };
+    People.prototype.get_sex <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () {
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>.sex;
+    };
+    People.prototype.set_sex <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> (sex) {
+        <span style="color: #000000; font-weight: bold">this</span>.sex <span style="color: #000000; font-weight: bold">=</span> sex;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    };
+    <span style="color: #000000; font-weight: bold">return</span> People;
+})();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.2. 继承</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">extends</code> 关键词来做继承。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;&#39;</span>){}
+}
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;B&#39;</span>;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> B();
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">extends</code> 不支持多重继承。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.3. 成员类型</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 中的类的成员可以有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> 两类限定。默认是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> （其实还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">protected</code> 类型，在后面的“父类引用”中会介绍）。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">private</span> _name:<span style="color: #445588; font-weight: bold">string</span>;
+    <span style="color: #000000; font-weight: bold">public</span> get_name <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>._name;
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>){
+        <span style="color: #000000; font-weight: bold">this</span>._name <span style="color: #000000; font-weight: bold">=</span> name;
+    }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A(<span style="color: #dd1144">&#39;hello&#39;</span>);
+<span style="color: #999988">//console.log(a._name); //ERROR</span>
+console.log(a.get_name());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> ，在构造函数上有一点“特殊功能”，可以在构造函数的参数中声明 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> ，这样的话，实例化的时候会自动处理相应的实例成员变量。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">constructor</span>(){ }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码在编译时会报 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.name</code> 不存在的错误。改一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">constructor</span>(<span style="color: #000000; font-weight: bold">public</span> name:<span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hello&#39;</span>){ console.log(<span style="color: #dd1144">&#39;here&#39;</span>) }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在构造函数的参数前面多加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> ，那么在实例化的时候， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 参数会自动对应到对实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 成员属性的赋值上。上面的 ts 代码生成的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> () {
+    <span style="color: #000000; font-weight: bold">function</span> A(name) {
+        <span style="color: #000000; font-weight: bold">if</span> (name <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">void</span> <span style="color: #009999">0</span>) { name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;hello&#39;</span>; }
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        console.log(<span style="color: #dd1144">&#39;here&#39;</span>);
+    }
+    <span style="color: #000000; font-weight: bold">return</span> A;
+})();
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+生成的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">function A(name)</code> 中，第一行是处理默认参数行为。第二行，就是编译生成的“自动对应同名属性”的行为。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> 也是一样的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    get_name <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.name;
+    <span style="color: #000000; font-weight: bold">constructor</span>(<span style="color: #000000; font-weight: bold">private</span> name:<span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&#39;hello&#39;</span>){ console.log(<span style="color: #dd1144">&#39;here&#39;</span>) }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.get_name());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc19"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.4. 静态成员，类引用</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面写在“类”中的属性或方法，可以看成是“实例的成员”，相对的，我们在前面加一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">static</code> 限定的话，就可以把属性或方法定义成“静态的成员”，或者从认识上是“类成员”。这些属性或方法存在于类的名字名字空间下，与实例无关。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">static</span> x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.x);
+console.log(A.x);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码中，虽然有两个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">x</code> ，但是一个是实例属性，一个是“类属性（静态属性）”，所以，它们是两个不同，也互不相关的东西。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应生成的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> () {
+    <span style="color: #000000; font-weight: bold">function</span> A() {
+        <span style="color: #000000; font-weight: bold">this</span>.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    }
+    A.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+    <span style="color: #000000; font-weight: bold">return</span> A;
+})();
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.x);
+console.log(A.x);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在实例的相关成员定义中，要引用静态成员的话：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">static</span> x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+    show_normal <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.x;
+    show_static <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> A.x;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接写 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">A.x</code> 自然没有问题，但是更好的方法，应该是表达成“当前实例的类”，在 js 中，“类”其实就是一个函数，比如上面的代码转成 js 是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> () {
+    <span style="color: #000000; font-weight: bold">function</span> A() {
+        <span style="color: #000000; font-weight: bold">var</span> _this <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">this</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+        <span style="color: #000000; font-weight: bold">this</span>.show_normal <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () { <span style="color: #000000; font-weight: bold">return</span> _this.x; };
+        <span style="color: #000000; font-weight: bold">this</span>.show_static <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () { <span style="color: #000000; font-weight: bold">return</span> A.x; };
+    }
+    A.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+    <span style="color: #000000; font-weight: bold">return</span> A;
+})();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们可以通过对应实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">constructor</code> 成员来得到这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">A</code> 的引用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>;
+    <span style="color: #000000; font-weight: bold">static</span> x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+    <span style="color: #000000; font-weight: bold">static</span> name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    show_normal <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.x;
+    show_static <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> A.x;
+    show_static2 <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.<span style="color: #000000; font-weight: bold">constructor</span>.x;
+    show_cls_name <span style="color: #000000; font-weight: bold">=</span> ()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=&gt;</span> <span style="color: #000000; font-weight: bold">this</span>.<span style="color: #000000; font-weight: bold">constructor</span>.name;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+console.log(a.show_normal());
+console.log(a.show_static());
+console.log(a.show_static2());
+console.log(a.<span style="color: #000000; font-weight: bold">constructor</span> <span style="color: #000000; font-weight: bold">===</span> A);
+console.log(a.show_cls_name());
+console.log(A.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好吧，我自认为的道理都说完了，不过，上面的代码会提示编译有错误（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">this.constructor</code> 这个函数没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">x</code> 这个属性），但是却能正确得到 js 结果。同时，那个静态的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> ，赋值为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">123</code> 也是没用的，得到的结果总是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">A</code> 。不要问我为什么，我也不知道。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接下来要确认的问题，静态成员可以被更改吗？或者说得准确点， ts 允许静态成员被更改吗？因为 js 层面肯定是没问题的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">static</span> x:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+}
+
+console.log(A.x);
+A.x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">2</span>;
+console.log(A.x);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码没有编译错误，所以，看起来静态成员是可以被更改的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000080">class</span> <span style="color: #000080">A</span> {
+    <span style="color: #a61717; background-color: #e3d2d2">static</span> x:number <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>;
+    <span style="color: #a61717; background-color: #e3d2d2">public</span> <span style="color: #a61717; background-color: #e3d2d2">get_x</span> <span style="color: #a61717; background-color: #e3d2d2">=</span> <span style="color: #a61717; background-color: #e3d2d2">():number</span> <span style="color: #a61717; background-color: #e3d2d2">=&gt;</span> <span style="color: #a61717; background-color: #e3d2d2">A.x</span>;
+}
+
+<span style="color: #000080">var</span> <span style="color: #000080">a</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000080">new</span> <span style="color: #000080">A</span><span style="color: #000000; font-weight: bold">();</span>
+<span style="color: #000080">var</span> <span style="color: #000080">B</span>:<span style="color: #3c5d5d; font-weight: bold">typeof</span> <span style="color: #000080">A</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000080">A</span><span style="color: #000000; font-weight: bold">;</span>
+<span style="color: #000080">console</span>.<span style="color: #445588; font-weight: bold">log</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">a</span>.<span style="color: #445588; font-weight: bold">get_x</span><span style="color: #000000; font-weight: bold">());</span>
+<span style="color: #000080">B</span>.<span style="color: #445588; font-weight: bold">x</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000080">2</span><span style="color: #000000; font-weight: bold">;</span>
+<span style="color: #000080">console</span>.<span style="color: #445588; font-weight: bold">log</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">a</span>.<span style="color: #445588; font-weight: bold">get_x</span><span style="color: #000000; font-weight: bold">());</span>
+<span style="color: #000080">var</span> <span style="color: #000080">b</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000080">new</span> <span style="color: #000080">B</span><span style="color: #000000; font-weight: bold">();</span>
+<span style="color: #000080">console</span>.<span style="color: #445588; font-weight: bold">log</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #000080">b</span>.<span style="color: #445588; font-weight: bold">get_x</span><span style="color: #000000; font-weight: bold">());</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码演示了一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">typeof</code> 的用法，并且也对静态成员作了更改。
+</p>
+
+<a class="anchor" name="toc20"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.5. 父类引用</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 的实例方法中，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">super</code> 作为对父类的引用。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span>;
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>){<span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;}
+    func()<span style="color: #000000; font-weight: bold">:void</span>{
+        console.log(<span style="color: #dd1144">&#39;A&#39;</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>){
+        <span style="color: #000000; font-weight: bold">super</span>(name);
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #dd1144">&#39;XXXX&#39;</span>;
+    }
+    func()<span style="color: #000000; font-weight: bold">:void</span>{
+        <span style="color: #000000; font-weight: bold">super</span>.func();
+        console.log(<span style="color: #dd1144">&#39;B&#39;</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">var</span> b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> B(<span style="color: #dd1144">&#39;B&#39;</span>);
+b.func();
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码中，特别注意一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">constructor</code> 构造函数中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">super</code> 的处理方式，不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">super.constructor</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的代码对应的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> __extends <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">this</span> <span style="color: #000000; font-weight: bold">&amp;&amp;</span> <span style="color: #000000; font-weight: bold">this</span>.__extends) <span style="color: #000000; font-weight: bold">||</span> <span style="color: #000000; font-weight: bold">function</span> (d, b) {
+    <span style="color: #000000; font-weight: bold">for</span> (<span style="color: #000000; font-weight: bold">var</span> p <span style="color: #000000; font-weight: bold">in</span> b) <span style="color: #000000; font-weight: bold">if</span> (b.hasOwnProperty(p)) d[p] <span style="color: #000000; font-weight: bold">=</span> b[p];
+    <span style="color: #000000; font-weight: bold">function</span> __() { <span style="color: #000000; font-weight: bold">this</span>.constructor <span style="color: #000000; font-weight: bold">=</span> d; }
+    d.prototype <span style="color: #000000; font-weight: bold">=</span> b <span style="color: #000000; font-weight: bold">===</span> <span style="color: #000000; font-weight: bold">null</span> <span style="color: #000000; font-weight: bold">?</span> <span style="color: #0086B3">Object</span>.create(b) <span style="color: #000000; font-weight: bold">:</span> (__.prototype <span style="color: #000000; font-weight: bold">=</span> b.prototype, <span style="color: #000000; font-weight: bold">new</span> __());
+};
+<span style="color: #000000; font-weight: bold">var</span> A <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> () {
+    <span style="color: #000000; font-weight: bold">function</span> A(name) {
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+    }
+    A.prototype.func <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () {
+        console.log(<span style="color: #dd1144">&#39;A&#39;</span>);
+    };
+    <span style="color: #000000; font-weight: bold">return</span> A;
+})();
+<span style="color: #000000; font-weight: bold">var</span> B <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #000000; font-weight: bold">function</span> (_super) {
+    __extends(B, _super);
+    <span style="color: #000000; font-weight: bold">function</span> B(name) {
+        _super.call(<span style="color: #000000; font-weight: bold">this</span>, name);
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #dd1144">&#39;XXXX&#39;</span>;
+    }
+    B.prototype.func <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span> () {
+        _super.prototype.func.call(<span style="color: #000000; font-weight: bold">this</span>);
+        console.log(<span style="color: #dd1144">&#39;B&#39;</span>);
+    };
+    <span style="color: #000000; font-weight: bold">return</span> B;
+})(A);
+<span style="color: #000000; font-weight: bold">var</span> b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> B(<span style="color: #dd1144">&#39;B&#39;</span>);
+b.func();
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+大概看一下，继承的实现是通过“传参”实现的，而 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">super</code> 的则是通过“绑定上下文”来实现的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+提到上下文的话，我们再确定一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+    func()<span style="color: #000000; font-weight: bold">:void</span>{
+        console.log(<span style="color: #000000; font-weight: bold">this</span>.name);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;B&#39;</span>;
+    func()<span style="color: #000000; font-weight: bold">:void</span>{
+        <span style="color: #000000; font-weight: bold">super</span>.func();
+        console.log(<span style="color: #dd1144">&#39;B&#39;</span>);
+    }
+}
+
+(<span style="color: #000000; font-weight: bold">new</span> B()).func();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+没问题，结果是两个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">B</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">super</em> 的作用，只能发生在“方法”上，所以，运用“箭头函数”，把属性的值做成函数的方法，在实现中是不能使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">super</code> 的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    func <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> console.log(<span style="color: #dd1144">&#39;A&#39;</span>);
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    func <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        console.log(<span style="color: #dd1144">&#39;B&#39;</span>);
+    }
+}
+
+(<span style="color: #000000; font-weight: bold">new</span> B()).func();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样没问题。但是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    func <span style="color: #000000; font-weight: bold">=</span> () <span style="color: #000000; font-weight: bold">=&gt;</span> {
+        <span style="color: #000000; font-weight: bold">super</span>.func();
+        console.log(<span style="color: #dd1144">&#39;B&#39;</span>);
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样是不行的，因为 <em style="color: #d75100; font-style: normal;">super</em> 只能访问到父类的方法，准确地说，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">public</code> 或 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">protected</code> 的方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说到这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">protected</code> ，先看 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">private</span> func()<span style="color: #000000; font-weight: bold">:void</span>{
+        console.log(<span style="color: #dd1144">&#39;A&#39;</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    say()<span style="color: #000000; font-weight: bold">:void</span> {
+        <span style="color: #000000; font-weight: bold">this</span>.func();
+    }
+}
+
+(<span style="color: #000000; font-weight: bold">new</span> B()).say();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码是错误的， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">func</code> 方法，不能被子类 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">B</code> 的实例方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> 换成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">protected</code> 就可以了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">protected</span> func()<span style="color: #000000; font-weight: bold">:void</span>{
+        console.log(<span style="color: #dd1144">&#39;A&#39;</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    say()<span style="color: #000000; font-weight: bold">:void</span> {
+        <span style="color: #000000; font-weight: bold">this</span>.func();
+    }
+}
+
+(<span style="color: #000000; font-weight: bold">new</span> B()).say();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，不直接用到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">private</code> 的方法肯定是没问题的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">private</span> name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;MMM&#39;</span>;
+    <span style="color: #000000; font-weight: bold">private</span> func()<span style="color: #000000; font-weight: bold">:void</span>{
+        console.log(<span style="color: #000000; font-weight: bold">this</span>.name);
+    }
+    say()<span style="color: #000000; font-weight: bold">:void</span>{
+        <span style="color: #000000; font-weight: bold">this</span>.func();
+        console.log(<span style="color: #dd1144">&#39;say&#39;</span>);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {
+    say()<span style="color: #000000; font-weight: bold">:void</span>{
+        <span style="color: #000000; font-weight: bold">super</span>.say();
+        console.log(<span style="color: #dd1144">&#39;BB&#39;</span>);
+    }
+}
+
+(<span style="color: #000000; font-weight: bold">new</span> B()).say();
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+子类覆写父类方法，在方法的“类型”限定上，的需要遵循一些规则。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">private</em> 的不能变成其它。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">public</em> 的不能变成其它。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">protected</em> 的可以变成 <em style="color: #d75100; font-style: normal;">public</em> 。
+</li>
+</ul>
+
+<a class="anchor" name="toc21"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.6. 接口</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+说完了类，再来看“接口”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    name:<span style="color: #445588; font-weight: bold">string</span>;
+    set_name(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span>A;
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>;
+    set_name(name:<span style="color: #445588; font-weight: bold">string</span>){
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接口只是规则了一套规则，或者说只是定义了一套约束，它跟生成的 js 代码完全没有关系，接口只用于 ts 的类型检查。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个类，可以实现多个接口：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    name:<span style="color: #445588; font-weight: bold">string</span>;
+    set_name(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span>A;
+}
+<span style="color: #000000; font-weight: bold">interface</span> Y {
+    type:<span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X,Y {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;</span>;
+    type:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+    set_name(name:<span style="color: #445588; font-weight: bold">string</span>){
+        <span style="color: #000000; font-weight: bold">this</span>.name <span style="color: #000000; font-weight: bold">=</span> name;
+        <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">this</span>;
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接口中可以约束构造函数，其实也不能叫“约束构造函数”，我X，我也不知道应该怎么说了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+意思就是定义的接口中的“构造函数”部分，这个接口不能被用来 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">implements</code> ，只能用来作为一个“类型限定”，在类型检查时用到“构造函数”约束这部分。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+构造这部分不能写为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">constructor</code> ， 要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">new</code> 代替。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+见如下代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    <span style="color: #000000; font-weight: bold">new</span>(name:<span style="color: #445588; font-weight: bold">string</span>);
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X {
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>){ }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样写是不行的（我也不知道为什么不行啊）。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X</code> 中定义了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">new</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X</code> 不能被用来 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">implements</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    <span style="color: #000000; font-weight: bold">new</span>(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span>Y;
+}
+
+<span style="color: #000000; font-weight: bold">interface</span> Y { }
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> Y {
+    <span style="color: #000000; font-weight: bold">constructor</span>(name:<span style="color: #445588; font-weight: bold">string</span>){
+        console.log(name);
+    }
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func(cls:<span style="color: #445588; font-weight: bold">X</span>){
+    <span style="color: #000000; font-weight: bold">new</span> cls(<span style="color: #dd1144">&#39;123&#39;</span>);
+}
+
+func(A);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接口中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">new</code> 是这样用的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于接口，还有一条机制，同名的接口定义，规则会作合并处理，不会提示名字冲突。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    name: <span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">interface</span> X {
+    type: <span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X {
+    name: <span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    type: <span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;hello&#39;</span>;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc22"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.7. 多态</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 js 本身是动态语言，也没有类型限制，所以，这里说的“多态”仅指 ts 的“编译期”的类型检查相关的内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面介绍接口的时候，已经有“面向接口”的例子了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    get_name(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func(obj:<span style="color: #445588; font-weight: bold">X</span>)<span style="color: #000000; font-weight: bold">:void</span>{
+    console.log(obj.get_name(<span style="color: #dd1144">&#39;haha&#39;</span>));
+}
+
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X {
+    get_name <span style="color: #000000; font-weight: bold">=</span> (name:<span style="color: #445588; font-weight: bold">string</span>) <span style="color: #000000; font-weight: bold">=&gt;</span> name;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+func(a);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过事实上，类型约束中的接口，只是一个“说明”性质的东西，以上面代码来说，它只是表达了“传入的参数要像接口 X 声明的那样”，至于到底是不是“实现了接口 X ”这无关重要。即：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X {
+    get_name(name:<span style="color: #445588; font-weight: bold">string</span>)<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func(obj:<span style="color: #445588; font-weight: bold">X</span>)<span style="color: #000000; font-weight: bold">:void</span>{
+    console.log(obj.get_name(<span style="color: #dd1144">&#39;haha&#39;</span>));
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A {
+    get_name <span style="color: #000000; font-weight: bold">=</span> (name:<span style="color: #445588; font-weight: bold">string</span>) <span style="color: #000000; font-weight: bold">=&gt;</span> name;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A();
+func(a);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">A</code> 没有声明实现了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">X</code> ，也是没有问题的，只要有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">get_name</code> 方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于普通的类型声明，规则也跟上面接口一样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+    a_func(){}
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B{
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;B&#39;</span>;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> b:<span style="color: #445588; font-weight: bold">A</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> B();
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码会报错，但是报错的原因，不是说 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">B</code> 不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">A</code> 的子类，而是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">B</code> 中没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a_func</code> 这个方法而已。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+    a_func(){}
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B{
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;B&#39;</span>;
+    b_func(){}
+}
+
+<span style="color: #000000; font-weight: bold">var</span> b:<span style="color: #445588; font-weight: bold">A</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> B();
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样是没问题的。对于函数的参数同理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+    a_func(){}
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B {
+    name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;B&#39;</span>;
+    a_func(){}
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func(obj:<span style="color: #445588; font-weight: bold">A</span>){
+    console.log(obj.name);
+}
+
+func(<span style="color: #000000; font-weight: bold">new</span> B());
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+简而言之， ts 中虽然有强类型的形式，但是，类型检查还是 “鸭子类型”那种规则。
+</p>
+
+<a class="anchor" name="toc23"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.8. 元类</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+元类，简单来说就是考虑如何动态地创建一个“类”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">TypeScript</em> 在这方面没有补充新的东西，同时，因为使用了 <em style="color: #d75100; font-style: normal;">new</em> 作为实例化的方法，所以，在统一的形式上是没有办法有进一层的抽象了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">new</em> 的作用需要的是一个函数 <em style="color: #d75100; font-style: normal;">Function</em>，但是 <em style="color: #d75100; font-style: normal;">new</em> 的结果，却一定是一个 <em style="color: #d75100; font-style: normal;">Object</em> 。所以，我们没有办法通过“实例化”来得到一个新的类（函数）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，如果不管 <em style="color: #d75100; font-style: normal;">new</em> ，那自己随便怎么写都好说了。更何况， js 中还有一个无所不能的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">new Function()</code> 呢。
+</p>
+
+<a class="anchor" name="toc24"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.9. 反射</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同样，在这方面 ts 也没有提供新的东西。 js 层面，我们能通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">for in</code> 有限地获取成员，但是，获取父类，子类这些东西就没有标准的作法了。说到这里，想到 ts 在生成 js 的时候，在实现继承的方式上会自己定义一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__extends</code> 函数。但是编译器对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__extends</code> 这个名字是没有作特殊保护的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> __extends <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">function</span>(){}
+<span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">static</span> a:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+}
+<span style="color: #000000; font-weight: bold">class</span> B <span style="color: #000000; font-weight: bold">extends</span> A {}
+console.log(B.a);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc25"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.10. 泛型</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于类型前面都讲得差不多了，现在考虑，类型本身是动态的情况。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里最简单的例子，就是“传入什么，就传出什么”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> func(a){
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这是一个最简单不过的函数，但是，当我们考虑给它加上类型约束的时候，却碰到无法解决的困难了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可能有人直观地会想到这样做：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> func(a:<span style="color: #445588; font-weight: bold">any</span>)<span style="color: #000000; font-weight: bold">:</span>any{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“所有类型都可以”嘛，显然，这是不符合我们的“传入什么，就传出什么”这个目的的，按这种约束，传入一个 <em style="color: #d75100; font-style: normal;">number</em> ，传出一个 <em style="color: #d75100; font-style: normal;">string</em> 都满足 <em style="color: #d75100; font-style: normal;">any</em> 类型的约束。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+实际上，这里我们需要的不是“任何类型”，而是“跟传入值一样的类型”。这种动态的，确定的类型约束，就需要用到“泛型”机制。在 ts 中使用尖括号定义“泛型变量”来实现：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> func<span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span>(a:<span style="color: #445588; font-weight: bold">T</span>)<span style="color: #000000; font-weight: bold">:</span>T{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">T</code> 只是一个普通的引用变量名，它也完全可以是其它的写法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> func<span style="color: #000000; font-weight: bold">&lt;</span>what<span style="color: #000000; font-weight: bold">&gt;</span>(a:<span style="color: #445588; font-weight: bold">what</span>)<span style="color: #000000; font-weight: bold">:</span>what{
+    <span style="color: #000000; font-weight: bold">return</span> a;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+定义之后，在调用时，同样也是使用尖括号来人为指定一种类型（确定的类型）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">func<span style="color: #000000; font-weight: bold">&lt;</span>string<span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #dd1144">&#39;123&#39;</span>);
+func<span style="color: #000000; font-weight: bold">&lt;</span>number<span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #009999">123</span>);
+func<span style="color: #000000; font-weight: bold">&lt;</span>number[]<span style="color: #000000; font-weight: bold">&gt;</span>([<span style="color: #009999">11</span>]);
+func<span style="color: #000000; font-weight: bold">&lt;</span>[number, string]<span style="color: #000000; font-weight: bold">&gt;</span>([<span style="color: #009999">11</span>, <span style="color: #dd1144">&#39;ss&#39;</span>]);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这种方式明确在调用时给出的类型信息，这样 ts 就可以正常进行类型检查了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+箭头函数也可以使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> func <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span>(a:<span style="color: #445588; font-weight: bold">T</span>)<span style="color: #000000; font-weight: bold">:</span>T <span style="color: #000000; font-weight: bold">=&gt;</span> a;
+func<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #009999">123</span>);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+甚至是类也可以使用“泛型变量”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A<span style="color: #000000; font-weight: bold">&lt;</span>T, U<span style="color: #000000; font-weight: bold">&gt;</span> {
+    <span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span>T;
+    age:<span style="color: #445588; font-weight: bold">U</span>;
+}
+
+<span style="color: #000000; font-weight: bold">var</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> A<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #445588; font-weight: bold">number</span>, <span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">&gt;</span>();
+a.<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>;
+a.age <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;11&#39;</span>;
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里注意，“泛型变量”只用于类型约束，类型约束只在编译期起作用，它跟在运行期起作用的普通变量的层次是不同的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接口中同样可以使用“泛型变量”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X<span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span> {
+    <span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span>T
+}
+
+<span style="color: #000000; font-weight: bold">class</span> A <span style="color: #000000; font-weight: bold">implements</span> X<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">&gt;</span> {
+    <span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #445588; font-weight: bold">string</span>;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接用于类型约束中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> X<span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span> {
+    <span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span>T
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func<span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span>(obj:<span style="color: #445588; font-weight: bold">X</span><span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span>)<span style="color: #000000; font-weight: bold">:</span>T{
+    <span style="color: #000000; font-weight: bold">return</span> obj.<span style="color: #445588; font-weight: bold">number</span>;
+}
+
+func<span style="color: #000000; font-weight: bold">&lt;</span><span style="color: #445588; font-weight: bold">string</span><span style="color: #000000; font-weight: bold">&gt;</span>({<span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;11&#39;</span>});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+约束成员函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> func<span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span>(obj<span style="color: #000000; font-weight: bold">:</span> { <span style="color: #000000; font-weight: bold">new</span>()<span style="color: #000000; font-weight: bold">:</span>T; show()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span> })<span style="color: #000000; font-weight: bold">:</span>T{
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">new</span> obj();
+}
+
+
+<span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #000000; font-weight: bold">static</span> show()<span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span>{<span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;A&#39;</span>}
+}
+
+func<span style="color: #000000; font-weight: bold">&lt;</span>A<span style="color: #000000; font-weight: bold">&gt;</span>(A);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+“泛型参数”也可以直接描述继承关系（<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">implements</code> 不可以用）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> A {
+    <span style="color: #445588; font-weight: bold">number</span><span style="color: #000000; font-weight: bold">:</span><span style="color: #445588; font-weight: bold">string</span>;
+}
+
+<span style="color: #000000; font-weight: bold">function</span> func<span style="color: #000000; font-weight: bold">&lt;</span>T <span style="color: #000000; font-weight: bold">extends</span> A<span style="color: #000000; font-weight: bold">&gt;</span>(obj)<span style="color: #000000; font-weight: bold">:</span>T{
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">new</span> obj();
+}
+
+<span style="color: #000000; font-weight: bold">class</span> B {}
+func<span style="color: #000000; font-weight: bold">&lt;</span>B<span style="color: #000000; font-weight: bold">&gt;</span>(B); <span style="color: #999988">//ERROR</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc26"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 名字空间与模块加载</h1>
+
+<a class="anchor" name="toc27"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">8.1. 名字空间</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 中专门添加了名字空间机制，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">namespace</code> 处理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">namespace A {
+    <span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> name:<span style="color: #445588; font-weight: bold">string</span>;
+    name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    <span style="color: #000000; font-weight: bold">var</span> age:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">11</span>;
+}
+console.log(A.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应的 js 代码为：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A;
+(<span style="color: #000000; font-weight: bold">function</span> (A) {
+    A.name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    <span style="color: #000000; font-weight: bold">var</span> age <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">11</span>;
+})(A <span style="color: #000000; font-weight: bold">||</span> (A <span style="color: #000000; font-weight: bold">=</span> {}));
+console.log(A.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+名字空间中需要导出的变量，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">export</code> 标识出来。名字空间本身的嵌套也是如此：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">namespace A {
+    <span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> name:<span style="color: #445588; font-weight: bold">string</span>;
+    name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    <span style="color: #000000; font-weight: bold">var</span> age:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">11</span>;
+
+    <span style="color: #000000; font-weight: bold">export</span> namespace B {
+        <span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> name:<span style="color: #445588; font-weight: bold">string</span>;
+        name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;in b&#39;</span>;
+    }
+}
+console.log(A.name);
+console.log(A.B.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+生成的 js 代码为：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A;
+(<span style="color: #000000; font-weight: bold">function</span> (A) {
+    A.name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>;
+    <span style="color: #000000; font-weight: bold">var</span> age <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">11</span>;
+    <span style="color: #000000; font-weight: bold">var</span> B;
+    (<span style="color: #000000; font-weight: bold">function</span> (B) {
+        B.name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;in b&#39;</span>;
+    })(B <span style="color: #000000; font-weight: bold">=</span> A.B <span style="color: #000000; font-weight: bold">||</span> (A.B <span style="color: #000000; font-weight: bold">=</span> {}));
+})(A <span style="color: #000000; font-weight: bold">||</span> (A <span style="color: #000000; font-weight: bold">=</span> {}));
+console.log(A.name);
+console.log(A.B.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+名字空间和接口一样，同名的会自动合并，即使是在不同文件中也没有关系。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">namespace A {
+    <span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> name:<span style="color: #445588; font-weight: bold">string</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+}
+
+namespace A {
+    <span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> age:<span style="color: #445588; font-weight: bold">number</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>;
+}
+console.log(A.name);
+console.log(A.age);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+生成的 js 代码是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> A;
+(<span style="color: #000000; font-weight: bold">function</span> (A) {
+    A.name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;A&#39;</span>;
+})(A <span style="color: #000000; font-weight: bold">||</span> (A <span style="color: #000000; font-weight: bold">=</span> {}));
+<span style="color: #000000; font-weight: bold">var</span> A;
+(<span style="color: #000000; font-weight: bold">function</span> (A) {
+    A.age <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>;
+})(A <span style="color: #000000; font-weight: bold">||</span> (A <span style="color: #000000; font-weight: bold">=</span> {}));
+console.log(A.name);
+console.log(A.age);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc28"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">8.2. 生成js模块</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+js 的模块机制，市面上大概分成 CommonJS 和 AMD，及一个想通吃的 UMD 。 <em style="color: #d75100; font-style: normal;">typescript</em> 在转换到 js 时，可以根据配置对应这几种模块机制。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于 ts 来说，只要在一个文件的顶级空间中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">export</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">import</code> ，那么 ts 就认为此文件是在定义一个“模块”，在作编译时，就会把 ts 代码转换成相应的 js 模块。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以 AMD 为例，我们写代码（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.ts</code> ）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">export</span> <span style="color: #000000; font-weight: bold">var</span> a:<span style="color: #445588; font-weight: bold">string</span>;
+<span style="color: #000000; font-weight: bold">import</span> b <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./other&#39;</span>);
+a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;131&#39;</span>;
+console.log(b.name);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要作编译时通过参数指定模块加载使用的类型：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tsc --module amd hello.ts
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对应生成的 js 就是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">define([<span style="color: #dd1144">&quot;require&quot;</span>, <span style="color: #dd1144">&quot;exports&quot;</span>, <span style="color: #dd1144">&#39;./other&#39;</span>], <span style="color: #000000; font-weight: bold">function</span> (require, exports, b) {
+    exports.a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;131&#39;</span>;
+    console.log(b.name);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+ts 的 AMD 方式是以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">requirejs</code> 为准的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个文件如果被 ts 认为是一个模块了的话，那么最后生成的 js 一定只是此文件的内容。相反，如果一个 ts 文件，里面没有关系模块的内容，那么在编译时是可以通过参数把所有的 ts 文件拼在一起，只生成一个 js 文件的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，如果我们是在前端环境中使用 ts 的话，那就把 ts 看成是 js 文件的单纯的预处理，一个 ts 文件对应一个 js 文件，考虑这个 ts 文件生成的 js 模块文件是什么样子就好了。
+</p>
+
+<a class="anchor" name="toc29"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">8.3. tsconfig.json</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsconfig.json</code> 是在项目的根目录下，作为编译行为的配置文件。在里面可以设置“模块类型”，“是否压缩”，“忽略哪些目录”等选项。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+大概的样子是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{
+    <span style="color: #dd1144">&quot;compilerOptions&quot;</span><span style="color: #000000; font-weight: bold">:</span> {
+        <span style="color: #dd1144">&quot;module&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;commonjs&quot;</span>,
+        <span style="color: #dd1144">&quot;noImplicitAny&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>,
+        <span style="color: #dd1144">&quot;removeComments&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>,
+        <span style="color: #dd1144">&quot;preserveConstEnums&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>,
+        <span style="color: #dd1144">&quot;out&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;../../built/local/tsc.js&quot;</span>,
+        <span style="color: #dd1144">&quot;sourceMap&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #000000; font-weight: bold">true</span>
+    },
+    <span style="color: #dd1144">&quot;exclude&quot;</span><span style="color: #000000; font-weight: bold">:</span> [
+        <span style="color: #dd1144">&quot;node_modules&quot;</span>,
+        <span style="color: #dd1144">&quot;wwwroot&quot;</span>
+    ]
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+详情参见： <a href="https://github.com/Microsoft/typescript/wiki/tsconfig.json" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/Microsoft/typescript/wiki/tsconfig.json</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsconfig.json</code> 包含了 <em style="color: #d75100; font-style: normal;">tsc</em> 需要的信息，所以，存在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsconfig.json</code> 的情况下，简单地输入 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">tsc</code> 不需要任何参数就可以完成项目编译了。
+</p>
+
+<a class="anchor" name="toc30"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. 开发调试</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">ts</em> 的强类型机制配合 IDE 的对应功能可以在开发期提供强大的检查能力，如果是作浏览器端的应用，可以通过编译把每个 <em style="color: #d75100; font-style: normal;">ts</em> 文件作成 AMD 标准的模块。之后通过 <em style="color: #d75100; font-style: normal;">requirejs</em> 加载即可。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从 <em style="color: #d75100; font-style: normal;">TypeScript</em> 转到 AMD 标准的 <em style="color: #d75100; font-style: normal;">Javascript</em> 之时， <em style="color: #d75100; font-style: normal;">tsc</em> 默认还会生成一个对应的 map 文件。这样，即使最终你在 html 文件中引用的是编译之后的 js 文件，但是因为 map 文件的存在，在 Chrome 中你是可以直接调试到原始 ts 文件的（就当 js 文件不存在一样），甚至是在 ts 文件上打断点。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+PS：才看到， <em style="color: #d75100; font-style: normal;">RequireJS</em> 这个项目现在是属于 Dojo 基金会的了。
+</p>
+
+<a class="anchor" name="toc31"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 总结</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+MS 以一已之力硬是给最开始是纯脚本定位的 javascript 语言加上了强类型，以此赋于其准确的静态检查能力。这一点是让众动态语言很眼馋的东西啊。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+强类型和大众化的OO机制，显然不是为了提升开发效率的，甚至还会因为更多的约束而降低效率。但是，强类型和大众化的OO机制，却一定是为协作及质量控制大大降低了门槛。以 <em style="color: #d75100; font-style: normal;">TypeScript</em> 组织的代码虽然不一定行数会少，但是我觉得它为前端项目的持续维护提供了一种新的可能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">TypeScript</em> 在其开发中，似乎有一个原则，就是生成的 js 代码要是人为可读的，并且完全兼容 <em style="color: #d75100; font-style: normal;">JavaScript</em> （ <em style="color: #d75100; font-style: normal;">ts</em> 是 <em style="color: #d75100; font-style: normal;">js</em> 的超集）。为此，它放弃了很多可以对旧版本的 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 作转换的新语法功能。就是说一个语法功能如果不能简单转换到旧版本的 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 上，比如 <em style="color: #d75100; font-style: normal;">Generator</em> ，那么 <em style="color: #d75100; font-style: normal;">TypeScript</em> 就不会实现它。但是同时 <em style="color: #d75100; font-style: normal;">TypeScript</em> 与 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 新版本之间又是互相促进的关系，所以如果一个语法功能进了 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 的新标准，那么 <em style="color: #d75100; font-style: normal;">TypeScript</em> 可能会在目标为新版本的 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 中选择支持它。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于这一点，我的感觉就是 —— 遗憾。在新版本的 <em style="color: #d75100; font-style: normal;">ECMA Script</em> 无法普及的情况下（即使是新版本，我也不认为它的语法足够“先进”与“严谨”，折腾那么长时间结果出来的东西还当不了 <em style="color: #d75100; font-style: normal;">Python 2.x</em> 的水平，更不用说 <em style="color: #d75100; font-style: normal;">Ruby</em> ），还要考虑生成的 js 问题， <em style="color: #d75100; font-style: normal;">TypeScript</em> 能做的事，除了类型之外，本身就不多了。那套粗糙原始的OO机制是 <em style="color: #d75100; font-style: normal;">TypeScript</em> 的最大语法贡献，也是 <em style="color: #d75100; font-style: normal;">JavaScript</em> 语言本身的极限了吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果不是受限于 <em style="color: #d75100; font-style: normal;">JavaScript</em> ，我相信 <em style="color: #d75100; font-style: normal;">TypeScript</em> 绝对可以做得更好的。而且，目标语言也不一定仅限于 <em style="color: #d75100; font-style: normal;">JavaScript</em> 吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，我觉得 <em style="color: #d75100; font-style: normal;">TypeScript</em> 本身带来了一个启示的意义，一种确实可行的方式，为动态语言作语法扩展，使其具备更佳的静态分析的可能。说不定什么时候会出现 <em style="color: #d75100; font-style: normal;">Tython</em> 之类的东西呢。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'ts';
+  var disqus_url = 'https://www.zouyesheng.com/ts.html';
+  var disqus_title = 'TypeScript语言学习参考';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABnElEQVR4nN1XMXKtMAxcPd6M6cwN
+zEUCOVjycYbcK5h3EXMD6MSMYX8Rqv9TRkWicgvtaOWVZCH+j/32BQj8PDSJSM0G2G+btCIirSGb
+kMSMt9YdzZAdWUwr3qRFt425flBaJInm+s4+QtlU+Zvzfo32yy7yZ4vfnfffYCLp0jpkwJfgyBLU
+rjaKCICjd2mJ2EXulrVdUaA9YyBJmtUGTkAA8BLQeWbt/GjLNpCTJxUAIJZ9A9MKuNNfIjprJX2B
+AhVdYgyONFXy9CPR+ZE8UVE7DHZsN8zb3qosu8gzjrZ+rIflVAbel3pGlQFfwBNVNvTbhCGrsECF
+JWhv2bc7gKN1ExD80awZ02a7cQDoU1NlfaxvbZ0aw759+g09Y1AhM0zfJJhYoB0qQtaBKrZ+SysC
+hCN5+gjICsvJRZJMLHCJJXCCIdt1c2Eb8/4qd9TAYOm3RNKdvkCFMXxuA+Ob67HEUFPKIs+b4e6+
+UDZV5oT3oJ1/NfZbcBMQtPPMACpTJT0z4MdcyyK9dj5aKnndXAA/wpgxW85J+cU/qr89ORWvCtb6
+VgAAAABJRU5ErkJggg==
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
