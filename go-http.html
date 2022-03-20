@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>Go 的 HTTP 服务端实现 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">Go 的 HTTP 服务端实现</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2022-03-20 15:50 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">基本结构</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">获取参数</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">2.1. GET 和 URL 对象</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">2.2. 获取头</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">2.3. POST</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">2.4. 获取文件</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">写头与非 200 响应</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">读写 Cookie</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">4.1. Cookie 结构</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">4.2. 写 Cookie</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">4.3. 读 Cookie</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">多应用和路径映射</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">5.1. Server 与多应用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">5.2. 信号处理</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">5.3. Multiplexer 和 Handler</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">5.4. Middleware</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">回调触发的时机</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_self">并发处理</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_self">Chunk 传输</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_self">JSON 处理</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_self">9.1. encode</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_self">9.2. decode</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none" target="_self">模板</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none" target="_self">10.1. 基本使用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc25" style="color: #0184b7; text-decoration: none" target="_self">10.2. 当前对象</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc26" style="color: #0184b7; text-decoration: none" target="_self">10.3. 前后空行</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc27" style="color: #0184b7; text-decoration: none" target="_self">10.4. 命令块</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc28" style="color: #0184b7; text-decoration: none" target="_self">10.5. 函数</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc29" style="color: #0184b7; text-decoration: none" target="_self">10.6. 迭代</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc30" style="color: #0184b7; text-decoration: none" target="_self">10.7. 条件判断</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc31" style="color: #0184b7; text-decoration: none" target="_self">项目的代码结构</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 基本结构</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+go 官方提供了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 来做 HTTP 协议的客户端及服务端处理。这里只说服务端部分。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然 go 的社区中有很多的 web 应用层框架，但是因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 的封装是比较高级的，所以社区建议也是以它为准。个人的理解，不管上层框架做了什么事，大概还是会依据相同的 API 设计。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 是同步的实现，先随大流吧。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    <span style="color: #0086B3">println</span>(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基本结构上， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 已经是像一个 Web 服务框架了：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 完成路径的映射。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HelloHandler</code> 处理逻辑，参数中一个“响应”，一个“请求”。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ListenAndServe</code> 完成端口监听。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+作为静态语言，几行代码就完成了一个 Web 服务端的实现，还是很能体会到“时代进步”的。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 获取参数</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Request</code> 是一个面向数据的比较原始的对象，不是面向 HTTP 抽象概念的封装（你需要了解 HTTP 的原始报文，才知道这句话说的什么）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它没有提供像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetParams()</code> 之类的方法，只提供了 URL 对象，所以，你需要自己知道，获取 GET 参数得从 URL 中解析。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. GET 和 URL 对象</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #445588; font-weight: bold">string</span>
+    <span style="color: #000000; font-weight: bold">var</span> name []<span style="color: #445588; font-weight: bold">string</span> = request.URL.Query()[<span style="color: #dd1144">&quot;name&quot;</span>]
+    <span style="color: #000000; font-weight: bold">if</span> <span style="color: #0086B3">len</span>(name) &gt; <span style="color: #009999">0</span> {
+        n = name[<span style="color: #009999">0</span>]
+    }
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> n))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    fmt.Println(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">URL</code> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Query()</code> 方法返回的对象获取指定的参数。因为同名参数可以是多个（实践中几乎不会使用重复名字的参数），所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 是一个字符串列表，可能是一个空列表。所以在获取具体值之前要进行非空判断，否则会发生运行时错误。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.URL</code> 是一个单独的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">url.URL</code> 对象，结构上类似标准的 <em style="color: #d75100; font-style: normal;">URI</em> 。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[scheme:][//[userinfo@]host][/]path[?query][#fragment]</code>
+</li>
+<li style="margin: 10px auto;">或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">scheme:opaque[?query][#fragment]</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">URI</em> 的各部分，都可以直接取到。但是注意，这里没有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Hostname</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Port</code> ，这两个要通过方法获取。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">query</code> 部分的解析，由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Query()</code> 方法单独处理，返回的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Values</code> 结构，实际上就是一个 <em style="color: #d75100; font-style: normal;">Map</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Values</code> 提供了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get()</code> 方法，可以返回指定的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">key</code> 的第一个值，并且是 <em style="color: #d75100; font-style: normal;">decode</em> 之后的值。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;net/url&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;fmt&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    u, err <span style="color: #000000; font-weight: bold">:=</span> url.Parse(<span style="color: #dd1144">&quot;https://zys.me?a=123&amp;b=%E9%82%B9&amp;b=1&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        <span style="color: #0086B3">panic</span>(err)
+    }
+    fmt.Println(u.Query().Get(<span style="color: #dd1144">&quot;b&quot;</span>))
+    fmt.Println(u.Query().Has(<span style="color: #dd1144">&quot;c&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get()</code> 方法才应该是获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GET</code> 参数的正解：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #445588; font-weight: bold">string</span> = request.URL.Query().Get(<span style="color: #dd1144">&quot;name&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> n))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+即使不存在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 参数，也可以得到一个空字符串，不会报错。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+GET 的参数也可以从获取 POST 参数的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Form</code> 中一起获取到。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. 获取头</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Header</code> 获取请求的头， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Header</code> 是一个 <em style="color: #d75100; font-style: normal;">map</em> ，但是它的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get()</code> 方法对头的名字做了兼容性处理。所以不需要担心大小写，横杠问题。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> t <span style="color: #445588; font-weight: bold">string</span> = request.Header.Get(<span style="color: #dd1144">&quot;Content-Type&quot;</span>)
+    fmt.Println(t)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> t))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里写 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Content-Type</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Content-type</code> 都可以正常工作的。可以简单理解成，横杠写对，无视大小写就可以了。
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.3. POST</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+POST 参数的获取，先要调用一下 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParseForm()</code> ，然后可以从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Form</code> 这个 <em style="color: #d75100; font-style: normal;">map</em> 中获取。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    request.ParseForm()
+    fmt.Println(request.Form)
+    <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #445588; font-weight: bold">string</span> = request.Form.Get(<span style="color: #dd1144">&quot;name&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> n))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    fmt.Println(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Form</code> 会包括 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GET</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">POST</code> 的参数。
+</li>
+<li style="margin: 10px auto;">同名的参数会放在一个列表当中， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">POST</code> 的在前， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GET</code> 的在后。（<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get()</code> 会优先取到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">POST</code> 参数）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果请求的 <em style="color: #d75100; font-style: normal;">Content-Type</em> 不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application/x-www-form-urlencoded</code> 的话：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+客户端请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+res <span style="color: #000000; font-weight: bold">=</span> requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, data<span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;123456&quot;</span>, headers<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&quot;Content-Type&quot;</span>: <span style="color: #dd1144">&quot;plain/text&quot;</span>})
+<span style="color: #0086B3">print</span>(res<span style="color: #000000; font-weight: bold">.</span>text)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+服务端处理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;io/ioutil&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> content_type <span style="color: #445588; font-weight: bold">string</span> = request.Header.Get(<span style="color: #dd1144">&quot;Content-Type&quot;</span>)
+    fmt.Println(<span style="color: #dd1144">&quot;Content-Type&quot;</span>, content_type)
+
+    <span style="color: #000000; font-weight: bold">var</span> body []<span style="color: #445588; font-weight: bold">byte</span>
+    body, err <span style="color: #000000; font-weight: bold">:=</span> ioutil.ReadAll(request.Body)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(<span style="color: #dd1144">&quot;Error&quot;</span>, err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span>))
+    response.Write(body)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;  &quot;</span>))
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #0086B3">string</span>(body)))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    fmt.Println(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Body</code> 获取原始内容。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Body</code> 是一个 <em style="color: #d75100; font-style: normal;">io.ReadCloser</em> 接口实现。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Body</code> 虽然有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Close()</code> ，但是不需要手工关闭。
+</li>
+</ul>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.4. 获取文件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+文件的处理跟 POST 参数差不多，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParseMultiparseForm()</code> 代替 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParseForm()</code> ：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+客户端请求：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999988"># -*- coding: utf-8 -*-</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">requests</span>
+f <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">open</span>(<span style="color: #dd1144">&#39;/home/zys/temp/a.svg&#39;</span>, <span style="color: #dd1144">&#39;rb&#39;</span>)
+res <span style="color: #000000; font-weight: bold">=</span> requests<span style="color: #000000; font-weight: bold">.</span>post(<span style="color: #dd1144">&#39;http://localhost:8888&#39;</span>, files<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&quot;file&quot;</span>: f}, data<span style="color: #000000; font-weight: bold">=</span>{<span style="color: #dd1144">&quot;name&quot;</span>: <span style="color: #dd1144">&quot;123&quot;</span>})
+<span style="color: #0086B3">print</span>(res<span style="color: #000000; font-weight: bold">.</span>text)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+服务端处理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;io/ioutil&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(request.Method)
+    <span style="color: #000000; font-weight: bold">var</span> err <span style="color: #445588; font-weight: bold">error</span> = request.ParseMultipartForm(<span style="color: #009999">1024</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1024</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">5</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+    file, file_header, err <span style="color: #000000; font-weight: bold">:=</span> request.FormFile(<span style="color: #dd1144">&quot;file&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+
+    fmt.Println(<span style="color: #dd1144">&quot;file_name&quot;</span>, file_header.Filename)
+    fmt.Println(<span style="color: #dd1144">&quot;file_size&quot;</span>, file_header.Size)
+    fmt.Println(file_header.Header)
+
+    body, err <span style="color: #000000; font-weight: bold">:=</span> ioutil.ReadAll(file)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+    fmt.Println(<span style="color: #0086B3">string</span>(body))
+
+    <span style="color: #000000; font-weight: bold">var</span> name <span style="color: #445588; font-weight: bold">string</span> = request.Form.Get(<span style="color: #dd1144">&quot;name&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> name))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    fmt.Println(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">先调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.ParseMultiparseForm(max)</code> ，需要指定缓冲区的最大字节长度。它也会做 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParseForm()</code> 的事。
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.FormFile()</code> 获取指定参数的文件内容。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">file_header</code> 有文件基本信息，文件名，大小。
+</li>
+<li style="margin: 10px auto;">文件内容是通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">file</code> ，作为一个文件对象处理的。
+</li>
+</ul>
+
+<a class="anchor" name="toc7"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 写头与非 200 响应</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.Header()</code> 方法可以获取响应中的头对象， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Set()</code> 方法完成值的设置：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> header http.Header = response.Header()
+    header.Set(<span style="color: #dd1144">&quot;Content-Type&quot;</span>, <span style="color: #dd1144">&quot;text/ttt&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+状态码使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.WriteHeader()</code> 方法处理（奇怪的名字）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    response.WriteHeader(<span style="color: #009999">503</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.WriteHeader()</code> 的调用必须在第一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.Write()</code> 前，否则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.Write()</code> 会写入 200 的状态码，之后再调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.WriteHeader()</code> 也没有作用了。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 读写 Cookie</h1>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. Cookie 结构</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">http.Cookie</em> 提供了 Cookie 的结构支持：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> Cookie <span style="color: #000000; font-weight: bold">struct</span> {
+	Name  <span style="color: #445588; font-weight: bold">string</span>
+	Value <span style="color: #445588; font-weight: bold">string</span>
+
+	Path       <span style="color: #445588; font-weight: bold">string</span>    <span style="color: #999988">// optional</span>
+	Domain     <span style="color: #445588; font-weight: bold">string</span>    <span style="color: #999988">// optional</span>
+	Expires    time.Time <span style="color: #999988">// optional</span>
+	RawExpires <span style="color: #445588; font-weight: bold">string</span>    <span style="color: #999988">// for reading cookies only</span>
+
+	<span style="color: #999988">// MaxAge=0 means no &#39;Max-Age&#39; attribute specified.</span>
+	<span style="color: #999988">// MaxAge&lt;0 means delete cookie now, equivalently &#39;Max-Age: 0&#39;</span>
+	<span style="color: #999988">// MaxAge&gt;0 means Max-Age attribute present and given in seconds</span>
+	MaxAge   <span style="color: #445588; font-weight: bold">int</span>
+	Secure   <span style="color: #445588; font-weight: bold">bool</span>
+	HttpOnly <span style="color: #445588; font-weight: bold">bool</span>
+	SameSite SameSite
+	Raw      <span style="color: #445588; font-weight: bold">string</span>
+	Unparsed []<span style="color: #445588; font-weight: bold">string</span> <span style="color: #999988">// Raw text of unparsed attribute-value pairs</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时，它还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">String()</code> 方法，可以直接用于单条 cookie 头的设置：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> cookie <span style="color: #000000; font-weight: bold">*</span>http.Cookie = <span style="color: #000000; font-weight: bold">&amp;</span>http.Cookie{
+        Name: <span style="color: #dd1144">&quot;first&quot;</span>,
+        Value: <span style="color: #dd1144">&quot;abcc&quot;</span>,
+    }
+    response.Header().Add(<span style="color: #dd1144">&quot;Set-Cookie&quot;</span>, cookie.String())
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. 写 Cookie</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response.Header().Add()</code> ，把 cookie 作为普通头处理之外， <em style="color: #d75100; font-style: normal;">http</em> 也提供了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetCookie()</code> 静态函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">var</span> cookie <span style="color: #000000; font-weight: bold">*</span>http.Cookie = <span style="color: #000000; font-weight: bold">&amp;</span>http.Cookie{
+        Name: <span style="color: #dd1144">&quot;first&quot;</span>,
+        Value: <span style="color: #dd1144">&quot;abcc&quot;</span>,
+    }
+    http.SetCookie(response, cookie)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. 读 Cookie</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Cookie</em> 的获取，可以直接读取头自己解析，也可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Cookies()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Cookie(name)</code> 方法处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Cookies()</code> 返回的是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Cookie</code> 对象的列表。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Cookie(name)</code> 就是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Cookie</code> 对象。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;all&quot;</span>, request.Cookies()[<span style="color: #009999">0</span>])
+    <span style="color: #000000; font-weight: bold">var</span> cookie <span style="color: #000000; font-weight: bold">*</span>http.Cookie
+    cookie, err <span style="color: #000000; font-weight: bold">:=</span> request.Cookie(<span style="color: #dd1144">&quot;soup&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;name&quot;</span>, cookie.Name)
+    fmt.Println(<span style="color: #dd1144">&quot;value&quot;</span>, cookie.Value)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc12"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 多应用和路径映射</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在最前面，我们看到的代码示例是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    <span style="color: #0086B3">println</span>(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http</code> 下的几个直接的方法，像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ListenAndServe</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 明显是一些快捷方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整点的结构的话：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Server</code> 是定义一个服务。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Multiplexer</code> 是管理一套路径映射。 go 中没有 <em style="color: #d75100; font-style: normal;">Application</em> 的概念。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 是一个接口。
+</li>
+</ul>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. Server 与多应用</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Server</code> 可以定义一个 HTTP 服务，并且使用已有的路径映射。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> HelloHandler(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;all&quot;</span>, request.Cookies()[<span style="color: #009999">0</span>])
+    <span style="color: #000000; font-weight: bold">var</span> cookie <span style="color: #000000; font-weight: bold">*</span>http.Cookie
+    cookie, err <span style="color: #000000; font-weight: bold">:=</span> request.Cookie(<span style="color: #dd1144">&quot;soup&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;name&quot;</span>, cookie.Name)
+    fmt.Println(<span style="color: #dd1144">&quot;value&quot;</span>, cookie.Value)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span>))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    http.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    fmt.Println(<span style="color: #dd1144">&quot;Server is starting on 8888 ...&quot;</span>)
+    <span style="color: #000000; font-weight: bold">go</span> <span style="color: #000000; font-weight: bold">func</span>(){
+        <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+            Addr: <span style="color: #dd1144">&quot;127.0.0.1:8889&quot;</span>,
+        }
+        srv.ListenAndServe()
+    }()
+    http.ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, <span style="color: #000000; font-weight: bold">nil</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在一个 <em style="color: #d75100; font-style: normal;">goroutine</em> 有另一外监听到 <em style="color: #d75100; font-style: normal;">8889</em> 的服务，同时在“主进程”中，原来的 <em style="color: #d75100; font-style: normal;">8888</em> 也是活动的，这样程序就不会直接结束。此时，两个端口都可以正常响应。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.HandleFunc()</code> 会产生一个默认的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DefaultServeMux</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Server()</code> 中没有指定 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 的话，就会使用它。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <em style="color: #d75100; font-style: normal;">goroutine</em> 配合 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Server</code> ，启动多个服务是简单的，go 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Server</code> 另外一些有价值的 API ，是“优雅关闭”的内置支持。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Close()</code> 方法会直接断掉连接，但是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Shutdown()</code> 会等到当前连接已经处理完，才停止服务。这期间，会拒绝进的连接进入。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. 信号处理</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以配合信号完成一个多服务的停止实现， go 中的信号处理直接就用的通道了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">package main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;os&quot;</span>
+    <span style="color: #dd1144">&quot;os/signal&quot;</span>
+    <span style="color: #dd1144">&quot;syscall&quot;</span>
+    <span style="color: #dd1144">&quot;context&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+func HelloHandler(response http<span style="color: #000000; font-weight: bold">.</span>ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http<span style="color: #000000; font-weight: bold">.</span>Request) {
+    time<span style="color: #000000; font-weight: bold">.</span>Sleep(<span style="color: #009999">10</span> <span style="color: #000000; font-weight: bold">*</span> time<span style="color: #000000; font-weight: bold">.</span>Second)
+    response<span style="color: #000000; font-weight: bold">.</span>Write([]byte(<span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv<span style="color: #000000; font-weight: bold">.</span>FormatInt(time<span style="color: #000000; font-weight: bold">.</span>Now()<span style="color: #000000; font-weight: bold">.</span>Unix(), <span style="color: #009999">10</span>)))
+}
+
+func main () {
+    http<span style="color: #000000; font-weight: bold">.</span>HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, HelloHandler)
+    var port_list <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #000000; font-weight: bold">...</span>]<span style="color: #0086B3">int</span>{<span style="color: #009999">8890</span>, <span style="color: #009999">8891</span>, <span style="color: #009999">8892</span>, <span style="color: #009999">8893</span>}
+    var srv_list <span style="color: #000000; font-weight: bold">=</span> [<span style="color: #0086B3">len</span>(port_list)]<span style="color: #000000; font-weight: bold">*</span>http<span style="color: #000000; font-weight: bold">.</span>Server{}
+    <span style="color: #000000; font-weight: bold">for</span> i, port :<span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">range</span> port_list {
+        var srv <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&amp;</span>http<span style="color: #000000; font-weight: bold">.</span>Server{
+            Addr: <span style="color: #dd1144">&quot;:&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv<span style="color: #000000; font-weight: bold">.</span>Itoa(port),
+        }
+        srv_list[i] <span style="color: #000000; font-weight: bold">=</span> srv
+        go func(){
+            srv<span style="color: #000000; font-weight: bold">.</span>ListenAndServe()
+        }()
+    }
+    <span style="color: #000000; font-weight: bold">//</span>http<span style="color: #000000; font-weight: bold">.</span>ListenAndServe(<span style="color: #dd1144">&quot;:8888&quot;</span>, nil)
+    var s_chan <span style="color: #000000; font-weight: bold">=</span> make(chan os<span style="color: #000000; font-weight: bold">.</span>Signal, <span style="color: #009999">1</span>)
+    signal<span style="color: #000000; font-weight: bold">.</span>Notify(s_chan, syscall<span style="color: #000000; font-weight: bold">.</span>SIGINT)
+    var root <span style="color: #000000; font-weight: bold">=</span> context<span style="color: #000000; font-weight: bold">.</span>Background()
+    <span style="color: #000000; font-weight: bold">for</span> {
+        var s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&lt;-</span>s_chan
+        switch s {
+            case syscall<span style="color: #000000; font-weight: bold">.</span>SIGINT:
+                fmt<span style="color: #000000; font-weight: bold">.</span>Println(<span style="color: #dd1144">&quot;exit...&quot;</span>)
+                <span style="color: #000000; font-weight: bold">for</span> _, srv :<span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">range</span> srv_list {
+                    srv<span style="color: #000000; font-weight: bold">.</span>Shutdown(root)
+                }
+                os<span style="color: #000000; font-weight: bold">.</span>Exit(<span style="color: #009999">0</span>)
+        }
+    }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+运行这个服务，先访问 <em style="color: #d75100; font-style: normal;">8890</em> ，然后按 <em style="color: #d75100; font-style: normal;">Ctrl-C</em> ，再访问 <em style="color: #d75100; font-style: normal;">8891</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到， <em style="color: #d75100; font-style: normal;">8890</em> 没有中断，但是 <em style="color: #d75100; font-style: normal;">8891</em> 已经拒绝连接了。要等到 <em style="color: #d75100; font-style: normal;">8890</em> 的请求正常响应之后，整个服务才会退出。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.3. Multiplexer 和 Handler</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Multiplexer</code> 是一组路径映射，关联路径和对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 是一套接口，不是一个函数。前面使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc()</code> 是一个简便方法。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Multiplexer</code> 的实例配置好之后，就可以把实例放到 <em style="color: #d75100; font-style: normal;">Server</em> 中启动。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">type</span> handler <span style="color: #000000; font-weight: bold">struct</span> {
+    text <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (h <span style="color: #000000; font-weight: bold">*</span>handler) ServeHTTP(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request){
+    response.Write([]<span style="color: #0086B3">byte</span>(h.text <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    <span style="color: #000000; font-weight: bold">var</span> mux = http.NewServeMux()
+    mux.Handle(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">&amp;</span>handler{<span style="color: #dd1144">&quot;HAHAHA&quot;</span>})
+    <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+        Addr: <span style="color: #dd1144">&quot;:8888&quot;</span>,
+        Handler: mux,
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;8888...&quot;</span>)
+    srv.ListenAndServe()
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Server</em> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 参数，就是需要一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Multiplexer</code> 实例。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而另一方法，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 接口，只需要一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ServeHTTP()</code> 方法，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc()</code> 更直接方便。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.4. Middleware</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不考虑错误处理，中间件可以分为“前置”和“后置”。不管是接收 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> 实例返回新实例，还是接收函数，返回新函数，都是比较好处理的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不过 go 中没有 <em style="color: #d75100; font-style: normal;">Class</em> ，也没有继承（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">struct</code> 那套是什么鬼），所以函数式的方式我觉得更自然一些吧。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+
+<span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+}
+
+<span style="color: #000000; font-weight: bold">func</span> pre_log(handler <span style="color: #000000; font-weight: bold">func</span>(http.ResponseWriter, <span style="color: #000000; font-weight: bold">*</span>http.Request)) <span style="color: #000000; font-weight: bold">func</span>(http.ResponseWriter, <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">func</span>(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request){
+        fmt.Println(<span style="color: #dd1144">&quot;PRE_LOG&quot;</span>)
+        handler(response, request)
+    }
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    <span style="color: #000000; font-weight: bold">var</span> mux = http.NewServeMux()
+    mux.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, pre_log(hello))
+    <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+        Addr: <span style="color: #dd1144">&quot;:8888&quot;</span>,
+        Handler: mux,
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;8888...&quot;</span>)
+    srv.ListenAndServe()
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+高阶函数，跟 Python 的“装饰器”机制一样，不过 go 中就没有方便的语法糖可用了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样只是“理论上可行”，实际项目中，估计还是从 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mux.HandleFunc</code> 这一层动手，封装出的形式会更好看一些。
+</p>
+
+<a class="anchor" name="toc17"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 回调触发的时机</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Server</code> 的结构，我们只用了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Addr</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Handler</code> ，但是它里面还有一些比较细节的参数配置，比如读写的时间，头的最大长度等等。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+那么 Header 和 Body 既然是分开的，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 注册的函数，它是在 <em style="color: #d75100; font-style: normal;">Header</em> 完就调用了呢，还是要等 <em style="color: #d75100; font-style: normal;">Body</em> 完才调用？
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+
+<span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;here&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    fmt.Println(<span style="color: #dd1144">&quot;finish&quot;</span>)
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    <span style="color: #000000; font-weight: bold">var</span> mux = http.NewServeMux()
+    mux.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, hello)
+    <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+        Addr: <span style="color: #dd1144">&quot;:8888&quot;</span>,
+        Handler: mux,
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;8888...&quot;</span>)
+    srv.ListenAndServe()
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于上面的代码，通过 <em style="color: #d75100; font-style: normal;">telnet</em> 进行测试：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">zys@shopee:/home/zys &gt;&gt;&gt; telnet localhost 8888
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is &#39;^]&#39;.
+POST / HTTP/1.1
+Host: localhost
+Content-Length: 3
+
+123
+HTTP/1.1 200 OK
+Date: Mon, 29 Nov 2021 18:43:08 GMT
+Content-Length: 15
+Content-Type: text/plain; charset=utf-8
+
+Hello1638211377
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看出，头接收完之后，函数就已经执行完了，不会等 <em style="color: #d75100; font-style: normal;">Body</em> 部分。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello</code> 改一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;here&quot;</span>)
+    request.ParseForm()
+    <span style="color: #000000; font-weight: bold">var</span> name <span style="color: #445588; font-weight: bold">string</span> = request.Form.Get(<span style="color: #dd1144">&quot;name&quot;</span>)
+    response.Write([]<span style="color: #0086B3">byte</span>(name <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    fmt.Println(<span style="color: #dd1144">&quot;finish&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在请求的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Content-Type</code> 头是可以处理的情况之下，比如是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">application/x-www-form-urlencoded</code> ，那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.ParseForm()</code> 这行会阻塞，直到 <em style="color: #d75100; font-style: normal;">Body</em> 接收完毕，再继承执行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果要直接读 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">request.Body</code> ，也会阻塞：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;here&quot;</span>)
+
+    <span style="color: #000000; font-weight: bold">var</span> body []<span style="color: #445588; font-weight: bold">byte</span>
+    body, err <span style="color: #000000; font-weight: bold">:=</span> ioutil.ReadAll(request.Body)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        fmt.Println(<span style="color: #dd1144">&quot;Error&quot;</span>, err)
+        <span style="color: #000000; font-weight: bold">return</span>
+    }
+
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #0086B3">string</span>(body) <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    fmt.Println(<span style="color: #dd1144">&quot;finish&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc18"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 并发处理</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一个问题，在不启 <em style="color: #d75100; font-style: normal;">goroutine</em> 的情况下， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 自己的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 有并发处理能力吗？
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+
+<span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;start&quot;</span>)
+    time.Sleep(<span style="color: #009999">10</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;Hello&quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    fmt.Println(<span style="color: #dd1144">&quot;finish&quot;</span>)
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    <span style="color: #000000; font-weight: bold">var</span> mux = http.NewServeMux()
+    mux.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, hello)
+    <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+        Addr: <span style="color: #dd1144">&quot;:8888&quot;</span>,
+        Handler: mux,
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;8888...&quot;</span>)
+    srv.ListenAndServe()
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的服务启动之后，直接使用 <em style="color: #d75100; font-style: normal;">curl</em> 来验证，不要使用浏览器，因为浏览器本身对同一个地址有请求限制。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 本身是有并发处理能力的。即，在第一个请求没有返回之前（看到了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start</code> 没有看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">finish</code> ），可以同时接收并处理后续请求（能看到更多的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">start</code> ）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好消息是， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 这一套直接拿到项目中使用，已经差不多了。坏消息是，如果自己要重新实现一套异步的 <em style="color: #d75100; font-style: normal;">http</em> 服务端实现， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">HandleFunc</code> 这套东西都要自己重新做。
+</p>
+
+<a class="anchor" name="toc19"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. Chunk 传输</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Chunk 传输</em> 指响应头中没有 <em style="color: #d75100; font-style: normal;">Content-Length</em> ，即对返回内容长度不定的一种处理方式，有专门的头：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">Transfer-Encoding: chunked
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从 TCP 的角度，就是连接不断，服务端不断给连接写入内容，在 API 设计上，一般需要显式的 <em style="color: #d75100; font-style: normal;">finish</em> ，否则这个响应返回，从逻辑上来说就认为是一直没有结束的。所以，如果一个 <em style="color: #d75100; font-style: normal;">Handler</em> 的 API 被设计成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">return Response</code> 的格式，就没办法直观地处理 <em style="color: #d75100; font-style: normal;">chunk</em> 这种情况。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">net/http</code> 的 API ，本来就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Write()</code> ，其实可以很容易处理 <em style="color: #d75100; font-style: normal;">chunk</em> 的情况，但在默认情况下，它的行为仍然还是 <em style="color: #d75100; font-style: normal;">Handler</em> 返回（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">return</code> ）之后，才会在响应中加上头，并把多次 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Write()</code> 的内容一并返回。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要实现 <em style="color: #d75100; font-style: normal;">chunk</em> 传输，需要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Flusher</code> 这个接口的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Flush()</code> 方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;net/http&quot;</span>
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;strconv&quot;</span>
+    <span style="color: #dd1144">&quot;time&quot;</span>
+)
+
+
+<span style="color: #000000; font-weight: bold">func</span> hello(response http.ResponseWriter, request <span style="color: #000000; font-weight: bold">*</span>http.Request) {
+    fmt.Println(<span style="color: #dd1144">&quot;start&quot;</span>)
+
+    flusher, ok <span style="color: #000000; font-weight: bold">:=</span> response.(http.Flusher)
+    <span style="color: #000000; font-weight: bold">if</span> !ok {
+        <span style="color: #0086B3">panic</span>(<span style="color: #dd1144">&quot;ERROR&quot;</span>)
+    }
+
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;\nHello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    flusher.Flush()
+    time.Sleep(<span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;\nHello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    flusher.Flush()
+    time.Sleep(<span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;\nHello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    flusher.Flush()
+    time.Sleep(<span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+
+    response.Write([]<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">&quot;\nHello &quot;</span> <span style="color: #000000; font-weight: bold">+</span> strconv.FormatInt(time.Now().Unix(), <span style="color: #009999">10</span>)))
+    fmt.Println(<span style="color: #dd1144">&quot;finish&quot;</span>)
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main () {
+    <span style="color: #000000; font-weight: bold">var</span> mux = http.NewServeMux()
+    mux.HandleFunc(<span style="color: #dd1144">&quot;/&quot;</span>, hello)
+    <span style="color: #000000; font-weight: bold">var</span> srv = <span style="color: #000000; font-weight: bold">&amp;</span>http.Server{
+        Addr: <span style="color: #dd1144">&quot;:8888&quot;</span>,
+        Handler: mux,
+    }
+    fmt.Println(<span style="color: #dd1144">&quot;8888...&quot;</span>)
+    srv.ListenAndServe()
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">仍然没有显式的 <em style="color: #d75100; font-style: normal;">finish</em> ，还是以函数结束为响应结束。现实当中使用的话，大概是需要自己使用 <em style="color: #d75100; font-style: normal;">goroutine</em> 做一些阻塞性操作。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 本来是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.ResponseWriter</code> ，但是可以显式的转成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Flusher</code> 。并且转换之后才能使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Flusher()</code> 。
+</li>
+<li style="margin: 10px auto;">通过 <em style="color: #d75100; font-style: normal;">telnet</em> 可以清楚看到 <em style="color: #d75100; font-style: normal;">chunk</em> 传输的过程，浏览器不一定看得到。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Flusher</code> 的转换机制，详细来说：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 这个结构，本身已经实现了多个接口（有多套方法）。
+</li>
+<li style="margin: 10px auto;">我们自己的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello</code> 这个函数，它的参数签名指定了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.ResponseWriter</code> 这个接口，所以 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 结构，就被作为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.ResponseWriter</code> 接口使用了。
+</li>
+<li style="margin: 10px auto;">对于接口，在运行时，可以强制转换成另外的接口，但是不一定能成功转换，所以需要判断转换返回的第二个参数， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ok</code> ，如果成功是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">true</code> ，失败是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">false</code> 。因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">response</code> 结构已经实现了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http.Flusher</code> 接口，所以我们可以强制转换之后使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Flush()</code> 方法。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+关于转换的理解，可以看下面简单的小例子。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">package main
+
+<span style="color: #000000; font-weight: bold">type</span> Foo interface <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    A()
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+<span style="color: #000000; font-weight: bold">type</span> Bar interface <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    B()
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+<span style="color: #000000; font-weight: bold">type</span> Other interface <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    <span style="color: #000000; font-weight: bold">C</span>()
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+<span style="color: #000000; font-weight: bold">type</span> Obj struct <span style="color: #a61717; background-color: #e3d2d2">{}</span>
+
+func (<span style="color: #000000; font-weight: bold">self</span> Obj) A() <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    println(<span style="color: #990073">&quot;A&quot;</span>)
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+func (<span style="color: #000000; font-weight: bold">self</span> Obj) B() <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    println(<span style="color: #990073">&quot;B&quot;</span>)
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+
+
+func test(a Foo) <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    a.A()
+    <span style="color: #000000; font-weight: bold">//</span>a.B()
+
+    b, ok :<span style="color: #000000; font-weight: bold">=</span> a.(Bar)
+    println(ok)
+    b.B()
+
+    _, ok2 :<span style="color: #000000; font-weight: bold">=</span> a.(Other)
+    println(ok2)
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+
+func main() <span style="color: #a61717; background-color: #e3d2d2">{</span>
+    var obj <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">&amp;</span>Obj<span style="color: #a61717; background-color: #e3d2d2">{}</span>
+    obj.A()
+    obj.B()
+
+    test(obj)
+<span style="color: #a61717; background-color: #e3d2d2">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里还有一个小点，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">func test(a Foo)</code> 中的参数，以接口声明约束时，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a</code> 是直接用结构，还是用指针，都可以。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+即， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">var obj Obj = Obj{}</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">var obj *obj = &amp;Obj{}</code> ，都可以。
+</p>
+
+<a class="anchor" name="toc20"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">9. JSON 处理</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+静态语言处理 json 是比较麻烦的， <em style="color: #d75100; font-style: normal;">decode</em> 时还可以通过方法跳过具体的对象构造（比如 <em style="color: #d75100; font-style: normal;">simpleJson</em> , <a href="https://pkg.go.dev/github.com/bitly/go-simplejson" style="color: #0184b7; text-decoration: none" target="_blank">https://pkg.go.dev/github.com/bitly/go-simplejson</a>）， <em style="color: #d75100; font-style: normal;">encode</em> 就没好办法了。加上 go 的规则中，公开的方法或者属性还必须首字母大写，对于 <em style="color: #d75100; font-style: normal;">encode</em> 的 json 字符串，如果对于成员名有小写的要求，就还要在结构中额外配置 <em style="color: #d75100; font-style: normal;">tag</em> 。
+</p>
+
+<a class="anchor" name="toc21"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.1. encode</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">encoding/json</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Marshal()</code> 方法，可以直接把结构体，或者成员是结构体的列表，转成 json 字符串。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+整数，字符串，布尔值，空值，列表，对象：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;encoding/json&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #445588; font-weight: bold">string</span>
+    <span style="color: #000000; font-weight: bold">var</span> js []<span style="color: #445588; font-weight: bold">byte</span>
+    <span style="color: #000000; font-weight: bold">var</span> err <span style="color: #445588; font-weight: bold">error</span>
+
+    js, err = json.Marshal(<span style="color: #dd1144">&quot;1&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal(<span style="color: #009999">0</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal(<span style="color: #000000; font-weight: bold">true</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal(<span style="color: #000000; font-weight: bold">nil</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal([]<span style="color: #445588; font-weight: bold">string</span>{<span style="color: #dd1144">&quot;1&quot;</span>, <span style="color: #dd1144">&quot;2&quot;</span>})
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal([]<span style="color: #445588; font-weight: bold">int</span>{<span style="color: #009999">1</span>, <span style="color: #009999">2</span>})
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal(<span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #445588; font-weight: bold">string</span>{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&quot;123&quot;</span>, <span style="color: #dd1144">&quot;b&quot;</span>: <span style="color: #dd1144">&quot;453&quot;</span>})
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal(<span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{}{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&quot;123&quot;</span>, <span style="color: #dd1144">&quot;b&quot;</span>: <span style="color: #dd1144">&quot;453&quot;</span>, <span style="color: #dd1144">&quot;c&quot;</span>: <span style="color: #009999">123</span>})
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+
+    js, err = json.Marshal([]<span style="color: #000000; font-weight: bold">interface</span>{}{<span style="color: #009999">1</span>, <span style="color: #dd1144">&quot;2&quot;</span>, <span style="color: #000000; font-weight: bold">true</span>, <span style="color: #000000; font-weight: bold">nil</span>, []<span style="color: #445588; font-weight: bold">string</span>{<span style="color: #dd1144">&quot;2&quot;</span>, <span style="color: #dd1144">&quot;3&quot;</span>}})
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基本数据类型直接拼还是很容易的，也可以直接嵌套。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结构体。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;encoding/json&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">type</span> Hello <span style="color: #000000; font-weight: bold">struct</span> {
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`json:&quot;name&quot;`</span>
+    Value <span style="color: #445588; font-weight: bold">int</span>
+    World World <span style="color: #dd1144">`json:&quot;www&quot;`</span>
+}
+
+<span style="color: #000000; font-weight: bold">type</span> World <span style="color: #000000; font-weight: bold">struct</span> {
+    Name <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #445588; font-weight: bold">string</span>
+    <span style="color: #000000; font-weight: bold">var</span> js []<span style="color: #445588; font-weight: bold">byte</span>
+    <span style="color: #000000; font-weight: bold">var</span> err <span style="color: #445588; font-weight: bold">error</span>
+
+    <span style="color: #000000; font-weight: bold">var</span> hello = <span style="color: #000000; font-weight: bold">&amp;</span>Hello{
+        Name: <span style="color: #dd1144">&quot;first&quot;</span>,
+        Value: <span style="color: #009999">123</span>,
+        World: World{
+            Name: <span style="color: #dd1144">&quot;second&quot;</span>,
+        },
+    }
+    js, err = json.Marshal(hello)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    s = <span style="color: #0086B3">string</span>(js)
+    fmt.Println(<span style="color: #dd1144">&quot;|&quot;</span> <span style="color: #000000; font-weight: bold">+</span> s <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot;|&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">结构体可以直接嵌套。
+</li>
+<li style="margin: 10px auto;">属性默认必须是大写字母开头。
+</li>
+<li style="margin: 10px auto;">如果要小写字母作属性值，需要使用 tag ，格式是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">`json:"xxx"`</code> ，中间不能有多余的空格，也不少了双引号。
+</li>
+</ul>
+
+<a class="anchor" name="toc22"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">9.2. decode</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+json 中的类型，非嵌套的，都是基本类型。嵌套的，都按 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">interface{}</code> 处理。取值时，再把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">interface{}</code> 转成具体类型的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;encoding/json&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> js []<span style="color: #445588; font-weight: bold">byte</span>
+    <span style="color: #000000; font-weight: bold">var</span> result <span style="color: #000000; font-weight: bold">interface</span>{}
+    <span style="color: #000000; font-weight: bold">var</span> err <span style="color: #445588; font-weight: bold">error</span>
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`1`</span>)
+    json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    <span style="color: #000000; font-weight: bold">var</span> i <span style="color: #445588; font-weight: bold">float64</span>
+    i = result.(<span style="color: #445588; font-weight: bold">float64</span>)
+    fmt.Println(i)
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`&quot;1&quot;`</span>)
+    json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    <span style="color: #000000; font-weight: bold">var</span> s <span style="color: #445588; font-weight: bold">string</span>
+    s = result.(<span style="color: #445588; font-weight: bold">string</span>)
+    fmt.Println(s)
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`null`</span>)
+    json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    <span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">interface</span>{}
+    f = result
+    fmt.Println(f)
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`true`</span>)
+    json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    <span style="color: #000000; font-weight: bold">var</span> b <span style="color: #445588; font-weight: bold">bool</span>
+    b = result.(<span style="color: #445588; font-weight: bold">bool</span>)
+    fmt.Println(b)
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`[true, 123, &quot;sss&quot;, null, [1, &quot;2&quot;]]`</span>)
+    err = json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    fmt.Println(err)
+    <span style="color: #000000; font-weight: bold">var</span> any []<span style="color: #000000; font-weight: bold">interface</span>{}
+    any = result.([]<span style="color: #000000; font-weight: bold">interface</span>{})
+    <span style="color: #000000; font-weight: bold">for</span> i, obj <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> any {
+        fmt.Println(i, obj)
+    }
+
+    js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`{&quot;a&quot;: &quot;123&quot;, &quot;b&quot;: 345, &quot;c&quot;: [{&quot;x&quot;: 123}]}`</span>)
+    err = json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    fmt.Println(err)
+    <span style="color: #000000; font-weight: bold">var</span> any2 <span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{}
+    any2 = result.(<span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{})
+    <span style="color: #000000; font-weight: bold">for</span> i, obj <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> any2 {
+        fmt.Println(i, obj)
+    }
+
+    <span style="color: #000000; font-weight: bold">var</span> c []<span style="color: #000000; font-weight: bold">interface</span>{} = any2[<span style="color: #dd1144">&quot;c&quot;</span>].([]<span style="color: #000000; font-weight: bold">interface</span>{})
+    fmt.Println(c[<span style="color: #009999">0</span>])
+
+    <span style="color: #000000; font-weight: bold">var</span> x <span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{} = c[<span style="color: #009999">0</span>].(<span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{})
+    fmt.Println(x[<span style="color: #dd1144">&quot;x&quot;</span>])
+
+    <span style="color: #000000; font-weight: bold">var</span> last <span style="color: #445588; font-weight: bold">float64</span> = x[<span style="color: #dd1144">&quot;x&quot;</span>].(<span style="color: #445588; font-weight: bold">float64</span>)
+    fmt.Println(last)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">nil</code> 就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">interface{}</code>
+</li>
+<li style="margin: 10px auto;">json 中的整数，在 go 中按 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">float64</code> 处理的。（记得 js 中本来就不区分整数和浮点）
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面例子中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">result</code> ，可以直接是一个结构体：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;encoding/json&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">type</span> Hello <span style="color: #000000; font-weight: bold">struct</span> {
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`json:&quot;abc&quot;`</span>
+    Value <span style="color: #445588; font-weight: bold">int</span>
+    Mark <span style="color: #445588; font-weight: bold">bool</span> <span style="color: #dd1144">`json:mark`</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> js = []<span style="color: #0086B3">byte</span>(<span style="color: #dd1144">`{&quot;abc&quot;: &quot;xxx&quot;, &quot;value&quot;: 123, &quot;mark&quot;: true}`</span>)
+    <span style="color: #000000; font-weight: bold">var</span> result Hello
+    err <span style="color: #000000; font-weight: bold">:=</span> json.Unmarshal(js, <span style="color: #000000; font-weight: bold">&amp;</span>result)
+    fmt.Println(err)
+    fmt.Println(result.Name)
+    fmt.Println(result.Value)
+    fmt.Println(result.Mark)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">对于指定了结构体的 <em style="color: #d75100; font-style: normal;">decode</em> ，首字大写可以自动适配。
+</li>
+<li style="margin: 10px auto;">写了 <em style="color: #d75100; font-style: normal;">tag</em> 的， <em style="color: #d75100; font-style: normal;">tag</em> 优先级最高。没有对应 <em style="color: #d75100; font-style: normal;">tag</em> 的属性，会再尝试 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Name</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 。
+</li>
+</ul>
+
+<a class="anchor" name="toc23"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">10. 模板</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+go 的官方模块中自带了模板的实现，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">text/template</code> 及 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">html/template</code> ， 这两个都有相同的接口， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">html</code> 多了安全方面的处理。
+</p>
+
+<a class="anchor" name="toc24"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.1. 基本使用</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;fmt&quot;</span>
+    <span style="color: #dd1144">&quot;text/template&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">type</span> Hello <span style="color: #000000; font-weight: bold">struct</span> {
+    Name <span style="color: #445588; font-weight: bold">string</span>
+    Result <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (self <span style="color: #000000; font-weight: bold">*</span>Hello) Write(p []<span style="color: #445588; font-weight: bold">byte</span>) (<span style="color: #445588; font-weight: bold">int</span>, <span style="color: #445588; font-weight: bold">error</span>)  {
+    self.Result <span style="color: #000000; font-weight: bold">+=</span> <span style="color: #0086B3">string</span>(p)
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #0086B3">len</span>(p), <span style="color: #000000; font-weight: bold">nil</span>
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> hello <span style="color: #000000; font-weight: bold">*</span>Hello = <span style="color: #000000; font-weight: bold">&amp;</span>Hello{Name: <span style="color: #dd1144">&quot;hello&quot;</span>}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">&quot;{{.Name}} xx here&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        <span style="color: #0086B3">panic</span>(err)
+    }
+    err = tpl.Execute(hello, hello)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+        <span style="color: #0086B3">panic</span>(err)
+    }
+    fmt.Println(tpl.Name())
+    fmt.Println(hello.Result)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">template</code> 通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">New</code> 创建，再调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Parse</code> 返回同一个对象实例。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Execute()</code> 需要两个参数，第一个是实现了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Write()</code> 接口的对象，第二个就是模板参数的“根对象”。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Execute()</code> 并不会返回结果，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Execute()</code> 的过程会多次调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Write()</code> ，结果放在哪里由接口实现决定。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面最后一点，用起来虽然麻烦一些，但是却是一种相对很通用的设计。比如，如果你要在 Web 应用中引入这套模板，那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Write()</code> 就可以实现成直接往连接写入响应内容。
+</p>
+
+<a class="anchor" name="toc25"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.2. 当前对象</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当前对象，是指 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ . }}</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> (
+    <span style="color: #dd1144">&quot;text/template&quot;</span>
+    <span style="color: #dd1144">&quot;os&quot;</span>
+)
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> hello = <span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #445588; font-weight: bold">string</span>{<span style="color: #dd1144">&quot;foo&quot;</span>: <span style="color: #dd1144">&quot;hello&quot;</span>}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">&quot;{{.foo}} xx here&quot;</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最普通的，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Execute()</code> 传入的参数。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">range</code> 迭代中，也是迭代的当前对象：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> hello = [<span style="color: #000000; font-weight: bold">...</span>]<span style="color: #445588; font-weight: bold">int</span>{<span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{ range . }}</span>
+<span style="color: #dd1144">    {{ . }} here</span>
+<span style="color: #dd1144">    {{ end }}</span>
+<span style="color: #dd1144">    `</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面会输出：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">    1 here
+
+    2 here
+
+    3 here
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ range . }}</code> 这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.</code> ，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{1,2,3}</code> 列表。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ . }} here</code> 就是迭代时的列表成员了。
+</li>
+</ul>
+
+<a class="anchor" name="toc26"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.3. 前后空行</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里一个，有时会比较实用的功能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的例子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">var</span> hello = [<span style="color: #000000; font-weight: bold">...</span>]<span style="color: #445588; font-weight: bold">int</span>{<span style="color: #009999">1</span>,<span style="color: #009999">2</span>,<span style="color: #009999">3</span>}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{ range . }}</span>
+<span style="color: #dd1144">    {{ . }} here</span>
+<span style="color: #dd1144">    {{ end }}</span>
+<span style="color: #dd1144">    `</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    err = tpl.Execute(os.Stdout, hello)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+输出是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">    1 here
+
+    2 here
+
+    3 here
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到，前后和中间，都多出空行。因为在原模板中： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ range . }}</code> 和  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ end }}</code> 都是独占一行的。同时， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ . }}</code> 的前面也有多个空格及一个换行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把模板先写成一行比较容易了解换行的位置：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`{{ range . }}{{ . }} here{{ end }}`</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们想不要多余的空行与空格的话，容易想到：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{- range . }}</span>
+<span style="color: #dd1144">    {{- . }} here</span>
+<span style="color: #dd1144">    {{ end }}`</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{- ... }}</code> 可以换左侧的换行和空格去掉，同理，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ ... -}}}</code> 可以把右侧的换行和空格去掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面那样写，我们最后得到的结果是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">1 here
+    2 here
+    3 here
+             
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">2 here</code> 前面的空格，是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ end }}</code> 左侧到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">here</code> 为止的内容，这里就没有办法在保留换行的情况下，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{- ...}}</code> 去掉了。如果写成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err := template.New(&quot;test&quot;).Parse(`
+    <span style="color: #999999; font-weight: bold">{{</span><span style="color: #000000; font-weight: bold">-</span> <span style="color: #008080">range</span> <span style="color: #a61717; background-color: #e3d2d2">.</span> <span style="color: #999999; font-weight: bold">}}</span>
+    <span style="color: #999999; font-weight: bold">{{</span><span style="color: #000000; font-weight: bold">-</span> <span style="color: #a61717; background-color: #e3d2d2">.</span> <span style="color: #999999; font-weight: bold">}}</span> here
+    <span style="color: #999999; font-weight: bold">{{</span><span style="color: #000000; font-weight: bold">-</span> <span style="color: #008080">end</span> <span style="color: #999999; font-weight: bold">}}</span>`)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果会变成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #009999">1</span> here2 here3 here  
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，要换行，不要空格，就只能手动调整模板：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{- range . }}</span>
+<span style="color: #dd1144">    {{- . }} here</span>
+<span style="color: #dd1144">{{ end }}`</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc27"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.4. 命令块</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以前用过的模板，都会有像“引用”，“继承”之类的机制，可以在模板内部去做 <em style="color: #d75100; font-style: normal;">import</em> ，或者“重写块”。 go 的这个模板没有这些， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Parse()</code> 的时候，就是一个整体的字符串，但是里面，可以有多个片段，单独给片段命名之后，就可以重复引用了，有点像函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ define &quot;first&quot; }} {{ . }} {{ end }}
+{{ template &quot;first&quot; 123 }}
+{{ template &quot;first&quot; 456 }}
+{{ template &quot;first&quot; 492 }}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个模板就是先自己定义了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">first</code> 片段，然后通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">template</code> 命令做了三次引用，引用时传递了数字作为参数。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果是从文件 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Parse</code> ，也可以一次性写多个文件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.ParseFiles(<span style="color: #dd1144">&quot;demo.go&quot;</span><span style="color: #a61717; background-color: #e3d2d2">，</span><span style="color: #dd1144">&quot;a.html&quot;</span>, <span style="color: #dd1144">&quot;b.html&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，对于定义就可以整合到一起处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ParseFiles</code> 是运行时读取文件并解析的，不是编译时。
+</p>
+
+<a class="anchor" name="toc28"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.5. 函数</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ call }}</code> 命令可以调用指定的传入的函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`{{ call . 1 2 }}`</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然可以传入函数，但是模板中的使用限制还是非常大。不能嵌套调用，也不能对结果赋值。
+</p>
+
+<a class="anchor" name="toc29"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.6. 迭代</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ range }}</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ end }}</code> 可以完成迭代。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">type</span> item <span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #445588; font-weight: bold">string</span>
+    <span style="color: #000000; font-weight: bold">var</span> array = [<span style="color: #000000; font-weight: bold">...</span>]item{item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&quot;123&quot;</span>}, item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&quot;345&quot;</span>}, item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #dd1144">&quot;9993&quot;</span>}}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{ range . }} {{ .a }} {{ end }}</span>
+<span style="color: #dd1144">    `</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    err = tpl.Execute(os.Stdout, array)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc30"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">10.7. 条件判断</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ if }}</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ else }}</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ end }}</code> 是一套，它们可以嵌套。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是，这里没有逻辑判断的能力，只能使用一些内置的函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">func</span> main() {
+    <span style="color: #000000; font-weight: bold">type</span> item <span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #445588; font-weight: bold">int</span>
+    <span style="color: #000000; font-weight: bold">var</span> array = [<span style="color: #000000; font-weight: bold">...</span>]item{item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #009999">123</span>}, item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #009999">345</span>}, item{<span style="color: #dd1144">&quot;a&quot;</span>: <span style="color: #009999">9993</span>}}
+    tpl, err <span style="color: #000000; font-weight: bold">:=</span> template.New(<span style="color: #dd1144">&quot;test&quot;</span>).Parse(<span style="color: #dd1144">`</span>
+<span style="color: #dd1144">    {{ range . }} {{if eq .a 123 }} ok {{ else }} error {{ end }} {{ end }}</span>
+<span style="color: #dd1144">    `</span>)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+    err = tpl.Execute(os.Stdout, array)
+    <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> { <span style="color: #0086B3">panic</span>(err) }
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">if</code> 那里写成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ if .a == 123 }}</code> 是不支持。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">or</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">and</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">not</code> 这三个逻辑关系，也是函数行为，前置，不能中置：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{{ <span style="color: #000000; font-weight: bold">range</span> . }} {{<span style="color: #000000; font-weight: bold">if</span> or (eq .a <span style="color: #009999">123</span>) (eq .a <span style="color: #009999">345</span>) }} ok {{ <span style="color: #000000; font-weight: bold">else</span> }} <span style="color: #445588; font-weight: bold">error</span> {{ end }} {{ end }}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好在这里至少可以用括号了。
+</p>
+
+<a class="anchor" name="toc31"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">11. 项目的代码结构</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+TODO
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'go-http';
+  var disqus_url = 'https://www.zouyesheng.com/go-http.html';
+  var disqus_title = 'Go 的 HTTP 服务端实现';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABnklEQVR4nN2XQY6cQAxFnwek6h3c
+oLhIIHOslhhBJgdLwUngBtSukOj+WXRmM2HZNVLi5V98y/b/dpWJv2N/OQHh30MnM7vM8c2YozVm
+Zk22bGiS5O7gJR3eSYdPGSuO1jAzTBfiCJONX9DfW7Obd8vTec9QUwm23Zq82f7MTVuxuADZ5yYz
+Y+baYVvPblbmq62kE0AEvr0UB5DR3ShQyE0bJCgWBfp8nUSBYUnd1qMAYDnnhkJ14AKgOz3YViij
+Smx1S2oZtL9uoF9+z7m5JC0u0Ht3p1BqGXLWRixJppL9VeNaTcq6lUMlufCQI7gAOVVyp/eppRCd
+Dp86/czaycpNF7g27j2OK/PTeM9C0oECg+h0IOV1wBydLsCK6mKxru5zXpyWq6W2KnHv8a3RtD2J
+9xxVXSz2PR7QAmZ1xmxIkhQqSYHeK+R1QACcHicV70KV1QEmCfhhQE+yLatKiNagulC0mtW6L3hz
+zbBicosCt3x78gONe1eFOPp92J7K+ykeb65JB6nT6FObVyUyM4hOEMfVhWfxnoX9xz+q38Zk9fPd
+zXmVAAAAAElFTkSuQmCC
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
