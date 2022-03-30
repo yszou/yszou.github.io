@@ -1,0 +1,584 @@
+Gin 的使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 简介 #
+
+Gin 是 go 的一个 web 框架，https://github.com/gin-gonic/gin ，它像 Node 下的 Express ，风格上追求简洁。
+
+与 Python 中的框架比的话，像早期的 webpy 。只看 HTTP 核心部分，其实与 Tornado 也差不多，只是 ``Handler`` 的实现上， go 中只有“函数”，没有“类”，所以 Tornado 中的“实例”方法，在 gin 中就只能使用传入 Handler 函数的一个固定的 ``Context`` 对象来封装。同时，“函数”不像“类”可以通过“继承”以内化的方式完成抽象逻辑的组织，对应的，只能单独设计“中间件”的机制来额外地组装这些抽象逻辑。
+
+因为 go 是静态语言， gin 中专门设计了一组 ``Bind`` 类型的 API ，用于将请求时的参数，以预定的格式，如 json， xml 等，与即定的结构，或者接口做绑定，好方便针对请求参数的逻辑处理过程。
+
+
+
+# Hello World #
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        c.String(200, "Hello World")
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+``Hello World`` 的例子很简单，可以看成两个部分：
+
+- ``router`` 有一些复合的功能，包括了 *server* , *application* , *router* , *settings* 等。
+- *Handler* 的映射上，直接把方法提到外面了，然后把 path 关联到一个函数。函数的参数 ``Context`` 封装了涉及 *Request* 和 *Response* 的东西。
+
+
+把 HTTP Status 作为各种 Response Writer 的第一个参数，是我最看不惯的一个 API 设计点。
+
+
+
+
+# Context #
+
+
+## 请求参数和路径匹配 ##
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/:resource/*action", func(c *gin.Context){
+        resource := c.Param("resource")
+        action := c.Param("action")
+        name := c.Query("name")
+        number := c.DefaultQuery("number", "100")
+        data := c.DefaultPostForm("data", "DefaultData")
+        c.String(200,
+        `
+        resouce: %s;
+        action: %s;
+        name: %s;
+        number: %s;
+        data: %s;
+        `,
+        resource, action, name, number, data)
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+- ``Param`` ，获取路径匹配部分。
+- ``Query`` ，获取 GET 参数。有对应的 ``DefaultQuery()``
+- ``PostForm`` ，获取 POST 参数。有对应的 ``DefaultPostForm()``
+
+
+这里有一个小注意点： ``DefaultQuery()`` 和 ``DefaultPostForm()`` 的函数签名都是 ``(string, string)`` ，这意味着，你无法使用它们完成“判断参数是否存在”。要判断参数的存在，需要使用：
+
+- ``value, ok = c.GetQuery(name)``
+
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/:resource/*action", func(c *gin.Context){
+        if _, ok := c.GetQuery("name"); ok {
+            c.String(200, "YES")
+        } else {
+            c.String(200, "NO")
+        }
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+## Multipart 及上传的文件 ##
+
+使用 ``c.FormFile()`` 或者 ``c.MultipartForm()`` 。
+
+TODO
+
+
+
+## 获取原始 Body ##
+
+使用 ``GetRawData()`` 。
+
+TODO
+
+
+
+## 获取头 ##
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/:resource/*action", func(c *gin.Context){
+        c.String(200, c.GetHeader("User-Agent"))
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+使用 ``c.GetHeader()`` 。
+
+头的名字，大小写无所谓，但是 ``-`` 不能少，不能错。
+
+
+
+## 设置头 ##
+
+设置头：
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.Get("/", func(c *gin.Context){
+        c.Header("X-Name", "xx")
+        c.String(200, "Hello World")
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+使用 ``Header()`` 方法，同样，大小写无所为， ``-`` 不能错。
+
+
+## 获取请求方法 ##
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.Any("/:resource/*action", func(c *gin.Context){
+        c.String(200, c.Request.Method)
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+这个能力没有现成的实现，可以使用 ``c.Request.Method`` 获取到。
+
+
+## 设置 Cookie ##
+
+使用
+
+```go
+SetCookie(name, value string, maxAge int, path, domain string, secure, httpOnly bool)
+```
+
+因为 go 没有现成的“默认参数”语法，所以，一共有 7 个参数。少了一个 ``SameSite`` ，是另有一个单独方法：
+
+```go
+SetSameSite(samesite http.SameSite) 
+```
+
+从源码上看，必须先调用  ``SetSameSite`` ，再调用 ``SetCookie`` 。
+
+``SetCookie`` 的参数：
+
+- ``name``
+- ``value``
+- ``maxAge`` ，这是一个秒数。 0 的话，就是“仅当前会话”。 -1 可以删除 Cookie 。
+- ``path`` ，可以用空字符串 ``""``，会被自动处理成 ``/`` 。
+- ``domain`` ，不可以加端口号。可以用空字符串 ``""``，表示当前。
+- ``secure``
+- ``httpOnly``
+
+
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.Any("/:resource/*action", func(c *gin.Context){
+        c.SetCookie("test", "123", 60, "/", "localhost", false, true)
+        c.String(200, c.Request.Method)
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+## 获取 Cookie ##
+
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.Any("/:resource/*action", func(c *gin.Context){
+        c.SetCookie("test", "123", 0, "", "", false, true)
+        cookie, err := c.Cookie("test")
+        if (err != nil) {
+            c.String(200, "ERR")
+        } else {
+            c.String(200, cookie)
+        }
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+使用 ``Cookie`` 方法，注意，它的返回是： ``value, err`` 。
+
+
+
+## 重定向 ##
+
+重定向有一个现成的方法， ``Redirect(code int, location string)`` 。
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        c.Redirect(301, "https://www.zouyesheng.com")
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+
+## 响应内容 ##
+
+响应内容大概可能分成这些：
+
+- 字符串, ``c.String``
+- 模板, ``c.HTML``
+- JSON, ``c.AsciiJSON``
+- 字节, ``c.Data``
+- 其它
+
+
+字符串前面都用过了。模板后面单独讲。
+
+*JSON* 的返回， *gin* 根据是否转义 ``<>`` 之类的符号，是否转义非 ASCII 字符，搞了好几个方法，个人建议直接用 ``AsciiJSON`` 就好了。
+
+字节等下举个例子。
+
+其它的，有 ``XML``， ``YAML``， ``ProtoBuf`` 这类格式的。也有像 ``File``， ``FileFromFS`` 这种快捷方法。
+
+还有 ``Stream`` ， *Chunk* 返回可能要自己手动使用它实现。
+
+
+JSON 返回：
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        c.AsciiJSON(200, gin.H{"name": "<h1>中文</h1>"})
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+字节返回：
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        c.Data(200, "text/plain", []byte{'a', 'a', 'a'})
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+# 中间件与路由配置 #
+
+
+## 路由配置 ##
+
+
+中间件定义好之后要应用，就依赖于路由的一套配置方法。
+
+```go
+router := gin.Default()
+```
+
+这里的 ``Default()`` ，其实已经在 ``router`` 中加入了 *logger* 之类的中间件功能了。
+
+如果要一个裸的配置，可以使用：
+
+```go
+router := gin.New()
+```
+
+这时你再访问，就没有相应的访问日志输出了。
+
+路由配置，简单来说，也就是“分组”的功能，因为分组之后，对于不同的路由组就可以有不同的配置。
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+    router := gin.Default()
+    v1 := router.Group("")
+    v1.GET("/", func(c *gin.Context){
+        c.Data(200, "text/plain", []byte{'a', 'a', 'a'})
+    })
+
+    v2 := router.Group("/sub")
+
+        v2.GET("/hello", func(c *gin.Context){
+            c.JSON(200, gin.H{
+                "code": 0,
+                "msg": "ok",
+            })
+        })
+
+        v3 := v2.Group("/next")
+            v3.GET("/world", func(c *gin.Context){
+                c.JSON(200, gin.H{"code": 0})
+            })
+
+    router.Run("0.0.0.0:8888")
+}
+
+```
+
+使用 ``.Group()`` 之后，可以有一个路径的传递的效果。
+
+
+## 中间件定义 ##
+
+我看官方文档并没有明确说明中间件定义的接口规范，不过可以从源码中的 ``logger.go`` 参考一下。
+
+其实中间件和普通的 *Handler* 没有区别，只是在合适的地方，你可以选择性地使用 *Context* 的 ``Next()`` 方法，使用其它的一些 API ，可以实现在单个中间件的个体内，完成像 pre , post 这类的勾子行为。
+
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func log(c *gin.Context) {
+    print("before\n")
+    c.Next()
+    print("after\n")
+}
+
+func main() {
+    router := gin.Default()
+    v1 := router.Group("")
+    v1.Use(log)
+    v1.GET("/", func(c *gin.Context){
+        print("in GET\n")
+        c.Data(200, "text/plain", []byte{'a', 'a', 'a'})
+    })
+
+    v2 := router.Group("/sub")
+    v2.GET("", func(c *gin.Context){
+        c.String(200, "ok")
+    })
+    router.Run("0.0.0.0:8888")
+}
+```
+
+很好理解，如果想实现 post 行为，有 ``Next()`` 方法可用。要应用到不同的路由匹配上，可以通过 ``Group()`` 之后，再 ``Use()`` 。
+
+不显式的调用 ``Next()`` 也可以，如果你不需要 post 勾子行为的话。
+
+如果需要取消处理，立即返回，需要使用 ``Abort()`` 方法：
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+
+func log(c *gin.Context) {
+    c.String(200, "over")
+    c.Abort()
+}
+
+func main() {
+    router := gin.Default()
+    router.Use(log)
+    v1 := router.Group("")
+    v1.GET("/", func(c *gin.Context){
+        c.String(200, "here")
+    })
+
+    router.Run("0.0.0.0:8888")
+}
+```
+
+
+
+## Context 的 Get 和 Set ##
+
+中间件不光需要勾子能力，还需要状态的保存能力。典型的，做用户认证的场景。当检查了输入，确定了用户身份，肯定是需要把用户信息保存下来，以便后面的业务 Handler 直接使用啊。所以，直接找对应的 API 就好了。没找错的话，就是 *Context* 的 ``Get`` 和 ``Set`` 方法。（ ``Get`` 还有对应的 ``GetString`` ``GetInt`` 种种 ）
+
+当第一次使用 ``Set`` 时，当前 *Context* 会创建一个 ``Keys`` 的 *map* 来保存数据。
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+type Person struct {
+    name string
+}
+
+func log(c *gin.Context) {
+    c.Set("first", &Person{name: "person name"})
+}
+
+func main() {
+    router := gin.Default()
+    router.Use(log)
+    v1 := router.Group("")
+    v1.GET("/", func(c *gin.Context){
+        if val, exists := c.Get("first"); exists {
+            c.String(200, val.(*Person).name)
+            return
+        }
+        c.String(200, "no")
+    })
+
+    router.Run("0.0.0.0:8888")
+}
+```
+
+``Get()`` 的获取，会返回两个值，第二个是表示是否存在。
+
+
+# 模型绑定 #
+
+模型绑定的机制，可以让你先定义一个结构，然后通过一个方法的调用，自动地把请求参数，或者请求头，中的数据，用于填充结构。
+
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+
+type Person struct {
+    UserId string `form:"user_id"`
+    Name string `form:"name"`
+}
+
+func (p Person) getName() string {
+    return p.UserId + " - " + p.Name
+}
+
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        var p Person
+        if err := c.ShouldBind(&p); err != nil {
+            c.String(200, "error")
+        } else {
+            c.String(200, p.getName())
+        }
+    })
+
+    router.Run("0.0.0.0:8888")
+}
+```
+
+- 类型定义中，如果有字段是非字符串类型，则只能使用 JSON 之类的格式完成数据传输。
+- 类型定义可以利用接口机制，实现特定的方法，方便逻辑封装。
+- 类型字段与参数字段的映射，需要手动补充，这点还是有点麻烦的。
+
+
+# Chunked 响应 #
+
+```go
+package main
+
+import "github.com/gin-gonic/gin"
+import "time"
+
+const OK int = 200
+
+func main() {
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        c.String(OK, "OK")
+        c.Writer.Flush()
+        time.Sleep(3 * time.Second)
+        c.String(OK, "TIME")
+    })
+
+    router.Run("0.0.0.0:8888")
+}
+```
+
+API 设计上，响应的内容是可以多次写入的，所以自然会想到 Chunked 的响应方式。
+
+直接使用 ``c.Writer.Flush()`` 就可以把当前缓冲区的内容写回连接了。API 后续写回时的状态码会被忽略，只有第一次的状态码会被使用。
+
+```text
+zys@shopee:/home/zys >>> telnet localhost 8888
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+GET / HTTP/1.1
+Host: localhost
+
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 30 Mar 2022 19:36:03 GMT
+Transfer-Encoding: chunked
+
+2
+OK
+4
+TIME
+0
+```
+
