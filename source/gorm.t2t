@@ -1,0 +1,581 @@
+GORM 的使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/
+%!format: !email
+%%toc
+
+
+# 介绍与安装 #
+
+GORM 是 go 的一个 ORM 框架，它在 https://gorm.io 。
+
+受限于 go 是静态语言的限制， GORM 的能力和 API 自然没法做得像动态语言的 ORM 那样强大与好用。
+
+安装：
+
+```bash
+go get -u gorm.io/gorm
+```
+
+要连接具体的数据库，需要的驱动是单独安装的，比如：
+
+```bash
+go get -u gorm.io/driver/sqlite
+go get -u gorm.io/driver/mysql
+```
+
+
+# 连接和 Hello World #
+
+```go
+package main
+
+import "gorm.io/gorm"
+import "gorm.io/driver/sqlite"
+
+func main() {
+    db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+    if (err != nil) {
+        panic(err)
+    }
+    var n string
+    db.Raw("select 'Hello World'").Scan(&n)
+    print(n)
+}
+```
+
+使用 ``Open()`` 获取一个连接， 第二个参数是一组配置。
+
+如果是 MySQL 的话，大概长这样：
+
+```go
+mysql.Open("app:pass@tcp(127.0.0.1:3306)/test?charset=utf8mb4")
+```
+
+最简单的，直接使用 ``Raw()`` 方法，就可以查询了。
+
+结果的处理，是填坑位（地址）的形式。即先申明一些变量，然后把变量地址作为第二个参数传入，地址和类型的匹配，需要你自己处理好。
+
+``Raw()`` 可以有多个参数，对应预编译的形式：
+
+```go
+db.Raw("select ?", "Hello World").Scan(&n)
+```
+
+# 模型 #
+
+模型在语法实现上就是一个结构体：
+
+```go
+type User struct {
+  ID uint
+  Name string
+}
+```
+
+对于模型，GORM 自己有一些约定，拿上面的定义来说，它默认为：
+
+- 表名是 *users* 。
+- *id* 是主键。
+- 有一个列叫 *name* 。
+
+
+当然，这些约定不知道也没有关系，我们按自己的需要配置这些信息就好了，不用去管它的默认规则（我个人反感“约定大于配置”）。
+
+表名可以用 ``TableName()`` 方法：
+
+```go
+type User struct {
+  ID uint
+  Name string
+}
+
+func (User) TableName() string {
+    return "user"
+}
+```
+
+字段名，是否索引，主键等一系列信息，是由结构体字段的标签来额外标注的：
+
+```go
+package main
+
+import "log"
+import "os"
+import "time"
+import "gorm.io/gorm"
+import "gorm.io/driver/sqlite"
+// import "gorm.io/driver/mysql"
+import "gorm.io/gorm/logger"
+
+
+type User struct {
+    Id uint `gorm:"column:id; type:INTEGER; primaryKey;"`
+    Name string `gorm:"column:name; type:varchar(48); not null; default:''; index:idx_user_name;"`
+    Age uint `gorm:"column:age; type:INTEGER; not null; default:1; index:idx_user_age;"`
+}
+
+func (User) TableName() string {
+    return "user"
+}
+
+
+var newLogger = logger.New(
+    log.New(os.Stdout, "\n", log.LstdFlags),
+    logger.Config{
+        SlowThreshold: 200 * time.Millisecond,
+        LogLevel: logger.Info,
+        IgnoreRecordNotFoundError: false,
+        Colorful: false,
+    },
+)
+
+func main() {
+    db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{ Logger: newLogger, })
+    // db, err := gorm.Open(mysql.Open("app@tcp(127.0.0.1:3306)/gorm"), &gorm.Config{ Logger: newLogger, })
+    if (err != nil) {
+        panic(err)
+    }
+    db.Migrator().CreateTable(&User{})
+}
+```
+
+模型定义好之后，就可以查询了。
+
+接下来，我们会在大部分时候使用 *sqlite* 的内存数据库方式，方便演示。
+
+创建表可以使用 ``Migrator`` 里面的 ``CreateTable()`` 。
+
+同时，为了可以把 ``CreateTable()`` 执行时对应的 SQL 语句打印出来，我们还在上面的代码中配置了 ``Logger`` 。
+
+在打印出日志的时候，因为 GORM 默认会搞上颜色，这在我个人的 VIM 环境下是不能正常显示的，所以，要通过自定义 *Logger* 的方式，把 ``Colorful`` 关掉。
+
+执行上面的代码，就可以看到建表及建索引的语句：
+
+```sql
+CREATE TABLE `user` (`id` INTEGER,`name` varchar(48) NOT NULL DEFAULT "",`age` INTEGER NOT NULL DEFAULT 1,PRIMARY KEY (`id`))
+
+CREATE INDEX `idx_user_age` ON `user`(`age`)
+
+CREATE INDEX `idx_user_name` ON `user`(`name`)  
+```
+
+标签那部分，基本算是纯人肉吧，空格都不能随便多，又难看，也不具备多种类型数据库的兼容性（比如后面的 ``AUTO_INCREMENT`` 就不能在 *sqlite* 中使用）：
+
+```go
+type User struct {
+    Id uint `gorm:"column:id; type:INTEGER; primaryKey;"`
+    Name string `gorm:"column:name; type:varchar(48); not null; default:''; index:idx_user_name;"`
+    Age uint `gorm:"column:age; type:INTEGER; not null; default:1; index:idx_user_age;"`
+}
+```
+
+完整的标签功能，可以参考：https://gorm.io/zh_CN/docs/models.html#%E5%AD%97%E6%AE%B5%E6%A0%87%E7%AD%BE
+
+
+# 简单查询 #
+
+## 创建 ##
+
+```go
+user := User{Name: "first", Age: 19}
+db.Create(&user)
+
+user2 := User{Name: "first", Age: 19}
+db.Create(&user2)
+print(user.Id, user2.Id)
+```
+
+如果你在之后需要获取 ``Id`` 的话，需要将 ``User{}`` 提前存下来。
+
+创建有可能失败。假设 *Age* 上有唯一约束：
+
+```go
+user := User{Name: "first", Age: 1}
+db.Create(&user)
+
+user2 := User{Name: "first", Age: 1}
+result := db.Create(&user2)
+
+print(user2.Id, user2.Age, "\n")
+if(result.Error != nil){
+    print(result.Error.Error())
+}
+```
+
+``db.Create()`` 返回的 ``result`` 就是一个 *DB* 接口，当有错误时它的 *Error* 属性不为空， *Error* 属性是一个 Error 接口。
+
+
+## 删除 ##
+
+```go
+db.Delete(&User{}, "id = ?", 1)
+result := db.Where("id = ?", 1).Where("name = ?", "first").Delete(&User{})
+if(result.Error != nil){
+    print(result.Error.Error())
+}
+```
+
+## 修改 ##
+
+
+```go
+db.Model(&User{}).Where("id = 1").Update("name", "xx")
+```
+
+要吐槽一下了：
+
+- 既然有 ``Model`` 这一个口子，为什么不把 ``Delete`` 设计成： ``db.Model(&User{}).Where("id = 1").Delete()``
+- ``Where``和 ``Update`` ，都是字符串写死的 ``name`` 这种字段名啊，根本没怎么用 Model 的“属性”啊。也许 go 的机制只能做到这种程度。都 22 年了，新语言设计中加一套 *Class* 机制又怎样呢。
+
+
+## 查询 ##
+
+查询要返回条目，所以还是典型的埋坑的形式：
+
+```go
+var user User;
+user = User{Name: "first", Age: 1}; db.Create(&user)
+user = User{Name: "second", Age: 2}; db.Create(&user)
+user = User{Name: "third", Age: 3}; db.Create(&user)
+
+var userList []User
+db.Limit(2).Find(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+注意，那个 ``Limit(2)`` 不能放在 ``Find()`` 的后面。
+
+
+带条件查询：
+
+```go
+var userList []User
+db.Where(" (name = ?) or (age = ?)", "first", 3).Limit(2).Find(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+反正就是带占位符的手写，随便怎么写了。
+
+
+结构化的条件：
+
+```go
+db.Where(map[string]interface{}{"name": "first", "age": 1}).Limit(2).Find(&userList)
+```
+
+排序和 Offset ：
+
+```go
+var userList []User
+db.Limit(1).Offset(1).Order("age desc").Find(&userList, "age > ?", 1)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+可以看到 ``Find`` 可以直接使用后面的参数声明查询条件。
+
+
+## “裸查” ##
+
+最后，是一个“裸查”的形式，语意上不依赖模型：
+
+```go
+var userList []User
+db.Table("user").Limit(1).Offset(1).Order("age desc").Where("age > ?", 1).Scan(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+从这里可以看出，查询本身对模型没啥依赖，模型的最大作用，只是为响应提供了结构参考。
+
+
+## Count ##
+
+```go
+var count int64
+db.Table("user").Count(&count)
+println(count)
+```
+
+``count`` 的类型，需要是 int64 。
+
+
+## 限定字段 ##
+
+有两种方式。一是使用 ``Select`` 方法。二是坑位的类型使用属性更少的单独的结构体。
+
+```go
+var userList []User
+db.Select("name").Limit(2).Find(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+定义小结构体：
+
+```go
+type MiniUser struct {
+    Id uint
+    Name string
+}
+
+func (MiniUser) TableName() string {
+    return "user"
+}
+```
+
+查询时要先用 ``Model()`` ：
+
+```go
+var userList []MiniUser
+db.Model(&User{}).Limit(2).Find(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+
+## 子查询 ##
+
+查询的过滤，和“创建”等过程一样的，都是会返回 *DB* 对象。这个对象，可以整体作为过滤条件传入：
+
+```go
+var userList []User
+sub := db.Table("user").Select("name").Where("age = 1")
+db.Where("name in (?)", sub).Limit(1).Find(&userList)
+for _, o := range userList {
+    println(o.Name)
+}
+```
+
+## JOIN ##
+
+人肉的，没啥好说。
+
+```go
+type Result struct {
+    Name string
+    Type string
+}
+
+var userList []Result
+db.Table("user").
+   Select("user.name, account.type").
+   Joins("left join account on user.id == account.user_id").
+   Where("user.name in (?, ?)", "first", "second").
+   Scan(&userList)
+for _, o := range userList {
+    println(o.Name, o.Type)
+}
+```
+
+
+# 模型的关联与查询 #
+
+GORM 在模型层面支持关联关系的配置，查询方面也可以直接完成相应的对接。
+
+一般说关系模型的时候，会有一对一，一对多，多对多三种类型。实际使用中，“一对一”可以看成是“一对多”的特殊情况。而“多对多”可以自己在中间表中通过两个“一对多”关系处理。所以，下面只关注 GORM 的一对多机制。
+
+GORM 的一对多机制，是通过“嵌入模型”和“外键定义”两步完成的。（官方网站把 *Belongs To* 说成是“一对一”我觉得是不合适的）。
+
+```go
+type User struct {
+    Id uint `gorm:"column:id; type:INTEGER AUTO_INCREMENT; primaryKey;"`
+    Name string `gorm:"column:name; type:varchar(48); not null; default:''; index:idx_user_name;"`
+    Age uint `gorm:"column:age; type:INTEGER; not null; index:idx_user_age;"`
+}
+
+type Account struct {
+    Id uint `gorm:"column:id; type:INTEGER AUTO_INCREMENT; primaryKey;"`
+    Type string `gorm:"column:type; type:varchar(48); not null; default:''; index:idx_account_type;"`
+    UserId uint `gorm:"column:user_id; type:INTEGER; index: idx_account_user_id;"`
+    UserObj User `gorm:"foreignKey:UserId;references:Id;"`
+}
+
+func (User) TableName() string {
+    return "user"
+}
+
+func (Account) TableName() string {
+    return "account"
+}
+```
+
+（注意，这里的 ``Id`` 中的 ``type`` 属性的 ``AUTO_INCREMENT`` ，在 *sqlite* 中不能正常工作的，需要删除它。标签手动写语句的方式，还是比较原始啊。）
+
+
+- 定义两个模型， *User* 和 *Account*，它们在概念上是一对多关系。
+- *Account* 中，要有一个字段，类型是 *User* ，这里使用 ``UserObj`` 。
+- ``UserObj`` 配置它的外建属性， ``foreignKey`` 指向本模型的外键字段，这里是 ``UserId`` 。
+- ``references`` 属性的作用，是标明 ``UserId`` 对应连接模型的哪个字段，这里对应是 ``Id`` 这个默认的主键字段。
+
+
+这样，一个“一对多”的关系就定义好了。这里如果使用 ``Migrator`` ，则在 *Account* 中是会创建相应的外键约束的。不想要这个外键约束的话（我就不要想），可以在连接配置中处理：
+
+```go
+db, err := gorm.Open(mysql.Open("app@tcp(127.0.0.1:3306)/gorm"), &gorm.Config{
+    Logger: newLogger,
+    DisableForeignKeyConstraintWhenMigrating: true,
+})
+```
+
+
+查询时，可以通过额外的操作，来自动填充上 *Account* 实例的 ``UserObj`` 属性：
+
+```go
+var accountList []Account
+db.Preload("UserObj").Where("type = ?", "special").Find(&accountList)
+for _, o := range accountList {
+    println(o.Type, o.UserId, o.UserObj.Name)
+}
+```
+
+使用 ``Preload("UserObj")``  可以指定要关联的属性，查询时，就会通过额外的查询把 ``UserObj`` 的值取出来，并填充到对应的 *Account* 实例上。这里注意，使用 ``Preload`` 查询时，是通过单独的 SQL 完成关联模型查询的，不是 ``join`` ，不是子查询。
+
+```sql
+SELECT * FROM `user` WHERE `user`.`id` IN (2,3)
+SELECT * FROM `account` WHERE type = "special"
+```
+
+前面的代码，会有这两条 SQL 被执行。
+
+如果要使用 ``join`` 来查询，可以用 ``Joins`` 代替 ``Preload`` ：
+
+```go
+var accountList []Account
+db.Joins("UserObj").Where("type = ?", "special").Find(&accountList)
+for _, o := range accountList {
+    println(o.Type, o.UserId, o.UserObj.Name)
+}
+```
+
+这样查询的 SQL 会变成一条：
+
+```sql
+SELECT
+    `account`.`id`,`account`.`type`,`account`.`user_id`,
+    `UserObj`.`id` AS `UserObj__id`,`UserObj`.`name` AS ` UserObj__name`,
+    `UserObj`.`age` AS `UserObj__age`
+FROM
+    `account`
+LEFT JOIN
+    `user` `UserObj`
+ON
+    `account`.`user_id` = `UserObj`.`id`
+WHERE
+    type = "special"
+```
+
+可能这个比较符合日常使用的预期。
+
+
+# 事务 #
+
+在说事务的一些操作之前，要先把 GORM 默认的事务行为搞清楚。
+
+官方的文档上说 “GORM 会在事务里执行写入操作（创建、更新、删除）” ，不过我自己搞不懂这句话什么意思。
+
+```go
+session := db
+
+var user User;
+user = User{Name: "first", Age: 1}; session.Create(&user)
+user = User{Name: "second", Age: 1}; session.Create(&user)
+user = User{Name: "third", Age: 3}; session.Create(&user)
+
+time.Sleep(time.Second * 20)
+```
+
+上面实例中，等待的 20 秒期间，已经可以在数据库中查询到 ``Create`` 的三条记录了。
+
+官方并没有说清楚，这里所谓的在“事务”中的创建行为，它在什么时候会被“提交”。
+
+好在总是可以手动控制事务：
+
+```go
+db.Delete(&User{}, "id > 0")
+db.Delete(&Account{}, "id > 0")
+
+session := db.Begin()
+
+var user User;
+user = User{Name: "first", Age: 1}; session.Create(&user)
+user = User{Name: "second", Age: 1}; session.Create(&user)
+user = User{Name: "third", Age: 3}; session.Create(&user)
+
+time.Sleep(time.Second * 20)
+session.Commit()
+```
+
+这样写，等待的 20 秒就查询不到 ``Create`` 的内容了。
+
+还可以通过回调的形式，声明一个事务片段：
+
+```go
+db.Delete(&User{}, "id > 0")
+db.Delete(&Account{}, "id > 0")
+
+session := db.Begin()
+
+var user User;
+
+session.Transaction(func(tx *gorm.DB) error {
+    user = User{Name: "first", Age: 1}; tx.Create(&user)
+    return errors.New("rollback")
+});
+
+user = User{Name: "second", Age: 1}; session.Create(&user)
+user = User{Name: "third", Age: 3}; session.Create(&user)
+
+time.Sleep(time.Second * 20)
+session.Commit()
+```
+
+使用 ``Transaction`` ，里面返回非 ``Nil`` 的内容事务就会回滚。上面的代码，在等待的 20 秒间查询不到内容。20 之后，可以查询到 ``Create`` 的两条内容。
+
+``session.Rollback()`` 用来回滚 ``session`` 事务。
+
+
+``Commit()`` 或者 ``Rollback()`` 都可能失败，调用它们返回的也仍然是 *DB* 对象（有 ``Error`` 属性）：
+
+```go
+session := db.Begin()
+
+var user User;
+
+session.Transaction(func(tx *gorm.DB) error {
+    user = User{Name: "first", Age: 1}; tx.Create(&user)
+    return errors.New("rollback")
+});
+
+user = User{Name: "second", Age: 1}; session.Create(&user)
+user = User{Name: "third", Age: 3}; session.Create(&user)
+
+session.Commit()
+sdb := session.Rollback()
+if(sdb.Error != nil){
+    println(sdb.Error.Error())
+}
+
+```
+
+可以看到，在需要的时候，还是得自己手动判断一下结果状态。实际项目上，这类信息至少应该打印到日志中，以便发现代码中可能存在的逻辑问题。
+
+
+# 其它 #
+
+对于“主从”，“分表”等机制， GORM 有现成的中间件实现（我觉得依靠客户端应用层面手动做这些事挻原始的）。
+
+
+
