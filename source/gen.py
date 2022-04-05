@@ -13,7 +13,7 @@ def what_new():
             continue
         with open(path, 'r') as f:
             data = f.read()
-        hash = md5(data.rstrip()).hexdigest()
+        hash = md5(data.rstrip().encode('utf-8')).hexdigest()
 
         if path not in sync.ARTICLE or sync.ARTICLE[path] != hash:
             new_files.append(path)
@@ -29,7 +29,7 @@ def what_new():
 def transfer(path):
     import os
     path = os.path.abspath(path)
-    cmd = 'txt2tags -t xhtml --toc-level=2 --encoding=utf-8 --enum-title --mask-email -o /home/zys/temp/acefantasy.github.com/%s.html %s' % (os.path.basename(path).split('.', 1)[0], path)
+    cmd = 'txt2tags -t xhtml --toc-level=2 --encoding=utf-8 --enum-title --mask-email -o /home/zys/temp/yszou/%s.html %s' % (os.path.basename(path).split('.', 1)[0], path)
     os.system(cmd)
 
 def update_index(path):
@@ -90,7 +90,7 @@ def update_rss(path):
     for i,o in enumerate(date_list):
         date_list[i] = int(datetime.date(*[int(x) for x in o.split('-')]).strftime('%s'))
 
-    pair = zip(name_list, date_list)
+    pair = list(zip(name_list, date_list))
     pair.sort(lambda x, y: -1 if x[1] > y[1] else 1)
 
     from feed.feedformatter import Feed
@@ -98,7 +98,7 @@ def update_rss(path):
     feed = Feed()
     feed.feed['title'] = u'进出自由,我的分享'
     feed.feed['language'] = 'zh-CN'
-    feed.feed['copyright'] = 'Copyright 2010-2012, Yesheng Zou'
+    feed.feed['copyright'] = 'Copyright 2010-2022, Yesheng Zou'
     feed.feed['link'] = 'http://zouyesheng.com'
     feed.feed['author'] = u'邹业盛'
     feed.feed['description'] = u'邹业盛的个人站点'
@@ -127,7 +127,7 @@ def update_rss(path):
 if __name__ == '__main__':
     new = what_new()
     for f in new:
-        print f, '...'
+        print(f, '...')
         transfer(f)
         update_index(f)
         update_sitemap(f)
