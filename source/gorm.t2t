@@ -573,6 +573,53 @@ if(sdb.Error != nil){
 可以看到，在需要的时候，还是得自己手动判断一下结果状态。实际项目上，这类信息至少应该打印到日志中，以便发现代码中可能存在的逻辑问题。
 
 
+# 连接池 #
+
+go 的这种类似多线程的模型，就需要连接池来实现涉及数据库读写的并发行为。要配置连接池的时候，一般先确定三个参数：
+
+- *ConnMaxLifetime* ，单个连接存续最长时间，超时之后，连接将不再被分配使用。
+- *MaxIdleConns* ，最大可空闲的连接数，其余的空闲连接将被关闭。
+- *MaxOpenConns* ，最大同时打开连接数，超过情况下操作将等待连接。
+
+
+连接池是 go 官方模块带的， *GORM* 中通过 ``db.DB()`` 方法，可以得到 ``*sql.DB`` ，它里面有配置连接池的实现。
+
+```go
+package main
+
+import "time"
+import "github.com/gin-gonic/gin"
+
+import "gorm.io/gorm"
+import "gorm.io/driver/mysql"
+
+func main() {
+
+    db, _ := gorm.Open(mysql.Open("app@tcp(127.0.0.1:3306)/gorm"), &gorm.Config{})
+
+    sqlDB, _ := db.DB()
+    sqlDB.SetMaxOpenConns(1)
+    // sqlDB.SetMaxIdleConns(1)
+    // sqlDB.SetConnMaxLifetime(time.Hour)
+
+    router := gin.Default()
+    router.GET("/", func(c *gin.Context){
+        var n float32
+        session := db.Begin()
+        session.Raw("select RAND()").Scan(&n)
+        time.Sleep(5 * time.Second)
+        c.String(200, `Hello World %f`, n)
+        session.Commit()
+    })
+
+    router.Run("0.0.0.0:8888")
+}
+```
+
+使用 curl 测试以上代码，可以看到，当设置了 ``SetMaxOpenConns`` 之后，服务端的实现看起来就没有并发能力了。
+
+
+
 # 其它 #
 
 对于“主从”，“分表”等机制， GORM 有现成的中间件实现（我觉得依靠客户端应用层面手动做这些事挻原始的）。
