@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>Gin 的使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">Gin 的使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2022-04-04 04:36 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">简介</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">Hello World</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">Context</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">3.1. 请求参数和路径匹配</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">3.2. Multipart 及上传的文件</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">3.3. 获取原始 Body</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">3.4. 获取头</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">3.5. 设置头</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">3.6. 获取请求方法</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">3.7. 设置 Cookie</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">3.8. 获取 Cookie</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">3.9. 重定向</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">3.10. 响应内容</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">中间件与路由配置</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">4.1. 路由配置</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">4.2. 中间件定义</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">4.3. Context 的 Get 和 Set</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_self">模型绑定</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_self">Chunked 响应</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 简介</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Gin 是 go 的一个 web 框架，<a href="https://github.com/gin-gonic/gin" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/gin-gonic/gin</a> ，它像 Node 下的 Express ，风格上追求简洁。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+与 Python 中的框架比的话，像早期的 webpy 。只看 HTTP 核心部分，其实与 Tornado 也差不多，只是 <em style="color: #d75100; font-style: normal;">Handler</em> 的实现上，因为 go 中只有“函数”，没有“类”，所以 Tornado 中的“实例”方法，在 gin 中就只能使用传入 <em style="color: #d75100; font-style: normal;">Handler</em> 函数的一个固定的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Context</code> 对象来封装。同时，“函数”不像“类”可以通过“继承”以内化的方式完成抽象逻辑的组织，对应的，只能单独设计“中间件”的机制来额外地组装这些抽象逻辑。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 go 是静态语言， gin 中专门设计了一组 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Bind</code> 行为的 API ，用于将请求时的参数（或者头），以特定的格式，如 json， xml 等，与即定的结构，接口做绑定，好方便针对请求参数的逻辑处理过程。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. Hello World</h1>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;Hello World&quot;</span>)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Hello World</code> 的例子很简单，可以看成两个部分：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">router</code> 有一些复合的功能，包括了 <em style="color: #d75100; font-style: normal;">server</em> , <em style="color: #d75100; font-style: normal;">application</em> , <em style="color: #d75100; font-style: normal;">router</em> , <em style="color: #d75100; font-style: normal;">settings</em> 等。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Handler</em> 的映射上，直接把方法提到外面了，然后把 path 关联到一个函数。函数的参数 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Context</code> 封装了涉及 <em style="color: #d75100; font-style: normal;">Request</em> 和 <em style="color: #d75100; font-style: normal;">Response</em> 的东西。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 HTTP Status 作为各种 Response Writer 的第一个参数，是我最不喜欢的一个 API 设计点。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. Context</h1>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 请求参数和路径匹配</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        resource <span style="color: #000000; font-weight: bold">:=</span> c.Param(<span style="color: #dd1144">&quot;resource&quot;</span>)
+        action <span style="color: #000000; font-weight: bold">:=</span> c.Param(<span style="color: #dd1144">&quot;action&quot;</span>)
+        name <span style="color: #000000; font-weight: bold">:=</span> c.Query(<span style="color: #dd1144">&quot;name&quot;</span>)
+        number <span style="color: #000000; font-weight: bold">:=</span> c.DefaultQuery(<span style="color: #dd1144">&quot;number&quot;</span>, <span style="color: #dd1144">&quot;100&quot;</span>)
+        data <span style="color: #000000; font-weight: bold">:=</span> c.DefaultPostForm(<span style="color: #dd1144">&quot;data&quot;</span>, <span style="color: #dd1144">&quot;DefaultData&quot;</span>)
+        c.String(<span style="color: #009999">200</span>,
+        <span style="color: #dd1144">`</span>
+<span style="color: #dd1144">        resouce: %s;</span>
+<span style="color: #dd1144">        action: %s;</span>
+<span style="color: #dd1144">        name: %s;</span>
+<span style="color: #dd1144">        number: %s;</span>
+<span style="color: #dd1144">        data: %s;</span>
+<span style="color: #dd1144">        `</span>,
+        resource, action, name, number, data)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Param</code> ，获取路径匹配部分。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Query</code> ，获取 GET 参数。有对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DefaultQuery()</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">PostForm</code> ，获取 POST 参数。有对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DefaultPostForm()</code>
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里有一个小注意点： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DefaultQuery()</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">DefaultPostForm()</code> 的函数签名都是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">(string, string)</code> ，这意味着，你无法使用它们完成“判断参数是否存在”。要判断参数的存在，需要使用：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">value, ok = c.GetQuery(name)</code>
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        <span style="color: #000000; font-weight: bold">if</span> _, ok <span style="color: #000000; font-weight: bold">:=</span> c.GetQuery(<span style="color: #dd1144">&quot;name&quot;</span>); ok {
+            c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;YES&quot;</span>)
+        } <span style="color: #000000; font-weight: bold">else</span> {
+            c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;NO&quot;</span>)
+        }
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. Multipart 及上传的文件</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.FormFile()</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.MultipartForm()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+TODO
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 获取原始 Body</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetRawData()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+浏览器相关的场景，这个应该几乎不会被用到了。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 获取头</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(<span style="color: #009999">200</span>, c.GetHeader(<span style="color: #dd1144">&quot;User-Agent&quot;</span>))
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.GetHeader()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+头的名字，大小写无所谓，但是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-</code> 不能少，不能错。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 设置头</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+设置头：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Get(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.Header(<span style="color: #dd1144">&quot;X-Name&quot;</span>, <span style="color: #dd1144">&quot;xx&quot;</span>)
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;Hello World&quot;</span>)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Header()</code> 方法，同样，大小写无所为， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-</code> 不能错。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.6. 获取请求方法</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Any(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(<span style="color: #009999">200</span>, c.Request.Method)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个能力在 <em style="color: #d75100; font-style: normal;">Context</em> 中没有现成的方法，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.Request.Method</code> 获取。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.7. 设置 Cookie</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">SetCookie(name, value <span style="color: #445588; font-weight: bold">string</span>, maxAge <span style="color: #445588; font-weight: bold">int</span>, path, domain <span style="color: #445588; font-weight: bold">string</span>, secure, httpOnly <span style="color: #445588; font-weight: bold">bool</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 go 没有现成的“默认参数”语法，所以，一共需要传递 7 个参数。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+少了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SameSite</code> ，是另有一个单独方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">SetSameSite(samesite http.SameSite) 
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从源码上看，必须先调用  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetSameSite</code> ，再调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetCookie</code> 这样 <em style="color: #d75100; font-style: normal;">SameSite</em> 才有效。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetCookie</code> 的参数：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">value</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">maxAge</code> ，这是一个秒数。 0 的话，就是“仅当前会话”。 -1 可以删除 Cookie 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">path</code> ，可以用空字符串 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">""</code>，会被自动处理成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">/</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">domain</code> ，不可以加端口号。可以用空字符串 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">""</code>，表示当前。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">secure</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">httpOnly</code>
+</li>
+</ul>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Any(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.SetCookie(<span style="color: #dd1144">&quot;test&quot;</span>, <span style="color: #dd1144">&quot;123&quot;</span>, <span style="color: #009999">60</span>, <span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #dd1144">&quot;localhost&quot;</span>, <span style="color: #000000; font-weight: bold">false</span>, <span style="color: #000000; font-weight: bold">true</span>)
+        c.String(<span style="color: #009999">200</span>, c.Request.Method)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.8. 获取 Cookie</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Any(<span style="color: #dd1144">&quot;/:resource/*action&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.SetCookie(<span style="color: #dd1144">&quot;test&quot;</span>, <span style="color: #dd1144">&quot;123&quot;</span>, <span style="color: #009999">0</span>, <span style="color: #dd1144">&quot;&quot;</span>, <span style="color: #dd1144">&quot;&quot;</span>, <span style="color: #000000; font-weight: bold">false</span>, <span style="color: #000000; font-weight: bold">true</span>)
+        cookie, err <span style="color: #000000; font-weight: bold">:=</span> c.Cookie(<span style="color: #dd1144">&quot;test&quot;</span>)
+        <span style="color: #000000; font-weight: bold">if</span> (err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>) {
+            c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;ERR&quot;</span>)
+        } <span style="color: #000000; font-weight: bold">else</span> {
+            c.String(<span style="color: #009999">200</span>, cookie)
+        }
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Cookie</code> 方法，注意，它的返回是： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">value, err</code> ，指定的 Cookie 有可能不存在。
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.9. 重定向</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+重定向有一个现成方法， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Redirect(code int, location string)</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.Redirect(<span style="color: #009999">301</span>, <span style="color: #dd1144">&quot;https://www.zouyesheng.com&quot;</span>)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.10. 响应内容</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+响应内容的具体格式大概可能分成这几类：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">字符串, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.String</code>
+</li>
+<li style="margin: 10px auto;">模板, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.HTML</code>
+</li>
+<li style="margin: 10px auto;">JSON, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.AsciiJSON</code>
+</li>
+<li style="margin: 10px auto;">字节, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.Data</code>
+</li>
+<li style="margin: 10px auto;">其它
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字符串前面都用过了。模板无视它，反正我现在也用不着。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">JSON</em> 的返回， <em style="color: #d75100; font-style: normal;">gin</em> 根据是否转义 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;&gt;</code> 之类的符号，是否转义非 ASCII 字符，搞了好几个方法，个人建议直接用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">AsciiJSON</code> 就好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字节等下举个例子。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其它的，有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">XML</code>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">YAML</code>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ProtoBuf</code> 等格式的。也有像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">File</code>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">FileFromFS</code> 这种快捷方法。还有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Stream</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+JSON 返回：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.AsciiJSON(<span style="color: #009999">200</span>, gin.H{<span style="color: #dd1144">&quot;name&quot;</span>: <span style="color: #dd1144">&quot;&lt;h1&gt;中文&lt;/h1&gt;&quot;</span>})
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字节返回：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.Data(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;text/plain&quot;</span>, []<span style="color: #445588; font-weight: bold">byte</span>{<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>})
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 中间件与路由配置</h1>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. 路由配置</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+中间件定义好之后要应用，就依赖于路由的一套配置方法，所以先说一下路由相关的东西。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Default()</code> ，其实已经在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">router</code> 中加入了 <em style="color: #d75100; font-style: normal;">logger</em> 之类的中间件功能了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果要一个裸的配置，可以使用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">router <span style="color: #000000; font-weight: bold">:=</span> gin.New()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这时你再访问，就没有相应的访问日志输出了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+路由和中间件关系的配置，简单来说，就是“分组”，因为分组之后，对于不同的路由组就可以有不同的统一逻辑应用。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    v1 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;&quot;</span>)
+    v1.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.Data(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;text/plain&quot;</span>, []<span style="color: #445588; font-weight: bold">byte</span>{<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>})
+    })
+
+    v2 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;/sub&quot;</span>)
+
+        v2.GET(<span style="color: #dd1144">&quot;/hello&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+            c.JSON(<span style="color: #009999">200</span>, gin.H{
+                <span style="color: #dd1144">&quot;code&quot;</span>: <span style="color: #009999">0</span>,
+                <span style="color: #dd1144">&quot;msg&quot;</span>: <span style="color: #dd1144">&quot;ok&quot;</span>,
+            })
+        })
+
+        v3 <span style="color: #000000; font-weight: bold">:=</span> v2.Group(<span style="color: #dd1144">&quot;/next&quot;</span>)
+            v3.GET(<span style="color: #dd1144">&quot;/world&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+                c.JSON(<span style="color: #009999">200</span>, gin.H{<span style="color: #dd1144">&quot;code&quot;</span>: <span style="color: #009999">0</span>})
+            })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">.Group()</code> 之后，会有一个路径的传递的效果。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. 中间件定义</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我看官方文档并没有明确说明中间件定义的接口规范，不过可以从源码中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">logger.go</code> 参考一下。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实中间件和普通的 <em style="color: #d75100; font-style: normal;">Handler</em> 没有区别，只是在合适的地方，可以选择性地使用 <em style="color: #d75100; font-style: normal;">Context</em> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Next()</code> 方法，或者使用其它的一些 API ，以实现在单个中间件的个体内，完成像 pre , post 这类的勾子行为。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> log(c <span style="color: #000000; font-weight: bold">*</span>gin.Context) {
+    <span style="color: #0086B3">print</span>(<span style="color: #dd1144">&quot;before\n&quot;</span>)
+    c.Next()
+    <span style="color: #0086B3">print</span>(<span style="color: #dd1144">&quot;after\n&quot;</span>)
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    v1 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;&quot;</span>)
+    v1.Use(log)
+    v1.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        <span style="color: #0086B3">print</span>(<span style="color: #dd1144">&quot;in GET\n&quot;</span>)
+        c.Data(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;text/plain&quot;</span>, []<span style="color: #445588; font-weight: bold">byte</span>{<span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>, <span style="color: #dd1144">&#39;a&#39;</span>})
+    })
+
+    v2 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;/sub&quot;</span>)
+    v2.GET(<span style="color: #dd1144">&quot;&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;ok&quot;</span>)
+    })
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的示例代码很好理解，如果想实现 post 行为，有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Next()</code> 方法可用。要应用到不同的路由匹配上，可以通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Group()</code> 之后，再 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Use()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你不需要 post 勾子行为的话，那么不调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Next()</code> 也可以。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+需要取消处理，立即返回，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Abort()</code> 方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+
+<span style="color: #000000; font-weight: bold">func</span> log(c <span style="color: #000000; font-weight: bold">*</span>gin.Context) {
+    c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;over&quot;</span>)
+    c.Abort()
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Use(log)
+    v1 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;&quot;</span>)
+    v1.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;here&quot;</span>)
+    })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. Context 的 Get 和 Set</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+中间件不光需要勾子能力，还需要状态的保存能力。典型的，以用户认证的场景来看。当检查了输入，确定了用户身份，肯定是需要把用户信息保存下来，以便后面的业务 <em style="color: #d75100; font-style: normal;">Handler</em> 直接使用。所以，尝试直接找对应功能的 API 。没找错的话，就是 <em style="color: #d75100; font-style: normal;">Context</em> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Set</code> 方法。（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get</code> 还有对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetString</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">GetInt</code> 种种 ）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当第一次使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Set</code> 时，当前 <em style="color: #d75100; font-style: normal;">Context</em> 会创建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Keys</code> 的 <em style="color: #d75100; font-style: normal;">map</em> 来保存数据。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">type</span> Person <span style="color: #000000; font-weight: bold">struct</span> {
+    name <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> log(c <span style="color: #000000; font-weight: bold">*</span>gin.Context) {
+    c.Set(<span style="color: #dd1144">&quot;first&quot;</span>, <span style="color: #000000; font-weight: bold">&amp;</span>Person{name: <span style="color: #dd1144">&quot;person name&quot;</span>})
+}
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.Use(log)
+    v1 <span style="color: #000000; font-weight: bold">:=</span> router.Group(<span style="color: #dd1144">&quot;&quot;</span>)
+    v1.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        <span style="color: #000000; font-weight: bold">if</span> val, exists <span style="color: #000000; font-weight: bold">:=</span> c.Get(<span style="color: #dd1144">&quot;first&quot;</span>); exists {
+            c.String(<span style="color: #009999">200</span>, val.(<span style="color: #000000; font-weight: bold">*</span>Person).name)
+            <span style="color: #000000; font-weight: bold">return</span>
+        }
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;no&quot;</span>)
+    })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Get()</code> 的获取，会返回两个值，第二个是表示是否存在。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 模型绑定</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+模型绑定的机制，可以让你先定义一个结构，然后通过一个方法的调用，自动地把请求参数，或者请求头中的数据用于填充结构。（也许和 ORM 中的 <em style="color: #d75100; font-style: normal;">Model</em> 绝配？）
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">type</span> Person <span style="color: #000000; font-weight: bold">struct</span> {
+    UserId <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`form:&quot;user_id&quot;`</span>
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`form:&quot;name&quot;`</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (p Person) getName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> p.UserId <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&quot; - &quot;</span> <span style="color: #000000; font-weight: bold">+</span> p.Name
+}
+
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        <span style="color: #000000; font-weight: bold">var</span> p Person
+        <span style="color: #000000; font-weight: bold">if</span> err <span style="color: #000000; font-weight: bold">:=</span> c.ShouldBind(<span style="color: #000000; font-weight: bold">&amp;</span>p); err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span> {
+            c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">&quot;error&quot;</span>)
+        } <span style="color: #000000; font-weight: bold">else</span> {
+            c.String(<span style="color: #009999">200</span>, p.getName())
+        }
+    })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">类型定义中，如果有字段是非字符串类型，则只能使用 JSON 之类的格式完成数据传输（<em style="color: #d75100; font-style: normal;">www-form</em> 的格式本身无法表示类型）。
+</li>
+<li style="margin: 10px auto;">类型定义可以利用接口机制，实现特定的方法，方便逻辑封装。
+</li>
+<li style="margin: 10px auto;">类型字段与参数字段的映射，需要手动补充，这点还是有点麻烦的。
+</li>
+</ul>
+
+<a class="anchor" name="toc19"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. Chunked 响应</h1>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;time&quot;</span>
+
+<span style="color: #000000; font-weight: bold">const</span> OK <span style="color: #445588; font-weight: bold">int</span> = <span style="color: #009999">200</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        c.String(OK, <span style="color: #dd1144">&quot;OK&quot;</span>)
+        c.Writer.Flush()
+        time.Sleep(<span style="color: #009999">3</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+        c.String(OK, <span style="color: #dd1144">&quot;TIME&quot;</span>)
+    })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+API 设计上，响应的内容是可以多次写入的，所以自然会想到 Chunked 的响应方式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">c.Writer.Flush()</code> 就可以把当前缓冲区的内容写回连接了。API 后续写回时的状态码会被忽略，只有第一次的状态码会被使用。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">zys@shopee:/home/zys &gt;&gt;&gt; telnet localhost 8888
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is &#39;^]&#39;.
+GET / HTTP/1.1
+Host: localhost
+
+HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 30 Mar 2022 19:36:03 GMT
+Transfer-Encoding: chunked
+
+2
+OK
+4
+TIME
+0
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'gin';
+  var disqus_url = 'https://www.zouyesheng.com/gin.html';
+  var disqus_title = 'Gin 的使用';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
+AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
+ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
+2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
+8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
+vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
+cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>

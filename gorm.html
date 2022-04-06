@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>GORM 的使用 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">GORM 的使用</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2022-04-06 04:05 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">介绍与安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">连接和 Hello World</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">模型</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">简单查询</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">4.1. 创建</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">4.2. 删除</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">4.3. 修改</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">4.4. 查询</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">4.5. “裸查”</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">4.6. Count</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">4.7. 限定字段</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">4.8. 子查询</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">4.9. JOIN</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">模型的关联与查询</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">事务</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">连接池</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">其它</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 介绍与安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+GORM 是 go 的一个 ORM 框架，它在 <a href="https://gorm.io" style="color: #0184b7; text-decoration: none" target="_blank">https://gorm.io</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+受限于 go 是静态语言的限制， GORM 的能力和 API 自然没法做得像动态语言的 ORM 那样强大与好用。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">go get -u gorm.io/gorm
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要连接具体的数据库，需要的驱动是单独安装的，比如：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">go get -u gorm.io/driver/sqlite
+go get -u gorm.io/driver/mysql
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 连接和 Hello World</h1>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/gorm&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/driver/sqlite&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    db, err <span style="color: #000000; font-weight: bold">:=</span> gorm.Open(sqlite.Open(<span style="color: #dd1144">&quot;test.db&quot;</span>), <span style="color: #000000; font-weight: bold">&amp;</span>gorm.Config{})
+    <span style="color: #000000; font-weight: bold">if</span> (err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>) {
+        <span style="color: #0086B3">panic</span>(err)
+    }
+    <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #445588; font-weight: bold">string</span>
+    db.Raw(<span style="color: #dd1144">&quot;select &#39;Hello World&#39;&quot;</span>).Scan(<span style="color: #000000; font-weight: bold">&amp;</span>n)
+    <span style="color: #0086B3">print</span>(n)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Open()</code> 获取一个连接， 第二个参数是一组配置。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果是 MySQL 的话，大概长这样：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">mysql.Open(<span style="color: #dd1144">&quot;app:pass@tcp(127.0.0.1:3306)/test?charset=utf8mb4&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最简单的，直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Raw()</code> 方法，就可以查询了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果的处理，是填坑位（地址）的形式。即先申明一些变量，然后把变量地址作为第二个参数传入，地址和类型的匹配，需要你自己处理好。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Raw()</code> 可以有多个参数，对应预编译的形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Raw(<span style="color: #dd1144">&quot;select ?&quot;</span>, <span style="color: #dd1144">&quot;Hello World&quot;</span>).Scan(<span style="color: #000000; font-weight: bold">&amp;</span>n)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 模型</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+模型在语法实现上就是一个结构体：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> User <span style="color: #000000; font-weight: bold">struct</span> {
+  ID <span style="color: #445588; font-weight: bold">uint</span>
+  Name <span style="color: #445588; font-weight: bold">string</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于模型，GORM 自己有一些约定，拿上面的定义来说，它默认为：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">表名是 <em style="color: #d75100; font-style: normal;">users</em> 。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">id</em> 是主键。
+</li>
+<li style="margin: 10px auto;">有一个列叫 <em style="color: #d75100; font-style: normal;">name</em> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，这些约定不知道也没有关系，我们按自己的需要配置这些信息就好了，不用去管它的默认规则（我个人反感“约定大于配置”）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+表名可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">TableName()</code> 方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> User <span style="color: #000000; font-weight: bold">struct</span> {
+  ID <span style="color: #445588; font-weight: bold">uint</span>
+  Name <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (User) TableName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&quot;user&quot;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字段名，是否索引，主键等一系列信息，是由结构体字段的标签来额外标注的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;log&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;os&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;time&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/gorm&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/driver/sqlite&quot;</span>
+<span style="color: #999988">// import &quot;gorm.io/driver/mysql&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/gorm/logger&quot;</span>
+
+
+<span style="color: #000000; font-weight: bold">type</span> User <span style="color: #000000; font-weight: bold">struct</span> {
+    Id <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:id; type:INTEGER; primaryKey;&quot;`</span>
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`gorm:&quot;column:name; type:varchar(48); not null; default:&#39;&#39;; index:idx_user_name;&quot;`</span>
+    Age <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:age; type:INTEGER; not null; default:1; index:idx_user_age;&quot;`</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (User) TableName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&quot;user&quot;</span>
+}
+
+
+<span style="color: #000000; font-weight: bold">var</span> newLogger = logger.New(
+    log.New(os.Stdout, <span style="color: #dd1144">&quot;\n&quot;</span>, log.LstdFlags),
+    logger.Config{
+        SlowThreshold: <span style="color: #009999">200</span> <span style="color: #000000; font-weight: bold">*</span> time.Millisecond,
+        LogLevel: logger.Info,
+        IgnoreRecordNotFoundError: <span style="color: #000000; font-weight: bold">false</span>,
+        Colorful: <span style="color: #000000; font-weight: bold">false</span>,
+    },
+)
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+    db, err <span style="color: #000000; font-weight: bold">:=</span> gorm.Open(sqlite.Open(<span style="color: #dd1144">&quot;:memory:&quot;</span>), <span style="color: #000000; font-weight: bold">&amp;</span>gorm.Config{ Logger: newLogger, })
+    <span style="color: #999988">// db, err := gorm.Open(mysql.Open(&quot;app@tcp(127.0.0.1:3306)/gorm&quot;), &amp;gorm.Config{ Logger: newLogger, })</span>
+    <span style="color: #000000; font-weight: bold">if</span> (err <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>) {
+        <span style="color: #0086B3">panic</span>(err)
+    }
+    db.Migrator().CreateTable(<span style="color: #000000; font-weight: bold">&amp;</span>User{})
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+模型定义好之后，就可以查询了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接下来，我们会在大部分时候使用 <em style="color: #d75100; font-style: normal;">sqlite</em> 的内存数据库方式，方便演示。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+创建表可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Migrator</code> 里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CreateTable()</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时，为了可以把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">CreateTable()</code> 执行时对应的 SQL 语句打印出来，我们还在上面的代码中配置了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Logger</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在打印出日志的时候，因为 GORM 默认会搞上颜色，这在我个人的 VIM 环境下是不能正常显示的，所以，要通过自定义 <em style="color: #d75100; font-style: normal;">Logger</em> 的方式，把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Colorful</code> 关掉。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+执行上面的代码，就可以看到建表及建索引的语句：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">CREATE</span> <span style="color: #000000; font-weight: bold">TABLE</span> <span style="color: #000000; font-weight: bold">`user`</span> (<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span> <span style="color: #0086B3">INTEGER</span>,<span style="color: #000000; font-weight: bold">`</span>name<span style="color: #000000; font-weight: bold">`</span> <span style="color: #0086B3">varchar</span>(<span style="color: #009999">48</span>) <span style="color: #000000; font-weight: bold">NOT</span> <span style="color: #000000; font-weight: bold">NULL</span> <span style="color: #000000; font-weight: bold">DEFAULT</span> <span style="color: #990073">&quot;&quot;</span>,<span style="color: #000000; font-weight: bold">`</span>age<span style="color: #000000; font-weight: bold">`</span> <span style="color: #0086B3">INTEGER</span> <span style="color: #000000; font-weight: bold">NOT</span> <span style="color: #000000; font-weight: bold">NULL</span> <span style="color: #000000; font-weight: bold">DEFAULT</span> <span style="color: #009999">1</span>,<span style="color: #000000; font-weight: bold">PRIMARY</span> <span style="color: #000000; font-weight: bold">KEY</span> (<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span>))
+
+<span style="color: #000000; font-weight: bold">CREATE</span> <span style="color: #000000; font-weight: bold">INDEX</span> <span style="color: #000000; font-weight: bold">`</span>idx_user_age<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">ON</span> <span style="color: #000000; font-weight: bold">`user`</span>(<span style="color: #000000; font-weight: bold">`</span>age<span style="color: #000000; font-weight: bold">`</span>)
+
+<span style="color: #000000; font-weight: bold">CREATE</span> <span style="color: #000000; font-weight: bold">INDEX</span> <span style="color: #000000; font-weight: bold">`</span>idx_user_name<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">ON</span> <span style="color: #000000; font-weight: bold">`user`</span>(<span style="color: #000000; font-weight: bold">`</span>name<span style="color: #000000; font-weight: bold">`</span>)  
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+标签那部分，基本算是纯人肉吧，空格都不能随便多，又难看，也不具备多种类型数据库的兼容性（比如后面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">AUTO_INCREMENT</code> 就不能在 <em style="color: #d75100; font-style: normal;">sqlite</em> 中使用）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> User <span style="color: #000000; font-weight: bold">struct</span> {
+    Id <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:id; type:INTEGER; primaryKey;&quot;`</span>
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`gorm:&quot;column:name; type:varchar(48); not null; default:&#39;&#39;; index:idx_user_name;&quot;`</span>
+    Age <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:age; type:INTEGER; not null; default:1; index:idx_user_age;&quot;`</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+完整的标签功能，可以参考：<a href="https://gorm.io/zh_CN/docs/models.html#%E5%AD%97%E6%AE%B5%E6%A0%87%E7%AD%BE" style="color: #0184b7; text-decoration: none" target="_blank">https://gorm.io/zh_CN/docs/models.html#%E5%AD%97%E6%AE%B5%E6%A0%87%E7%AD%BE</a>
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 简单查询</h1>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. 创建</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">user <span style="color: #000000; font-weight: bold">:=</span> User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">19</span>}
+db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+user2 <span style="color: #000000; font-weight: bold">:=</span> User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">19</span>}
+db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user2)
+<span style="color: #0086B3">print</span>(user.Id, user2.Id)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果你在之后需要获取 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Id</code> 的话，需要将 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">User{}</code> 提前存下来。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+创建有可能失败。假设 <em style="color: #d75100; font-style: normal;">Age</em> 上有唯一约束：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">user <span style="color: #000000; font-weight: bold">:=</span> User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}
+db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+user2 <span style="color: #000000; font-weight: bold">:=</span> User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}
+result <span style="color: #000000; font-weight: bold">:=</span> db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user2)
+
+<span style="color: #0086B3">print</span>(user2.Id, user2.Age, <span style="color: #dd1144">&quot;\n&quot;</span>)
+<span style="color: #000000; font-weight: bold">if</span>(result.Error <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>){
+    <span style="color: #0086B3">print</span>(result.Error.Error())
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">db.Create()</code> 返回的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">result</code> 就是一个 <em style="color: #d75100; font-style: normal;">DB</em> 接口，当有错误时它的 <em style="color: #d75100; font-style: normal;">Error</em> 属性不为空， <em style="color: #d75100; font-style: normal;">Error</em> 属性是一个 Error 接口。
+</p>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. 删除</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Delete(<span style="color: #000000; font-weight: bold">&amp;</span>User{}, <span style="color: #dd1144">&quot;id = ?&quot;</span>, <span style="color: #009999">1</span>)
+result <span style="color: #000000; font-weight: bold">:=</span> db.Where(<span style="color: #dd1144">&quot;id = ?&quot;</span>, <span style="color: #009999">1</span>).Where(<span style="color: #dd1144">&quot;name = ?&quot;</span>, <span style="color: #dd1144">&quot;first&quot;</span>).Delete(<span style="color: #000000; font-weight: bold">&amp;</span>User{})
+<span style="color: #000000; font-weight: bold">if</span>(result.Error <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>){
+    <span style="color: #0086B3">print</span>(result.Error.Error())
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.3. 修改</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Model(<span style="color: #000000; font-weight: bold">&amp;</span>User{}).Where(<span style="color: #dd1144">&quot;id = 1&quot;</span>).Update(<span style="color: #dd1144">&quot;name&quot;</span>, <span style="color: #dd1144">&quot;xx&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要吐槽一下了：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">既然有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Model</code> 这一个口子，为什么不把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Delete</code> 设计成： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">db.Model(&amp;User{}).Where("id = 1").Delete()</code>
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Where</code>和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Update</code> ，都是字符串写死的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">name</code> 这种字段名啊，根本没怎么用 Model 的“属性”啊。也许 go 的机制只能做到这种程度。都 22 年了，新语言设计中加一套 <em style="color: #d75100; font-style: normal;">Class</em> 机制又怎样呢。
+</li>
+</ul>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.4. 查询</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+查询要返回条目，所以还是典型的埋坑的形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> user User;
+user = User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}; db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;second&quot;</span>, Age: <span style="color: #009999">2</span>}; db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;third&quot;</span>, Age: <span style="color: #009999">3</span>}; db.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+<span style="color: #000000; font-weight: bold">var</span> userList []User
+db.Limit(<span style="color: #009999">2</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+注意，那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Limit(2)</code> 不能放在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Find()</code> 的后面。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+带条件查询：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []User
+db.Where(<span style="color: #dd1144">&quot; (name = ?) or (age = ?)&quot;</span>, <span style="color: #dd1144">&quot;first&quot;</span>, <span style="color: #009999">3</span>).Limit(<span style="color: #009999">2</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+反正就是带占位符的手写，随便怎么写了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结构化的条件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Where(<span style="color: #000000; font-weight: bold">map</span>[<span style="color: #445588; font-weight: bold">string</span>]<span style="color: #000000; font-weight: bold">interface</span>{}{<span style="color: #dd1144">&quot;name&quot;</span>: <span style="color: #dd1144">&quot;first&quot;</span>, <span style="color: #dd1144">&quot;age&quot;</span>: <span style="color: #009999">1</span>}).Limit(<span style="color: #009999">2</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+排序和 Offset ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []User
+db.Limit(<span style="color: #009999">1</span>).Offset(<span style="color: #009999">1</span>).Order(<span style="color: #dd1144">&quot;age desc&quot;</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList, <span style="color: #dd1144">&quot;age &gt; ?&quot;</span>, <span style="color: #009999">1</span>)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Find</code> 可以直接使用后面的参数声明查询条件。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.5. “裸查”</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，是一个“裸查”的形式，语意上不依赖模型：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []User
+db.Table(<span style="color: #dd1144">&quot;user&quot;</span>).Limit(<span style="color: #009999">1</span>).Offset(<span style="color: #009999">1</span>).Order(<span style="color: #dd1144">&quot;age desc&quot;</span>).Where(<span style="color: #dd1144">&quot;age &gt; ?&quot;</span>, <span style="color: #009999">1</span>).Scan(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+从这里可以看出，查询本身对模型没啥依赖，模型的最大作用，只是为响应提供了结构参考。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.6. Count</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> count <span style="color: #445588; font-weight: bold">int64</span>
+db.Table(<span style="color: #dd1144">&quot;user&quot;</span>).Count(<span style="color: #000000; font-weight: bold">&amp;</span>count)
+<span style="color: #0086B3">println</span>(count)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">count</code> 的类型，需要是 int64 。
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.7. 限定字段</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有两种方式。一是使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Select</code> 方法。二是坑位的类型使用属性更少的单独的结构体。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []User
+db.Select(<span style="color: #dd1144">&quot;name&quot;</span>).Limit(<span style="color: #009999">2</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+定义小结构体：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> MiniUser <span style="color: #000000; font-weight: bold">struct</span> {
+    Id <span style="color: #445588; font-weight: bold">uint</span>
+    Name <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (MiniUser) TableName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&quot;user&quot;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+查询时要先用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Model()</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []MiniUser
+db.Model(<span style="color: #000000; font-weight: bold">&amp;</span>User{}).Limit(<span style="color: #009999">2</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.8. 子查询</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+查询的过滤，和“创建”等过程一样的，都是会返回 <em style="color: #d75100; font-style: normal;">DB</em> 对象。这个对象，可以整体作为过滤条件传入：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> userList []User
+sub <span style="color: #000000; font-weight: bold">:=</span> db.Table(<span style="color: #dd1144">&quot;user&quot;</span>).Select(<span style="color: #dd1144">&quot;name&quot;</span>).Where(<span style="color: #dd1144">&quot;age = 1&quot;</span>)
+db.Where(<span style="color: #dd1144">&quot;name in (?)&quot;</span>, sub).Limit(<span style="color: #009999">1</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.9. JOIN</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+人肉的，没啥好说。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> Result <span style="color: #000000; font-weight: bold">struct</span> {
+    Name <span style="color: #445588; font-weight: bold">string</span>
+    Type <span style="color: #445588; font-weight: bold">string</span>
+}
+
+<span style="color: #000000; font-weight: bold">var</span> userList []Result
+db.Table(<span style="color: #dd1144">&quot;user&quot;</span>).
+   Select(<span style="color: #dd1144">&quot;user.name, account.type&quot;</span>).
+   Joins(<span style="color: #dd1144">&quot;left join account on user.id == account.user_id&quot;</span>).
+   Where(<span style="color: #dd1144">&quot;user.name in (?, ?)&quot;</span>, <span style="color: #dd1144">&quot;first&quot;</span>, <span style="color: #dd1144">&quot;second&quot;</span>).
+   Scan(<span style="color: #000000; font-weight: bold">&amp;</span>userList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> userList {
+    <span style="color: #0086B3">println</span>(o.Name, o.Type)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 模型的关联与查询</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+GORM 在模型层面支持关联关系的配置，查询方面也可以直接完成相应的对接。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一般说关系模型的时候，会有一对一，一对多，多对多三种类型。实际使用中，“一对一”可以看成是“一对多”的特殊情况。而“多对多”可以自己在中间表中通过两个“一对多”关系处理。所以，下面只关注 GORM 的一对多机制。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+GORM 的一对多机制，是通过“嵌入模型”和“外键定义”两步完成的。（官方网站把 <em style="color: #d75100; font-style: normal;">Belongs To</em> 说成是“一对一”我觉得是不合适的）。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">type</span> User <span style="color: #000000; font-weight: bold">struct</span> {
+    Id <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:id; type:INTEGER AUTO_INCREMENT; primaryKey;&quot;`</span>
+    Name <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`gorm:&quot;column:name; type:varchar(48); not null; default:&#39;&#39;; index:idx_user_name;&quot;`</span>
+    Age <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:age; type:INTEGER; not null; index:idx_user_age;&quot;`</span>
+}
+
+<span style="color: #000000; font-weight: bold">type</span> Account <span style="color: #000000; font-weight: bold">struct</span> {
+    Id <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:id; type:INTEGER AUTO_INCREMENT; primaryKey;&quot;`</span>
+    Type <span style="color: #445588; font-weight: bold">string</span> <span style="color: #dd1144">`gorm:&quot;column:type; type:varchar(48); not null; default:&#39;&#39;; index:idx_account_type;&quot;`</span>
+    UserId <span style="color: #445588; font-weight: bold">uint</span> <span style="color: #dd1144">`gorm:&quot;column:user_id; type:INTEGER; index: idx_account_user_id;&quot;`</span>
+    UserObj User <span style="color: #dd1144">`gorm:&quot;foreignKey:UserId;references:Id;&quot;`</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (User) TableName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&quot;user&quot;</span>
+}
+
+<span style="color: #000000; font-weight: bold">func</span> (Account) TableName() <span style="color: #445588; font-weight: bold">string</span> {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&quot;account&quot;</span>
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（注意，这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Id</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">type</code> 属性的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">AUTO_INCREMENT</code> ，在 <em style="color: #d75100; font-style: normal;">sqlite</em> 中不能正常工作的，需要删除它。标签手动写语句的方式，还是比较原始啊。）
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">定义两个模型， <em style="color: #d75100; font-style: normal;">User</em> 和 <em style="color: #d75100; font-style: normal;">Account</em>，它们在概念上是一对多关系。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Account</em> 中，要有一个字段，类型是 <em style="color: #d75100; font-style: normal;">User</em> ，这里使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserObj</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserObj</code> 配置它的外建属性， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">foreignKey</code> 指向本模型的外键字段，这里是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserId</code> 。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">references</code> 属性的作用，是标明 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserId</code> 对应连接模型的哪个字段，这里对应是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Id</code> 这个默认的主键字段。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，一个“一对多”的关系就定义好了。这里如果使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Migrator</code> ，则在 <em style="color: #d75100; font-style: normal;">Account</em> 中是会创建相应的外键约束的。不想要这个外键约束的话（我就不要想），可以在连接配置中处理：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db, err <span style="color: #000000; font-weight: bold">:=</span> gorm.Open(mysql.Open(<span style="color: #dd1144">&quot;app@tcp(127.0.0.1:3306)/gorm&quot;</span>), <span style="color: #000000; font-weight: bold">&amp;</span>gorm.Config{
+    Logger: newLogger,
+    DisableForeignKeyConstraintWhenMigrating: <span style="color: #000000; font-weight: bold">true</span>,
+})
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+查询时，可以通过额外的操作，来自动填充上 <em style="color: #d75100; font-style: normal;">Account</em> 实例的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserObj</code> 属性：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> accountList []Account
+db.Preload(<span style="color: #dd1144">&quot;UserObj&quot;</span>).Where(<span style="color: #dd1144">&quot;type = ?&quot;</span>, <span style="color: #dd1144">&quot;special&quot;</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>accountList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> accountList {
+    <span style="color: #0086B3">println</span>(o.Type, o.UserId, o.UserObj.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Preload("UserObj")</code>  可以指定要关联的属性，查询时，就会通过额外的查询把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UserObj</code> 的值取出来，并填充到对应的 <em style="color: #d75100; font-style: normal;">Account</em> 实例上。这里注意，使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Preload</code> 查询时，是通过单独的 SQL 完成关联模型查询的，不是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">join</code> ，不是子查询。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">SELECT</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">FROM</span> <span style="color: #000000; font-weight: bold">`user`</span> <span style="color: #000000; font-weight: bold">WHERE</span> <span style="color: #000000; font-weight: bold">`user`</span>.<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">IN</span> (<span style="color: #009999">2</span>,<span style="color: #009999">3</span>)
+<span style="color: #000000; font-weight: bold">SELECT</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #000000; font-weight: bold">FROM</span> <span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">WHERE</span> <span style="color: #000000; font-weight: bold">type</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #990073">&quot;special&quot;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的代码，会有这两条 SQL 被执行。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">join</code> 来查询，可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Joins</code> 代替 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Preload</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> accountList []Account
+db.Joins(<span style="color: #dd1144">&quot;UserObj&quot;</span>).Where(<span style="color: #dd1144">&quot;type = ?&quot;</span>, <span style="color: #dd1144">&quot;special&quot;</span>).Find(<span style="color: #000000; font-weight: bold">&amp;</span>accountList)
+<span style="color: #000000; font-weight: bold">for</span> _, o <span style="color: #000000; font-weight: bold">:=</span> <span style="color: #000000; font-weight: bold">range</span> accountList {
+    <span style="color: #0086B3">println</span>(o.Type, o.UserId, o.UserObj.Name)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样查询的 SQL 会变成一条：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">SELECT</span>
+    <span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span>,<span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`type`</span>,<span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>user_id<span style="color: #000000; font-weight: bold">`</span>,
+    <span style="color: #000000; font-weight: bold">`</span>UserObj<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">AS</span> <span style="color: #000000; font-weight: bold">`</span>UserObj__id<span style="color: #000000; font-weight: bold">`</span>,<span style="color: #000000; font-weight: bold">`</span>UserObj<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>name<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">AS</span> <span style="color: #000000; font-weight: bold">`</span> UserObj__name<span style="color: #000000; font-weight: bold">`</span>,
+    <span style="color: #000000; font-weight: bold">`</span>UserObj<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>age<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">AS</span> <span style="color: #000000; font-weight: bold">`</span>UserObj__age<span style="color: #000000; font-weight: bold">`</span>
+<span style="color: #000000; font-weight: bold">FROM</span>
+    <span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span>
+<span style="color: #000000; font-weight: bold">LEFT</span> <span style="color: #000000; font-weight: bold">JOIN</span>
+    <span style="color: #000000; font-weight: bold">`user`</span> <span style="color: #000000; font-weight: bold">`</span>UserObj<span style="color: #000000; font-weight: bold">`</span>
+<span style="color: #000000; font-weight: bold">ON</span>
+    <span style="color: #000000; font-weight: bold">`</span>account<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>user_id<span style="color: #000000; font-weight: bold">`</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">`</span>UserObj<span style="color: #000000; font-weight: bold">`</span>.<span style="color: #000000; font-weight: bold">`</span>id<span style="color: #000000; font-weight: bold">`</span>
+<span style="color: #000000; font-weight: bold">WHERE</span>
+    <span style="color: #000000; font-weight: bold">type</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #990073">&quot;special&quot;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可能这个比较符合日常使用的预期。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 事务</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在说事务的一些操作之前，要先把 GORM 默认的事务行为搞清楚。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+官方的文档上说 “GORM 会在事务里执行写入操作（创建、更新、删除）” ，不过我自己搞不懂这句话什么意思。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">session <span style="color: #000000; font-weight: bold">:=</span> db
+
+<span style="color: #000000; font-weight: bold">var</span> user User;
+user = User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;second&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;third&quot;</span>, Age: <span style="color: #009999">3</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+time.Sleep(time.Second <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">20</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面实例中，等待的 20 秒期间，已经可以在数据库中查询到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Create</code> 的三条记录了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+官方并没有说清楚，这里所谓的在“事务”中的创建行为，它在什么时候会被“提交”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+好在总是可以手动控制事务：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Delete(<span style="color: #000000; font-weight: bold">&amp;</span>User{}, <span style="color: #dd1144">&quot;id &gt; 0&quot;</span>)
+db.Delete(<span style="color: #000000; font-weight: bold">&amp;</span>Account{}, <span style="color: #dd1144">&quot;id &gt; 0&quot;</span>)
+
+session <span style="color: #000000; font-weight: bold">:=</span> db.Begin()
+
+<span style="color: #000000; font-weight: bold">var</span> user User;
+user = User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;second&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;third&quot;</span>, Age: <span style="color: #009999">3</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+time.Sleep(time.Second <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">20</span>)
+session.Commit()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样写，等待的 20 秒就查询不到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Create</code> 的内容了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+还可以通过回调的形式，声明一个事务片段：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">db.Delete(<span style="color: #000000; font-weight: bold">&amp;</span>User{}, <span style="color: #dd1144">&quot;id &gt; 0&quot;</span>)
+db.Delete(<span style="color: #000000; font-weight: bold">&amp;</span>Account{}, <span style="color: #dd1144">&quot;id &gt; 0&quot;</span>)
+
+session <span style="color: #000000; font-weight: bold">:=</span> db.Begin()
+
+<span style="color: #000000; font-weight: bold">var</span> user User;
+
+session.Transaction(<span style="color: #000000; font-weight: bold">func</span>(tx <span style="color: #000000; font-weight: bold">*</span>gorm.DB) <span style="color: #445588; font-weight: bold">error</span> {
+    user = User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}; tx.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+    <span style="color: #000000; font-weight: bold">return</span> errors.New(<span style="color: #dd1144">&quot;rollback&quot;</span>)
+});
+
+user = User{Name: <span style="color: #dd1144">&quot;second&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;third&quot;</span>, Age: <span style="color: #009999">3</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+time.Sleep(time.Second <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">20</span>)
+session.Commit()
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Transaction</code> ，里面返回非 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Nil</code> 的内容事务就会回滚。上面的代码，在等待的 20 秒间查询不到内容。20 之后，可以查询到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Create</code> 的两条内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">session.Rollback()</code> 用来回滚 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">session</code> 事务。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Commit()</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Rollback()</code> 都可能失败，调用它们返回的也仍然是 <em style="color: #d75100; font-style: normal;">DB</em> 对象（有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Error</code> 属性）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">session <span style="color: #000000; font-weight: bold">:=</span> db.Begin()
+
+<span style="color: #000000; font-weight: bold">var</span> user User;
+
+session.Transaction(<span style="color: #000000; font-weight: bold">func</span>(tx <span style="color: #000000; font-weight: bold">*</span>gorm.DB) <span style="color: #445588; font-weight: bold">error</span> {
+    user = User{Name: <span style="color: #dd1144">&quot;first&quot;</span>, Age: <span style="color: #009999">1</span>}; tx.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+    <span style="color: #000000; font-weight: bold">return</span> errors.New(<span style="color: #dd1144">&quot;rollback&quot;</span>)
+});
+
+user = User{Name: <span style="color: #dd1144">&quot;second&quot;</span>, Age: <span style="color: #009999">1</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+user = User{Name: <span style="color: #dd1144">&quot;third&quot;</span>, Age: <span style="color: #009999">3</span>}; session.Create(<span style="color: #000000; font-weight: bold">&amp;</span>user)
+
+session.Commit()
+sdb <span style="color: #000000; font-weight: bold">:=</span> session.Rollback()
+<span style="color: #000000; font-weight: bold">if</span>(sdb.Error <span style="color: #000000; font-weight: bold">!=</span> <span style="color: #000000; font-weight: bold">nil</span>){
+    <span style="color: #0086B3">println</span>(sdb.Error.Error())
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以看到，在需要的时候，还是得自己手动判断一下结果状态。实际项目上，这类信息至少应该打印到日志中，以便发现代码中可能存在的逻辑问题。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 连接池</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+go 的这种类似多线程的模型，就需要连接池来实现涉及数据库读写的并发行为。要配置连接池的时候，一般先确定三个参数：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">ConnMaxLifetime</em> ，单个连接存续最长时间，超时之后，连接将不再被分配使用。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">MaxIdleConns</em> ，最大可空闲的连接数，其余的空闲连接将被关闭。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">MaxOpenConns</em> ，最大同时打开连接数，超过情况下操作将等待连接。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+连接池是 go 官方模块带的， <em style="color: #d75100; font-style: normal;">GORM</em> 中通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">db.DB()</code> 方法，可以得到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*sql.DB</code> ，它里面有配置连接池的实现。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> main
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;time&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;github.com/gin-gonic/gin&quot;</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/gorm&quot;</span>
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;gorm.io/driver/mysql&quot;</span>
+
+<span style="color: #000000; font-weight: bold">func</span> main() {
+
+    db, _ <span style="color: #000000; font-weight: bold">:=</span> gorm.Open(mysql.Open(<span style="color: #dd1144">&quot;app@tcp(127.0.0.1:3306)/gorm&quot;</span>), <span style="color: #000000; font-weight: bold">&amp;</span>gorm.Config{})
+
+    sqlDB, _ <span style="color: #000000; font-weight: bold">:=</span> db.DB()
+    sqlDB.SetMaxOpenConns(<span style="color: #009999">1</span>)
+    <span style="color: #999988">// sqlDB.SetMaxIdleConns(1)</span>
+    <span style="color: #999988">// sqlDB.SetConnMaxLifetime(time.Hour)</span>
+
+    router <span style="color: #000000; font-weight: bold">:=</span> gin.Default()
+    router.GET(<span style="color: #dd1144">&quot;/&quot;</span>, <span style="color: #000000; font-weight: bold">func</span>(c <span style="color: #000000; font-weight: bold">*</span>gin.Context){
+        <span style="color: #000000; font-weight: bold">var</span> n <span style="color: #445588; font-weight: bold">float32</span>
+        session <span style="color: #000000; font-weight: bold">:=</span> db.Begin()
+        session.Raw(<span style="color: #dd1144">&quot;select RAND()&quot;</span>).Scan(<span style="color: #000000; font-weight: bold">&amp;</span>n)
+        time.Sleep(<span style="color: #009999">5</span> <span style="color: #000000; font-weight: bold">*</span> time.Second)
+        c.String(<span style="color: #009999">200</span>, <span style="color: #dd1144">`Hello World %f`</span>, n)
+        session.Commit()
+    })
+
+    router.Run(<span style="color: #dd1144">&quot;0.0.0.0:8888&quot;</span>)
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 curl 测试以上代码，可以看到，当设置了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SetMaxOpenConns</code> 之后，服务端的实现看起来就没有并发能力了。
+</p>
+
+<a class="anchor" name="toc17"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 其它</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+对于“主从”，“分表”等机制， GORM 有现成的中间件实现（我觉得依靠客户端应用层面手动做这些事挻原始的）。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'gorm';
+  var disqus_url = 'https://www.zouyesheng.com/gorm.html';
+  var disqus_title = 'GORM 的使用';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJEAAACRAQAAAADro2eOAAABXklEQVR4nN1WSW6DQBCsMkgmJyz5
+AcNHDM5D8hOvIvd8icEfgQdEYW5YAlcO9iVxfAotRenLjOpQNd09vVD4bsfZHQT8fcyTTDxjJAgk
+ZxYalIRCW6LGXqpMfAvMoEXU9MDI5Pd8dxZfD7bLF+Rhkjc/xsYiqafk+4qlaiBXNsgRqTfREEmc
+2nOGGkdyPb0GJEmq0gHy1/vBoD4WxyzJAcd1OAC1RazyMKA/taXHypHcWfzdU/fmifQ97p8+lo0z
+8AO6AK6nJHmVDWiRD6Ty6chthhUHZ9NLaoxZeO7QMtI2OxvkA6oAzC+phDwdYBMr6uDCDK+Q717d
+vLLpiVHDohoJAO68q8zqHBv01OD6YvpY3fKhLpJ8t4G8hYaXNFe3b0ANzqZfITCDdywgxu0EfA+x
+cJ0fzdlkZwAAFB3aealtYTHPb3OwxsZhtZiE7wdMJKHFmPU19t6iX/Gf7KKfHTG0P1FfiM4AAAAA
+SUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
