@@ -1,0 +1,548 @@
+WASI 和 WebAssembly
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/wasi
+%!format: !email
+%%toc
+
+
+
+# 是什么东西？ #
+
+*WASI* 的意思是 WebAssembly System Interface ，可以把它看成是一整套方案。
+
+*WebAssembly* 是一种字节码格式，执行它需要对应的一种虚拟机。
+
+我们一般不会手写 WebAssembly ，而是通过其它高级语言，比如 C ，Rust，Go 等，利用编译器来得到 *WebAssembly* 格式（二进制格式类型）的输出。
+
+
+执行 *WebAssembly* 需要的虚拟机，在不同的环境下，有不同的实现，比如，在浏览器中。当然，也有独立的实现，像：https://github.com/bytecodealliance/wasmtime 。
+
+
+*WebAssembly* 的文本格式是采用类似 Lisp 语言的 S 表达式的形式，我们可以手写它（ *wasmtime* 也支持直接执行）：
+
+```wst
+(module
+    (import "wasi_unstable" "fd_write" (func $fd_write (param i32 i32 i32 i32) (result i32)))
+    (memory 1)
+    (export "memory" (memory 0))
+    (data (i32.const 8) "hello world\n")
+    (func $main (export "_start")
+        (i32.store (i32.const 0) (i32.const 8))
+        (i32.store (i32.const 4) (i32.const 12))
+        (call $fd_write
+            (i32.const 1)
+            (i32.const 0)
+            (i32.const 1)
+            (i32.const 20)
+        )
+        drop
+    )
+)
+```
+
+把这些内容保存成 ``demo.wat`` ，用前面的 *wasmtime* 执行它就可以输出 ``hello world`` 了：
+
+```bash
+wasmtime demo.wat
+```
+
+这里面其实除了 *WebAssembly* 语言本身的机制外，还有像 *fd_write* 这种 API 。只有具体的虚拟机，或者说运行时，提供了这些 API ，我们才能使用具体的语言去完成更业务性的事，否则只能一直做些四则运算的事。
+
+
+坏消息是， API 层面，现在还不是一个稳定，完整的状态，在 https://github.com/WebAssembly/WASI 这里，能看到它们在被缓慢的推进着，一份简单的文档在 https://github.com/WebAssembly/WASI/blob/main/phases/snapshot/docs.md 。
+
+不要尝试去找针对 *WebAssembly* 的文本格式的完整的“语法手册”，因为根本找不到。官方的“语法手册”，是从 Token 层面说的，给编译器开发人员看的那种文档，或许没人会觉得手写 S 表达式是正常的行为吧。
+
+后面我们会使用其它的高级语言，通过编译得到 *WebAssembly* 。之后的重点，其实已经不在 *WebAssembly* 这个语言本身，反正是编译器的事。相反，了解各个运行时环境，知道它们提供了哪些像前面的 ``fd_write`` 那样的东西，及怎么和 js 交互，才是更有意义的。
+
+
+# C 编译 #
+
+## 安装 ##
+
+*emscripten* ，是一套构建与 SDK 方案，它在 https://emscripten.org/ 。
+
+安装的方式，是先拉取 git 代码：
+
+```bash
+git clone https://github.com/emscripten-core/emsdk.git
+```
+
+进入目录后，执行安装，它会下载编辑器，nodejs 等一堆东西：
+
+```bash
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+```
+
+最后处理一下环境：
+
+```bash
+source ./emsdk_env.sh
+```
+
+
+## Hello World ##
+
+先写个 *hello world* ：
+
+```c
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World\n");
+    return 0;
+}
+```
+
+前面的环境如果处理好了，就可以用 ``emcc`` 去直接编译这个 ``demo.c`` ：
+
+```bash
+emcc demo.c
+```
+
+编译的结果，在当前目录下，会得到 ``a.out.js`` 和 ``a.out.wasm`` 两个文件。
+
+``a.out.wasm`` 是前面介绍过的， *WebAssembly* 的二进制是格式的代码。
+
+``a.out.js`` 处理加载和额外的依赖，同时，它支持 nodejs 。所以：
+
+```bash
+node a.out.js
+```
+
+就可以看到 ``Hello, World`` 的输出了。
+
+这里，如果用前面的 ``wasmtime`` 去执行 ``a.out.wasm`` ，会看到报错，报措的原因是找不到一些定义。这就是前面说过的，语言问题是小事，麻烦的是环境。 *emcc* 做了一套方案，去兼容 c 的编程环境。当这些实现要跑在 nodejs ，或者浏览器中的时候，环境相关的一些东西就需要被重新解释，比如“标准输出”，要变成 ``console.log`` 。这些东西，不是 *WebAssembly* 范畴的，要么运行时在实现时提供一个内置标准，比如 ``wasmtime`` 里面可能提供了一些东西。要么运行时提供一个注入式的方案，比如 nodejs 或者浏览器上，都可以完成 *WebAssembly* 和 *javascript* 的互调用。那么“标准输入”在编译时就可以被解析成任何一个符号，执行时再由 *javascript* 提供这个符号的实现就可以了。
+
+``wasmtime a.out.wasm`` 的报错，是找不到 ``env::emscripten_memcpy_big`` ，打开 ``a.out.js`` 找一下，就能找到 ``emscripten_memcpy_big`` 。
+
+``a.out.js`` 中的“标准输出”，就是 ``_fd_write`` 这个函数，我们可以加一些 ``console.log`` 看看。事实上， ``fd_write`` 就是 *wasi* 中的一个标准。（但是 ``emscripten_memcpy_big`` 不是）
+
+nodejs 可以执行 *WebAssembly* ，浏览器也可以：
+
+```bash
+emcc demo.c -o hello.html
+```
+
+这样的话，除了 ``hello.wasm`` , ``hello.js`` ，还会有一个 ``hello.html`` 。
+
+可以直接执行：
+
+```bash
+node hello.js
+```
+
+也可以启动一个静态服务，在浏览器中访问这个 ``hello.html``  ：
+
+```bash
+python -mhttp.server
+```
+
+通过访问 ``http://localhost:8000/hello.html`` ，就可以看到下图了：
+
+![](https://img.zys.me/NoftHfT.png)
+
+
+（ ``hello.html`` ，别看它有很多行代码，其中有好多是 svg 图 …… ）
+
+
+## js 调用 c ##
+
+假设做一个 ``add`` 函数给 js 用，在 ``demo.c`` 文件中：
+
+```c
+int add(int a, int b) {
+    return a + b;
+}
+```
+
+``emcc`` 直接提供了编译工具，封装了 js 调用 WebAssembly 的过程：
+
+```bash
+emcc demo.c -o hello.html -sEXPORTED_FUNCTIONS=_add
+```
+
+- ``-sEXPORTED_FUNCTIONS`` 是导出的函数，需要加前置下划线。
+
+
+同样，打开 ``http://localhost:8000/hello.html`` 之后，我们在控制台输入：
+
+```javascript
+Module._add(1,2)
+```
+
+就能看到 ``3`` 的返回。 ``Module`` 是 ``emcc`` 定义的全局量，调用中，是函数名，返回类型，参数类型。
+
+
+如果要把 ``Module`` 作为模块，而不是全局量，加一个编译参数就可以了：
+
+```bash
+emcc demo.c -o demo.js -sEXPORTED_FUNCTIONS=_add  -sMODULARIZE
+```
+
+这样的话， ``demo.js`` ，会返回一个 *Promise* 对象， *resolve* 出 ``Module`` ：
+
+```javascript
+var f = require('./demo.js')
+f().then(ins => console.log(ins._add(1,1)))
+2
+```
+
+
+``-sEXPORTED_FUNCTIONS`` 觉得麻烦的话，可以在源码中“标记”要导出的函数：
+
+```
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE
+int add_1(int a) {
+    return a + 1;
+}
+```
+
+这样，直接编译就可以导出 ``add_1`` 这个函数了：
+
+```bash
+emcc demo.c -o demo.html
+emcc demo.c -o demo.js -sMODULARIZE
+```
+
+
+## 参数传递，传入字符串 ##
+
+因为 *WebAssembly* 本身设计上的限制，除了 *int* 和 *float* 可以作为值直接传递之外，其它的类型，比如字符串，数组，都只能通过地址来完成传递。这点上，倒是和 C 语言的机制很搭。
+
+
+下面是一个 ``str_len`` 的例子，传入一个字符串，返回这个字符串的长度：
+
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#else
+    #define EMSCRIPTEN_KEEPALIVE ;
+#endif
+
+
+EMSCRIPTEN_KEEPALIVE
+int str_len(char* s) {
+    return strlen(s);
+}
+
+
+#ifndef __EMSCRIPTEN__
+int main() {
+    printf("%d\n", str_len("hello"));
+    return 0;
+}
+#endif
+```
+
+js 中调用的话：
+
+```javascript
+const demo = require('./demo');
+
+demo().then( cbind => {
+  const n = cbind._str_len("Hello11111111");
+  console.log(n);
+});
+```
+
+直接这样调用，结果是不对的。我猜，js 中的字符串传入的时候， *emcc* 是把它当地址处理的，所以这里看到的是 ``4`` 。 js 中的入参，到 c 函数的调用，参数在中间需要做显式的格式处理，这个处理， *emcc* 通过 ``ccall`` 有支持，编译时把 ``ccall`` 加入：
+
+
+```bash
+emcc demo.c -o demo.js -sMODULARIZE -sEXPORTED_RUNTIME_METHODS=ccall
+```
+
+``ccall`` 的用法是： ``ccall('func_name', 'return type', ['arg1 type', 'arg2 type'], [arg1, arg2])`` 。
+
+js 中改成：
+
+```javascript
+const demo = require('./demo');
+
+demo().then( cbind => {
+  const n = cbind._str_len("Hello11111111");
+  console.log(n);
+  const l = cbind.ccall('str_len', 'number', ['string'], ["hello11111111"]);
+  console.log(l);
+});
+```
+
+除了 ``string`` ， ``ccall`` 还可以支持 ``number``, ``array`` （整数）， ``boolean`` 。
+
+
+
+## 参数传递，传出字符串 ##
+
+
+这里做一个随机字符串的例子：
+
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#else
+    #define EMSCRIPTEN_KEEPALIVE ;
+#endif
+
+
+const int MAX_LEN = 100;
+
+int c_get_str(char* s) {
+    srand(time(NULL));
+    int r = rand() % MAX_LEN;
+    int i;
+    for(i = 0; i < r; i++) {
+        s[i] = 'M';
+    }
+    return r;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+int getRandomStr(char* s) {
+    return c_get_str(s);
+}
+
+
+#ifndef __EMSCRIPTEN__
+int main() {
+    char* src = (char*)malloc(MAX_LEN);
+    int len = getRandomStr(src);
+    char* dest = (char*)malloc(len + 1);
+    strcpy(dest, src);
+    free(src);
+    dest[len] = '\n';
+    printf("%s", dest);
+    free(dest);
+    return 0;
+}
+#endif
+```
+
+- ``getRandomStr`` 是我们导出的函数，它接受一个字符串指标，会在里面填充一个字符串，并返回其长度。
+- ``__EMSCRIPTEN__`` 是 *emcc* 编译时的宏。
+- ``EMSCRIPTEN_KEEPALIVE`` 是 *emcc* 定义的宏。
+
+
+代码比较简单，就是随机生成 N 个 ``M`` 。
+
+要在 js 中使用 ``getRandomStr`` 函数，除了前面说的那些东西，这里在 *emcc* 编译时，还需要导出额外的函数：
+
+```bash
+emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS=UTF8ToString \
+    -sEXPORTED_FUNCTIONS=_malloc,_free
+```
+
+- ``EXPORTED_RUNTIME_METHODS=UTF8ToString`` 导出的 ``UTF8ToString`` 可以帮助我们直接把一个字符指标转成 js 的字符串。
+- ``EXPORTED_FUNCTIONS=_malloc,_free`` 导出的 ``malloc`` 和 ``free`` 类似 C 里面的内存分配与回收。看起来也是一个内存地址。
+
+
+编译之后， nodejs 中就可以这样使用了：
+
+```javascript
+const demo = require('./demo');
+
+demo().then( cbind => {
+  const buffer = cbind._malloc(100);
+  const r = cbind._getRandomStr(buffer);
+  console.log('len is', r);
+  console.log(cbind.UTF8ToString(buffer));
+  cbind._free(buffer);
+});
+```
+
+
+## 参数传递，传出结构体 ##
+
+结构体本身只是一段连续内存，所以在 js 中处理结构体，通用的方法是“解析结构体”。但在实践中，其实可以避免这些事，对于结构体的成员，可以直接定义相关的方法来处理：
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+#else
+    #define EMSCRIPTEN_KEEPALIVE ;
+#endif
+
+
+typedef struct {
+    char* name;
+    char* desc;
+    int age;
+} Person;
+
+
+EMSCRIPTEN_KEEPALIVE
+void get_person(Person* p) {
+    p -> name = "hello";
+    p -> desc = "world";
+    p -> age = 22;
+}
+
+EMSCRIPTEN_KEEPALIVE
+char* get_person_name(Person *p) {
+    return p -> name;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+int get_person_type_size() {
+    return sizeof(Person);
+}
+
+
+#ifndef __EMSCRIPTEN__
+int main() {
+    Person* p = malloc(sizeof(Person));
+    get_person(p);
+    printf("%s", p -> name);
+    free(p);
+    return 0;
+}
+#endif
+```
+
+上面的代码中，对于 ``Person`` 这个结构体，如果我们要获取它的名字，单独定义一个 ``get_person_name`` 函数总是可行的。
+
+通用的办法，是使用 *emcc* 提供的 ``getValue`` 函数，直接按数据类型，一块一块地读内存结构。要使用 ``getValue`` ，编译时需要将它导出：
+
+```bash
+emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS=UTF8ToString,getValue \
+    -sEXPORTED_FUNCTIONS=_malloc,_free
+```
+
+在 js 中：
+
+```javascript
+const demo = require('./demo');
+
+demo().then( cbind => {
+  const n = cbind._get_person_type_size();
+  // console.log(n);
+  const buffer = cbind._malloc(n);
+  cbind._get_person(buffer);
+  // console.log(cbind.UTF8ToString(cbind._get_person_name(buffer)));
+
+  const name = cbind.getValue(buffer + 4, 'i32')
+  console.log(cbind.UTF8ToString(name));
+  const age = cbind.getValue(buffer + 8, 'i32')
+  console.log(age);
+});
+```
+
+这种直接知道 ``+4``，``+8`` 的偏移，是建立在完全了解 ``Person`` 结构定义前提下的。
+
+
+
+## 参数传递，传入结构体 ##
+
+结构体是连续内存地址，前面有 ``getValue`` ， ``UTF8ToString`` ，自然也有对应的 ``setValue``， ``stringToUTF8`` ，它们可以用来拼出指定内存地址上的数据状态，就可以实现结构体的传入了。
+
+
+在前面 C 代码的基础上，添加一个函数，用于打印 ``Person`` 的信息：
+
+```c
+EMSCRIPTEN_KEEPALIVE
+void print_person(Person *p) {
+    printf("%s\n", p -> name);
+    printf("%s\n", p -> desc);
+    printf("%d\n", p -> age);
+}
+```
+
+编译时把 ``setValue`` 和 ``stringToUTF8`` 加上，还有一个 ``lengthBytesUTF8`` 工具，用来计算字符串的字节数：
+
+```bash
+emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS=UTF8ToString,getValue,setValue,stringToUTF8,lengthBytesUTF8 \
+    -sEXPORTED_FUNCTIONS=_malloc,_free
+```
+
+
+然后尝试从 js 中调用这个 ``print_person`` 函数：
+
+```javascript
+const demo = require('./demo');
+
+demo().then( cbind => {
+  const n = cbind._get_person_type_size();
+  const buffer = cbind._malloc(n);
+
+  const name = "FROM JS";
+  const nameLen = cbind.lengthBytesUTF8(name) + 1;
+  const nameBuffer = cbind._malloc(nameLen);
+  cbind.stringToUTF8(name, nameBuffer, nameLen);
+
+  const desc = "HAHAHA";
+  const descLen = cbind.lengthBytesUTF8(desc) + 1;
+  const descBuffer = cbind._malloc(descLen);
+  cbind.stringToUTF8(desc, descBuffer, descLen);
+
+  cbind.setValue(buffer, nameBuffer, 'i32');
+  cbind.setValue(buffer + 4, descBuffer, 'i32');
+  cbind.setValue(buffer + 8, 88, 'i32');
+
+  cbind._print_person(buffer);
+
+  cbind._free(descBuffer);
+  cbind._free(nameBuffer);
+  cbind._free(buffer);
+});
+```
+
+基本过程，就是针对字符串的数据，需要为它们先单独分配空间，再把空间地址通过 ``setValue`` 设置到原地址上。
+
+
+
+
+
+
+# 其它编译 #
+
+前面说的 *emcc* 也是支持 c++ 的。市面上还有 go, rust, 类 typescript 等各种实现。
+
+
+
+# 相互调用背后的东西 #
+
+
+# 性能比较 #
+
+
+
+# 可能的应用场景 #
+
+- 计算密集型的纯计算场景，比较图片，音视频编解码。（但是同时典型场景方面浏览器 API 中已经有可以直接利用硬件的相关实现了）
+- 复用其它语言中的已有实现，移植到浏览器。
+- 重量级的，但又不那么专业的，工具。
+- 大型的 DSL 。
+
+
