@@ -1,17 +1,15 @@
-WASI 和 WebAssembly
+WebAssembly 和 Emscripten
 邹业盛
 %%mtime(%Y-%m-%d %H:%M)
 %!encoding: utf-8
 %!options(xhtml): --google-analytics --disqus
-%!qr: http://www.zouyesheng.com/wasi
+%!qr: http://www.zouyesheng.com/webassembly.html
 %!format: !email
 %%toc
 
 
 
 # 是什么东西？ #
-
-*WASI* 的意思是 WebAssembly System Interface ，可以把它看成是一整套方案。
 
 *WebAssembly* 是一种字节码格式，执行它需要对应的一种虚拟机。
 
@@ -521,27 +519,278 @@ demo().then( cbind => {
 基本过程，就是针对字符串的数据，需要为它们先单独分配空间，再把空间地址通过 ``setValue`` 设置到原地址上。
 
 
-
-
-
-
-# 其它编译 #
+## 其它编译 ##
 
 前面说的 *emcc* 也是支持 c++ 的。市面上还有 go, rust, 类 typescript 等各种实现。
+
+
+# 例子，浏览器中嵌入 Python #
+
+有了 C 的支持，很多东西都可以移植到浏览器跑了，从小的一些加密，散列算法，到大的完整的应用程序。不过这里又有一个问题，这些东西最好是 js 本来没有完整实现的，否则也没啥意义。
+
+这个问题我纠结了不少时间，后来看到 *micropython* 中有现成的 js 的移植，还直接用的就是 *emcc* ，觉得直接用它实现一个小功能就很合适了。（网上还能找到一个法国大叔的 *brython* 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
+
+这里，打算用 Python 作为配置语言，使用它完成一套 json 字符串配置的输出。
+
+比如，系统需要的输入是：
+
+```javascript
+{
+    "name": "Hello",
+}
+```
+
+现在引入 Python ，可以做成（随便想的，实现时再调整）：
+
+```python
+import random
+class Config(BaseConfig):
+    name = random.choice(["Hello", "World"])
+
+js.output(Config().as_config())
+```
+
+
+## 安装 ##
+
+*emcc* 安装好，并且它的环境变量也处理之后（``source emsdk_env.sh``），直接在 *micropython* 的 ``ports/javascript`` 目录中 ``make`` 就可以了。
+
+编译完成之后，会有一个 *build* 目录，里面的 ``micropython.js`` 和 ``fireware.wasm`` 是最终有用的。
+
+
+## 用 js 实现 C 的 api ##
+
+这大概是 *emcc* 结合 *WASI* 提供的一个功能，你可以用 js 实现 C 中调用的一个函数。原理，大概就是 C 编译到 *WebAssembly* 时，根据函数名事先在地址上留了坑位，比如只在头文件中声明了函数签名，运行时再用 js 实现的函数运行得到结果。当然，参数类型是有限制的，毕竟 *WebAssembly* 只有整型和浮点。
+
+- ``library.h`` 中，使用 *extern* 声明了函数，比如 ``mp_js_write(const char *str, mp_uint_t len)`` ，这就是 *micropython* 中的标准输出函数。
+- ``main.c`` 中引入了 ``library.h`` ，这样声明的函数在编译时可以被处理。
+- ``mphalport.c`` 中 ``mp_hal_stdout_tx_strn`` 是一个标准输出的口子，在 js 的这个 *port* 中重新实现了它。
+- 更多信息可以看 *micropython* 的 Porting 这部分的文档， https://docs.micropython.org/en/latest/develop/porting.html 。
+
+
+## 自定义一个 Python 模块 ##
+
+Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ ``micropython`` 是用确定 ID 的 DOM 节点的 *print* 事件处理的它），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。
+
+这里先完成模块的自定义，再考虑和 js 运行时的对接。
+
+按文档，自定义一个模块，需要做两步：
+
+- 单独的一个 c 源文件，里面定义模块，注册模块。
+- 修改 *Makefile* ，重新编译。
+
+
+我们期望的模块使用是：
+
+```python
+import js
+js.emit("string")
+```
+
+即， ``js`` 模块，里面有一个 ``emit`` 方法，传入字符串。
+
+这里使用单独的 ``js`` 模块，是优于直接添加 *builtin* 方法/模块的。如果是 *builtin* 的话，代码就是：
+
+```python
+jsemit("string")
+```
+
+看着像是少了一个 ``import`` 的动作，实际上这直接造成代码的无法兼容， ``jsemit("string")`` 无法在标准的 Python 环境下执行。如果是 js 模块，在标准的 Python 环境下用 python 代码定义一个这样的模块就太容易了，这样，同样的代码即可以在 *micropython* 环境下执行，也可以在标准的 Python 环境下开发。
+
+下面开始做模块的开发。
+
+
+新建一个 ``modjs.c`` 文件：
+
+```c
+#include "py/runtime.h" 
+#include "py/objstr.h"
+
+STATIC mp_obj_t js_emit(const mp_obj_t str) {
+    const char* s = mp_obj_str_get_str(str);
+    mp_printf(&mp_plat_print, s);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(js_emit_obj, js_emit);
+
+STATIC const mp_rom_map_elem_t js_module_globals_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_js) },
+    { MP_ROM_QSTR(MP_QSTR_emit), MP_ROM_PTR(&js_emit_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(js_module_globals, js_module_globals_table);
+
+const mp_obj_module_t js_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&js_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_js, js_module, MICROPY_PY_JS);
+```
+
+这里的一些处理是基于名字的，像 ``js_emit_obj`` ， ``MP_DEFINE_CONST_FUN_OBJ_1`` 宏会按参数展开完成定义行为。
+
+最后一行的 ``MICROPY_PY_JS`` 也是一个宏，需要在 ``mpconfigport.h`` 中添加它：
+
+```c
+#define MICROPY_PY_JS               (1)
+```
+
+当然，直接写死 ``1`` 也是可以的。定义 ``MICROPY_PY_JS`` 只是为了好控制。
+
+最后，要修改 *Makefile* 的配置，打开 ``Makefile`` ，在 ``SRC_C`` 中添加刚才新建的 ``modjs.c`` ：
+
+```makefile
+SRC_C = \
+	main.c \
+	modjs.c \
+	mphalport.c \
+	modutime.c \
+```
+
+这样就可以了，重新编译后， ``js.emit("string")`` 就会在标准输出中显示它的参数。
+
+
+## 自定义模块与 js 的对接 ##
+
+这一步，最终的目的是 ``js.emit`` 调用之后，我们可以从一个确定的变量中，获取到 ``emit`` 出来的内容。
+
+大概的思路是：
+
+在 ``modjs.c`` 中的 ``js_emit`` 中，加入一个函数，传出字符串内容：
+
+```c
+extern void mp_on_emit(const char *s);
+
+STATIC mp_obj_t js_emit(const mp_obj_t str) {
+    const char* s = mp_obj_str_get_str(str);
+    mp_on_emit(s);
+    return mp_const_none;
+}
+```
+
+``mp_on_emit`` 在 ``main.c`` 中定义，把接收到的字符串马上复制下来，保存在一个静态变量中：
+
+```c
+STATIC char *mp_current_emit_str = "";
+void mp_on_emit(const char *s) {
+    strcpy(mp_current_emit_str, s);
+}
+```
+
+同时在 ``main.c`` 中提供一个 ``mp_js_resiger_emit_handler(char *s)`` ，之后会被导出到 js ，它的参数是一个内存地址，实现上将会赋值给静态变量 ``mp_current_emit_str`` ：
+
+```c
+void mp_js_register_emit_handler(char *s) {
+    mp_current_emit_str = s;
+}
+```
+
+因为 ``mp_js_resiger_emit_handler`` 的参数是由 js 传入的，所以，在 ``js_emit`` 调用完之后，我们就可以从 js 传入的地址那里，得到可能存在的 ``emit`` 内容了。整体的 nodejs 过程如下：
+
+```javascript
+var mp_js = require('./build/micropython.js');
+mp_js().then(Module => {
+  var mp_js_init = Module.cwrap('mp_js_init', 'null', ['number']);
+  var mp_js_do_str = Module.cwrap('mp_js_do_str', 'number', ['string']);
+  const buffer = Module._malloc(200 * 1024);
+  Module._mp_js_register_emit_handler(buffer);
+  mp_js_init(64 * 1024);
+  const py = `
+import js
+import json
+js.emit(json.dumps({"a": 123}))
+  `
+  mp_js_do_str(py);
+  const str = Module.UTF8ToString(buffer);
+  Module._free(buffer);
+  console.log(str);
+});
+```
+
+额外注意的是，这里用到了更多的 *emcc* 导出函数，同时还以 *Promise* 的方式使用模块，所以 *Makefile* 中的 *FLAGS* 部分也要作相应的修改：
+
+```makefile
+JSFLAGS += -s EXPORTED_FUNCTIONS="['_malloc', '_free', '_mp_js_register_emit_handler', \
+                                   '_mp_js_init', '_mp_js_init_repl', '_mp_js_do_str', \
+                                   '_mp_js_process_char', '_mp_hal_get_interrupt_char', \
+                                   '_mp_sched_keyboard_interrupt']" \
+           -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap', 'UTF8ToString']" \
+           -s --memory-init-file 0 --js-library library.js -s MODULARIZE
+```
+
+除了加入额外导出的函数，还添加了 ``-s MODULARIZE`` ，否则无法判断模块初始化完成的时机（REPL中使用没有这个问题）。
+
+
+## 实际的应用使用 ##
+
+前面已经处理好了 ``micropython.js`` 和 ``fireware.wasm`` ，现在把它们应用到实际的业务场景中。
+
+要做的事，是对于下图这样的一个数据可视化的场景，本来有一个简单，固定的描述结构（JSON）：
+
+![](https://img.zys.me/FtFtH8d.png)
+
+
+我们使用 Python ，替换原来固定的，静态的 JSON 结构。完整的编程语言语法，不光为结构描述带来了抽象能力，还为以后加入更完整的功能直接铺平了道路，比如数据的获取及数据获取后的再加工。
+
+![](https://img.zys.me/FtFtHbJ.png)
+
+
+要把 Python 用于这个场景，前面的工作，已经做得差不多了，剩下的，多是处理一些环境方面的问题：
+
+把 ``micropython.js`` 和 ``fireware.wasm`` 直接复制到项目中就可以使用。 这里注意的点，是 ``micropython.js`` 中有 ``fs`` 相关的东西，最简单的处理方式，就是在 ``webpack`` 的配置中，加一条 ``node: {"fs": "empty"}`` ：
+
+```javascript
+const webpackConfig = {
+    mode: 'development',
+    node: {"fs": "empty"},
+    entry: [
+        'webpack-dev-server/client?http://localhost:8080',
+        ...
+```
+
+``micropython.js`` 原来默认的那个 ``_mp_js_write()`` 实际，可以使用 ``UTF8ToString`` 改掉，否则中文显示有问题：
+
+```javascript
+function _mp_js_write(ptr, len) {
+    var str = UTF8ToString(ptr, len);
+    var mp_js_stdout = document.getElementById('mp_js_stdout');
+    var print = new Event('print');
+    print.data = str;
+    mp_js_stdout.dispatchEvent(print);
+}
+```
+
+``mp_js_init`` ，初始化的栈大小，需要给的大点，比如 5M ，否则执行现实的功能实现代码，存储空间可能会不够。
+
+最后执行的 Python 代码，可以在 https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 *uuid* 模块，及 *micropython* 不支持 gb2312 编码的问题。
+
+
+## 小结 ##
+
+- *emcc* + *WebAssembly* ，提供了一个很简单直接的环境，可以在浏览器中方便地使用 C 的实现。
+- *micropython* 借助 *emcc* ，直接就在浏览器环境提供了一个比较完善的 Python 语言。
+- 更美的是， *micropython* 中要使用 C 写模块，也是非常简单和直接的。
 
 
 
 # 相互调用背后的东西 #
 
+目前，浏览器中使用 *WebAssembly* ，是通过一组 *WebAssembly* 的 API 完成的。大概的过程是：
 
-# 性能比较 #
+- 通过 HTTP ，获取原始 *WebAssembly* 二进制格式的字节流。
+- 使用 ``WebAssembly.compile`` 对字节流进行编译得到 *Module* 。
+- 也可以使用 ``WebAssembly.instantiateStreaming`` 或者 ``WebAssembly.instantiate`` 直接完成实例化过程。
+- *Module* 实例化之后，开始使用里面暴露出来的方法。
+
+
+前面说过，因为我们不需要手写 *WebAssembly* 语言，所以这个过程大概知道就行了。具体使用时，像 *emcc* ，它又会根据 C 编译结果的情况，对这一过程做自己的定制。所以，现在各种编译到 *WebAssembly* 的方案，产出物除了 *wasm* 文件之外，都会包括对应的 js 加载辅助实现。直接拿到 *wasm* 源文件，不知道它的导入导出依赖，也是没法用的。
 
 
 
 # 可能的应用场景 #
 
 - 计算密集型的纯计算场景，比较图片，音视频编解码。（但是同时典型场景方面浏览器 API 中已经有可以直接利用硬件的相关实现了）
-- 复用其它语言中的已有实现，移植到浏览器。
+- 复用其它语言中的已有实现，移植到浏览器。包括某种编程语言的实现。
 - 重量级的，但又不那么专业的，工具。
 - 大型的 DSL 。
 
