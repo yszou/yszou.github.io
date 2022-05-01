@@ -13,13 +13,12 @@ WebAssembly 和 Emscripten
 
 *WebAssembly* 是一种字节码格式，执行它需要对应的一种虚拟机。
 
-我们一般不会手写 WebAssembly ，而是通过其它高级语言，比如 C ，Rust，Go 等，利用编译器来得到 *WebAssembly* 格式（二进制格式类型）的输出。
+我们一般不会手写 *WebAssembly* ，而是通过其它高级语言，比如 C ，Rust，Go 等，利用编译器来得到 *WebAssembly* 二进制格式的输出。
 
 
 执行 *WebAssembly* 需要的虚拟机，在不同的环境下，有不同的实现，比如，在浏览器中。当然，也有独立的实现，像：https://github.com/bytecodealliance/wasmtime 。
 
-
-*WebAssembly* 的文本格式是采用类似 Lisp 语言的 S 表达式的形式，我们可以手写它（ *wasmtime* 也支持直接执行）：
+*WebAssembly* 也有对应的文本格式，是采用类似 Lisp 语言的 S 表达式来组织的，可以手写它（ *wasmtime* 也支持直接执行），比如下面这段：
 
 ```wst
 (module
@@ -41,27 +40,26 @@ WebAssembly 和 Emscripten
 )
 ```
 
-把这些内容保存成 ``demo.wat`` ，用前面的 *wasmtime* 执行它就可以输出 ``hello world`` 了：
+把这些内容保存成 ``demo.wat`` ，用前面的 *wasmtime* 执行就可以输出 ``hello world`` ：
 
 ```bash
 wasmtime demo.wat
 ```
 
-这里面其实除了 *WebAssembly* 语言本身的机制外，还有像 *fd_write* 这种 API 。只有具体的虚拟机，或者说运行时，提供了这些 API ，我们才能使用具体的语言去完成更业务性的事，否则只能一直做些四则运算的事。
+这里面除了 *WebAssembly* 语言本身的语法格式外，还有像 *fd_write* 这些需要导入的函数。只有具体的虚拟机，或者说运行时环境，提供了这些函数，这段代码才可以正常运行，进一步才能去完成更业务性的事，否则可能只能一直做些四则运算了。
 
+像运行时的“标准函数”，现在还不是一个稳定的标准，在 https://github.com/WebAssembly/WASI 这里，能看到它们在被缓慢的推进着，一份简单的文档在 https://github.com/WebAssembly/WASI/blob/main/phases/snapshot/docs.md 。
 
-坏消息是， API 层面，现在还不是一个稳定，完整的状态，在 https://github.com/WebAssembly/WASI 这里，能看到它们在被缓慢的推进着，一份简单的文档在 https://github.com/WebAssembly/WASI/blob/main/phases/snapshot/docs.md 。
+不需要尝试去找针对 *WebAssembly* 的文本格式的完整的“语法手册”，因为根本找不到。官方的“语法手册”，是从 Token 层面说的，给编译器开发人员看的那类文档，手写 S 表达式不是 *WebAssembly* 的使用方式。
 
-不要尝试去找针对 *WebAssembly* 的文本格式的完整的“语法手册”，因为根本找不到。官方的“语法手册”，是从 Token 层面说的，给编译器开发人员看的那种文档，或许没人会觉得手写 S 表达式是正常的行为吧。
-
-后面我们会使用其它的高级语言，通过编译得到 *WebAssembly* 。之后的重点，其实已经不在 *WebAssembly* 这个语言本身，反正是编译器的事。相反，了解各个运行时环境，知道它们提供了哪些像前面的 ``fd_write`` 那样的东西，及怎么和 js 交互，才是更有意义的。
+我们会使用其它的高级语言，通过编译得到 *WebAssembly* 。之后的重点，其实已经不在 *WebAssembly* 这个语言本身，反正是编译器的事。相l对的，了解各个运行时环境，知道它们提供了哪些像前面的 ``fd_write`` 那样的实现，及怎么和 js 交互，才更有意义。
 
 
 # C 编译 #
 
 ## 安装 ##
 
-*emscripten* ，是一套构建与 SDK 方案，它在 https://emscripten.org/ 。
+*emscripten* ，是一套编译构建方案，同时提供了比较完整的 SDK ，它在 https://emscripten.org/ 。它使我们可以非常方便地使用 C 语言完成 *WebAssembly* 相关的开发与环境集成。
 
 安装的方式，是先拉取 git 代码：
 
@@ -69,7 +67,7 @@ wasmtime demo.wat
 git clone https://github.com/emscripten-core/emsdk.git
 ```
 
-进入目录后，执行安装，它会下载编辑器，nodejs 等一堆东西：
+进入目录后，执行安装，它会下载 C 编辑器，nodejs 等一堆东西：
 
 ```bash
 cd emsdk
@@ -77,11 +75,13 @@ cd emsdk
 ./emsdk activate latest
 ```
 
-最后处理一下环境：
+最后处理一下环境（效果只在终端的当前会话有效）：
 
 ```bash
 source ./emsdk_env.sh
 ```
+
+当 ``emcc`` 是一个可执行命令时，整个环境就准备好了。
 
 
 ## Hello World ##
@@ -103,31 +103,33 @@ int main() {
 emcc demo.c
 ```
 
-编译的结果，在当前目录下，会得到 ``a.out.js`` 和 ``a.out.wasm`` 两个文件。
+编译的结果是在当前目录下，会有 ``a.out.js`` 和 ``a.out.wasm`` 两个文件。
 
-``a.out.wasm`` 是前面介绍过的， *WebAssembly* 的二进制是格式的代码。
+``a.out.wasm`` 是 *WebAssembly* 的二进制是格式的代码。
 
-``a.out.js`` 处理加载和额外的依赖，同时，它支持 nodejs 。所以：
+``a.out.js`` 处理加载和额外的依赖，同时，它支持 nodejs 。所以直接执行：
 
 ```bash
 node a.out.js
 ```
 
-就可以看到 ``Hello, World`` 的输出了。
+就可以看到 ``Hello, World`` 的输出。
 
-这里，如果用前面的 ``wasmtime`` 去执行 ``a.out.wasm`` ，会看到报错，报措的原因是找不到一些定义。这就是前面说过的，语言问题是小事，麻烦的是环境。 *emcc* 做了一套方案，去兼容 c 的编程环境。当这些实现要跑在 nodejs ，或者浏览器中的时候，环境相关的一些东西就需要被重新解释，比如“标准输出”，要变成 ``console.log`` 。这些东西，不是 *WebAssembly* 范畴的，要么运行时在实现时提供一个内置标准，比如 ``wasmtime`` 里面可能提供了一些东西。要么运行时提供一个注入式的方案，比如 nodejs 或者浏览器上，都可以完成 *WebAssembly* 和 *javascript* 的互调用。那么“标准输入”在编译时就可以被解析成任何一个符号，执行时再由 *javascript* 提供这个符号的实现就可以了。
+这里，如果用前面的 ``wasmtime`` 去执行 ``a.out.wasm`` ，会看到报错，报措的原因是找不到一些定义。这就是前面说过的，语言问题是小事，麻烦的是环境。
 
-``wasmtime a.out.wasm`` 的报错，是找不到 ``env::emscripten_memcpy_big`` ，打开 ``a.out.js`` 找一下，就能找到 ``emscripten_memcpy_big`` 。
+*emcc* 做了一套方案，去尽量兼容 C 的开发与编译环境。当开发中需要的一些依赖要跑在 nodejs ，或者浏览器中的时候，环境相关的东西就需要被重新解释，比如“标准输出”变成 ``console.log`` 。这些“解释”，不是 *WebAssembly* 语言范畴的，要么运行时提供内置实现，比如 ``wasmtime`` 里面可能提供了一些。要么运行时提供一个注入式的方案，比如 nodejs 或者浏览器上，都可以完成 *WebAssembly* 和 *javascript* 的互调用，那么“标准输入”在编译时就可以仅被解析成任何的一个符号，执行时再由 *javascript* 提供这个符号的实现就可以了。
 
-``a.out.js`` 中的“标准输出”，就是 ``_fd_write`` 这个函数，我们可以加一些 ``console.log`` 看看。事实上， ``fd_write`` 就是 *wasi* 中的一个标准。（但是 ``emscripten_memcpy_big`` 不是）
+``wasmtime a.out.wasm`` 的报错，是找不到 ``env::emscripten_memcpy_big`` ，其实打开 ``a.out.js`` 找一下，能找到 ``emscripten_memcpy_big`` ，我个猜的话， *emcc* 就是使用 js 提供了一些 *WebAssembly* 的运行依赖。
 
-nodejs 可以执行 *WebAssembly* ，浏览器也可以：
+``a.out.js`` 中的“标准输出”，就是 ``_fd_write`` 这个函数，有兴趣的可以加一些 ``console.log`` 看看。
+
+nodejs 可以执行 *WebAssembly* ，浏览器也可以，为了方便，编译的方式调整一下：
 
 ```bash
 emcc demo.c -o hello.html
 ```
 
-这样的话，除了 ``hello.wasm`` , ``hello.js`` ，还会有一个 ``hello.html`` 。
+这样的话，除了 ``hello.wasm`` , ``hello.js`` ，还会有一个 ``hello.html`` 的 html 文件。
 
 可以直接执行：
 
@@ -151,7 +153,7 @@ python -mhttp.server
 
 ## js 调用 c ##
 
-假设做一个 ``add`` 函数给 js 用，在 ``demo.c`` 文件中：
+假设要做一个 C 版本的 ``add`` 函数给 js 调用，在 ``demo.c`` 文件中：
 
 ```c
 int add(int a, int b) {
@@ -159,7 +161,7 @@ int add(int a, int b) {
 }
 ```
 
-``emcc`` 直接提供了编译工具，封装了 js 调用 WebAssembly 的过程：
+``emcc`` 提供的编译工具，封装了 js 调用 *WebAssembly* 的过程，只需要在编译时使用 ``EXPORTED_FUNCTIONS`` 选项：
 
 ```bash
 emcc demo.c -o hello.html -sEXPORTED_FUNCTIONS=_add
@@ -168,22 +170,21 @@ emcc demo.c -o hello.html -sEXPORTED_FUNCTIONS=_add
 - ``-sEXPORTED_FUNCTIONS`` 是导出的函数，需要加前置下划线。
 
 
-同样，打开 ``http://localhost:8000/hello.html`` 之后，我们在控制台输入：
+同样，打开 ``http://localhost:8000/hello.html`` 之后，在控制台输入：
 
 ```javascript
 Module._add(1,2)
 ```
 
-就能看到 ``3`` 的返回。 ``Module`` 是 ``emcc`` 定义的全局量，调用中，是函数名，返回类型，参数类型。
+就能看到 ``3`` 的返回。 ``Module`` 是 ``emcc`` 定义的全局量。
 
-
-如果要把 ``Module`` 作为模块，而不是全局量，加一个编译参数就可以了：
+如果要把 ``Module`` 作为模块，而不是全局量，在 *emcc* 编译时加一个参数就可以了：
 
 ```bash
 emcc demo.c -o demo.js -sEXPORTED_FUNCTIONS=_add  -sMODULARIZE
 ```
 
-这样的话， ``demo.js`` ，会返回一个 *Promise* 对象， *resolve* 出 ``Module`` ：
+这样， ``demo.js`` 的加载会返回一个 *Promise* 对象， *resolve* 出 ``Module`` ：
 
 ```javascript
 var f = require('./demo.js')
@@ -191,8 +192,7 @@ f().then(ins => console.log(ins._add(1,1)))
 2
 ```
 
-
-``-sEXPORTED_FUNCTIONS`` 觉得麻烦的话，可以在源码中“标记”要导出的函数：
+如果觉得 ``-sEXPORTED_FUNCTIONS`` 麻烦，也可以在源码中使用 ``EMSCRIPTEN_KEEPALIVE`` 宏直接“标记”要导出的函数：
 
 ```
 #include <emscripten.h>
@@ -215,7 +215,6 @@ emcc demo.c -o demo.js -sMODULARIZE
 
 因为 *WebAssembly* 本身设计上的限制，除了 *int* 和 *float* 可以作为值直接传递之外，其它的类型，比如字符串，数组，都只能通过地址来完成传递。这点上，倒是和 C 语言的机制很搭。
 
-
 下面是一个 ``str_len`` 的例子，传入一个字符串，返回这个字符串的长度：
 
 
@@ -235,7 +234,6 @@ int str_len(char* s) {
     return strlen(s);
 }
 
-
 #ifndef __EMSCRIPTEN__
 int main() {
     printf("%d\n", str_len("hello"));
@@ -244,7 +242,7 @@ int main() {
 #endif
 ```
 
-js 中调用的话：
+如果 js 中这样调用：
 
 ```javascript
 const demo = require('./demo');
@@ -255,16 +253,15 @@ demo().then( cbind => {
 });
 ```
 
-直接这样调用，结果是不对的。我猜，js 中的字符串传入的时候， *emcc* 是把它当地址处理的，所以这里看到的是 ``4`` 。 js 中的入参，到 c 函数的调用，参数在中间需要做显式的格式处理，这个处理， *emcc* 通过 ``ccall`` 有支持，编译时把 ``ccall`` 加入：
-
+结果是不对的。我猜，js 中的字符串传入的时候， *emcc* 会把它当地址（指针）处理，所以这里看到的是 ``4`` 。如果希望把它当成字符串，而不是地址，那么 js 中的入参，到 C 函数的调用，参数在中间需要做显式的格式转换声明，这个过程， *emcc* 通过 js 的 ``ccall`` 函数提供支持。为了使用 ``ccall`` 函数，编译时需要把 ``ccall`` 加入：
 
 ```bash
 emcc demo.c -o demo.js -sMODULARIZE -sEXPORTED_RUNTIME_METHODS=ccall
 ```
 
-``ccall`` 的用法是： ``ccall('func_name', 'return type', ['arg1 type', 'arg2 type'], [arg1, arg2])`` 。
+``ccall`` 的用法： ``ccall('func_name', 'return type', ['arg1 type', 'arg2 type'], [arg1, arg2])`` 。
 
-js 中改成：
+把原来的 ``str_len`` 函数包装一下就可以得到正确的结果了：
 
 ```javascript
 const demo = require('./demo');
@@ -278,7 +275,6 @@ demo().then( cbind => {
 ```
 
 除了 ``string`` ， ``ccall`` 还可以支持 ``number``, ``array`` （整数）， ``boolean`` 。
-
 
 
 ## 参数传递，传出字符串 ##
@@ -334,14 +330,14 @@ int main() {
 #endif
 ```
 
-- ``getRandomStr`` 是我们导出的函数，它接受一个字符串指标，会在里面填充一个字符串，并返回其长度。
+- ``getRandomStr`` 是导出的函数，它接受一个字符串指针，会在里面填充一个随机的字符串，并返回其长度。
 - ``__EMSCRIPTEN__`` 是 *emcc* 编译时的宏。
 - ``EMSCRIPTEN_KEEPALIVE`` 是 *emcc* 定义的宏。
 
 
-代码比较简单，就是随机生成 N 个 ``M`` 。
+代码比较简单，就是随机生成 N 个 ``M`` 字符。
 
-要在 js 中使用 ``getRandomStr`` 函数，除了前面说的那些东西，这里在 *emcc* 编译时，还需要导出额外的函数：
+要在 js 中使用 ``getRandomStr`` 函数，除了前面说的那些东西，在 *emcc* 编译时，还需要导出额外的支持函数（这些函数使用比较普遍）：
 
 ```bash
 emcc demo.c \
@@ -351,9 +347,8 @@ emcc demo.c \
     -sEXPORTED_FUNCTIONS=_malloc,_free
 ```
 
-- ``EXPORTED_RUNTIME_METHODS=UTF8ToString`` 导出的 ``UTF8ToString`` 可以帮助我们直接把一个字符指标转成 js 的字符串。
-- ``EXPORTED_FUNCTIONS=_malloc,_free`` 导出的 ``malloc`` 和 ``free`` 类似 C 里面的内存分配与回收。看起来也是一个内存地址。
-
+- ``EXPORTED_RUNTIME_METHODS=UTF8ToString`` 导出的 ``UTF8ToString`` 可以帮助我们直接把一个字符串指针转成 js 的字符串。
+- ``EXPORTED_FUNCTIONS=_malloc,_free`` 导出的 ``malloc`` 和 ``free`` 类似 C 里面的内存分配与回收。 ``malloc`` 的调用返回也是一个内存地址。
 
 编译之后， nodejs 中就可以这样使用了：
 
@@ -369,10 +364,12 @@ demo().then( cbind => {
 });
 ```
 
+先申请一块内存，然后传入，使用完之后，释放它。（内存管理 *WebAssembly* 可能有自己的一些标准，这里如果提前 ``_free`` ，代码也是可以正确执行的）
+
 
 ## 参数传递，传出结构体 ##
 
-结构体本身只是一段连续内存，所以在 js 中处理结构体，通用的方法是“解析结构体”。但在实践中，其实可以避免这些事，对于结构体的成员，可以直接定义相关的方法来处理：
+结构体本身只是一段内存，所以在 js 中处理结构体，通用的方法是“解析结构体的内存”。但在实践中，可以避免这些麻烦的处理，直接用 C 定义相关的方法就可以了：
 
 ```c
 #include <stdlib.h>
@@ -423,9 +420,9 @@ int main() {
 #endif
 ```
 
-上面的代码中，对于 ``Person`` 这个结构体，如果我们要获取它的名字，单独定义一个 ``get_person_name`` 函数总是可行的。
+上面的代码中，对于 ``Person`` 这个结构体，如果要获取它的名字，单独定义一个 ``get_person_name`` 函数总是可行的。
 
-通用的办法，是使用 *emcc* 提供的 ``getValue`` 函数，直接按数据类型，一块一块地读内存结构。要使用 ``getValue`` ，编译时需要将它导出：
+也顺便介绍一下通用的办法，是使用 *emcc* 提供的 ``getValue`` 函数，直接按数据类型，一块一块地读内存结构。要使用 ``getValue`` ，编译时记得将它导出：
 
 ```bash
 emcc demo.c \
@@ -454,14 +451,12 @@ demo().then( cbind => {
 });
 ```
 
-这种直接知道 ``+4``，``+8`` 的偏移，是建立在完全了解 ``Person`` 结构定义前提下的。
-
+这里直接就知道 ``+4``，``+8`` 的偏移，是建立在完全了解 ``Person`` 结构定义前提下的。
 
 
 ## 参数传递，传入结构体 ##
 
-结构体是连续内存地址，前面有 ``getValue`` ， ``UTF8ToString`` ，自然也有对应的 ``setValue``， ``stringToUTF8`` ，它们可以用来拼出指定内存地址上的数据状态，就可以实现结构体的传入了。
-
+结构体是连续内存地址，前面有 ``getValue`` ， ``UTF8ToString`` ，自然也有对应的 ``setValue``， ``stringToUTF8`` ，它们可以用来拼出指定内存地址上的数据状态，进而就可以实现结构体的传入。
 
 在前面 C 代码的基础上，添加一个函数，用于打印 ``Person`` 的信息：
 
@@ -484,8 +479,7 @@ emcc demo.c \
     -sEXPORTED_FUNCTIONS=_malloc,_free
 ```
 
-
-然后尝试从 js 中调用这个 ``print_person`` 函数：
+然后尝试从 js 调用 ``print_person`` 函数：
 
 ```javascript
 const demo = require('./demo');
@@ -521,14 +515,14 @@ demo().then( cbind => {
 
 ## 其它编译 ##
 
-前面说的 *emcc* 也是支持 c++ 的。市面上还有 go, rust, 类 typescript 等各种实现。
+前面说的 *emcc* 也是支持 c++ 的。市面上还有 go, rust, 类 typescript 等其它实现。不过涉及直接和内存概念打交道，还是 C 简单直接。
 
 
 # 例子，浏览器中嵌入 Python #
 
-有了 C 的支持，很多东西都可以移植到浏览器跑了，从小的一些加密，散列算法，到大的完整的应用程序。不过这里又有一个问题，这些东西最好是 js 本来没有完整实现的，否则也没啥意义。
+有了 C 的支持，很多东西都可以移植到浏览器跑了，从小的一些加密，散列算法，到大的完整的应用程序（单纯的计算算法，很多都能找到 js 的实现，从实际场景来说不一定非要用 C 的）。
 
-这个问题我纠结了不少时间，后来看到 *micropython* 中有现成的 js 的移植，还直接用的就是 *emcc* ，觉得直接用它实现一个小功能就很合适了。（网上还能找到一个法国大叔的 *brython* 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
+我在考虑做一个什么样的例子的时候，这个问题纠结了不少时间，后来看到 *micropython* 中有现成的 js 移植，还直接用的就是 *emcc* ，觉得直接用它实现一个小功能就是很合适的。（网上还能找到一个法国大叔的 *brython* 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
 
 这里，打算用 Python 作为配置语言，使用它完成一套 json 字符串配置的输出。
 
@@ -544,61 +538,68 @@ demo().then( cbind => {
 
 ```python
 import random
+
 class Config(BaseConfig):
     name = random.choice(["Hello", "World"])
 
 js.output(Config().as_config())
 ```
 
+加入随机生成的功能，每次执行，都能观察到实际效果的变化，对于调试和检查是很方便的。
+
 
 ## 安装 ##
 
-*emcc* 安装好，并且它的环境变量也处理之后（``source emsdk_env.sh``），直接在 *micropython* 的 ``ports/javascript`` 目录中 ``make`` 就可以了。
+*emcc* 安装好，并且它的环境变量也处理之后（``source emsdk_env.sh``），直接在 *micropython* 的 ``ports/javascript`` 目录中 ``make`` 就可以编译 *micropython* 的 js 移值这部分。
 
 编译完成之后，会有一个 *build* 目录，里面的 ``micropython.js`` 和 ``fireware.wasm`` 是最终有用的。
 
 
 ## 用 js 实现 C 的 api ##
 
-这大概是 *emcc* 结合 *WASI* 提供的一个功能，你可以用 js 实现 C 中调用的一个函数。原理，大概就是 C 编译到 *WebAssembly* 时，根据函数名事先在地址上留了坑位，比如只在头文件中声明了函数签名，运行时再用 js 实现的函数运行得到结果。当然，参数类型是有限制的，毕竟 *WebAssembly* 只有整型和浮点。
+可以用 js 实现 C 中调用的一个函数。原理，大概就是 C 编译到 *WebAssembly* 时，根据函数名事先在地址上留了坑位，比如只在头文件中声明了函数签名，运行时再用 js 实现的函数运行得到结果。当然，参数类型有限制，毕竟 *WebAssembly* 只有整型和浮点是直接的值传递。
 
 - ``library.h`` 中，使用 *extern* 声明了函数，比如 ``mp_js_write(const char *str, mp_uint_t len)`` ，这就是 *micropython* 中的标准输出函数。
 - ``main.c`` 中引入了 ``library.h`` ，这样声明的函数在编译时可以被处理。
-- ``mphalport.c`` 中 ``mp_hal_stdout_tx_strn`` 是一个标准输出的口子，在 js 的这个 *port* 中重新实现了它。
+- ``mphalport.c`` 中 ``mp_hal_stdout_tx_strn`` 是一个标准输出的口子，在 js 的这个 *port* 中重新实现了它（不同的移值有不同的实现）。
+- ``library.js`` 中定义了 js 的标准输出函数，通过 *emcc* 编译时的功能完成了 C 的调用最终由 js 代码实现（编译的选项在 ``Makefile``）。
 - 更多信息可以看 *micropython* 的 Porting 这部分的文档， https://docs.micropython.org/en/latest/develop/porting.html 。
+
+
+上面是 *micropython* 自己的，移值到 js 时，对于“标准输出”的处理过程。
+
 
 
 ## 自定义一个 Python 模块 ##
 
-Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ ``micropython`` 是用确定 ID 的 DOM 节点的 *print* 事件处理的它），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。
+Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ ``micropython`` 是用确定 ID 的 DOM 节点的 *print* 事件处理），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。（跨了不同环境，就不是简单的一个 *return* 能搞定的了）
 
-这里先完成模块的自定义，再考虑和 js 运行时的对接。
+这里要做的一个模块，就是实现 Python 和 js 之间信息传递的功能。
 
-按文档，自定义一个模块，需要做两步：
+先不考虑 js 调用的事，只看怎么用 C 实现一个 Python 的模块。按文档，自定义一个模块，需要做两步：
 
 - 单独的一个 c 源文件，里面定义模块，注册模块。
 - 修改 *Makefile* ，重新编译。
 
 
-我们期望的模块使用是：
+假设期望的模块使用是：
 
 ```python
 import js
 js.emit("string")
 ```
 
-即， ``js`` 模块，里面有一个 ``emit`` 方法，传入字符串。
+即， ``js`` 模块，里面有一个 ``emit`` 方法，参数是字符串。
 
-这里使用单独的 ``js`` 模块，是优于直接添加 *builtin* 方法/模块的。如果是 *builtin* 的话，代码就是：
+多说一点，这里使用单独模块，设计上优于直接添加 *builtin* 方法/模块。如果 *builtin* 的话，代码可能是：
 
 ```python
 jsemit("string")
 ```
 
-看着像是少了一个 ``import`` 的动作，实际上这直接造成代码的无法兼容， ``jsemit("string")`` 无法在标准的 Python 环境下执行。如果是 js 模块，在标准的 Python 环境下用 python 代码定义一个这样的模块就太容易了，这样，同样的代码即可以在 *micropython* 环境下执行，也可以在标准的 Python 环境下开发。
+看着像是少了一个 ``import`` 的动作，实际上这直接造成代码的无法兼容， ``jsemit("string")`` 无法在标准的 Python 环境下执行。但如果是单独的 *js* 模块，可以在标准的 Python 环境下用 python 代码先定义一个这样的模块，那么同样的代码既可以在 *micropython* 环境下执行，也可以在标准的 Python 环境下执行。所以不要随便动 *builtin* 。
 
 下面开始做模块的开发。
-
 
 新建一个 ``modjs.c`` 文件：
 
@@ -627,9 +628,9 @@ const mp_obj_module_t js_module = {
 MP_REGISTER_MODULE(MP_QSTR_js, js_module, MICROPY_PY_JS);
 ```
 
-这里的一些处理是基于名字的，像 ``js_emit_obj`` ， ``MP_DEFINE_CONST_FUN_OBJ_1`` 宏会按参数展开完成定义行为。
+这里的一些处理是基于名字的，像 ``js_emit_obj`` ， ``MP_DEFINE_CONST_FUN_OBJ_1`` ，它们在编译时，有宏会按参数展开并完成定义行为。
 
-最后一行的 ``MICROPY_PY_JS`` 也是一个宏，需要在 ``mpconfigport.h`` 中添加它：
+最后一行的 ``MICROPY_PY_JS`` 也是一个宏，需要事先在 ``mpconfigport.h`` 中添加它：
 
 ```c
 #define MICROPY_PY_JS               (1)
@@ -647,16 +648,18 @@ SRC_C = \
 	modutime.c \
 ```
 
-这样就可以了，重新编译后， ``js.emit("string")`` 就会在标准输出中显示它的参数。
+这样就可以了，重新编译后， ``js.emit("string")`` 就会在标准输出中显示它的参数，这说明定义一个模块的事做好了。
+
+接着考虑和 js 的对接，以实现最终目的。
 
 
 ## 自定义模块与 js 的对接 ##
 
-这一步，最终的目的是 ``js.emit`` 调用之后，我们可以从一个确定的变量中，获取到 ``emit`` 出来的内容。
+这一步，最终的目的是 ``js.emit`` 调用之后，就可以从一个事先定义的，确定的变量中，获取到 ``emit`` 的内容。
 
-大概的思路是：
+大概的思路：
 
-在 ``modjs.c`` 中的 ``js_emit`` 中，加入一个函数，传出字符串内容：
+在 ``modjs.c`` 中的 ``js_emit`` 里，加入一个函数，传出字符串：
 
 ```c
 extern void mp_on_emit(const char *s);
@@ -668,7 +671,7 @@ STATIC mp_obj_t js_emit(const mp_obj_t str) {
 }
 ```
 
-``mp_on_emit`` 在 ``main.c`` 中定义，把接收到的字符串马上复制下来，保存在一个静态变量中：
+``mp_on_emit`` 在 ``main.c`` 中定义，把接收到的字符串马上复制一遍，保存在一个静态变量中：
 
 ```c
 STATIC char *mp_current_emit_str = "";
@@ -685,7 +688,7 @@ void mp_js_register_emit_handler(char *s) {
 }
 ```
 
-因为 ``mp_js_resiger_emit_handler`` 的参数是由 js 传入的，所以，在 ``js_emit`` 调用完之后，我们就可以从 js 传入的地址那里，得到可能存在的 ``emit`` 内容了。整体的 nodejs 过程如下：
+因为 ``mp_js_resiger_emit_handler`` 的参数是由 js 传入的，所以，在 ``js_emit`` 调用完之后，我们就可以从 js 传入的地址那里，得到可能存在的 ``emit`` 内容。整体的 nodejs 过程如下：
 
 ```javascript
 var mp_js = require('./build/micropython.js');
@@ -707,7 +710,7 @@ js.emit(json.dumps({"a": 123}))
 });
 ```
 
-额外注意的是，这里用到了更多的 *emcc* 导出函数，同时还以 *Promise* 的方式使用模块，所以 *Makefile* 中的 *FLAGS* 部分也要作相应的修改：
+额外注意的一个点，这里用到了更多的 *emcc* 导出函数，同时还以 *Promise* 的方式使用模块，所以 *Makefile* 中的 *FLAGS* 部分也要作相应的修改：
 
 ```makefile
 JSFLAGS += -s EXPORTED_FUNCTIONS="['_malloc', '_free', '_mp_js_register_emit_handler', \
@@ -718,7 +721,7 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="['_malloc', '_free', '_mp_js_register_emit_han
            -s --memory-init-file 0 --js-library library.js -s MODULARIZE
 ```
 
-除了加入额外导出的函数，还添加了 ``-s MODULARIZE`` ，否则无法判断模块初始化完成的时机（REPL中使用没有这个问题）。
+除了加入额外导出的函数，还添加了 ``-s MODULARIZE`` ，否则无法判断模块初始化完成的时机（如果只是在 REPL 中验证 *WebAssembly* 的正确执行，那不会遇到这个问题）。
 
 
 ## 实际的应用使用 ##
@@ -737,7 +740,7 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="['_malloc', '_free', '_mp_js_register_emit_han
 
 要把 Python 用于这个场景，前面的工作，已经做得差不多了，剩下的，多是处理一些环境方面的问题：
 
-把 ``micropython.js`` 和 ``fireware.wasm`` 直接复制到项目中就可以使用。 这里注意的点，是 ``micropython.js`` 中有 ``fs`` 相关的东西，最简单的处理方式，就是在 ``webpack`` 的配置中，加一条 ``node: {"fs": "empty"}`` ：
+把 ``micropython.js`` 和 ``fireware.wasm`` 直接复制到项目中就可以使用。注意 ``micropython.js`` 中有 ``fs`` 相关的东西，最简单的处理方式，就是在 ``webpack`` 的配置中，加一条 ``node: {"fs": "empty"}`` ：
 
 ```javascript
 const webpackConfig = {
@@ -748,7 +751,7 @@ const webpackConfig = {
         ...
 ```
 
-``micropython.js`` 原来默认的那个 ``_mp_js_write()`` 实际，可以使用 ``UTF8ToString`` 改掉，否则中文显示有问题：
+``micropython.js`` 原来默认的那个 ``_mp_js_write()`` 实现，可以用 ``UTF8ToString`` 改掉，否则中文显示有问题：
 
 ```javascript
 function _mp_js_write(ptr, len) {
@@ -760,9 +763,9 @@ function _mp_js_write(ptr, len) {
 }
 ```
 
-``mp_js_init`` ，初始化的栈大小，需要给的大点，比如 5M ，否则执行现实的功能实现代码，存储空间可能会不够。
+``mp_js_init`` ，初始化的栈大小，需要给的大点，比如 5M ，否则执行现实的功能代码，空间可能会不够。
 
-最后执行的 Python 代码，可以在 https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 *uuid* 模块，及 *micropython* 不支持 gb2312 编码的问题。
+最后执行的 Python 代码，可以在 https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 *uuid* 模块，及 *micropython* 不支持 gb2312 编码的问题，我没想解决它们，绕过去就好了。
 
 
 ## 小结 ##
@@ -793,5 +796,11 @@ function _mp_js_write(ptr, len) {
 - 复用其它语言中的已有实现，移植到浏览器。包括某种编程语言的实现。
 - 重量级的，但又不那么专业的，工具。
 - 大型的 DSL 。
+
+
+总的来说，我觉得 *WebAssembly* 的直接应用场景是比较窄的，虽然像是浏览器环境的“汇编语言”，但是本身又不是必须的。所以它带来的“集成”的能力可能最重要。性能方面的例子，我自己是找不到的，V8 本身是高度优化的东西，一套基本的 *WebAssembly* 虚拟机，未必就比它性能好。而且浏览器 API 中还有些是直接硬件层面集成，也是高度优化的东西。
+
+*Emscripten* 倒是利用 *WebAssembly* 提供了一个很简单的和 C 集成的方案，有 C 就等于有了一切现成的广大资源。至少那些 js 没有，或者不善于做的事，都可以快速补上，可以带来更多的想象力和可能性吧 —— 不过上限也还是浏览器，做浏览器允许做的事，而不是操作系统允许做的事。
+
 
 
