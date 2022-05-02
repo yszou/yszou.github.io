@@ -522,7 +522,7 @@ demo().then( cbind => {
 
 有了 C 的支持，很多东西都可以移植到浏览器跑了，从小的一些加密，散列算法，到大的完整的应用程序（单纯的计算算法，很多都能找到 js 的实现，从实际场景来说不一定非要用 C 的）。
 
-我在考虑做一个什么样的例子的时候，这个问题纠结了不少时间，后来看到 *micropython* 中有现成的 js 移植，还直接用的就是 *emcc* ，觉得直接用它实现一个小功能就是很合适的。（网上还能找到一个法国大叔的 *brython* 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
+我在考虑做一个什么样的例子的时候，这个问题纠结了不少时间，后来看到 *MicroPython* 中有现成的 js 移植，还直接用的就是 *emcc* ，觉得直接用它实现一个小功能就是很合适的。（网上还能找到一个法国大叔的 *brython* 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
 
 这里，打算用 Python 作为配置语言，使用它完成一套 json 字符串配置的输出。
 
@@ -550,7 +550,7 @@ js.output(Config().as_config())
 
 ## 安装 ##
 
-*emcc* 安装好，并且它的环境变量也处理之后（``source emsdk_env.sh``），直接在 *micropython* 的 ``ports/javascript`` 目录中 ``make`` 就可以编译 *micropython* 的 js 移值这部分。
+*emcc* 安装好，并且它的环境变量也处理之后（``source emsdk_env.sh``），直接在 *MicroPython* 的 ``ports/javascript`` 目录中 ``make`` 就可以编译 *MicroPython* 的 js 移值这部分。
 
 编译完成之后，会有一个 *build* 目录，里面的 ``micropython.js`` 和 ``fireware.wasm`` 是最终有用的。
 
@@ -559,20 +559,20 @@ js.output(Config().as_config())
 
 可以用 js 实现 C 中调用的一个函数。原理，大概就是 C 编译到 *WebAssembly* 时，根据函数名事先在地址上留了坑位，比如只在头文件中声明了函数签名，运行时再用 js 实现的函数运行得到结果。当然，参数类型有限制，毕竟 *WebAssembly* 只有整型和浮点是直接的值传递。
 
-- ``library.h`` 中，使用 *extern* 声明了函数，比如 ``mp_js_write(const char *str, mp_uint_t len)`` ，这就是 *micropython* 中的标准输出函数。
+- ``library.h`` 中，使用 *extern* 声明了函数，比如 ``mp_js_write(const char *str, mp_uint_t len)`` ，这就是 *MicroPython* 中的标准输出函数。
 - ``main.c`` 中引入了 ``library.h`` ，这样声明的函数在编译时可以被处理。
 - ``mphalport.c`` 中 ``mp_hal_stdout_tx_strn`` 是一个标准输出的口子，在 js 的这个 *port* 中重新实现了它（不同的移值有不同的实现）。
 - ``library.js`` 中定义了 js 的标准输出函数，通过 *emcc* 编译时的功能完成了 C 的调用最终由 js 代码实现（编译的选项在 ``Makefile``）。
-- 更多信息可以看 *micropython* 的 Porting 这部分的文档， https://docs.micropython.org/en/latest/develop/porting.html 。
+- 更多信息可以看 *MicroPython* 的 Porting 这部分的文档， https://docs.micropython.org/en/latest/develop/porting.html 。
 
 
-上面是 *micropython* 自己的，移值到 js 时，对于“标准输出”的处理过程。
+上面是 *MicroPython* 自己的，移值到 js 时，对于“标准输出”的处理过程。
 
 
 
 ## 自定义一个 Python 模块 ##
 
-Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ ``micropython`` 是用确定 ID 的 DOM 节点的 *print* 事件处理），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。（跨了不同环境，就不是简单的一个 *return* 能搞定的了）
+Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ *MicroPython* 是用确定 ID 的 DOM 节点的 *print* 事件处理），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。（跨了不同环境，就不是简单的一个 *return* 能搞定的了）
 
 这里要做的一个模块，就是实现 Python 和 js 之间信息传递的功能。
 
@@ -597,7 +597,7 @@ js.emit("string")
 jsemit("string")
 ```
 
-看着像是少了一个 ``import`` 的动作，实际上这直接造成代码的无法兼容， ``jsemit("string")`` 无法在标准的 Python 环境下执行。但如果是单独的 *js* 模块，可以在标准的 Python 环境下用 python 代码先定义一个这样的模块，那么同样的代码既可以在 *micropython* 环境下执行，也可以在标准的 Python 环境下执行。所以不要随便动 *builtin* 。
+看着像是少了一个 ``import`` 的动作，实际上这直接造成代码的无法兼容， ``jsemit("string")`` 无法在标准的 Python 环境下执行。但如果是单独的 *js* 模块，可以在标准的 Python 环境下用 python 代码先定义一个这样的模块，那么同样的代码既可以在 *MicroPython* 环境下执行，也可以在标准的 Python 环境下执行。所以不要随便动 *builtin* 。
 
 下面开始做模块的开发。
 
@@ -765,14 +765,14 @@ function _mp_js_write(ptr, len) {
 
 ``mp_js_init`` ，初始化的栈大小，需要给的大点，比如 5M ，否则执行现实的功能代码，空间可能会不够。
 
-最后执行的 Python 代码，可以在 https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 *uuid* 模块，及 *micropython* 不支持 gb2312 编码的问题，我没想解决它们，绕过去就好了。
+最后执行的 Python 代码，可以在 https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 *uuid* 模块，及 *MicroPython* 不支持 gb2312 编码的问题，我没想解决它们，绕过去就好了。
 
 
 ## 小结 ##
 
 - *emcc* + *WebAssembly* ，提供了一个很简单直接的环境，可以在浏览器中方便地使用 C 的实现。
-- *micropython* 借助 *emcc* ，直接就在浏览器环境提供了一个比较完善的 Python 语言。
-- 更美的是， *micropython* 中要使用 C 写模块，也是非常简单和直接的。
+- *MicroPython* 借助 *emcc* ，直接就在浏览器环境提供了一个比较完善的 Python 语言。
+- 更美的是， *MicroPython* 中要使用 C 写模块，也是非常简单和直接的。
 
 
 
@@ -787,6 +787,67 @@ function _mp_js_write(ptr, len) {
 
 
 前面说过，因为我们不需要手写 *WebAssembly* 语言，所以这个过程大概知道就行了。具体使用时，像 *emcc* ，它又会根据 C 编译结果的情况，对这一过程做自己的定制。所以，现在各种编译到 *WebAssembly* 的方案，产出物除了 *wasm* 文件之外，都会包括对应的 js 加载辅助实现。直接拿到 *wasm* 源文件，不知道它的导入导出依赖，也是没法用的。
+
+
+# 网络 IO 和异步 #
+
+## Emscripten 中的 HTTP ##
+
+*emcc* 提供了一组 *fetch* API ，实现了 HTTP 请求，默认是异步行为，编译时需要添加额外的参数。
+
+```c
+#include <stdio.h>
+#include <string.h>
+#include <emscripten/fetch.h>
+
+void onSuccessed(emscripten_fetch_t *fetch) {
+    printf("%llu, %s\n", fetch->numBytes, fetch->url);
+    printf("%s\n", fetch->data);
+    emscripten_fetch_close(fetch);
+}
+
+void onError(emscripten_fetch_t *fetch) {
+    printf("%d, %s\n", fetch->status, fetch->url);
+    emscripten_fetch_close(fetch);
+}
+
+
+int main() {
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "GET");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.onsuccess = onSuccessed;
+    attr.onerror = onError;
+    printf("hello here\n");
+    return 0;
+}
+```
+
+使用上还是很简单直接的，最终的请求也是通过浏览器的 XHR 发出。（nodejs 不能直接运行，会报错）
+
+编译时，需要添加额外的 *FETCH* 选项：
+
+```bash
+emcc -sFETCH -o demo.html demo.c
+```
+
+虽然 *emcc* 的文档中声称 *FETCH* 这部分有同步的支持，但实际上只是运行时环境上的一些包装。要么是使用 *web workder* ，要么是像实现线程机制那种，依赖 *SharedArrayBuffer* （浏览器因为安全原因都在去掉它了）。如果没有额外的收益，引入这些东西又会把项目搞得复杂。
+
+
+## MicroPython 中的情况 ##
+
+很遗憾，从目前我了解到的情况， *MicroPython* 的 js 移植无法使用异步。由 ``MICROPY_PY_UASYNCIO`` 宏控制的 *asyncio* 模块在 js 移植中也是没有打开的。
+
+没有异步机制，加上 ``mp_js_do_str`` 的执行是 js 的独占，那么直接在 *MicroPython* 中，去调用 *emcc* 的异步 HTTP ，自己用 ``while True`` 模拟同步的网络请求也是不可行的，因为 ``mp_js_do_str`` 函数一直没有“返回”，这样做会阻塞浏览器页面。
+
+针对这个问题，个人现在的一个想法是：
+
+- 在 js 和 C 的 ``mp_js_do_str`` 层面，通过额外的数据状态调度去解决这个问题。
+- ``mp_js_do_str(code, http_request_array, http_result_array)`` 变成这样的函数。
+- ``mp_js_do_str`` 的执行，可能随时被中断（中断由具体的 C 实现的 http 模块触发）。每次执行完，都需要去检查 ``http_request_array`` 的地址上是否有待处理的请求。
+- 如果有，则用 js 完成 HTTP 请求，得到响应，填充 ``http_result_array`` ，再次执行 ``mp_js_do_str(code, http_request_array, http_result_array)`` 。
+- 如此反复，直到 ``mp_js_do_str`` 执行之后，``http_request_array`` 里面没有待处理请求。
 
 
 

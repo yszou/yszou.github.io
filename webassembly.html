@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>WebAssembly 和 Emscripten - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">WebAssembly 和 Emscripten</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2022-05-02 20:57 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">是什么东西？</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">C 编译</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">2.1. 安装</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">2.2. Hello World</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">2.3. js 调用 c</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">2.4. 参数传递，传入字符串</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">2.5. 参数传递，传出字符串</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">2.6. 参数传递，传出结构体</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">2.7. 参数传递，传入结构体</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">2.8. 其它编译</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">例子，浏览器中嵌入 Python</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">3.1. 安装</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">3.2. 用 js 实现 C 的 api</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">3.3. 自定义一个 Python 模块</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">3.4. 自定义模块与 js 的对接</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">3.5. 实际的应用使用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">3.6. 小结</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_self">相互调用背后的东西</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_self">网络 IO 和异步</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_self">5.1. Emscripten 中的 HTTP</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_self">5.2. MicroPython 中的情况</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_self">可能的应用场景</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 是什么东西？</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">WebAssembly</em> 是一种字节码格式，执行它需要对应的一种虚拟机。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们一般不会手写 <em style="color: #d75100; font-style: normal;">WebAssembly</em> ，而是通过其它高级语言，比如 C ，Rust，Go 等，利用编译器来得到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 二进制格式的输出。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+执行 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 需要的虚拟机，在不同的环境下，有不同的实现，比如，在浏览器中。当然，也有独立的实现，像：<a href="https://github.com/bytecodealliance/wasmtime" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/bytecodealliance/wasmtime</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">WebAssembly</em> 也有对应的文本格式，是采用类似 Lisp 语言的 S 表达式来组织的，可以手写它（ <em style="color: #d75100; font-style: normal;">wasmtime</em> 也支持直接执行），比如下面这段：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">(module
+    (<span style="color: #000000; font-weight: bold">import</span> <span style="color: #dd1144">&quot;wasi_unstable&quot;</span> <span style="color: #dd1144">&quot;fd_write&quot;</span> (func <span style="color: #a61717; background-color: #e3d2d2">$</span>fd_write (param i32 i32 i32 i32) (result i32)))
+    (memory <span style="color: #009999">1</span>)
+    (export <span style="color: #dd1144">&quot;memory&quot;</span> (memory <span style="color: #009999">0</span>))
+    (data (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">8</span>) <span style="color: #dd1144">&quot;hello world\n&quot;</span>)
+    (func <span style="color: #a61717; background-color: #e3d2d2">$</span>main (export <span style="color: #dd1144">&quot;_start&quot;</span>)
+        (i32<span style="color: #000000; font-weight: bold">.</span>store (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">0</span>) (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">8</span>))
+        (i32<span style="color: #000000; font-weight: bold">.</span>store (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">4</span>) (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">12</span>))
+        (call <span style="color: #a61717; background-color: #e3d2d2">$</span>fd_write
+            (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">1</span>)
+            (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">0</span>)
+            (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">1</span>)
+            (i32<span style="color: #000000; font-weight: bold">.</span>const <span style="color: #009999">20</span>)
+        )
+        drop
+    )
+)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把这些内容保存成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.wat</code> ，用前面的 <em style="color: #d75100; font-style: normal;">wasmtime</em> 执行就可以输出 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello world</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">wasmtime demo.wat
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里面除了 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 语言本身的语法格式外，还有像 <em style="color: #d75100; font-style: normal;">fd_write</em> 这些需要导入的函数。只有具体的虚拟机，或者说运行时环境，提供了这些函数，这段代码才可以正常运行，进一步才能去完成更业务性的事，否则可能只能一直做些四则运算了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+像运行时的“标准函数”，现在还不是一个稳定的标准，在 <a href="https://github.com/WebAssembly/WASI" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/WebAssembly/WASI</a> 这里，能看到它们在被缓慢的推进着，一份简单的文档在 <a href="https://github.com/WebAssembly/WASI/blob/main/phases/snapshot/docs.md" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/WebAssembly/WASI/blob/main/phases/snapshot/docs.md</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不需要尝试去找针对 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的文本格式的完整的“语法手册”，因为根本找不到。官方的“语法手册”，是从 Token 层面说的，给编译器开发人员看的那类文档，手写 S 表达式不是 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的使用方式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们会使用其它的高级语言，通过编译得到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 。之后的重点，其实已经不在 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 这个语言本身，反正是编译器的事。相l对的，了解各个运行时环境，知道它们提供了哪些像前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fd_write</code> 那样的实现，及怎么和 js 交互，才更有意义。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. C 编译</h1>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. 安装</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">emscripten</em> ，是一套编译构建方案，同时提供了比较完整的 SDK ，它在 <a href="https://emscripten.org/" style="color: #0184b7; text-decoration: none" target="_blank">https://emscripten.org/</a> 。它使我们可以非常方便地使用 C 语言完成 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 相关的开发与环境集成。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安装的方式，是先拉取 git 代码：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">git clone https://github.com/emscripten-core/emsdk.git
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+进入目录后，执行安装，它会下载 C 编辑器，nodejs 等一堆东西：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #0086B3">cd</span> emsdk
+./emsdk install latest
+./emsdk activate latest
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后处理一下环境（效果只在终端的当前会话有效）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #0086B3">source</span> ./emsdk_env.sh
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emcc</code> 是一个可执行命令时，整个环境就准备好了。
+</p>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. Hello World</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先写个 <em style="color: #d75100; font-style: normal;">hello world</em> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdio.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">main</span>() {
+    printf(<span style="color: #dd1144">&quot;Hello, World\n&quot;</span>);
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面的环境如果处理好了，就可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emcc</code> 去直接编译这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.c</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译的结果是在当前目录下，会有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.js</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.wasm</code> 两个文件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.wasm</code> 是 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的二进制是格式的代码。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.js</code> 处理加载和额外的依赖，同时，它支持 nodejs 。所以直接执行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">node a.out.js
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就可以看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Hello, World</code> 的输出。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，如果用前面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wasmtime</code> 去执行 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.wasm</code> ，会看到报错，报措的原因是找不到一些定义。这就是前面说过的，语言问题是小事，麻烦的是环境。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">emcc</em> 做了一套方案，去尽量兼容 C 的开发与编译环境。当开发中需要的一些依赖要跑在 nodejs ，或者浏览器中的时候，环境相关的东西就需要被重新解释，比如“标准输出”变成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.log</code> 。这些“解释”，不是 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 语言范畴的，要么运行时提供内置实现，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wasmtime</code> 里面可能提供了一些。要么运行时提供一个注入式的方案，比如 nodejs 或者浏览器上，都可以完成 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 和 <em style="color: #d75100; font-style: normal;">javascript</em> 的互调用，那么“标准输入”在编译时就可以仅被解析成任何的一个符号，执行时再由 <em style="color: #d75100; font-style: normal;">javascript</em> 提供这个符号的实现就可以了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">wasmtime a.out.wasm</code> 的报错，是找不到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">env::emscripten_memcpy_big</code> ，其实打开 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.js</code> 找一下，能找到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emscripten_memcpy_big</code> ，我个猜的话， <em style="color: #d75100; font-style: normal;">emcc</em> 就是使用 js 提供了一些 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的运行依赖。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">a.out.js</code> 中的“标准输出”，就是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">_fd_write</code> 这个函数，有兴趣的可以加一些 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">console.log</code> 看看。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+nodejs 可以执行 <em style="color: #d75100; font-style: normal;">WebAssembly</em> ，浏览器也可以，为了方便，编译的方式调整一下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c -o hello.html
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样的话，除了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.wasm</code> , <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.js</code> ，还会有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.html</code> 的 html 文件。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以直接执行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">node hello.js
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以启动一个静态服务，在浏览器中访问这个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.html</code>  ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">python -mhttp.server
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过访问 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://localhost:8000/hello.html</code> ，就可以看到下图了：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="https://img.zys.me/NoftHfT.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+（ <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello.html</code> ，别看它有很多行代码，其中有好多是 svg 图 …… ）
+</p>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.3. js 调用 c</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设要做一个 C 版本的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">add</code> 函数给 js 调用，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.c</code> 文件中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">add</span>(<span style="color: #445588; font-weight: bold">int</span> a, <span style="color: #445588; font-weight: bold">int</span> b) {
+    <span style="color: #000000; font-weight: bold">return</span> a <span style="color: #000000; font-weight: bold">+</span> b;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emcc</code> 提供的编译工具，封装了 js 调用 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的过程，只需要在编译时使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EXPORTED_FUNCTIONS</code> 选项：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c -o hello.html -sEXPORTED_FUNCTIONS<span style="color: #000000; font-weight: bold">=</span>_add
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-sEXPORTED_FUNCTIONS</code> 是导出的函数，需要加前置下划线。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同样，打开 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http://localhost:8000/hello.html</code> 之后，在控制台输入：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">Module._add(<span style="color: #009999">1</span>,<span style="color: #009999">2</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+就能看到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">3</code> 的返回。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Module</code> 是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emcc</code> 定义的全局量。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果要把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Module</code> 作为模块，而不是全局量，在 <em style="color: #d75100; font-style: normal;">emcc</em> 编译时加一个参数就可以了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c -o demo.js -sEXPORTED_FUNCTIONS<span style="color: #000000; font-weight: bold">=</span>_add  -sMODULARIZE
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">demo.js</code> 的加载会返回一个 <em style="color: #d75100; font-style: normal;">Promise</em> 对象， <em style="color: #d75100; font-style: normal;">resolve</em> 出 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Module</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> f <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo.js&#39;</span>)
+f().then(ins =&gt; console.log(ins._add(<span style="color: #009999">1</span>,<span style="color: #009999">1</span>)))
+<span style="color: #009999">2</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果觉得 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-sEXPORTED_FUNCTIONS</code> 麻烦，也可以在源码中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EMSCRIPTEN_KEEPALIVE</code> 宏直接“标记”要导出的函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;emscripten.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">add_1</span>(<span style="color: #445588; font-weight: bold">int</span> a) {
+    <span style="color: #000000; font-weight: bold">return</span> a <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样，直接编译就可以导出 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">add_1</code> 这个函数了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c -o demo.html
+emcc demo.c -o demo.js -sMODULARIZE
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.4. 参数传递，传入字符串</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 本身设计上的限制，除了 <em style="color: #d75100; font-style: normal;">int</em> 和 <em style="color: #d75100; font-style: normal;">float</em> 可以作为值直接传递之外，其它的类型，比如字符串，数组，都只能通过地址来完成传递。这点上，倒是和 C 语言的机制很搭。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">str_len</code> 的例子，传入一个字符串，返回这个字符串的长度：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdio.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;string.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+<span style="color: #999999; font-weight: bold">#ifdef __EMSCRIPTEN__</span>
+    <span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;emscripten.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#else</span>
+    <span style="color: #999999; font-weight: bold">#define EMSCRIPTEN_KEEPALIVE ;</span>
+<span style="color: #999999; font-weight: bold">#endif</span>
+
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">str_len</span>(<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> s) {
+    <span style="color: #000000; font-weight: bold">return</span> strlen(s);
+}
+
+<span style="color: #999999; font-weight: bold">#ifndef __EMSCRIPTEN__</span>
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">main</span>() {
+    printf(<span style="color: #dd1144">&quot;%d\n&quot;</span>, str_len(<span style="color: #dd1144">&quot;hello&quot;</span>));
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>;
+}
+<span style="color: #999999; font-weight: bold">#endif</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果 js 中这样调用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> demo <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo&#39;</span>);
+
+demo().then( cbind =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> n <span style="color: #000000; font-weight: bold">=</span> cbind._str_len(<span style="color: #dd1144">&quot;Hello11111111&quot;</span>);
+  console.log(n);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结果是不对的。我猜，js 中的字符串传入的时候， <em style="color: #d75100; font-style: normal;">emcc</em> 会把它当地址（指针）处理，所以这里看到的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">4</code> 。如果希望把它当成字符串，而不是地址，那么 js 中的入参，到 C 函数的调用，参数在中间需要做显式的格式转换声明，这个过程， <em style="color: #d75100; font-style: normal;">emcc</em> 通过 js 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall</code> 函数提供支持。为了使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall</code> 函数，编译时需要把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall</code> 加入：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c -o demo.js -sMODULARIZE -sEXPORTED_RUNTIME_METHODS<span style="color: #000000; font-weight: bold">=</span>ccall
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall</code> 的用法： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall('func_name', 'return type', ['arg1 type', 'arg2 type'], [arg1, arg2])</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把原来的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">str_len</code> 函数包装一下就可以得到正确的结果了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> demo <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo&#39;</span>);
+
+demo().then( cbind =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> n <span style="color: #000000; font-weight: bold">=</span> cbind._str_len(<span style="color: #dd1144">&quot;Hello11111111&quot;</span>);
+  console.log(n);
+  <span style="color: #000000; font-weight: bold">const</span> l <span style="color: #000000; font-weight: bold">=</span> cbind.ccall(<span style="color: #dd1144">&#39;str_len&#39;</span>, <span style="color: #dd1144">&#39;number&#39;</span>, [<span style="color: #dd1144">&#39;string&#39;</span>], [<span style="color: #dd1144">&quot;hello11111111&quot;</span>]);
+  console.log(l);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">string</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ccall</code> 还可以支持 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">number</code>, <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">array</code> （整数）， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">boolean</code> 。
+</p>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.5. 参数传递，传出字符串</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里做一个随机字符串的例子：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdlib.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdio.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;time.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;string.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+<span style="color: #999999; font-weight: bold">#ifdef __EMSCRIPTEN__</span>
+    <span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;emscripten.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#else</span>
+    <span style="color: #999999; font-weight: bold">#define EMSCRIPTEN_KEEPALIVE ;</span>
+<span style="color: #999999; font-weight: bold">#endif</span>
+
+
+<span style="color: #000000; font-weight: bold">const</span> <span style="color: #445588; font-weight: bold">int</span> MAX_LEN <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">100</span>;
+
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">c_get_str</span>(<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> s) {
+    srand(time(<span style="color: #0086B3">NULL</span>));
+    <span style="color: #445588; font-weight: bold">int</span> r <span style="color: #000000; font-weight: bold">=</span> rand() <span style="color: #000000; font-weight: bold">%</span> MAX_LEN;
+    <span style="color: #445588; font-weight: bold">int</span> i;
+    <span style="color: #000000; font-weight: bold">for</span>(i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">0</span>; i <span style="color: #000000; font-weight: bold">&lt;</span> r; i<span style="color: #000000; font-weight: bold">++</span>) {
+        s[i] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;M&#39;</span>;
+    }
+    <span style="color: #000000; font-weight: bold">return</span> r;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">getRandomStr</span>(<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> s) {
+    <span style="color: #000000; font-weight: bold">return</span> c_get_str(s);
+}
+
+
+<span style="color: #999999; font-weight: bold">#ifndef __EMSCRIPTEN__</span>
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">main</span>() {
+    <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> src <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span>)malloc(MAX_LEN);
+    <span style="color: #445588; font-weight: bold">int</span> len <span style="color: #000000; font-weight: bold">=</span> getRandomStr(src);
+    <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> dest <span style="color: #000000; font-weight: bold">=</span> (<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span>)malloc(len <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>);
+    strcpy(dest, src);
+    free(src);
+    dest[len] <span style="color: #000000; font-weight: bold">=</span> <span style="color: #a61717; background-color: #e3d2d2">&#39;\</span>n<span style="color: #a61717; background-color: #e3d2d2">&#39;</span>;
+    printf(<span style="color: #dd1144">&quot;%s&quot;</span>, dest);
+    free(dest);
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>;
+}
+<span style="color: #999999; font-weight: bold">#endif</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getRandomStr</code> 是导出的函数，它接受一个字符串指针，会在里面填充一个随机的字符串，并返回其长度。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">__EMSCRIPTEN__</code> 是 <em style="color: #d75100; font-style: normal;">emcc</em> 编译时的宏。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EMSCRIPTEN_KEEPALIVE</code> 是 <em style="color: #d75100; font-style: normal;">emcc</em> 定义的宏。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+代码比较简单，就是随机生成 N 个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">M</code> 字符。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要在 js 中使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getRandomStr</code> 函数，除了前面说的那些东西，在 <em style="color: #d75100; font-style: normal;">emcc</em> 编译时，还需要导出额外的支持函数（这些函数使用比较普遍）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS<span style="color: #000000; font-weight: bold">=</span>UTF8ToString \
+    -sEXPORTED_FUNCTIONS<span style="color: #000000; font-weight: bold">=</span>_malloc,_free
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EXPORTED_RUNTIME_METHODS=UTF8ToString</code> 导出的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UTF8ToString</code> 可以帮助我们直接把一个字符串指针转成 js 的字符串。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">EXPORTED_FUNCTIONS=_malloc,_free</code> 导出的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">malloc</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">free</code> 类似 C 里面的内存分配与回收。 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">malloc</code> 的调用返回也是一个内存地址。
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+编译之后， nodejs 中就可以这样使用了：
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> demo <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo&#39;</span>);
+
+demo().then( cbind =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> buffer <span style="color: #000000; font-weight: bold">=</span> cbind._malloc(<span style="color: #009999">100</span>);
+  <span style="color: #000000; font-weight: bold">const</span> r <span style="color: #000000; font-weight: bold">=</span> cbind._getRandomStr(buffer);
+  console.log(<span style="color: #dd1144">&#39;len is&#39;</span>, r);
+  console.log(cbind.UTF8ToString(buffer));
+  cbind._free(buffer);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;"></p>
+先申请一块内存，然后传入，使用完之后，释放它。（内存管理 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 可能有自己的一些标准，这里如果提前 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">_free</code> ，代码也是可以正确执行的）
+</li>
+</ul>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.6. 参数传递，传出结构体</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结构体本身只是一段内存，所以在 js 中处理结构体，通用的方法是“解析结构体的内存”。但在实践中，可以避免这些麻烦的处理，直接用 C 定义相关的方法就可以了：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdlib.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdio.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;string.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+<span style="color: #999999; font-weight: bold">#ifdef __EMSCRIPTEN__</span>
+    <span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;emscripten.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#else</span>
+    <span style="color: #999999; font-weight: bold">#define EMSCRIPTEN_KEEPALIVE ;</span>
+<span style="color: #999999; font-weight: bold">#endif</span>
+
+
+<span style="color: #000000; font-weight: bold">typedef</span> <span style="color: #000000; font-weight: bold">struct</span> {
+    <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> name;
+    <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> desc;
+    <span style="color: #445588; font-weight: bold">int</span> age;
+} Person;
+
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">get_person</span>(Person<span style="color: #000000; font-weight: bold">*</span> p) {
+    p <span style="color: #000000; font-weight: bold">-&gt;</span> name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;hello&quot;</span>;
+    p <span style="color: #000000; font-weight: bold">-&gt;</span> desc <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;world&quot;</span>;
+    p <span style="color: #000000; font-weight: bold">-&gt;</span> age <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">22</span>;
+}
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> <span style="color: #990000; font-weight: bold">get_person_name</span>(Person <span style="color: #000000; font-weight: bold">*</span>p) {
+    <span style="color: #000000; font-weight: bold">return</span> p <span style="color: #000000; font-weight: bold">-&gt;</span> name;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">get_person_type_size</span>() {
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #000000; font-weight: bold">sizeof</span>(Person);
+}
+
+
+<span style="color: #999999; font-weight: bold">#ifndef __EMSCRIPTEN__</span>
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">main</span>() {
+    Person<span style="color: #000000; font-weight: bold">*</span> p <span style="color: #000000; font-weight: bold">=</span> malloc(<span style="color: #000000; font-weight: bold">sizeof</span>(Person));
+    get_person(p);
+    printf(<span style="color: #dd1144">&quot;%s&quot;</span>, p <span style="color: #000000; font-weight: bold">-&gt;</span> name);
+    free(p);
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>;
+}
+<span style="color: #999999; font-weight: bold">#endif</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码中，对于 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Person</code> 这个结构体，如果要获取它的名字，单独定义一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">get_person_name</code> 函数总是可行的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也顺便介绍一下通用的办法，是使用 <em style="color: #d75100; font-style: normal;">emcc</em> 提供的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getValue</code> 函数，直接按数据类型，一块一块地读内存结构。要使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getValue</code> ，编译时记得将它导出：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS<span style="color: #000000; font-weight: bold">=</span>UTF8ToString,getValue \
+    -sEXPORTED_FUNCTIONS<span style="color: #000000; font-weight: bold">=</span>_malloc,_free
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 js 中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> demo <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo&#39;</span>);
+
+demo().then( cbind =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> n <span style="color: #000000; font-weight: bold">=</span> cbind._get_person_type_size();
+  <span style="color: #999988">// console.log(n);</span>
+  <span style="color: #000000; font-weight: bold">const</span> buffer <span style="color: #000000; font-weight: bold">=</span> cbind._malloc(n);
+  cbind._get_person(buffer);
+  <span style="color: #999988">// console.log(cbind.UTF8ToString(cbind._get_person_name(buffer)));</span>
+
+  <span style="color: #000000; font-weight: bold">const</span> name <span style="color: #000000; font-weight: bold">=</span> cbind.getValue(buffer <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">4</span>, <span style="color: #dd1144">&#39;i32&#39;</span>)
+  console.log(cbind.UTF8ToString(name));
+  <span style="color: #000000; font-weight: bold">const</span> age <span style="color: #000000; font-weight: bold">=</span> cbind.getValue(buffer <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">8</span>, <span style="color: #dd1144">&#39;i32&#39;</span>)
+  console.log(age);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里直接就知道 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+4</code>，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+8</code> 的偏移，是建立在完全了解 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Person</code> 结构定义前提下的。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.7. 参数传递，传入结构体</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+结构体是连续内存地址，前面有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getValue</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UTF8ToString</code> ，自然也有对应的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setValue</code>， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">stringToUTF8</code> ，它们可以用来拼出指定内存地址上的数据状态，进而就可以实现结构体的传入。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在前面 C 代码的基础上，添加一个函数，用于打印 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Person</code> 的信息：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">EMSCRIPTEN_KEEPALIVE
+<span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">print_person</span>(Person <span style="color: #000000; font-weight: bold">*</span>p) {
+    printf(<span style="color: #dd1144">&quot;%s\n&quot;</span>, p <span style="color: #000000; font-weight: bold">-&gt;</span> name);
+    printf(<span style="color: #dd1144">&quot;%s\n&quot;</span>, p <span style="color: #000000; font-weight: bold">-&gt;</span> desc);
+    printf(<span style="color: #dd1144">&quot;%d\n&quot;</span>, p <span style="color: #000000; font-weight: bold">-&gt;</span> age);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译时把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setValue</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">stringToUTF8</code> 加上，还有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">lengthBytesUTF8</code> 工具，用来计算字符串的字节数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc demo.c \
+    -o demo.js \
+    -sMODULARIZE \
+    -sEXPORTED_RUNTIME_METHODS<span style="color: #000000; font-weight: bold">=</span>UTF8ToString,getValue,setValue,stringToUTF8,lengthBytesUTF8 \
+    -sEXPORTED_FUNCTIONS<span style="color: #000000; font-weight: bold">=</span>_malloc,_free
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后尝试从 js 调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">print_person</code> 函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> demo <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./demo&#39;</span>);
+
+demo().then( cbind =&gt; {
+  <span style="color: #000000; font-weight: bold">const</span> n <span style="color: #000000; font-weight: bold">=</span> cbind._get_person_type_size();
+  <span style="color: #000000; font-weight: bold">const</span> buffer <span style="color: #000000; font-weight: bold">=</span> cbind._malloc(n);
+
+  <span style="color: #000000; font-weight: bold">const</span> name <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;FROM JS&quot;</span>;
+  <span style="color: #000000; font-weight: bold">const</span> nameLen <span style="color: #000000; font-weight: bold">=</span> cbind.lengthBytesUTF8(name) <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>;
+  <span style="color: #000000; font-weight: bold">const</span> nameBuffer <span style="color: #000000; font-weight: bold">=</span> cbind._malloc(nameLen);
+  cbind.stringToUTF8(name, nameBuffer, nameLen);
+
+  <span style="color: #000000; font-weight: bold">const</span> desc <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;HAHAHA&quot;</span>;
+  <span style="color: #000000; font-weight: bold">const</span> descLen <span style="color: #000000; font-weight: bold">=</span> cbind.lengthBytesUTF8(desc) <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">1</span>;
+  <span style="color: #000000; font-weight: bold">const</span> descBuffer <span style="color: #000000; font-weight: bold">=</span> cbind._malloc(descLen);
+  cbind.stringToUTF8(desc, descBuffer, descLen);
+
+  cbind.setValue(buffer, nameBuffer, <span style="color: #dd1144">&#39;i32&#39;</span>);
+  cbind.setValue(buffer <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">4</span>, descBuffer, <span style="color: #dd1144">&#39;i32&#39;</span>);
+  cbind.setValue(buffer <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">8</span>, <span style="color: #009999">88</span>, <span style="color: #dd1144">&#39;i32&#39;</span>);
+
+  cbind._print_person(buffer);
+
+  cbind._free(descBuffer);
+  cbind._free(nameBuffer);
+  cbind._free(buffer);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基本过程，就是针对字符串的数据，需要为它们先单独分配空间，再把空间地址通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setValue</code> 设置到原地址上。
+</p>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.8. 其它编译</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说的 <em style="color: #d75100; font-style: normal;">emcc</em> 也是支持 c++ 的。市面上还有 go, rust, 类 typescript 等其它实现。不过涉及直接和内存概念打交道，还是 C 简单直接。
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 例子，浏览器中嵌入 Python</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+有了 C 的支持，很多东西都可以移植到浏览器跑了，从小的一些加密，散列算法，到大的完整的应用程序（单纯的计算算法，很多都能找到 js 的实现，从实际场景来说不一定非要用 C 的）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我在考虑做一个什么样的例子的时候，这个问题纠结了不少时间，后来看到 <em style="color: #d75100; font-style: normal;">MicroPython</em> 中有现成的 js 移植，还直接用的就是 <em style="color: #d75100; font-style: normal;">emcc</em> ，觉得直接用它实现一个小功能就是很合适的。（网上还能找到一个法国大叔的 <em style="color: #d75100; font-style: normal;">brython</em> 的项目，是用 js 实现了把 Python 代码转换成 js 代码，也是狠）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里，打算用 Python 作为配置语言，使用它完成一套 json 字符串配置的输出。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，系统需要的输入是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">{
+    <span style="color: #dd1144">&quot;name&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;Hello&quot;</span>,
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+现在引入 Python ，可以做成（随便想的，实现时再调整）：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">random</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Config</span>(BaseConfig):
+    name <span style="color: #000000; font-weight: bold">=</span> random<span style="color: #000000; font-weight: bold">.</span>choice([<span style="color: #dd1144">&quot;Hello&quot;</span>, <span style="color: #dd1144">&quot;World&quot;</span>])
+
+js<span style="color: #000000; font-weight: bold">.</span>output(Config()<span style="color: #000000; font-weight: bold">.</span>as_config())
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+加入随机生成的功能，每次执行，都能观察到实际效果的变化，对于调试和检查是很方便的。
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. 安装</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">emcc</em> 安装好，并且它的环境变量也处理之后（<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">source emsdk_env.sh</code>），直接在 <em style="color: #d75100; font-style: normal;">MicroPython</em> 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">ports/javascript</code> 目录中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">make</code> 就可以编译 <em style="color: #d75100; font-style: normal;">MicroPython</em> 的 js 移值这部分。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译完成之后，会有一个 <em style="color: #d75100; font-style: normal;">build</em> 目录，里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">micropython.js</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fireware.wasm</code> 是最终有用的。
+</p>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. 用 js 实现 C 的 api</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+可以用 js 实现 C 中调用的一个函数。原理，大概就是 C 编译到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 时，根据函数名事先在地址上留了坑位，比如只在头文件中声明了函数签名，运行时再用 js 实现的函数运行得到结果。当然，参数类型有限制，毕竟 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 只有整型和浮点是直接的值传递。
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">library.h</code> 中，使用 <em style="color: #d75100; font-style: normal;">extern</em> 声明了函数，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_write(const char *str, mp_uint_t len)</code> ，这就是 <em style="color: #d75100; font-style: normal;">MicroPython</em> 中的标准输出函数。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">main.c</code> 中引入了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">library.h</code> ，这样声明的函数在编译时可以被处理。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mphalport.c</code> 中 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_hal_stdout_tx_strn</code> 是一个标准输出的口子，在 js 的这个 <em style="color: #d75100; font-style: normal;">port</em> 中重新实现了它（不同的移值有不同的实现）。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">library.js</code> 中定义了 js 的标准输出函数，通过 <em style="color: #d75100; font-style: normal;">emcc</em> 编译时的功能完成了 C 的调用最终由 js 代码实现（编译的选项在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Makefile</code>）。
+</li>
+<li style="margin: 10px auto;">更多信息可以看 <em style="color: #d75100; font-style: normal;">MicroPython</em> 的 Porting 这部分的文档， <a href="https://docs.micropython.org/en/latest/develop/porting.html" style="color: #0184b7; text-decoration: none" target="_blank">https://docs.micropython.org/en/latest/develop/porting.html</a> 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面是 <em style="color: #d75100; font-style: normal;">MicroPython</em> 自己的，移值到 js 时，对于“标准输出”的处理过程。
+</p>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 自定义一个 Python 模块</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+Python 和 js 之间，需要有一个信息传递的渠道，标准输出本来是现成的一个（ <em style="color: #d75100; font-style: normal;">MicroPython</em> 是用确定 ID 的 DOM 节点的 <em style="color: #d75100; font-style: normal;">print</em> 事件处理），但是考虑到，写 Python 代码的人，也需要有调试的手段，标准输出应该用在这里。那么业务场景需要的 Python 和 js 之间的信息传递，就需要自己再造一个了。（跨了不同环境，就不是简单的一个 <em style="color: #d75100; font-style: normal;">return</em> 能搞定的了）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里要做的一个模块，就是实现 Python 和 js 之间信息传递的功能。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先不考虑 js 调用的事，只看怎么用 C 实现一个 Python 的模块。按文档，自定义一个模块，需要做两步：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">单独的一个 c 源文件，里面定义模块，注册模块。
+</li>
+<li style="margin: 10px auto;">修改 <em style="color: #d75100; font-style: normal;">Makefile</em> ，重新编译。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+假设期望的模块使用是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">js</span>
+js<span style="color: #000000; font-weight: bold">.</span>emit(<span style="color: #dd1144">&quot;string&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+即， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js</code> 模块，里面有一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emit</code> 方法，参数是字符串。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多说一点，这里使用单独模块，设计上优于直接添加 <em style="color: #d75100; font-style: normal;">builtin</em> 方法/模块。如果 <em style="color: #d75100; font-style: normal;">builtin</em> 的话，代码可能是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">jsemit(<span style="color: #dd1144">&quot;string&quot;</span>)
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+看着像是少了一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">import</code> 的动作，实际上这直接造成代码的无法兼容， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">jsemit("string")</code> 无法在标准的 Python 环境下执行。但如果是单独的 <em style="color: #d75100; font-style: normal;">js</em> 模块，可以在标准的 Python 环境下用 python 代码先定义一个这样的模块，那么同样的代码既可以在 <em style="color: #d75100; font-style: normal;">MicroPython</em> 环境下执行，也可以在标准的 Python 环境下执行。所以不要随便动 <em style="color: #d75100; font-style: normal;">builtin</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下面开始做模块的开发。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+新建一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">modjs.c</code> 文件：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&quot;py/runtime.h&quot; </span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&quot;py/objstr.h&quot;</span><span style="color: #999999; font-weight: bold"></span>
+
+STATIC mp_obj_t <span style="color: #990000; font-weight: bold">js_emit</span>(<span style="color: #000000; font-weight: bold">const</span> mp_obj_t str) {
+    <span style="color: #000000; font-weight: bold">const</span> <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> s <span style="color: #000000; font-weight: bold">=</span> mp_obj_str_get_str(str);
+    mp_printf(<span style="color: #000000; font-weight: bold">&amp;</span>mp_plat_print, s);
+    <span style="color: #000000; font-weight: bold">return</span> mp_const_none;
+}
+STATIC <span style="color: #990000; font-weight: bold">MP_DEFINE_CONST_FUN_OBJ_1</span>(js_emit_obj, js_emit);
+
+STATIC <span style="color: #000000; font-weight: bold">const</span> mp_rom_map_elem_t js_module_globals_table[] <span style="color: #000000; font-weight: bold">=</span> {
+    { MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_js) },
+    { MP_ROM_QSTR(MP_QSTR_emit), MP_ROM_PTR(<span style="color: #000000; font-weight: bold">&amp;</span>js_emit_obj) },
+};
+STATIC <span style="color: #990000; font-weight: bold">MP_DEFINE_CONST_DICT</span>(js_module_globals, js_module_globals_table);
+
+<span style="color: #000000; font-weight: bold">const</span> mp_obj_module_t js_module <span style="color: #000000; font-weight: bold">=</span> {
+    .base <span style="color: #000000; font-weight: bold">=</span> { <span style="color: #000000; font-weight: bold">&amp;</span>mp_type_module },
+    .globals <span style="color: #000000; font-weight: bold">=</span> (mp_obj_dict_t <span style="color: #000000; font-weight: bold">*</span>)<span style="color: #000000; font-weight: bold">&amp;</span>js_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_js, js_module, MICROPY_PY_JS);
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里的一些处理是基于名字的，像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js_emit_obj</code> ， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MP_DEFINE_CONST_FUN_OBJ_1</code> ，它们在编译时，有宏会按参数展开并完成定义行为。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后一行的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MICROPY_PY_JS</code> 也是一个宏，需要事先在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mpconfigport.h</code> 中添加它：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#define MICROPY_PY_JS               (1)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+当然，直接写死 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">1</code> 也是可以的。定义 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MICROPY_PY_JS</code> 只是为了好控制。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后，要修改 <em style="color: #d75100; font-style: normal;">Makefile</em> 的配置，打开 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Makefile</code> ，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">SRC_C</code> 中添加刚才新建的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">modjs.c</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">SRC_C</span> <span style="color: #000000; font-weight: bold">=</span> \
+	main.c \
+	modjs.c \
+	mphalport.c \
+	modutime.c \
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这样就可以了，重新编译后， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js.emit("string")</code> 就会在标准输出中显示它的参数，这说明定义一个模块的事做好了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+接着考虑和 js 的对接，以实现最终目的。
+</p>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. 自定义模块与 js 的对接</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一步，最终的目的是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js.emit</code> 调用之后，就可以从一个事先定义的，确定的变量中，获取到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emit</code> 的内容。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+大概的思路：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">modjs.c</code> 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js_emit</code> 里，加入一个函数，传出字符串：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">extern</span> <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">mp_on_emit</span>(<span style="color: #000000; font-weight: bold">const</span> <span style="color: #445588; font-weight: bold">char</span> <span style="color: #000000; font-weight: bold">*</span>s);
+
+STATIC mp_obj_t <span style="color: #990000; font-weight: bold">js_emit</span>(<span style="color: #000000; font-weight: bold">const</span> mp_obj_t str) {
+    <span style="color: #000000; font-weight: bold">const</span> <span style="color: #445588; font-weight: bold">char</span><span style="color: #000000; font-weight: bold">*</span> s <span style="color: #000000; font-weight: bold">=</span> mp_obj_str_get_str(str);
+    mp_on_emit(s);
+    <span style="color: #000000; font-weight: bold">return</span> mp_const_none;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_on_emit</code> 在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">main.c</code> 中定义，把接收到的字符串马上复制一遍，保存在一个静态变量中：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">STATIC <span style="color: #445588; font-weight: bold">char</span> <span style="color: #000000; font-weight: bold">*</span>mp_current_emit_str <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;&quot;</span>;
+<span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">mp_on_emit</span>(<span style="color: #000000; font-weight: bold">const</span> <span style="color: #445588; font-weight: bold">char</span> <span style="color: #000000; font-weight: bold">*</span>s) {
+    strcpy(mp_current_emit_str, s);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+同时在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">main.c</code> 中提供一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_resiger_emit_handler(char *s)</code> ，之后会被导出到 js ，它的参数是一个内存地址，实现上将会赋值给静态变量 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_current_emit_str</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">mp_js_register_emit_handler</span>(<span style="color: #445588; font-weight: bold">char</span> <span style="color: #000000; font-weight: bold">*</span>s) {
+    mp_current_emit_str <span style="color: #000000; font-weight: bold">=</span> s;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_resiger_emit_handler</code> 的参数是由 js 传入的，所以，在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">js_emit</code> 调用完之后，我们就可以从 js 传入的地址那里，得到可能存在的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">emit</code> 内容。整体的 nodejs 过程如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">var</span> mp_js <span style="color: #000000; font-weight: bold">=</span> require(<span style="color: #dd1144">&#39;./build/micropython.js&#39;</span>);
+mp_js().then(Module =&gt; {
+  <span style="color: #000000; font-weight: bold">var</span> mp_js_init <span style="color: #000000; font-weight: bold">=</span> Module.cwrap(<span style="color: #dd1144">&#39;mp_js_init&#39;</span>, <span style="color: #dd1144">&#39;null&#39;</span>, [<span style="color: #dd1144">&#39;number&#39;</span>]);
+  <span style="color: #000000; font-weight: bold">var</span> mp_js_do_str <span style="color: #000000; font-weight: bold">=</span> Module.cwrap(<span style="color: #dd1144">&#39;mp_js_do_str&#39;</span>, <span style="color: #dd1144">&#39;number&#39;</span>, [<span style="color: #dd1144">&#39;string&#39;</span>]);
+  <span style="color: #000000; font-weight: bold">const</span> buffer <span style="color: #000000; font-weight: bold">=</span> Module._malloc(<span style="color: #009999">200</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1024</span>);
+  Module._mp_js_register_emit_handler(buffer);
+  mp_js_init(<span style="color: #009999">64</span> <span style="color: #000000; font-weight: bold">*</span> <span style="color: #009999">1024</span>);
+  <span style="color: #000000; font-weight: bold">const</span> py <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">`</span>
+<span style="color: #dd1144">import js</span>
+<span style="color: #dd1144">import json</span>
+<span style="color: #dd1144">js.emit(json.dumps({&quot;a&quot;: 123}))</span>
+<span style="color: #dd1144">  `</span>
+  mp_js_do_str(py);
+  <span style="color: #000000; font-weight: bold">const</span> str <span style="color: #000000; font-weight: bold">=</span> Module.UTF8ToString(buffer);
+  Module._free(buffer);
+  console.log(str);
+});
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+额外注意的一个点，这里用到了更多的 <em style="color: #d75100; font-style: normal;">emcc</em> 导出函数，同时还以 <em style="color: #d75100; font-style: normal;">Promise</em> 的方式使用模块，所以 <em style="color: #d75100; font-style: normal;">Makefile</em> 中的 <em style="color: #d75100; font-style: normal;">FLAGS</em> 部分也要作相应的修改：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #008080">JSFLAGS</span> <span style="color: #000000; font-weight: bold">+=</span> -s <span style="color: #008080">EXPORTED_FUNCTIONS</span><span style="color: #000000; font-weight: bold">=</span><span style="color: #dd1144">&quot;[&#39;_malloc&#39;, &#39;_free&#39;, &#39;_mp_js_register_emit_handler&#39;, \</span>
+                                   <span style="color: #dd1144">&#39;_mp_js_init&#39;</span>, <span style="color: #dd1144">&#39;_mp_js_init_repl&#39;</span>, <span style="color: #dd1144">&#39;_mp_js_do_str&#39;</span>, \
+                                   <span style="color: #dd1144">&#39;_mp_js_process_char&#39;</span>, <span style="color: #dd1144">&#39;_mp_hal_get_interrupt_char&#39;</span>, \
+                                   <span style="color: #dd1144">&#39;_mp_sched_keyboard_interrupt&#39;</span><span style="color: #000000; font-weight: bold">]</span><span style="color: #dd1144">&quot; \</span>
+<span style="color: #dd1144">           -s EXPORTED_RUNTIME_METHODS=&quot;</span><span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;ccall&#39;</span>, <span style="color: #dd1144">&#39;cwrap&#39;</span>, <span style="color: #dd1144">&#39;UTF8ToString&#39;</span><span style="color: #000000; font-weight: bold">]</span><span style="color: #dd1144">&quot; \</span>
+<span style="color: #dd1144">           -s --memory-init-file 0 --js-library library.js -s MODULARIZE</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了加入额外导出的函数，还添加了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">-s MODULARIZE</code> ，否则无法判断模块初始化完成的时机（如果只是在 REPL 中验证 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的正确执行，那不会遇到这个问题）。
+</p>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. 实际的应用使用</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面已经处理好了 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">micropython.js</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fireware.wasm</code> ，现在把它们应用到实际的业务场景中。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要做的事，是对于下图这样的一个数据可视化的场景，本来有一个简单，固定的描述结构（JSON）：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="https://img.zys.me/FtFtH8d.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我们使用 Python ，替换原来固定的，静态的 JSON 结构。完整的编程语言语法，不光为结构描述带来了抽象能力，还为以后加入更完整的功能直接铺平了道路，比如数据的获取及数据获取后的再加工。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<img align="middle" src="https://img.zys.me/FtFtHbJ.png" alt="" style="border: 1px solid gray;"/>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+要把 Python 用于这个场景，前面的工作，已经做得差不多了，剩下的，多是处理一些环境方面的问题：
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">micropython.js</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fireware.wasm</code> 直接复制到项目中就可以使用。注意 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">micropython.js</code> 中有 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">fs</code> 相关的东西，最简单的处理方式，就是在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">webpack</code> 的配置中，加一条 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">node: {"fs": "empty"}</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">const</span> webpackConfig <span style="color: #000000; font-weight: bold">=</span> {
+    mode<span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&#39;development&#39;</span>,
+    node<span style="color: #000000; font-weight: bold">:</span> {<span style="color: #dd1144">&quot;fs&quot;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #dd1144">&quot;empty&quot;</span>},
+    entry<span style="color: #000000; font-weight: bold">:</span> [
+        <span style="color: #dd1144">&#39;webpack-dev-server/client?http://localhost:8080&#39;</span>,
+        ...
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">micropython.js</code> 原来默认的那个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">_mp_js_write()</code> 实现，可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">UTF8ToString</code> 改掉，否则中文显示有问题：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">function</span> _mp_js_write(ptr, len) {
+    <span style="color: #000000; font-weight: bold">var</span> str <span style="color: #000000; font-weight: bold">=</span> UTF8ToString(ptr, len);
+    <span style="color: #000000; font-weight: bold">var</span> mp_js_stdout <span style="color: #000000; font-weight: bold">=</span> <span style="color: #0086B3">document</span>.getElementById(<span style="color: #dd1144">&#39;mp_js_stdout&#39;</span>);
+    <span style="color: #000000; font-weight: bold">var</span> print <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Event(<span style="color: #dd1144">&#39;print&#39;</span>);
+    print.data <span style="color: #000000; font-weight: bold">=</span> str;
+    mp_js_stdout.dispatchEvent(print);
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_init</code> ，初始化的栈大小，需要给的大点，比如 5M ，否则执行现实的功能代码，空间可能会不够。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+最后执行的 Python 代码，可以在 <a href="https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e" style="color: #0184b7; text-decoration: none" target="_blank">https://gist.github.com/yszou/14e894cb20fc6f017aa077626749c70e</a> 看到。功能上，就是实现随机生成右侧的图。过程中遇到了没有 <em style="color: #d75100; font-style: normal;">uuid</em> 模块，及 <em style="color: #d75100; font-style: normal;">MicroPython</em> 不支持 gb2312 编码的问题，我没想解决它们，绕过去就好了。
+</p>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.6. 小结</h2>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">emcc</em> + <em style="color: #d75100; font-style: normal;">WebAssembly</em> ，提供了一个很简单直接的环境，可以在浏览器中方便地使用 C 的实现。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">MicroPython</em> 借助 <em style="color: #d75100; font-style: normal;">emcc</em> ，直接就在浏览器环境提供了一个比较完善的 Python 语言。
+</li>
+<li style="margin: 10px auto;">更美的是， <em style="color: #d75100; font-style: normal;">MicroPython</em> 中要使用 C 写模块，也是非常简单和直接的。
+</li>
+</ul>
+
+<a class="anchor" name="toc18"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. 相互调用背后的东西</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+目前，浏览器中使用 <em style="color: #d75100; font-style: normal;">WebAssembly</em> ，是通过一组 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的 API 完成的。大概的过程是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">通过 HTTP ，获取原始 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 二进制格式的字节流。
+</li>
+<li style="margin: 10px auto;">使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebAssembly.compile</code> 对字节流进行编译得到 <em style="color: #d75100; font-style: normal;">Module</em> 。
+</li>
+<li style="margin: 10px auto;">也可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebAssembly.instantiateStreaming</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">WebAssembly.instantiate</code> 直接完成实例化过程。
+</li>
+<li style="margin: 10px auto;"><em style="color: #d75100; font-style: normal;">Module</em> 实例化之后，开始使用里面暴露出来的方法。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+前面说过，因为我们不需要手写 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 语言，所以这个过程大概知道就行了。具体使用时，像 <em style="color: #d75100; font-style: normal;">emcc</em> ，它又会根据 C 编译结果的情况，对这一过程做自己的定制。所以，现在各种编译到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的方案，产出物除了 <em style="color: #d75100; font-style: normal;">wasm</em> 文件之外，都会包括对应的 js 加载辅助实现。直接拿到 <em style="color: #d75100; font-style: normal;">wasm</em> 源文件，不知道它的导入导出依赖，也是没法用的。
+</p>
+
+<a class="anchor" name="toc19"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 网络 IO 和异步</h1>
+
+<a class="anchor" name="toc20"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. Emscripten 中的 HTTP</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">emcc</em> 提供了一组 <em style="color: #d75100; font-style: normal;">fetch</em> API ，实现了 HTTP 请求，默认是异步行为，编译时需要添加额外的参数。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;stdio.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;string.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+<span style="color: #999999; font-weight: bold">#include</span> <span style="color: #999988">&lt;emscripten/fetch.h&gt;</span><span style="color: #999999; font-weight: bold"></span>
+
+<span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">onSuccessed</span>(emscripten_fetch_t <span style="color: #000000; font-weight: bold">*</span>fetch) {
+    printf(<span style="color: #dd1144">&quot;%llu, %s\n&quot;</span>, fetch<span style="color: #000000; font-weight: bold">-&gt;</span>numBytes, fetch<span style="color: #000000; font-weight: bold">-&gt;</span>url);
+    printf(<span style="color: #dd1144">&quot;%s\n&quot;</span>, fetch<span style="color: #000000; font-weight: bold">-&gt;</span>data);
+    emscripten_fetch_close(fetch);
+}
+
+<span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">onError</span>(emscripten_fetch_t <span style="color: #000000; font-weight: bold">*</span>fetch) {
+    printf(<span style="color: #dd1144">&quot;%d, %s\n&quot;</span>, fetch<span style="color: #000000; font-weight: bold">-&gt;</span>status, fetch<span style="color: #000000; font-weight: bold">-&gt;</span>url);
+    emscripten_fetch_close(fetch);
+}
+
+
+<span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">main</span>() {
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(<span style="color: #000000; font-weight: bold">&amp;</span>attr);
+    strcpy(attr.requestMethod, <span style="color: #dd1144">&quot;GET&quot;</span>);
+    attr.attributes <span style="color: #000000; font-weight: bold">=</span> EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.onsuccess <span style="color: #000000; font-weight: bold">=</span> onSuccessed;
+    attr.onerror <span style="color: #000000; font-weight: bold">=</span> onError;
+    printf(<span style="color: #dd1144">&quot;hello here\n&quot;</span>);
+    <span style="color: #000000; font-weight: bold">return</span> <span style="color: #009999">0</span>;
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用上还是很简单直接的，最终的请求也是通过浏览器的 XHR 发出。（nodejs 不能直接运行，会报错）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+编译时，需要添加额外的 <em style="color: #d75100; font-style: normal;">FETCH</em> 选项：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">emcc -sFETCH -o demo.html demo.c
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然 <em style="color: #d75100; font-style: normal;">emcc</em> 的文档中声称 <em style="color: #d75100; font-style: normal;">FETCH</em> 这部分有同步的支持，但实际上只是运行时环境上的一些包装。要么是使用 <em style="color: #d75100; font-style: normal;">web workder</em> ，要么是像实现线程机制那种，依赖 <em style="color: #d75100; font-style: normal;">SharedArrayBuffer</em> （浏览器因为安全原因都在去掉它了）。如果没有额外的收益，引入这些东西又会把项目搞得复杂。
+</p>
+
+<a class="anchor" name="toc21"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. MicroPython 中的情况</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+很遗憾，从目前我了解到的情况， <em style="color: #d75100; font-style: normal;">MicroPython</em> 的 js 移植无法使用异步。由 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">MICROPY_PY_UASYNCIO</code> 宏控制的 <em style="color: #d75100; font-style: normal;">asyncio</em> 模块在 js 移植中也是没有打开的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+没有异步机制，加上 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str</code> 的执行是 js 的独占，那么直接在 <em style="color: #d75100; font-style: normal;">MicroPython</em> 中，去调用 <em style="color: #d75100; font-style: normal;">emcc</em> 的异步 HTTP ，自己用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">while True</code> 模拟同步的网络请求也是不可行的，因为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str</code> 函数一直没有“返回”，这样做会阻塞浏览器页面。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+针对这个问题，个人现在的一个想法是：
+</p>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">在 js 和 C 的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str</code> 层面，通过额外的数据状态调度去解决这个问题。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str(code, http_request_array, http_result_array)</code> 变成这样的函数。
+</li>
+<li style="margin: 10px auto;"><code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str</code> 的执行，可能随时被中断（中断由具体的 C 实现的 http 模块触发）。每次执行完，都需要去检查 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http_request_array</code> 的地址上是否有待处理的请求。
+</li>
+<li style="margin: 10px auto;">如果有，则用 js 完成 HTTP 请求，得到响应，填充 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http_result_array</code> ，再次执行 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str(code, http_request_array, http_result_array)</code> 。
+</li>
+<li style="margin: 10px auto;">如此反复，直到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">mp_js_do_str</code> 执行之后，<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">http_request_array</code> 里面没有待处理请求。
+</li>
+</ul>
+
+<a class="anchor" name="toc22"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 可能的应用场景</h1>
+
+<ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+<li style="margin: 10px auto;">计算密集型的纯计算场景，比较图片，音视频编解码。（但是同时典型场景方面浏览器 API 中已经有可以直接利用硬件的相关实现了）
+</li>
+<li style="margin: 10px auto;">复用其它语言中的已有实现，移植到浏览器。包括某种编程语言的实现。
+</li>
+<li style="margin: 10px auto;">重量级的，但又不那么专业的，工具。
+</li>
+<li style="margin: 10px auto;">大型的 DSL 。
+</li>
+</ul>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+总的来说，我觉得 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的直接应用场景是比较窄的，虽然像是浏览器环境的“汇编语言”，但是本身又不是必须的。所以它带来的“集成”的能力可能最重要。性能方面的例子，我自己是找不到的，V8 本身是高度优化的东西，一套基本的 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 虚拟机，未必就比它性能好。而且浏览器 API 中还有些是直接硬件层面集成，也是高度优化的东西。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Emscripten</em> 倒是利用 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 提供了一个很简单的和 C 集成的方案，有 C 就等于有了一切现成的广大资源。至少那些 js 没有，或者不善于做的事，都可以快速补上，可以带来更多的想象力和可能性吧 —— 不过上限也还是浏览器，做浏览器允许做的事，而不是操作系统允许做的事。
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'webassembly';
+  var disqus_url = 'https://www.zouyesheng.com/webassembly.html';
+  var disqus_title = 'WebAssembly 和 Emscripten';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABmklEQVR4nN2XMc7bMAyFPyYB5E7K
+DZST2DlYAKtIxh7K/nuKbs4BCsibAujP65B0KJoxHFqOHEhI3yPxaOLvuG1eJOHfy85m1n3w9YAs
+Y2Z2cOxmkpA1IGaC1PzehuZCCipQ+yiFiVOq7v87LrDu3l/3j3jWn4/b3NX128G32waiFkz5ivbA
+oOzZTWYG623ge4Gb2c5TJZKkuZDqUEiSJDeVoIlxCROjqimDKXtqsufzsB7hivYk+nfVfZ21cqEb
+tKPrgSpzne4pnhfd4wMeYfbldo8N+piT5nJKQWp+3JDU0BRbgphhKLhurjWnDrjWoWyFkju3aoWk
+uZyo5stNaoT7c94SffTlVsZFkpZqBcIdR25oAsKs81IHZeSqyQ1DIa2DtdSxarkd2S7OKgn3mFMd
+1IB49lWJpCk2qqkluTqFJzepUfvYUph9uZkkZtsl7Lqjav+mui/j4bnujMvDJJgcuf12WTFf6xeg
+dvufhx/ODu+DS6JfM2EuF9eflBQmxkVSphId9+TTc5nscNtwSnEun353gP3HF9Uvg3IP7WTo3l4A
+AAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
