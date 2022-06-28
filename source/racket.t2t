@@ -1,0 +1,197 @@
+Racket 语言学习参考
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/racket.html
+%!format: !email
+%%toc
+
+
+# 安装与简介 #
+
+*racket* 是一个比较现代化的 *scheme* 语言。它的 Hello World 是这样的：
+
+```racket
+#lang racket  
+
+(display "helloworld")
+```
+
+可以直接使用：
+
+```bash
+sudo apt-get install racket
+```
+
+进行安装，完成之后，有一个 ``racket`` 的可执行程序/REPL ，及 ``drracket`` 这个开发环境/IDE。
+
+``racket`` 可以直接执行一个文件，如：
+
+```bash
+racket /home/zys/temp/demo.rkt
+```
+
+*racket* 提供了编译器，可以直接编译得到可执行程序。
+
+
+# 基本语法 #
+
+## 圆括号和方括号 ##
+
+*scheme* 是用 S 表达式来组成的， *racket* 中这点并没有变化，但是 *racket* 中的 S 表达式，同时支持圆括号 ``()`` 和方括号 ``[]`` ，这个机制，在括号嵌套场景下，可以提供更好的视觉识别，如：
+
+```racket
+#lang racket  
+
+(define [add1 a b] [+ a b])
+(define (add2 a b) (+ a b))
+
+(add1 1 2)
+(add2 1 2)
+```
+
+## 注释 ##
+
+```racket
+#lang racket  
+
+;这是传统的单行注释
+
+#| 
+这是 racket 的，可以多行的，
+    #|
+        可以嵌套的注释
+    |#
+|#
+
+#; 注释一个 "单语法单元"
+#;(display
+    123) (display "1\n")
+#;1 2 (display "2\n")
+```
+
+``#;`` 的行为比较特殊，其它语言中是没有的。
+
+
+## 基本数据类型 ##
+
+```racket
+#lang racket  
+
+1
+3.14
+1/3
+(+ 1/3 1/3)
+6.02e+23
+1+2i
+#t
+#f
+"string"
+"string\"ss\""
+(display "string\"ss\"\n")
+"λx:(μα.α→α).xx"
+"』▶😀😂"
+(display "』▶😀😂\n")
+```
+
+基本数据类型有：整数，小数，实数，复数，布尔量，Unicode 字符串。
+
+后面还会专门对内置的数据类型作介绍。
+
+
+## 逻辑运算，条件判断 ##
+
+TODO
+
+
+## 定义与函数，匿名函数 ##
+
+*定义* ，这里指的是 ``define`` ，其实应该说 *绑定* 的：
+
+```racket
+#lang racket  
+
+(define a 1)
+(define b 2)
+(+ a b)
+```
+
+像是赋值，但是不能对同一个 *标识* ，进行重复的 ``define`` 。
+
+``define`` 也可以用于函数的定义：
+
+```
+#lang racket  
+
+(define [add a b] [+ a b])
+(add 1 2)
+```
+
+使用 ``labmda`` 的匿名函数也行：
+
+```racket
+#lang racket  
+
+(define add [lambda (a b) (+ a b)])
+(add 1 2)
+```
+
+## 列表，迭代 ##
+
+*列表* ，是 *scheme* 这类语言，最核心的一种数据结构。因为，我们写的代码，本身就是一个一个的 *列表* 。这个性质是一般大众化的语言没有的。
+
+
+```racket
+#lang racket  
+
+(define add [lambda (a b) (+ a b)])
+(add 1 2)
+
+'(add 1 2)
+'("add" "1" "2")
+(list add 1 2)
+(list "add" 1 2)
+```
+
+``list`` 函数，和 ``'`` 前缀，是同样的作用，就是得到一个列表。
+
+*racket* 内置了很多针对列表的函数：
+
+```racket
+#lang racket  
+
+(define any '(1 2 3 add "add"))
+any
+(length any)
+(list-ref any 0)
+(list-ref any 3)
+(append any "1")
+(append any '(2 "good"))
+(reverse any)
+```
+
+``append`` 的第二个参数，类型不同，结果是不同的。如果第二个参数不是 *list* ，则会得到一个 *Pair* 。
+
+
+*迭代* 的概念，类似于其它语言中的那一堆“函数式”方法，像 ``map`` ``filter`` ``reduce`` 之类的。
+
+*racket* 中有 ``map`` ``filter`` ``foldl`` ``andmap`` ``ormap`` 。
+
+```racket
+#lang racket  
+
+(map [lambda (n) (* n 2)] '[1 2 3 4 5])
+(filter [lambda (n) (> n 4)] '[1 3 4 5 6 7 8])
+(foldl [lambda (a b) (+ a b)] 0 '[1 2 3 4])
+(andmap [lambda (n) (> n 4)] '[5 6])
+(ormap [lambda (n) (> n 5)] '[5 6])
+```
+
+## 列表传统 ##
+
+TODO
+
+
+
+# 宏 #
