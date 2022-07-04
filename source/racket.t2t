@@ -675,7 +675,274 @@ r
 ``#<undefined>`` ，可以在一些未初始化值的访问时出现（也可能报错）。
 
 
-# 表达式 #
+# 其它表达式细节 #
+
+## 函数调用和参数 ##
+
+### 函数的 apply 调用 ###
+
+``apply`` 可以用于“展平”函数调用参数：
+
+```racket
+(+ 1 2 3)
+(define (sum lst) (apply + lst))
+(sum '(1 2 3))
+```
+
+基本可以多加一个参数：
+
+```racket
+(apply - 0 '(1 2 3))
+(- 0 1 2 3)
+```
+
+### 函数的不定参数 ###
+
+参数列表的最后一个参数，可以使用 *点* 分割，则最后一个参数是一个列表，表示剩下的不定参数：
+
+```racket
+(define (sum a b . c) (+ a b (apply + c)))
+(sum 1 2 3 4 5 6 7 8 9 10)
+```
+
+### 函数的默认参数 ###
+
+参数列表中，中括号括起来的，可以添加一个默认值：
+
+```racket
+(define (sum a [b 100] . c) (+ a b (apply + c)))
+(sum 1)
+```
+
+### 函数的关键词参数 ###
+
+关键词参数，可以和默认参数混合使用：
+
+```racket
+(define (sum a #:b [b 100] . c) (+ a b (apply + c)))
+(sum #:b 10 1 2 3)
+```
+
+### 函数的根据参数匹配 ###
+
+模式匹配这种时髦的东西，*racket* 自然不会错误。通过 ``case-lambda`` 可以实现根据实际参数个数，调用不同的逻辑：
+
+```racket
+#lang racket  
+
+(define something 
+  (case-lambda
+    [(a) (+ a 1)]
+    [(a b) (* a b)]
+    [(a b c) ((+ a b) . - . c)]
+))
+
+(something 1)
+(something 2 10)
+(something 2 10 30)
+```
+
+## 多值返回和多值定义 ##
+
+这里说的“多值返回”，是真正的多值返回，不是用列表搞的“模式匹配”。
+
+使用 ``values`` 完成多值返回，对应的使用 ``define-values`` 完成多值定义：
+
+```racket
+(define-values (a b) (values 1 2))
+a
+b
+```
+
+## 多种数据绑定方式 ##
+
+### let, let*, letrec ###
+
+- ``let`` 只能在 ``body`` 中可见。
+- ``let*`` 在其它 ``let`` 中也可见。
+- ``letrec`` 表达式“提前”可见，可以在递归中使用。
+
+
+``let`` 是最普通的：
+
+```racket
+(let ([a 1]) (+ a 1))
+```
+
+``let*`` 是在定义过程中，可以使用前面的值：
+
+```racket
+(let* ([a 1] [b (+ a 1)]) (+ a b))
+```
+
+``letrec`` 是可以“提前”使用将要定义的值，可以用于递归：
+
+```racket
+#lang racket  
+
+(letrec
+  ([last-of-lst
+     (lambda (lst)
+       (if [empty? (rest lst)]
+         (first lst)
+         (last-of-lst (rest lst))))])
+  (last-of-lst '(1 2 3 4 5)))
+```
+
+
+### 命名绑定 ###
+
+使用 ``let`` 时在后面跟一个名字，等于定义了一个这个名字的函数，并且用 ``let`` 的值作为参数马上调用，这个特性可以用于递归：
+
+```racket
+(let add ([a 4] [b 2])
+  [if (= a 0) b (add (- a 1) (+ b b))])
+```
+
+
+### 多值绑定 ###
+
+多值绑定是为了配合“多值返回”的一套实现， ``let-values``, ``let*-values``, ``letrec-values`` ：
+
+```racket
+(let-values (([a b c] [values 1 2 3])) [+ a b c])
+```
+
+
+## 多语句序列 ##
+
+如果打算在一个表达式里面，做多件事，可以使用 ``begin`` 或者 ``begin0`` 把这个表达式包起来，就可以写多个语句了。
+
+它们之前的不同在于， ``begin`` 返回最后一个表达式的值，而 ``begin0`` 返回第一个表达式的式。
+
+```racket
+(define (func a)
+  (if (> a 1)
+    [begin0
+      a
+      (display "a > 1\n")]
+    [begin0
+      0
+      (display "a <= 1\n")]))
+
+(func 1)
+(func 2)
+```
+
+上面的代码注意区别 ``display`` 输出的内容，与 ``(func 1)`` 的返回值。
+
+``when`` 和 ``unless`` 是类似 ``if`` 的功能，不过它们后面直接可以跟多条语句，而不用专门写 ``begin`` 了：
+
+```racket
+(define (func a) (when [> a 1]
+                   [display "1\n"]
+                   [display "2\n"]
+                   "OK"))
+(func 1)
+(func 2)
+```
+
+## 引用与求值 ##
+
+```racket
+(list 1 2 3)
+'(1 2 3)
+(quote (1 2 3))
+```
+
+上面三个语句的返回是一样的。 *lisp* 系列语言最风骚的一个特点，就是它的语句就是 *列表*，所以紧接着的一个问题，就是什么时候应该对一个列表 *求值* ，什么时候就把它当成是一个 *列表结构* 。
+
+当然，我们也可以理解成，总是会求值，只是，像 ``quote`` 这个函数，它求值的结构就是它的参数列表而已。
+
+同时，又因为使用“列表结构”是如此普遍，所以针对 ``quote`` 函数的调用，专门给了它一个特殊形式，就是写成 ``'(1 2 3)`` 这种，它就相当于 ``(quote (1 2 3))`` 。
+
+另外一个 ``quasiquote`` ，作用和 ``quote`` 是一样的，只是它在不求值的列表当中，可以混入部分的求值：
+
+```racket
+(quasiquote (1 2 (unquote (+ 1 2))))
+```
+
+使用 ``unquote`` 包起来的部分，又是需要求值的，有点像一个模板。
+
+另外一个 ``unquote-splicing`` 和 ``unquote`` 类似，只是它后面的表达式需要返回一个 *list* ：
+
+```racket
+(quasiquote (1 2 (unquote-splicing '(1 2 3))))
+```
+
+这种引用，求值，反引用的复杂关系，就使得我们写的代码，到底是在求值，还是在生成另外一部分代码，之间的界限变得非常模糊了。
+
+而这些元编程的基础结构，其地位之显赫，都有专门结构特殊对待的：
+
+- ``'`` 是 ``quote``, ``'(1 2 3)``
+- ````` 是 ``quasiquote`` , ```(1 2 3)``
+- ``,`` 是 ``unquote`` , ```(1 2 ,(+ 1 2))``
+- ``,@`` 是 ``unquote-splicing`` , ```(1 2 ,@(list 1 2))``
+
+
+## 分支判断 ##
+
+前面用过了 ``if`` ，更一般形式的是 ``cond`` ：
+
+```racket
+#lang racket  
+
+(define (func a)
+  (cond ([= a 1] 10)
+        ([= a 2] 100)
+        ([= a 3] 1000)
+        (else 10000)))
+
+(func 1)
+(func 3)
+```
+
+普通情况下，还可以使用 ``case`` :
+
+```racket
+(define (func a)
+  (case a
+    [(1) 10]
+    [(2) 100]
+    [(3 4 5) 1000]
+    [else 10000]))
+
+(func 3)
+(func 8)
+```
+
+
+## 专用参数 ##
+
+*专用参数* 这个名字是我自己取的，文档中是 *parameterize* 。
+
+我个人理解，这个机制，是处理“配置性”内容的绝佳选择，它融合了“变量”，“上下文”，“作用域”等概念。
+
+
+使用方法上，先用 ``define`` 加 ``make-parameter`` 定义一个初始值，然后在使用的地方，用 ``parameterize`` “临时赋值”。
+
+```racket
+#lang racket  
+
+(define times (make-parameter 10))
+(define (func n) (* n (times)))
+
+(func 10)
+
+(parameterize ([times 2])
+  [begin0
+    (func (parameterize ([times 1]) (func 5)))
+    (parameterize ([times 1000]) '())
+    ])
+
+(times)
+```
+
+- 使用“调用”获取参数值。
+- 参数的值是在 ``(parameterize)`` 结构中，被层层限制作用域的。
+- 离开 ``(parameterize)`` 之后，参数值会自动“还原”。
+
+
 
 
 # 宏 #
