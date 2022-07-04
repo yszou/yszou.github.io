@@ -471,16 +471,211 @@ b
 (eq? [string->uninterned-symbol "a"] [string->uninterned-symbol "a"]) ;#f
 ```
 
+## 关键词 ##
+
+*关键词*， *Keyword* ，是 *racket* 中新的概念，感觉跟其它编程语言中的“关键词参数”是一样的，具体的作用，也是除了函数参数中的“关键词参数”，我还不知道能做什么。
+
+形式上，与 *Symbol* 类似，比如 ``#:hello`` ，但是它们是两种不同的类型：
+
+```racket
+(symbol? '#:app)
+(keyword? '#:app)
+```
+
+使用上，放在参数前面就可以了：
+
+```racket
+#lang racket  
+
+(define (lst a b #:a ka #:b kb) (list a b ka kb))
+(lst 1 2 #:a 3 #:b 4)
+(lst #:b 3 1 2 #:a 1)
+```
+
+有了 *keyword* 机制，可以在传参时，顺序上没有限制。非 *keyword* 参数，再按顺序匹配。
+
+
+## 列表和结对 ##
+
+这个前面已经使用过很多了。
+
+
+```racket
+#lang racket  
+
+(cons 1 2)
+(cons 1 '(2))
+(cons 1 null)
+(cons 1 empty)
+
+(display "-----\n")
+
+(empty? null)
+(null? empty)
+
+(display "-----\n")
+
+(list? '(1 . 2))
+(list? '(1 2))
+
+(display "-----\n")
+
+(pair? '(1 2))
+(pair? '(1 . 2))
+```
+
+可以看出， *list* 是 *pair* 的特殊情况。
+
+
+## 向量 ##
+
+*向量*， *Vector* ，是 *racket* 预置的一种数据结构。如果说 *list* 是链表，那 *vector* 就像传统定长数组了，它可以在 ``O(1)`` 时间访问指定成员。
+
+同时，跟 *strings* 一样， *vector* 也分可变的，或者不可变的。
+
+形式上，可以看成加了 ``#`` 前缀的列表，或者是加了 ``#19`` 这种前缀的列表， ``#`` 后面可以有一个可选的长度。
+
+如果指定了长度，则会使用最后一个成员填充到指定长度。
+
+
+```racket
+#(1 2 x3 display)
+#8(1 2 x3 display)
+
+(vector 1 2 3 'define)
+(vector-ref #(1 2 3 define) 3)
+```
+
+## 三种不同的“等于” ##
+
+下面介绍的“哈希表”，涉及三种不同的 *key* 的匹配方式，分别对于三种比较函数：
+
+- ``equal?``
+- ``eqv?``
+- ``eq?``
+
+
+``eq?`` 算是最严格的，它需要两者是相同的对象：
+
+```racket
+(eq? 1 1)
+(eq? 1.0 1.0)
+(eq? 1.0 1) ;#f
+(eq? (expt 2 10) (expt 2 10))
+(eq? (expt 2 10) 1024)
+(eq? (expt 2 100) (expt 2 100)) ;#f
+(eq? (cons 1 2) (cons 1 2)) ;#f
+(eq? 1/2 2/4)
+(eq? "hello" "hello")
+(eq? "hello" (bytes->string/utf-8 #"hello")) ;#f
+```
+
+这里注意，大整数 ``(expt 2 100)`` 可能是不同对象。
+
+``eqv?`` ，是在 ``eq?`` 基础上，有一些“放宽”，在数字：
+
+```racket
+(eq? (expt 2 100) (expt 2 100)) ;#f
+(eqv? (expt 2 100) (expt 2 100)) ;#t
+```
+
+``equal?`` 是最常用的判断，它是普遍意义上的“值”的比较（ ``eq?`` 和 ``eqv?`` 的 ``true`` 肯定也是 ``equal?`` 的 ``true``）：
+
+```racket
+(equal? 1.0 1) ;#f
+(equal? (expt 2 100) (expt 2 100)) ;#t
+(equal? (cons 1 2) (cons 1 2)) ;#t
+(equal? "hello" (bytes->string/utf-8 #"hello")) ;#t
+(equal? '(1 2 3) '(1 2 3)) ;#t
+```
+
+
+## 哈希表 ##
+
+*Hash Table* 也是一种 *racket* 内置的数据结构实现。它可以分为可变和不可变的两套，对于不可变的，我们也可以“扩展它构建新的结构”。同时，根据 *key* 的比较规则不同，又进一步分成三种子类，分别使用 ``equal?`` ``eqv?`` ``eq?`` 作为 *key* 的比较。
+
+构建可变的 *Hash Table* ，可以使用 ``make-hash`` ``make-hasheqv`` ``make-hasheq`` 函数，构建不可变的结构，函数就分别是 ``hash`` ``hasheqv`` ``hasheq`` 。
+
+可变的结构：
+
+```racket
+#lang racket  
+
+(define ht (make-hash))
+(hash-set! ht "first" 1)
+(hash-set! ht 'second '(1 2 hello))
+(hash-set! ht 3 'world)
+
+(hash-ref ht 'second)
+(hash-ref ht 3)
+(hash-ref ht "first")
+```
+
+不可变的结构，除了 ``hash`` 函数，还可以使用 ``#hash`` 语法：
+
+```racket
+(define ht [hash "first" 1 'second "two" 3 'third])
+(hash-ref ht 3)
+; error
+; (hash-set! ht "first" 2)
+
+(define ht #hash(["first" . 1] [second . "two"] [3 . 'third]))
+(hash-ref ht 'second)
+```
+
+``#hash`` 感觉是一个宏，里面不能再使用 *symbol* ，直接写的标识就是 *symbol* ，取值时要注意。
+
+对于 *Hash Table* ，都可以使用 ``hash-set`` 方法得到一个新对象：
+
+```racket
+(define ht [hash "first" 1 'second "two" 3 'third])
+(hash-ref ht 3)
+
+(define new_ht (hash-set ht "four" 444))
+(hash-ref new_ht "four")
+(hash-ref new_ht "first")
+```
 
 
 
+## 封箱 ##
+
+*封箱* 这个名字是我自己译的，指的就是 *Box* 这种数据类型。
+
+它初看好像没啥用，我个人目前的看法，是它提供了一种直接的“引用”的表达能力，像“指针”。同时，网上有人提， *Box* 可能对于应用开发场景来说不重要，但是对于“语言开发”场景，它是很有必要的。
+
+*Box* 的值打印出来时，会是像 ``'#&2`` 这种，以 ``#&`` 开头。
+
+```
+#lang racket  
 
 
+(define p (box 1))
+(define (add1 p1) (set-box! p (+ (unbox p) 1)))
+(add1 p)
+p
+
+(define r 1)
+(define (add2 v) (set! v (+ v 2)))
+(add2 r)
+r
+```
+
+从另一个方面来说，如果一个函数需要你传入 *Box* ，那么也就可以表示，这个函数会直接更改它，而不是返回一个新值。
 
 
+## Void 和 Undefined ##
+
+这是两个特殊的值， ``(void)`` 方法，可以得到 ``#<void>`` 类型的返回，它表示“无”，比如 ``display`` 函数就是没有返回的。
+
+```racket
+(void 1 2 3)
+```
+
+``#<undefined>`` ，可以在一些未初始化值的访问时出现（也可能报错）。
 
 
-
+# 表达式 #
 
 
 # 宏 #
