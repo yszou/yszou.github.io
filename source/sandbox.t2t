@@ -1,0 +1,96 @@
+关于沙盒 Sandbox 的一些想法
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/sandbox.html
+%!format: !email
+%%toc
+
+
+# 契机 #
+
+安全的人在旧的项目中提了一个问题。针对的功能点是，后端服务会从请求中拿到一个“表达式”，然后利用模板引擎，结合其它的上下文数据，去“求值”这个表达式，得到结果再返回。
+
+比如，请求中有一段： ``{{ row['a'] - row['b'] }}`` ，那么也许就可以得到一个 ``10`` 的结果，具体依赖模板执行时的 ``row`` 的值。
+
+直观地看，“求值”相当于是 ``eval`` ，所以经常会有安全性的问题。但是实践当中，这里我用的是现成的模板引擎项目（Python 的 Jinja https://jinja.palletsprojects.com/），人家已经解决好了基本的安全问题，像 ``{{ 3 * 'x' }}`` 这种是正常功能，不是问题。也就是说，安全的问题就是让 *Jinja* 这个项目去把关了。应用中，没太大关系。
+
+
+# 要解决的问题 #
+
+其实这算是一个常见的场景，“配置”的升级版，配置中可以有“表达式”。
+
+而要实现表达式的求值，最简单的一个方案，就是利用模板引擎，把安全问题交给模板引擎去处理就好了。（真用 ``eval`` 的就过分了）
+
+手痒的，也可以自己做一个或者找一个简单的 S 表达式解释器，支持传递 S 表达式就可以。比如 http://norvig.com/lispy2.html ，随便改改就能在 Python3 上用，只有 300 多行代码。像上面的 ``{{ row['a'] - row['b'] }}`` 可能要变成：
+
+```lisp
+(- (get-value row "a") (get-value row "b"))
+```
+
+总的来说，就是为这套表达式，实现一个 DSL （领域特定语言），不管是现成的模板，还是 S 表达式。
+
+基本上，随手能搞定的方案，都能解决大部分安全问题，不必担心在求值表达式的时候，可能搞到系统调用层面，产生严重安全漏洞（比如可以以当前用户身份执行 *shell* ）。
+
+但仅此而已的话，如果是对于一个公开的，对外部开放的场景来说，我觉得还是不够的。恶意的访问，也许无法达到入侵的目的，但是也不能因为求值表达式，而把服务本身搞挂了啊。比如，执行一个 ``{{ 999999999999999999999 ** 999999999999999999 }}`` ，再加上大量的并发，搞死一个服务问题不大 。
+
+所以，这里涉及第二个层面的问题，资源限制。
+
+到这个层面，模板的方案就无能为力了，只能尽量加一些规定，比如禁止 ``**`` 操作符，限制模板字符串的最大长度等等，不过都治标不治本。
+
+S 表达式的方案，理论上，可以完全解决这个问题，只是需要开发者自己关注与调整非常多的细节。比如，可以限制每个 *Number* 的最大值，针对每一个函数，在 *call* 之前都先检查函数参数是否在合理范围。还可以把 S 表达式本身的求值放到单独的进程池中，超时直接 *kill* 。
+
+先不说大部分人针对 S 表达式是否可以做到很细的控制，单是 S 表达式在产品上用起来，其适用性估计也只能针对少部分的开发者，非开发者上手的难度大得多。
+
+
+# 好的方案 #
+
+进一步，这个场景其实就变成了一个“沙盒”需求了。
+
+沙盒的方案，在 Python 上还没有找到现成的。
+
+然后我自己，首先第一个想法，就是把 *micropython* https://micropython.org/ 的 *minimal* ，根据需要，调整之后，加工编译成 Python 的一个模块，那这个沙盒别说简单的表达式了，完整的执行 Python 代码都没有问题。而且这个解释器在实例化时，是可以指定堆的大小的，也就限制了资源。还可以通过 *import* 的方式，持续提供新的能力。
+
+针对前面的场景， *Jinja* 是纯 Python 的实现，或者不用 *Jinja* ，直接用没有安全考虑的 *tornado* 的 *Template* 都可以，一个文件，纯 Python 实现，在 *micropython* 中执行自然没有问题。那么 ``{{ row['a'] - row['b'] }}`` 这种表达式就可以正常执行求值了。
+
+``import os`` 之类的安全顾虑在 *micropython* 层面处理，除了一个 Python 解释器，啥系统资源都不提供也非常简单， *micropython* 本身针对嵌入式场景设计，这些需求很多都是配置化的了。
+
+我觉得这个想法没毛病吧？但是为啥没有前人去实践呢？
+
+既然到了 *micropython* 这里，前段时间我也才看了 *WebAssembly* 的东西，于是想到一个更漂亮点的方案。 *micropython* 是 C 写的，编译出来的东西，对接到 Python 中，应该没啥问题。不过至少有一点需要考虑，就是开发环境。我用 Linux ，把 *micropython* 编译好，对应的 Python 模块弄好，其它人如果是用 osx 或者 win ，这个 Python 模块也没法直接用啊。但如果换成用 *WebAssembly* ，就没这些事了。
+
+*micropython* 可以通过 *Emscripten* https://emscripten.org/ 编译到 *WebAssembly* 。 Python 下有人用纯 Python 写了 *WebAssembly* 的执行时 *pywasm* https://github.com/mohanson/pywasm 。那用 *pywasm* 去执行 *micropython* 的 *wasm* 结果，不就可以了吗？而且如果可行， *micropython* 的 *wasm* 就可以在各种环境下被使用，不管是什么语言。（浏览器中本来就实践过，可用）
+
+在不考虑执行效率的前提下，这真的是一个非常完美的，语言层面的沙盒方案。（前提是这些语言实现本身，要很容易抽离一些依赖系统调用的功能，然后可以用 *Emscripten* 正常编译，C 语言生态的话）
+
+但是……，目前这个想法没法直接跑通。问题在 C 语言中的 ``setjump`` ``longjump`` 机制 https://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html 。
+
+*micropython* 中肯定会用到 ``setjump/longjump`` ，编译到 *WebAssembly* 后，可能是 *WebAssembly* 的设计没法直接支持它们， *Emscripten* 的做法，变成通过 *javascript* 里外挂的一系列函数，实现对 ``setjump/longjump`` 的处理。
+
+这一系列函数大概有：
+
+```text
+invoke_i
+invoke_ii
+invoke_iii
+invoke_iiii
+invoke_iiiii
+invoke_v
+invoke_vi
+invoke_vii
+invoke_viii
+invoke_viiii
+getTempRet0
+setTempRet0
+```
+
+*WebAssembly* 的动态内存，都是外挂性质的，所以要搞 ``setjump/longjump`` 总是可以的。不过一下弄了 12 个函数出来，还是有些吓人。
+
+虽然这些函数的实现都在 js 源文件当中，理论上，在 Python 中做同样的实现不会有问题。但对我个人而言，我即不熟悉 C 中的 ``setjump/longjump`` ，也不熟悉 *WebAssembly* 的内存模型，所以做这个事还有不少距离。（你们谁做好了给我说一声哈:）
+
+
+
+
+
+

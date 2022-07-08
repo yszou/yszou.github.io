@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>关于沙盒 Sandbox 的一些想法 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">关于沙盒 Sandbox 的一些想法</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2022-07-08 17:20 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">契机</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">要解决的问题</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">好的方案</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 契机</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+安全的人在旧的项目中提了一个问题。针对的功能点是，后端服务会从请求中拿到一个“表达式”，然后利用模板引擎，结合其它的上下文数据，去“求值”这个表达式，得到结果再返回。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如，请求中有一段： <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ row['a'] - row['b'] }}</code> ，那么也许就可以得到一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">10</code> 的结果，具体依赖模板执行时的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">row</code> 的值。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+直观地看，“求值”相当于是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">eval</code> ，所以经常会有安全性的问题。但是实践当中，这里我用的是现成的模板引擎项目（Python 的 Jinja <a href="https://jinja.palletsprojects.com/" style="color: #0184b7; text-decoration: none" target="_blank">https://jinja.palletsprojects.com/</a>），人家已经解决好了基本的安全问题，像 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ 3 * 'x' }}</code> 这种是正常功能，不是问题。也就是说，安全的问题就是让 <em style="color: #d75100; font-style: normal;">Jinja</em> 这个项目去把关了。应用中，没太大关系。
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 要解决的问题</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其实这算是一个常见的场景，“配置”的升级版，配置中可以有“表达式”。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+而要实现表达式的求值，最简单的一个方案，就是利用模板引擎，把安全问题交给模板引擎去处理就好了。（真用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">eval</code> 的就过分了）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+手痒的，也可以自己做一个或者找一个简单的 S 表达式解释器，支持传递 S 表达式就可以。比如 <a href="http://norvig.com/lispy2.html" style="color: #0184b7; text-decoration: none" target="_blank">http://norvig.com/lispy2.html</a> ，随便改改就能在 Python3 上用，只有 300 多行代码。像上面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ row['a'] - row['b'] }}</code> 可能要变成：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">(<span style="color: #0086B3">-</span> (<span style="color: #008080">get-value</span> <span style="color: #008080">row</span> <span style="color: #dd1144">&quot;a&quot;</span>) (<span style="color: #008080">get-value</span> <span style="color: #008080">row</span> <span style="color: #dd1144">&quot;b&quot;</span>))
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+总的来说，就是为这套表达式，实现一个 DSL （领域特定语言），不管是现成的模板，还是 S 表达式。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+基本上，随手能搞定的方案，都能解决大部分安全问题，不必担心在求值表达式的时候，可能搞到系统调用层面，产生严重安全漏洞（比如可以以当前用户身份执行 <em style="color: #d75100; font-style: normal;">shell</em> ）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但仅此而已的话，如果是对于一个公开的，对外部开放的场景来说，我觉得还是不够的。恶意的访问，也许无法达到入侵的目的，但是也不能因为求值表达式，而把服务本身搞挂了啊。比如，执行一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ 999999999999999999999 ** 999999999999999999 }}</code> ，再加上大量的并发，搞死一个服务问题不大 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+所以，这里涉及第二个层面的问题，资源限制。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+到这个层面，模板的方案就无能为力了，只能尽量加一些规定，比如禁止 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">**</code> 操作符，限制模板字符串的最大长度等等，不过都治标不治本。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+S 表达式的方案，理论上，可以完全解决这个问题，只是需要开发者自己关注与调整非常多的细节。比如，可以限制每个 <em style="color: #d75100; font-style: normal;">Number</em> 的最大值，针对每一个函数，在 <em style="color: #d75100; font-style: normal;">call</em> 之前都先检查函数参数是否在合理范围。还可以把 S 表达式本身的求值放到单独的进程池中，超时直接 <em style="color: #d75100; font-style: normal;">kill</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+先不说大部分人针对 S 表达式是否可以做到很细的控制，单是 S 表达式在产品上用起来，其适用性估计也只能针对少部分的开发者，非开发者上手的难度大得多。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 好的方案</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+进一步，这个场景其实就变成了一个“沙盒”需求了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+沙盒的方案，在 Python 上还没有找到现成的。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+然后我自己，首先第一个想法，就是把 <em style="color: #d75100; font-style: normal;">micropython</em> <a href="https://micropython.org/" style="color: #0184b7; text-decoration: none" target="_blank">https://micropython.org/</a> 的 <em style="color: #d75100; font-style: normal;">minimal</em> ，根据需要，调整之后，加工编译成 Python 的一个模块，那这个沙盒别说简单的表达式了，完整的执行 Python 代码都没有问题。而且这个解释器在实例化时，是可以指定堆的大小的，也就限制了资源。还可以通过 <em style="color: #d75100; font-style: normal;">import</em> 的方式，持续提供新的能力。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+针对前面的场景， <em style="color: #d75100; font-style: normal;">Jinja</em> 是纯 Python 的实现，或者不用 <em style="color: #d75100; font-style: normal;">Jinja</em> ，直接用没有安全考虑的 <em style="color: #d75100; font-style: normal;">tornado</em> 的 <em style="color: #d75100; font-style: normal;">Template</em> 都可以，一个文件，纯 Python 实现，在 <em style="color: #d75100; font-style: normal;">micropython</em> 中执行自然没有问题。那么 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">{{ row['a'] - row['b'] }}</code> 这种表达式就可以正常执行求值了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">import os</code> 之类的安全顾虑在 <em style="color: #d75100; font-style: normal;">micropython</em> 层面处理，除了一个 Python 解释器，啥系统资源都不提供也非常简单， <em style="color: #d75100; font-style: normal;">micropython</em> 本身针对嵌入式场景设计，这些需求很多都是配置化的了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+我觉得这个想法没毛病吧？但是为啥没有前人去实践呢？
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+既然到了 <em style="color: #d75100; font-style: normal;">micropython</em> 这里，前段时间我也才看了 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的东西，于是想到一个更漂亮点的方案。 <em style="color: #d75100; font-style: normal;">micropython</em> 是 C 写的，编译出来的东西，对接到 Python 中，应该没啥问题。不过至少有一点需要考虑，就是开发环境。我用 Linux ，把 <em style="color: #d75100; font-style: normal;">micropython</em> 编译好，对应的 Python 模块弄好，其它人如果是用 osx 或者 win ，这个 Python 模块也没法直接用啊。但如果换成用 <em style="color: #d75100; font-style: normal;">WebAssembly</em> ，就没这些事了。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">micropython</em> 可以通过 <em style="color: #d75100; font-style: normal;">Emscripten</em> <a href="https://emscripten.org/" style="color: #0184b7; text-decoration: none" target="_blank">https://emscripten.org/</a> 编译到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 。 Python 下有人用纯 Python 写了 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的执行时 <em style="color: #d75100; font-style: normal;">pywasm</em> <a href="https://github.com/mohanson/pywasm" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/mohanson/pywasm</a> 。那用 <em style="color: #d75100; font-style: normal;">pywasm</em> 去执行 <em style="color: #d75100; font-style: normal;">micropython</em> 的 <em style="color: #d75100; font-style: normal;">wasm</em> 结果，不就可以了吗？而且如果可行， <em style="color: #d75100; font-style: normal;">micropython</em> 的 <em style="color: #d75100; font-style: normal;">wasm</em> 就可以在各种环境下被使用，不管是什么语言。（浏览器中本来就实践过，可用）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在不考虑执行效率的前提下，这真的是一个非常完美的，语言层面的沙盒方案。（前提是这些语言实现本身，要很容易抽离一些依赖系统调用的功能，然后可以用 <em style="color: #d75100; font-style: normal;">Emscripten</em> 正常编译，C 语言生态的话）
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是……，目前这个想法没法直接跑通。问题在 C 语言中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setjump</code> <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">longjump</code> 机制 <a href="https://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html" style="color: #0184b7; text-decoration: none" target="_blank">https://www.cnblogs.com/hazir/p/c_setjmp_longjmp.html</a> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">micropython</em> 中肯定会用到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setjump/longjump</code> ，编译到 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 后，可能是 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的设计没法直接支持它们， <em style="color: #d75100; font-style: normal;">Emscripten</em> 的做法，变成通过 <em style="color: #d75100; font-style: normal;">javascript</em> 里外挂的一系列函数，实现对 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setjump/longjump</code> 的处理。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这一系列函数大概有：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">invoke_i
+invoke_ii
+invoke_iii
+invoke_iiii
+invoke_iiiii
+invoke_v
+invoke_vi
+invoke_vii
+invoke_viii
+invoke_viiii
+getTempRet0
+setTempRet0
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">WebAssembly</em> 的动态内存，都是外挂性质的，所以要搞 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setjump/longjump</code> 总是可以的。不过一下弄了 12 个函数出来，还是有些吓人。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然这些函数的实现都在 js 源文件当中，理论上，在 Python 中做同样的实现不会有问题。但对我个人而言，我即不熟悉 C 中的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setjump/longjump</code> ，也不熟悉 <em style="color: #d75100; font-style: normal;">WebAssembly</em> 的内存模型，所以做这个事还有不少距离。（你们谁做好了给我说一声哈:）
+</p>
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'sandbox';
+  var disqus_url = 'https://www.zouyesheng.com/sandbox.html';
+  var disqus_title = '关于沙盒 Sandbox 的一些想法';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABrElEQVR4nN1XQY7bMAwc2gakm/ID
+Gug71t6HGYiA5CH9SazkI/IP5JsMOJ4eklO7x2WBlhcBPJCgZsghhfjTtuYLJ/CvecEZgJsxKaSc
+CQBarbJ1EAIeaJOywU9X8fxhWfEqPaRcVT4BIEk0/19qXCClzd8c9zfrXs9YAKTT1NtmAxNJlxjB
+I1zoyN2OJQ0oIsC6q38sW7+JdJa1kSSPsGsFoCRJs9rAOexw5CVjCFHrYNlvDbB2WpNsI+4rs79/
+W9wvvUO4ZD+yWwAAVbhb4naEHUylzTwArcJo95PggQmOZUIdMKGOvFiy5AgvWmYMOGcgGNbWQBYR
+nyRqfZTnCFkMcWtAZV7P5dl7ngA3B+vuzi6VNgPhPb4McUvlTKYyaRUyu2TJyQYDnr18hm7xA4BK
+McUNuIK3U5t5k6h+pClu84v3O+oQdgDBUHHeGjAHZkiBMtnqWxIRP6xRKzXC03YvEZK449mHeY2o
+CC5bbgoF6lJpsztCBMRyTr69H7qNa7My12HdevsN+rp4KYC7na6m/RaY8VguuX6ojP4e4t+4A166
+Wk1xk//4ovoFA4EF+LQ+y0UAAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2022 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
