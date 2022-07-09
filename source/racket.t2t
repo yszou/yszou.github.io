@@ -944,7 +944,189 @@ b
 
 
 
-# 自定义结构体 #
+# 自定义结构 #
+
+## 基本用法 ##
+
+使用 ``struct`` 可以自定义一种结构：
+
+```racket
+(struct point (x y))
+(define p (point 1 2))
+```
+
+定义之后，结构的名字，就是这个结构“实例化”的函数名。同时，会存在一系列与结构名相关的函数，可以用来处理结构的实例：
+
+```racket
+(point? p)
+(point-x p)
+```
+
+结构可以被扩展，或者说，可以继续定义子结构：
+
+
+```racket
+(struct point (x y))
+(struct point-3d point (z))
+(define p (point-3d 1 2 3))
+(point? p)
+(point-3d? p)
+(point-3d-z p)
+;(point-3d-x p)
+(point-x p)
+```
+
+``point-3d`` 是 ``point`` 的子结构，所以 ``p`` 在 ``point?`` 和 ``point-3d?`` 的结果都会是 ``#t`` 。
+
+但是在获取属性值的时候，子结构只能获取自己的那部分，否则就需要使用父结构的方法，比如上面代码中的 ``(point-3d-x p)`` 就会报错。
+
+结构也可以复制更新：
+
+```racket
+(struct point (x y))
+(define p (point 1 2))
+(define p2 (struct-copy point p (y 10)))
+(point-x p2)
+(point-y p2) ;10
+```
+
+## 透明结构和虚拟结构 ##
+
+前面介绍的 ``struct`` 普通用法，可以正常得到一个结构实例。但是这个实例在后继的使用中，无法再被了解到构造时的情况，我们把实例打印出来，看到的也只是类型 ``#<point>`` 这样的信息，不知道在构造时的参数是什么。它自然是有利于“封装”的行为，不过有时在我们需要 *public* 行为时，就不是我们期望的了。
+
+对此， *racket* 还有两种类型的扩展机制。 *透明类型 transparent* 和 *虚拟类型 previously fabricated* 。前者是解决 *public* 的一种自然想法，后者就有点天马行空的感觉了。
+
+
+```racket
+(struct point (x y))
+
+(define (get-point x y) 
+    (struct point (x y) #:transparent)
+    (point x y)
+  )
+(get-point 1 2)
+```
+
+当在 ``struct`` 后面添加 ``#:transparent`` 关键字后，这个结构就是“透明类型”了。对于透明类型，现在能看到的只是打印出来的样子，从 ``#<point>`` 变成了 ``(point 1 2)`` ，至少能看到构造时的参数了。后面，还有反射相关的机制可以作用于它。
+
+针对上面的代码，还可以了解到， ``struct`` 定义结构，并不是全局，而是有一个自然的作用域范围，可以在局部再定义同名的结构。
+
+除了“透明类型”，还有一个 *虚拟类型 previously fabricated* ，这个机制，甚至可以让我们在结构被定义前，就预先开始使用这个结构了：
+
+```racket
+(define p #s(point 1 2))
+```
+
+这个像是使用向量的语句，是合法的。它定义了 ``p`` 是一个名为 ``point`` 的结构的实例。但是这个 ``point`` 到底是什么？目前为止，这个 ``point`` 确实还不存在。
+
+```racket
+(define p #s(point 1 2))
+(struct point (x y) #:prefab)
+(point? p)
+(point-x p)
+```
+
+可以在后面使用 ``struct`` 再加上 ``#:prefab`` 再定义这个结构的具体形式。
+
+它相对于其它语言的神奇之处，就是可以手写 ``#s(xxx 1 2)`` 这样的还没有被定义东西，在语法上是合法的。 *racket* / *scheme* 这样的语言，真是无时不刻在向我们示意“形式”与“逻辑”之间那无所谓般存在的界限。
+
+
+
+## 更多的参数 ##
+
+结构定义中，还可以在末尾加入更多的参数。这些参数，一部分是属性定义，比如像 ``#:mutable`` ，另一部分像是 Python 中的特殊方法，如 ``__str__`` ，定义了一个结构的行为表现，如 ``custom-write`` 。
+
+``#:mutable`` ，结构的属性可变 ：
+
+```racket
+(struct point (x y) #:mutable)
+(define p (point 1 2))
+(point-x p)
+(set-point-x! p 10)
+(point-x p)
+```
+
+``#:auto-value`` ，定义一个自动值（不允许传参，但是可以获取属性值）：
+
+```racket
+(struct o ([x #:auto]) #:auto-value 1)
+(struct point o ([y #:auto]) #:auto-value 2)
+(define p (point))
+(o-x p)
+(point-y p)
+```
+
+能过层层嵌套，最终可以得到一个 0 参数值的结构。
+
+
+``#:guard`` 参数预处理，子类型也会触发父级，但是只会传递有限参数：
+
+```racket
+(struct point (x y)
+  #:transparent
+  #:guard [lambda (x y type-name)
+            (if (= x 0) (values x y)
+              (values (* 2 x) (* 2 y)))])
+
+(point 1 2)
+(point 0 2)
+```
+
+在这里，也可以对参数作有效性的判断，返回错误， ``(error type-name "wrong")`` 。
+
+
+``#:methods`` ，一些通用接口，像 Python 的特殊方法，类似有 ``__getitem__``  之类的。这里只演示一下 ``custom-write`` ：
+
+```racket
+(define (print-out ins port mode)
+  [display port]
+  [display mode]
+  [display "hello"]
+  [display "\n"]
+)
+
+(struct point (x y)
+  #:methods
+  gen:custom-write
+  [(define write-proc print-out)]
+)
+
+(define p (point 1 2))
+p
+```
+
+``gen:custom-write`` 的接口，会调用两次，一次是 *nowhere* ，不知道这样设计的初衷。
+
+
+``#:property`` ，和 ``#:methods`` 一样的，比如 ``prop:procedure`` 是定义像 Python 中的 ``__call__`` 行为，即实例可以再次被“调用”。 ``#:property`` 和 ``#:methods`` 的区别，感觉后者是一个接口范围，像前面的，你需要定义一个 ``write-proc`` 方法。而 ``#:property`` 里就直接是具体的行为了，像 ``prop:procedure`` 直接一个函数就行。
+
+```racket
+(struct point (x y)
+  #:property
+  prop:procedure
+  (lambda (self a b) (+ (point-x self) (point-y self) a b))
+)
+
+(define p (point 1 2))
+(p 10 20)
+```
+
+``#:super`` ，跟前面的 ``扩展`` 是一样的能力，换了个写法：
+
+```racket
+(struct point (x y))
+(struct point-3d (z) #:super struct:point)
+
+(define p (point-3d 1 2 3))
+(point-3d-x p)
+```
+
+这里还有一点， ``point`` 和 ``struct: point`` 是不同的东西。 ``struct?`` 和 ``struct-type?`` 也是不同的。
+
+
+# 模块 #
+
+
 
 
 
