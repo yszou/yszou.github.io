@@ -1126,7 +1126,303 @@ p
 
 # 模块 #
 
+## 基本用法 ##
+
+*racket* 的模块机制，本身还是比较直观的，但是细节的变化上，又搞得很复杂。光是 ``require`` 的形式，就有三种：
+
+```racket
+(require demo) ;从包管理中导入
+(require "demo.rkt") ;从相对路径中导入
+(require 'demo) ;导入当前的一个 module 定义
+```
+
+模块的结构，基本是按目录结构，文件中要“导出”的方法，需要额外的使用 ``provide`` ，假设有一个 ``demo.rkt`` 是下面的内容：
+
+```racket
+#lang racket  
+
+
+(provide get-point point-x)
+
+(struct point (x y) #:transparent)
+(define (get-point x y) (point x y))
+
+(module* main #f
+  (get-point 1 2))
+```
+
+最后的 ``module* main #f`` 相关于 Python 中的 ``if __name__ == '__main__'`` 。 ``provide`` 导出中，需要包括相关的函数，否则， ``get-point`` 出去的结构，也没办法获取相关数据的。
+
+在另一个 ``a.rkwt`` 当中导入 ``demo.rkt`` ：
+
+```racket
+#lang racket
+
+(require "demo.rkt")
+(define p (get-point 1 2))
+(point-x p)
+#;(point-y p)
+```
+
+模块本身，也是一个函数调用的结果，和文件没有关系。文件上的表现，已经是一个加工了。
+
+```racket
+#lang racket  
+
+(module demo (lib "racket/main.rkt")
+  (display "in demo\n")
+  (define (hello a) (display (string-join (list "Hello" a "\n"))))
+  (provide hello))
+
+(require 'demo)
+(hello "world")
+```
+
+``lib`` 函数后面跟字符串 ``"racket/main.rkt"``，就相关于直接写 ``racket`` 了，表示模块的位置。而这里的 ``racket`` ，也即相当于一般情况下，把当前文件作为一个 ``module`` 快捷定义，最开头写的 ``#lang`` ，就是 ``module`` 完整形式的第二个参数。
 
 
 
+## 模块相关路径 ##
+
+除了当前位置的“相对路径”， *racket* 也有包寻找路径和对应的环境变量。
+
+环境变量是 *PLTCOLLECTS* ，可以指定包寻找的位置。
+
+默认的位置，可以通过下面的方法找到：
+
+```racket
+(require setup/dirs)
+(find-user-collects-dir)
+(get-collects-search-dirs)
+```
+
+
+## 子模块 ##
+
+模块当中再通过 ``module`` 或者 ``module*`` ，声明的模块，就是子模块。 *racket* 中的子模块具有和普通模块一样的独立性，即，默认情况下，都不会随父模块导入导出，比如有一个 ``demo.rkt`` 文件：
+
+```racket
+#lang racket  
+
+(module demo (lib "racket/main.rkt")
+  (display "in demo\n")
+  (define (hello a) (display (string-join (list "Hello" a "\n"))))
+  (provide hello))
+```
+
+在同目录的另一个 ``a.rkt`` 文件中，如果写成：
+
+```racket
+#lang racket
+
+(require "demo.rkt")
+(hello "world")
+```
+
+是不行的，因为 ``demo.rkt`` 这个模块，并没有 ``hello`` 函数， ``hello`` 是在 ``demo.rkwt`` 里面的子模块 ``demo`` 里的，要正确引入，需要写成：
+
+```racket
+(require (submod "demo.rkt" demo))
+(hello "world")
+```
+
+
+再看 ``module*`` 的行为，它更像是一个专门为内部使用而定义的子模块：
+
+```racket
+#lang racket  
+
+(module demo (lib "racket/main.rkt")
+  (define (add1 a) (+ a 1))
+  (module demo-sub racket
+    [display "in demo\n"]
+    [define (hello a) (display (string-join (list "Hello" a "\n")))]
+    [provide add1]
+    [provide hello]
+))
+
+(define (add a b) (+ a b))
+
+(require (submod 'demo demo-sub))
+(module* main #f 
+  (hello "world")
+  (add1 10)
+  (add 1 2))
+```
+
+``module*`` 加上 ``#f`` 可以使这个子模块看到当前模块的所有绑定。
+
+还有一个 ``module+`` 的形式，类型 ``module*`` 加 ``#f`` ，但是 ``module+`` 可以多次声明一个名字的子模块，最终它们会自动合并：
+
+```racket
+(module+ main
+  (add 1 2))
+
+(module+ main
+  (hello "world"))
+
+(module+ main
+  (hello "world2"))
+```
+
+
+# Contracts #
+
+## 是什么 ##
+
+*Contracts* 的作用，是“约束”，它描述了像函数的入参与结果是什么样子。“类型”只是“约束”的子集。比如，其它语言中的类型，可以指定说，“第一个参数是整数”，但是 *Contracts* 可以做到“第一个参数是大于 2 且小于 10 的整数”。
+
+更神奇的是，在 *racket* 中，这套 *Contracts* 机制，完全是可插拔的，前面介绍的中，完全不管它，完全不影响代码和功能的正常使用。而且，它没有自己的“语法”，完全和普通代码一样，它也是普通代码。
+
+用普通代码去约束普通代码。
+
+其它语言中的，接口，泛型，在 *racket* 中没有任何特殊地，没有添加任何额外语法地，就这么实现了。
+
+*Contracts* 的样子，大概是：
+
+```racket
+#lang racket  
+
+(module demo racket
+  (provide (contract-out [x positive?]))
+  (define x 123))
+
+(require 'demo)
+x
+```
+
+``demo`` 模块中上，声明了一个 *contract* ，说 ``x`` 需要是正数。这时如果写成 ``(define x -1)`` 就会报错了。
+
+
+
+
+## 绑定 ##
+
+“绑定”就是 ``define`` 的那些标识，可以给它们都添加相应的 *Contracts* 。
+
+
+```racket
+#lang racket  
+
+(define/contract
+  x
+  (or/c string? positive?)
+  "hello")
+
+(set! x -1) ;error
+```
+
+使用 ``define/contract`` 在定义的同时给出相应的约束。
+
+使用 ``or/c`` 或者 ``and/c`` 可以组件约束的条件。
+
+如果过程中出现了不满足 *Contracts* 的情况，则会报错。
+
+## 函数 ##
+
+### 一般形式 ###
+
+函数中，有“参数”和“结果”，所以函数的 *Contracts* 也应该包含这两部分的信息，使用 ``->`` 函数表示 。
+
+```racket
+(module demo racket
+  (provide (contract-out
+             [add (-> positive? number? number?)]))
+  (define (add a b) (+ a b)))
+
+(require 'demo)
+(add -1 2)
+```
+
+上面，描述了 ``add`` 函数的参数中，第一个是正数，所以 ``(add -1 2)`` 会报错。
+
+``->`` 使用，也可以写成 ``(positive? number? . -> . number?)`` 有时会好看点。
+
+函数也可以在定义时，直接给出约束：
+
+
+```racket
+(define/contract
+  (add a b)
+  (positive? number? . -> . number?)
+  (+ a b))
+
+(add 1 2)
+(add -1 2)
+```
+
+### any any/c void? ###
+
+- ``any`` 任何东西，系统都可以不检查。
+- ``void?`` 空，比如没有返回。
+- ``any/c`` 类型 ``any`` ，但是它限制了，只是能“单值”，不能是“多值”。
+
+
+### 高阶函数 ###
+
+嵌套使用 ``->`` 就可以了：
+
+
+```racket
+(define/contract
+  (base-add a)
+  (number? . -> . (number? . -> . number?))
+  (lambda (b) (+ a b)))
+
+(define/contract
+  (all-add func lst)
+  (-> (-> number? number?) list? list?)
+  (map func lst))
+
+((base-add 10) 1)
+
+(all-add (lambda (n) (+ n 1)) '(1 2 3))
+```
+
+
+### 提示信息 ###
+
+
+```racket
+(define/contract
+  (add a b)
+  (->
+    (flat-named-contract
+      'a
+      (lambda (x) (and (> x 10) (< x 100)))
+    )
+    positive?
+    positive?)
+  (+ a b))
+
+(add 1 -1)
+```
+
+在对应参数/结果的位置上，可以使用 ``flat-named-contract`` 来给出具体的提示，否则，像 ``labmda`` 这种，会显示成代码的位置。
+
+
+### 可选参数 ###
+
+### 不定参数 ###
+
+### 关键词参数 ###
+
+### case-lambda ###
+
+### 结果与参数有关联 ###
+
+### 可变值 ###
+
+### 多值返回 ###
+
+### 不定结果 ###
+
+
+## 模块 ##
+
+## 结构 ##
+
+## 抽象 Contracts ##
+
+## 自定义 Contracts ##
 
