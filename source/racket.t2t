@@ -1403,13 +1403,137 @@ x
 
 ### 可选参数 ###
 
+可选参数，就是带默认值，在参数列表后半部分的那些参数。这种形式下，需要使用 ``->*`` 来制定约束。 ``->*`` 有两部分输入参数，第一组是必须参数列表，第二组是可选参数列表。
+
+```racket
+(define/contract
+  (add a b [c 1] [d 1])
+  (->* (number? number?)
+       (number? number?)
+       number?)
+  (+ a b c d))
+
+(add 1 1 3 3)
+```
+
+
 ### 不定参数 ###
+
+不定参数，指参数个数不确定的情况。
+
+它同样使用 ``->*`` ，不过需要配合一个 ``#:rest`` 关键词。
+
+函数中定义不定参数，是使用的 ``.`` 这个符号来分割参数：
+
+```racket
+(define
+  (max-abs n . lst)
+  (if (empty? lst) n
+    [apply max-abs
+           (max (abs n) (abs (first lst)))
+           (rest lst)]))
+
+(max-abs -10 -2 3 4)
+```
+
+加上约束的话（估计在约束中加一个值必须大于 0）：
+
+```racket
+(define (list-and lst)
+  (cond [(empty? lst) #t]
+        [(eq? #f (first lst)) #f]
+        [else (list-and (rest lst))]))
+
+(define/contract
+  (max-abs n . lst)
+  (->* (number?)
+       ()
+       #:rest (lambda (lst) (list-and (map
+                                        (lambda (x) (and (number? x) (> x 0)))
+                                        lst)))
+       ;#:rest (listof number?)
+       number?)
+  (if (empty? lst) n
+    [apply max-abs
+           (max (abs n) (abs (first lst)))
+           (rest lst)]))
+
+(max-abs 10 2 3 1)
+```
+
+``->*`` 的参数的完整形式，还可以多一个 ``#:rest`` ，后面是一个参数是列表的函数。
+
+这里 ``and`` 是特殊函数，所以 ``(apply and ...)`` 会报错。
+
 
 ### 关键词参数 ###
 
+
+关键词参数在约束定义中，使用普通的 ``->`` 就可以了，它支持关键词参数：
+
+```racket
+(define/contract
+  (minus a #:other b)
+  (-> number? #:other number?
+      number?)
+  (- a b))
+
+(minus #:other 10 1)
+```
+
+关键词和可选参数一起：
+
+```racket
+(define/contract
+  (minus a #:other [b 10])
+  (->* (number?)
+       (#:other number?)
+       number?)
+  (- a b))
+
+(minus 1 #:other 10)
+```
+
+
 ### case-lambda ###
 
+``case-lambda`` 是一个有点像模式匹配的功能，约束定义上，对应使用 ``case->`` 。
+
+```racket
+(define/contract
+  add
+  (case->
+    (number? number? . -> . number?)
+    (number? . -> . number?))
+  (case-lambda
+    [(a b) (+ a b)]
+    [(a) (+ 100 a)]))
+
+(add 1)
+(add 1 2)
+```
+
 ### 结果与参数有关联 ###
+
+广义地说，这种情况应该说成“参数与参数之间有依赖，或者结果与参数之间有依赖”。后半段，其实是一段“废话”，对于一个函数来说，除非是特别的像常数函数，其它的函数，基本上结果都依赖于参数。所以，这里说的约束上的机制，更多的是在于在使用时，我们自己想怎么定义这个约束而已，约束不是检查函数对错，而是站在调用者角度，防范错误地使用了。举一个例子，假设我们有一个错误的“加法”，在它的实现上， ``1 + 1 = 3`` ，约束不是考虑 ``1 + 1`` 的结果对不对，而是考虑调用 ``wrong-add`` 这个函数时，它的两个参数是否传对了，有时，它确实也是跟业务有关的。
+
+同样也是加法， ``a + b`` ，假设，我们期望的是 ``b > a`` ，这种约束，需要使用 ``->i`` （ ``i`` 表示“indy dependent”）：
+
+```racket
+(define/contract
+  (add a b)
+  (->i ([a number?]
+        [b (a) (and/c number? (>/c a))])
+        [result (a b) (>=/c (+ a b))])
+  (+ a b))
+
+(add 1 2)
+```
+
+``->i`` ，后面有两组参数，第一组，是函数的参数，按顺序，后面的可以依赖前面的。第二组，是结果，可以依赖所有函数参数。
+
+这里重早申一下 ``and/c``, ``>/c`` 这类函数。它们都是高阶函数，最后的结果，是仅接受一个参数的函数。
+
 
 ### 可变值 ###
 
@@ -1425,4 +1549,6 @@ x
 ## 抽象 Contracts ##
 
 ## 自定义 Contracts ##
+
+
 
