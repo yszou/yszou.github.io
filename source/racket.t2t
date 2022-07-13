@@ -1524,7 +1524,7 @@ x
   (add a b)
   (->i ([a number?]
         [b (a) (and/c number? (>/c a))])
-        [result (a b) (>=/c (+ a b))])
+       (result (a b) (>=/c (+ a b))))
   (+ a b))
 
 (add 1 2)
@@ -1535,9 +1535,47 @@ x
 这里重早申一下 ``and/c``, ``>/c`` 这类函数。它们都是高阶函数，最后的结果，是仅接受一个参数的函数。
 
 
-### 可变值 ###
+### 参数被修改的情况 ###
+
+这里要介绍的，还是对 *result* 的检查，但是有一种情况，就是参数会被函数更改的情况。
+
+这时，之前的 ``(result (a b) (...))`` 就没有办法正常工作了，因为 ``a, b`` 已经被更改，没有原始状态，可能就无法用于检查结果是否正常。这里， *racket* 提供的工具，作了一些细微的变化，允许 ``(...)`` 这部分先求值，如果需要，就可以事先把原始的 ``a`` ``b`` 保存一下（注意，求值的结果是一个单参数函数，而函数的执行永远是在原函数调用之后的，这时才有 ``result`` 值）：
+
+```racket
+(define/contract
+  (add1 a)
+  (->i ([a box?])
+       (_ (a) (begin
+                     (display (list "A ->" (unbox a)))
+                     (display "\n")
+                     (lambda (x) (begin
+                                   (display (list "B ->" x))
+                                   (display "\n")
+                                   #t)))))
+  (set-box! a (+ 1 (unbox a)))
+  (unbox a))
+
+(define x (box 1))
+(define r (add1 x))
+(display (list "C ->" r))
+```
+
+这个例子，写成 ``_`` ，那么后面的表达式就是“先求值”，会输出 "A -> 1" 。如果像原来那样，写成 ``result`` ，就会“后求值”，输出 "A -> 2"。
+
 
 ### 多值返回 ###
+
+多值返回仍然使用 ``values`` 就可以了， 通过 ``values`` 返回多个单参数函数：
+
+```racket
+(define/contract
+  (get)
+  (-> (values number? number?))
+  (values 10 20))
+
+(get)
+```
+
 
 ### 不定结果 ###
 
