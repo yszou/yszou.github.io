@@ -1577,14 +1577,121 @@ x
 ```
 
 
-### 不定结果 ###
+### 参数之间依赖 ###
+
+最后一种情况，算是最复杂的情况，指的是，参数之间互相有依赖，比如，第一个参数是否符合约束条件，是要看第二个参数的情况。
+
+```racket
+(define (n-step proc inits)
+  (let ([inc (apply proc inits)])
+    (when inc
+      (n-step proc [map (lambda (x) (+ x inc)) inits]))))
 
 
-## 模块 ##
+(define (f x)
+  (printf "~s\n" x)
+  (if (= x 0) #f -1))
+
+(n-step f '(10 9))
+```
+
+上面的例子，运行是会报错的。因为 ``f`` 函数，它只能接收一个参数，但是 ``(apply proc inits)`` 会把 ``10`` 和 ``9`` 两个参数传给它。如果要为 ``n-step`` 的第一个参数 ``proc`` 写约束，需要在 ``->i`` 机制下，用到专门的一些功能方法去描述 ``proc`` 的参数与结果（函数的定义域和值域）：
+
+```racket
+(define/contract
+  (n-step proc inits)
+  (->i ([proc (inits) 
+              (and/c (unconstrained-domain-> (or/c false/c number?))
+                     (lambda (f) (procedure-arity-includes?
+                                   f
+                                   [length inits])))]
+        [inits (listof number?)])
+       ()
+       any)
+  (let ([inc (apply proc inits)])
+    (when inc
+      (n-step proc [map (lambda (x) (+ x inc)) inits]))))
+```
+
+通过 ``unconstrained-domain->`` 检查函数的结果，这里表示结果只能是 ``#f`` 或者一个数字。
+
+在检查函数本身的时候，使用了 ``procedure-arity-includes?`` ，它的作用是检查指定函数是否可以接收指定个数的参数。
+
 
 ## 结构 ##
 
-## 抽象 Contracts ##
+### 结构类型约束 ###
+
+结构类型的约束，像是普通的类型声明，不过这些约束并不是用于静态分析的，只是运行时的额外，跟手写 ``if`` 效果是一样的。
+
+```racket
+(struct/contract
+  point
+  ([x number?] [y number?]))
+
+(define (g) (point "a" 10))
+```
+
+这个例子，定义 ``point`` 时，指明了它的 ``x`` 和 ``y`` 都是数据。所以 ``(g)`` 的调用，就会出错了。
+
+
+### 结构实例声明 ###
+
+实例指的就是前面例子中 ``(g)`` 返回的东西，还是同样的例子：
+
+```racket
+(struct/contract
+  point
+  ([x number?] [y number?]))
+
+(define/contract
+  (g)
+  (-> (struct/c point number? number?))
+  (point 20 10))
+```
+
+在 ``(g)`` 函数的定义中，使用 ``struct/c`` 声明了它的返回值，是一个 ``point`` 结构，并且两个参数都是数字。
+
+进一步，与函数的 ``->i`` 类型，也有 ``struct/dc`` ，可以声明结构的各属性之间有依赖的情况的约束规则。比如还是 ``point`` ，要让 ``y`` 一定比 ``x`` 要大的话：
+
+```racket
+(struct/contract
+  point
+  ([x number?] [y number?]))
+
+(define/contract
+  (g)
+  (-> (struct/dc
+        point
+        [x number?]
+        [y (x) (>/c x)]))
+  (point 20 30))
+
+(g)
+```
+
+## 抽象的 Contracts ##
+
+抽象约束，第一眼看着像泛型，多想想又像接口。其实就是不管是约束，还是一组函数，其本身对于一些元素，并不在意它具体是什么，只要能满足条件，正常工作就行了（又像鸭子类型）。这里用 *Hash Table* 来做一个例子。
+
+
+```racket
+(define a #hash([name . "a"] [age . 10]))
+
+(define (get-name p)
+  (hash-ref p 'name))
+(define (get-age p)
+  (hash-ref p 'age))
+
+(provide
+  (contract-out
+    #:exists person
+    [get-name (person . -> . symbol?)]
+    [get-age (person . -> . number?)]))
+```
+
+这个例子当中，只是定义了一个名为 ``a`` 的 *Hash Table* ，然后 ``get-name`` 和 ``get-age`` 都只是普通的操作。在定义约束的时候，通过 ``#:exists`` 给了一个 ``person`` 的概念，形式上，就看成了 ``get-name`` 和 ``get-age`` 都是在针对 ``person`` 这个东西在做操作， ``person`` 就是抽象出来的东西。
+
 
 ## 自定义 Contracts ##
 
