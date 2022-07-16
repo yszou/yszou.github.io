@@ -1695,5 +1695,272 @@ x
 
 ## 自定义 Contracts ##
 
+TODO
+
+
+# IO #
+
+## 基本概念 ##
+
+### 文件 ###
+
+*racket* 中的 IO，基本由 *port* 来实现，而 *port* 的概念，类似于 Python 中的 *file* ，它可以是文件，socket，pipeline ，甚至是任何 *file like* 的东西。
+
+```racket
+#lang racket  
+
+(define out (open-output-file "demo.txt" #:exists 'truncate))
+(display "hello" out)
+(close-output-port out)
+
+(define in (open-input-file "demo.txt"))
+(read-line in)
+(close-input-port in)
+```
+
+*racket* 也有像 Python 中的 *with* 一样的方法：
+
+```racket
+(call-with-output-file "data.txt"
+                       #:exists 'truncate
+                       (lambda (out)
+                         (display "hello" out)))
+
+(call-with-input-file "data.txt"
+                      (lambda (in)
+                        (read-line in)))
+```
+
+对于不大的文件/port，可以直接用 ``port->string`` 读取它：
+
+```racket
+(define s (port->string (open-input-file "demo.txt") #:close? #t))
+(printf "~a\n" s)
+```
+
+
+### 字符串 ###
+
+*file like* 的东西，在 *racket* 中就简单了，直接 ``open-output-string`` 和 ``open-input-string`` 就可以了：
+
+```racket
+(define port (open-output-string))
+(display "hello" port)
+(get-output-string port)
+
+(read-line (open-input-string "here"))
+```
+
+从上面也可以看出，我觉得不太方便的一点，就是在 *racket* 中， output 的 *port* 和 input 的 *port* 是明确分开的。
+
+
+### 网络 ###
+
+一个一次性的 echo 服务可以是：
+
+```racket
+#lang racket  
+
+(display "Begin\n")
+
+(define server (tcp-listen 8888 4 #t))
+(define-values (srv-in srv-out) (tcp-accept server))
+(define content (read-line srv-in))
+
+(display content)
+(display "\n")
+
+(display content srv-out)
+(display "\n" srv-out)
+
+(close-output-port srv-out)
+(tcp-close server)
+
+(display "End\n")
+```
+
+这里有一个坑， ``close-output-port`` ，否则客户收不到响应。
+
+
+### 子进程的输入输出 ###
+
+```racket
+(define-values (sp out in err)
+               (subprocess #f #f #f "/bin/ls" "-l"))
+(printf "\n~a\n" (port->string out))
+```
+
+
+### 内部管道 ###
+
+这里的 *pipe* ，只是 *racket* 自己的实现，不是操作系统上的那个。
+
+```racket
+(define-values (in out) (make-pipe))
+(display "hello" out)
+(close-output-port out)
+(printf "~a\n" (read-line in))
+```
+
+还是要记得 ``close-output-port`` 。
+
+
+### 当前标准输入输出 ###
+
+``display`` 默认使用当前标准输出， ``current-output-port`` 。错误输出 ``current-error-port`` 。标准输入 ``current-input-port`` 。这几个都是函数。
+
+
+```racket
+(display "Input:\n")
+(define s (read-line (current-input-port)))
+(display s (current-output-port))
+(display "\n" (current-output-port))
+(display "error" (current-error-port))
+```
+
+
+## racket 的三种输出格式 ##
+
+这部分，相对其它编程语言，就要复杂一些了。
+
+*racket* 中的数据，在输出的时候，有三种形式可供选择。为什么搞这么复杂呢？
+
+举一个例子，一个字符串 ``hello`` ，它在输出的时候：
+
+```racket
+hello
+"hello"
+```
+
+哪种是你希望的？没有确定的答案。
+
+*racket* 还有一种 *quote* ，比如： ``'(+ 1 1)`` ，最后输出的时候：
+
+```racket
+(+ 1 1)
+'(+ 1 1)
+```
+
+哪种是你希望的？
+
+所以， *racket* 提供了三种输出的函数，它们行为上，有一些差异：
+
+- ``print`` ，最“原始”，与 REPL 中的显示完全一样的输出。
+- ``write`` ，终端层面的“原始”，去掉了 *quote* 的情况。
+- ``display`` ，最贴近人阅读的形式，输出实际的字符字节，没有额外的引号。
+
+
+从字符串：
+
+```racket
+(print "hello\n")
+(display "\n")
+(write "hello\n")
+(display "\n")
+(display "hello\n")
+```
+
+到符号：
+
+```racket
+(print '(+ 1 "1"))
+(display "\n")
+(write '(+ 1 "1"))
+(display "\n")
+(display '(+ 1 "1"))
+```
+
+就比较容易区分它们了。
+
+
+在 ``printf`` 函数中，它有三种占位符，对应上面的三种输出：
+
+- ``~a`` ， ``display``
+- ``~s`` ， ``write``
+- ``~v`` ， ``print``
+
+
+```racket
+(printf "~v\n" '(+ 1 "1"))
+(printf "~s\n" '(+ 1 "1"))
+(printf "~a\n" '(+ 1 "1"))
+```
+
+上面的结果是：
+
+```txt
+'(+ 1 "1")
+(+ 1 "1")
+(+ 1 1)
+```
+
+但是 ``printf`` 本身，又是 ``display`` 的行为。
+
+上述的所有函数，都是工作在“字符”层面的，“字节”层面的有其它函数，如 ``read-byte`` ``write-byte`` 。
+
+
+## 直接的序列化 ##
+
+这里又是体现 lisp 的“数据即代码，代码即数据”的一个地方。同时，也和前面讲 *struct* 时， *prefab*, *#:transparent* 这些联系起来了。
+
+```racket
+(define-values (in out) (make-pipe))
+(define a '(+ 1 1))
+(list? a)
+(write a out)
+(close-output-port out)
+(define b (read in))
+(list? b)
+```
+
+上面是 *quote* 的情况，其它的 *struct* ，使用 *#:transparent* 无法直接实现序列化效果，需要配合其它工具（这里先不讨论了）：
+
+```racket
+(struct point (x y) #:transparent)
+(define p (point 1 2))
+(point-x p)
+
+(define-values (in out) (make-pipe))
+(write p out)
+(close-output-port out)
+(define p2 (read in))
+(vector? p2)
+```
+
+即使这样，``read`` 进来的，也完成了 ``vector`` 的转化。
+
+*prefab* 的结构，就可以直接序列化处理了：
+
+```racket
+(struct point (x y) #:prefab)
+(define p (point 1 2))
+
+(define-values (in out) (make-pipe))
+(write p out)
+(close-output-port out)
+(define p2 (read in))
+(vector? p2)
+(point? p2)
+(point-x p2)
+```
+
+
+# 正则表达式 #
+
+
+# 异常 #
+
+
+# 迭代 #
+
+# 模式匹配 #
+
+# 类和对象 #
+
+# 组件 #
+
+# 反射 #
+
+# 宏 #
 
 
