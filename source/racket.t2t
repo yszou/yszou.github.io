@@ -1947,8 +1947,153 @@ hello
 
 # 正则表达式 #
 
+*racket* 的正则表达式没有太多特别的地方，使用上，分字符串和字节串。
 
-# 异常 #
+- 字符串： ``#px"\\d*?"``
+- 字节串： ``#px#"\\d*?"``
+
+
+这里注意，要 ``#px`` 才支持 ``\d`` 。 ``#rx`` 是不支持的。
+
+因为 ``racket`` 字符串规则的限制，转义时需要写两个 ``\`` 。也可以不管转义，使用l ``regexp-quote`` 函数：
+
+```racket
+(regexp-quote "list?") ; list\\?
+```
+
+正则表达式的一般操作，都有对应的函数：
+
+- 查询和匹配： ``regexp-match-positions`` 和 ``regexp-match`` ，及 ``regexp-match?`` 。
+- 切分： ``regexp-split`` 。
+- 替换： ``regexp-replace`` 和 ``regexp-replace*`` （带 ``*`` 是替换所有，否则只替换第一个）。
+
+
+一些例子：
+
+```racket
+(define s (regexp-match #px"(.)(\\d+)" "abc123"))
+(list-ref s 2)
+```
+
+替换的：
+
+```racket
+(regexp-replace* #px"(.*?)(\\d+)" "abc123" "\\2+\\1")
+```
+
+
+# 异常和 call/cc #
+
+## 传统异常和 catch ##
+
+通过 ``with-handlers`` 和 ``exn:fail*`` 系列对象，完成异常的捕获：
+
+```racket
+(with-handlers
+  ([exn:fail:contract:divide-by-zero?
+     (lambda (exc) (begin (display "here\n") 0))])
+  (/ 1 0))
+```
+
+``with-handlers`` 后面的异常类型，可以有多个。当然，前提是要先知道异常类型。
+
+不清楚的，也可以直接用 ``exn:fail?`` ：
+
+```racket
+(with-handlers
+  ([exn:fail?
+     (lambda (exc) (begin (display "here\n") 0))])
+  (/ 1 0))
+```
+
+抛出异常使用 ``error`` 或者 ``raise`` 。 ``error`` 会把参数包装成 ``exn:fail`` 结构，而 ``raise`` 不会：
+
+```racket
+(with-handlers
+  ([exn:fail?
+       (lambda (exc) (begin (printf "~a\n" (exn-message exc)) 0))])
+         (error "Hello"))
+```
+
+使用 ``exn-message`` 获取错误信息。如果是 ``raise`` ，就不能直接用 ``exn:fail?`` ，需要自己实现一个判断：
+
+```racket
+(with-handlers
+  ([(lambda (v) (eq? v "Hello"))
+     (lambda (v) (begin (printf "~a\n" v) 0))])
+  (raise "Hello"))
+```
+
+
+## Prompt 和 Abort ##
+
+在 *racket* 中，比异常捕获更通用的，是 *Prompt* 和 *Abort* 机制。它们，类型其它语言中的 *label* 和 *goto* ，但是会在异常未捕获时，自动 *goto* 到最近的一个 *label* 处。
+
+它的结构，像是表达式版的 ``try`` 。
+
+```racket
+(define tag (make-continuation-prompt-tag 'a))
+
+(+ 1
+   (call-with-continuation-prompt
+     (lambda () [begin
+                  (display "here\n")
+                  (abort-current-continuation
+                    tag
+                    (lambda () 10))
+                  (+ 1 1)])
+     tag)
+)
+```
+
+这个例子中，先通过 ``make-continuation-prompt-tag`` 创建一个 *label* 。然后表达式中的部分，使用 ``call-with-continuation-prompt`` *try* 起来，它的第一个参数是一个函数，第二个参数是 *label* 。
+
+在第一个参数函数中，就可以控制 ``abort-current-continuation`` 带着一个新函数，跳到指定的 *label* 处了。
+
+``make-continuation-prompt-tag`` 创建的 *label*，也可以使用 ``default-continuation-prompt-tag`` 方法代替。
+
+``abort-current-continuation`` 只可以往父级的 *prompt* 跳，可以跨级：
+
+```racket
+(define tag-a (make-continuation-prompt-tag 'a))
+(define tag-b (make-continuation-prompt-tag 'b))
+
+(+ 1
+   (call-with-continuation-prompt
+     (lambda () [begin
+                  (display "A\n")
+                  (call-with-continuation-prompt
+                    (lambda () [begin
+                                 (display "B\n")
+                                 (abort-current-continuation
+                                   tag-a
+                                   (lambda () 10))])
+                    tag-b)
+                  (+ 1 1)])
+     tag-a)
+)
+```
+
+
+## Continuation ##
+
+
+标题中的 ``call/cc`` 是 ``call-with-current-continuation`` ，它是 *scheme* 的一个传统技艺，在 *racket* 中有了一些扩展，用 ``call-with-composable-continuation`` 。
+
+*Continuation* ，简单来说，就是表达式中的“坑位”。每次填坑的时候，都可以对一个即定的表达式重新求值。
+
+我个人理解，它其实是对表达式求值过程的一个自动化的函数化表达转换。
+
+先看简单的 ``call/cc`` ：
+
+```
+
+```
+
+
+
+
+
 
 
 # 迭代 #
