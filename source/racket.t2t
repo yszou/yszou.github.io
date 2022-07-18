@@ -1888,7 +1888,7 @@ hello
 
 上面的结果是：
 
-```txt
+```racket
 '(+ 1 "1")
 (+ 1 "1")
 (+ 1 1)
@@ -2075,7 +2075,7 @@ hello
 ```
 
 
-## Continuation ##
+## Continuation, call/cc ##
 
 
 标题中的 ``call/cc`` 是 ``call-with-current-continuation`` ，它是 *scheme* 的一个传统技艺，在 *racket* 中有了一些扩展，用 ``call-with-composable-continuation`` 。
@@ -2084,13 +2084,183 @@ hello
 
 我个人理解，它其实是对表达式求值过程的一个自动化的函数化表达转换。
 
-先看简单的 ``call/cc`` ：
+理解 ``call/cc`` 不难，也不需要用网上那些“理论”（其实是我不懂）：
+
+```racket
+(define ff void)
+
+(+ 1 (call/cc (lambda (f)
+                (set! ff f)
+                (f 2)
+                (printf "here"))))
+
+(printf "|~a|\n" (ff 10))
+```
+
+上面代码的结果，对于大部份初次接触 ``call/cc`` 的人来说，肯定会非常意外的。
+
+其实核心很简单：
+
+**当 ``call/cc`` 的 ``lambda`` 的那个 ``f`` 被调用时，会中断当前表达式的求值过程，同时调用的结果会作为当前表达式的结果。**
+
+熟悉 *yield* 的人，在这里肯定有似曾相似的感觉，虽然具体形式上有差异，不过都是表达式的值，是由另外一个地方的“参数”所影响与决定的。
+
+``f`` 的行为本身是好理解的，整个表达式，把自己这部分换个坑，变成一个单参数的样子。比如，上面的代码， ``f`` 相当于： ``lambda (hole) (+ 1 hole)`` 。
+
+执行流程的改变，跟 ``call/cc`` 表达式本身没有关系，关键是那个 ``f`` 有没有被调用。 ``|~a|`` 那里，因为 ``ff`` 被调用了，所以 ``printf`` 就没有作用了。（ ``printf`` 本身没有返回值， ``ff`` 调用后，它的返回值就作为表达式返回值。同时，因为 ``ff`` 的调用， ``printf`` 的调用过程即当前表达式的求值过程被中断，也就看不到 ``printf`` 的效果了。）
+
+接下来，要尝试搞清楚，我们说的“当前表达式”，到底是一个怎样的范围。还是刚才的例子：
+
+```racket
+(define ff void)
+
+(+ 1 (call/cc (lambda (f)
+                (set! ff f)
+                (f 2)
+                (printf "here"))))
+
+(printf ">~a<\n"
+        (printf "|~a|\n" (ff 10)))
+
+(printf ">~a<\n"
+        (printf "|~a|\n" 100))
+```
+
+输出的结果是：
+
+```text
+3
+11
+|100|
+>#<void>< 
+```
+
+结果验证了刚才对 ``printf`` 过程的解释。同时也可以看出，“当前表达式”的范围，是一行整个表达式。甚至额外把它包到一个函数里也不行：
+
+```racket
+(define ff void)
+
+(+ 1 (call/cc (lambda (f)
+                (set! ff f)
+                (f 2))))
+
+(define (get-result) (ff 10))
+
+(printf ">~a<\n"
+        (printf "|~a|\n" (get-result)))
+```
+
+这个行为，就跟是在“正则序”求值一样。（事实是否如此我并不知道）
+
+那是否可以控制这个“当前表达式”的范围呢？ *racket* 中是可以的，就是用前面介绍过的 *prompt* 的 *tag* ：
+
+```racket
+(define tag-a (make-continuation-prompt-tag 'a))
+(define ff void)
+
+(call-with-continuation-prompt
+  (lambda () 
+    [+ 1 (call/cc (lambda (f)
+                    (set! ff f)
+                    (f 2)) tag-a)]) tag-a)
+
+(define (get-result) (ff 10))
+
+(printf ">~a<\n"
+        (call-with-continuation-prompt
+          [lambda ()
+            (printf "|~a|\n" (get-result))] tag-a))
+```
+
+这个代码，``ff`` 被执行后，它的结果会作为 ``tag-a`` 这个 *tag* 范围的表达式的返回值，所以结果是：
+
+```text
+3
+>11<
+```
+
+了解了 ``call/cc`` ，再看 *racket* 中的 ``call-with-composable-continuation`` 。
+
+最大的区别是， ``call-with-composable-continuation`` 会在对 ``f`` 的调用求值后，再把这个求值带回原表达式，继续求值。而 ``f`` 的调用求值，是否返回，取决于用户是否显式地设置了 *label* ，如果设置了，则不返回。否则，返回，这样，实际上就会返回多个值。
+
+```racket
+(define tag-a (make-continuation-prompt-tag 'a))
+(define tag-b (make-continuation-prompt-tag 'b))
+(define ff void)
+(define fff void)
+
+(call-with-continuation-prompt
+  (lambda ()
+    (+ 1 (call-with-composable-continuation
+           (lambda (f)
+             (set! ff f)
+             (f 20)) tag-a))
+    ) tag-a)
+
+
+(+ 1
+   (call-with-continuation-prompt
+     (lambda ()
+       (+ 5
+          (call-with-composable-continuation
+            (lambda (f)
+              (set! fff f)
+              (f 20)
+              #;100)
+            tag-b))
+       ) tag-b))
+
+
+
+(define (get-result) (fff 100))
+(printf ">~a<\n"
+        (printf "|~a|\n" (get-result)))
 
 ```
 
+``tag-b`` ，自己求值那里，看两步：
+
+- 第一步， ``(f 20)`` ，根据 ``tag-b`` 的范围，会得到 25 的结果。
+- 第二，把 25 替换到 ``call-with-composable-continuation`` 的位置，求值原表达式，得到 31 。
+
+
+这里挻有意思的一点，就是 ``(f 20)`` 它求值的范围，和结果替换的范围，是不同的。
+
+再看 ``(fff 100)`` ， ``fff`` 是 ``f`` 的范围，所以是 ``tag-b`` 的范围，那么 ``(fff 100)`` 的求值结果应该是 ``105`` 。 ``get-result`` 结果是 105 ，再把它代回原表达式求值，就得到了：
+
+```text
+|105|
+>#<void><
 ```
 
+如果不设定 ``call-with-continuation-prompt`` ，那么会返回两次：
 
+```racket
+(define ff void)
+
+(+ 1 (+ 5
+        (call-with-composable-continuation
+          (lambda (f)
+            (set! ff f)
+            (f 100)))))
+
+(printf ">~a<\n"
+        (printf "|~a|\n" (ff 1000)))
+```
+
+最后的输出会是：
+
+```racket
+106
+112
+1006
+|1006|
+>#<void>< 
+```
+
+``(f 100)`` 和 ``(ff 1000)`` 都返回了两次，一次是代替整个表达式返回，另一次是作为自己返回，原表达式再继续求值。
+
+不默认把“代替整个表达式返回”这个取消掉，这个设计挻谜的。
 
 
 
