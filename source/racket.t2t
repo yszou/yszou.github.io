@@ -2263,16 +2263,232 @@ hello
 不默认把“代替整个表达式返回”这个取消掉，这个设计挻谜的。
 
 
-
-
-
 # 迭代 #
 
-# 模式匹配 #
+## for ##
+
+虽然不是必须，为了方便， *racket* 提供了 ``for`` 一簇的方法。
+
+```racket
+(for ([i '(1 2 3)])
+  (display i)
+  (display i))
+```
+
+很直观的使用方式。也可以像 ``map`` 一样，使用 ``for/list`` ，它会返回列表：
+
+```racket
+(for/list ([i '(1 2 3)])
+  (+ i i))
+```
+
+多个列表（取最短）：
+
+```racket
+(for/list ([i '(1 2 3)]
+           [j '(a b c d e)])
+  (list i j))
+```
+
+传统嵌套（得到 ``1 a, 1 b, 1 c, 2 a ...``）：
+
+```racket
+(for*/list ([i '(1 2)]
+            [j '(a b c)])
+  (list i j))
+```
+
+列表推导：
+
+```racket
+(for/list ([i '(1 2)]
+           #:when (= i 1)
+           [j '(a b c)]
+           #:unless (equal? j 'b))
+  (list i j))
+```
+
+``for/vector`` 和 ``for*/vector`` 可以生成向量结果。
+
+
+*reduce* 的能力是 ``for/fold`` 和 ``for*/fold``：
+
+```racket
+(for/fold ([sum 0]) ([i '(1 2 3)])
+  (+ sum i))
+```
+
+注意， ``for/fold`` 后面多了一个参数。
+
+
+
+## 判断与查找 ##
+
+``for/and`` 和 ``for/or`` 可以实现 ``all`` 和 ``some`` 的能力：
+
+```racket
+(for/and ([i '(1 2 3)])
+  (i . = . 2))
+
+(for/or ([i '(1 2 3)])
+  (i . = . 2))
+```
+
+``for/first`` 和 ``for/last`` 是 ``find`` 之类的能力，它需要配合列表推导， *body* 是返回了：
+
+```racket
+(for/first ([i '(1 2 3 2)]
+            #:when (= i 2))
+           (list i (+ 1 i)))
+
+(for/last ([i '(1 2 3 2)]
+            #:when (not (= i 2)))
+           (list i (+ 1 i)))
+```
+
+
+## 中断 ##
+
+*racket* 还专门提供了一个 ``break`` ，实现迭代中的中断行为：
+
+```racket
+(for ([i '(1 2 3)]
+      #:break (= i 3))
+  (display i))
+```
+
+
+## 序列生成 ##
+
+``in-range`` 是一个典型的序列生成器，三个参数是 *start/end/step* ：
+
+```racket
+(for ([i (in-range 10)])
+  (display i))
+
+(display "\n")
+
+(for ([i (in-range 1 5)])
+  (display i))
+
+(display "\n")
+
+(for ([i (in-range 1 20 3)])
+  (display i))
+```
+
+
+## 关于性能 ##
+
+迭代的对象，虽然是普通的 *list* 或者 *vector* *string* 之类都是可以正常工作：
+
+```racket
+(for/list ([i '(1 2 3)])
+  (+ i 1))
+
+(for/vector ([i #(1 2 3)])
+  (+ i 1))
+```
+
+在迭代中，更快的处理方式，是把列表转成对应的“序列”，使用 ``in-list`` ``in-vector``：
+
+```racket
+(for/list ([i '(1 2 3)])
+  (+ i 1))
+
+(for/vector ([i #(1 2 3)])
+  (+ i 1))
+```
+
+可能是出于典型的惰性计算考虑吧。
+
+# 分支匹配和模式匹配 #
+
+## 分支匹配 ##
+
+确定形式的匹配，可以直接写：
+
+```racket
+(define val 1)
+(match val
+  [1 'one]
+  [2 'two])
+
+(match '(2 3)
+  ['(1 2) 1]
+  ['(2 3) 2])
+
+(struct point (x y))
+(match (point 2 3)
+  [(point 1 2) "one"]
+  [(point 2 3) "two"])
+
+(match (point 2 4)
+  [(point 1 2) "one"]
+  [(point 2 3) "two"]
+  [_ "other"])
+```
+
+
+## 模式匹配 ##
+
+带参数的匹配项，会按“模式”进行参数匹配：
+
+```racket
+(define (m val)
+  (match val
+    [(list x) (+ x 1)]
+    [(list x y) (+ x y)]))
+
+(m '(1))
+(m '(1 2))
+```
+
+结构体：
+
+```racket
+(struct point (x y))
+(struct point2 (x y))
+
+(define (m val)
+  (match val
+    [(point x y) (+ x y)]
+    [(point2 x y) (* x y)]))
+
+(m (point 2 3))
+(m (point2 2 3))
+```
+
+*list* 和 *vector* 情况下，还可以用 ``...`` 表示相同省略 ：
+
+```racket
+(define (m val)
+  (match val
+    [(list 1 2 ...) 'first]
+    [(list 2 ...) 'second]
+    [_ 'other]))
+
+(m '(1 2 2 2)) ;first
+(m '(2 3)) ;other
+```
+
+或者加上参数，作不同参数的匹配：
+
+```racket
+(define (m val)
+  (match val
+    [(list 1 x ...) (apply + x)]
+    [(list 2 x ...) x]
+    [_ 'other]))
+
+(m '(1 2 3 3))
+(m '(2 3))
+```
+
 
 # 类和对象 #
 
-# 组件 #
+# 组件 Unit #
 
 # 反射 #
 
