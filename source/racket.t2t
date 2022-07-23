@@ -2488,6 +2488,378 @@ hello
 
 # 类和对象 #
 
+## 基本形式 ##
+
+*racket* 的类及实例的语法，不是什么特殊的东西，就是普通的函数/宏：
+
+```racket
+(class object%
+  (init name)
+  (super-new)
+  (define my-name name)
+  (define/public (get-my-name) my-name))
+```
+
+这样就定义了一个“类”， ``class`` 的后面是父类的名字 ``object%`` ，新定义的类，没有名字。 ``super-new`` 不能少，需要显式的调用父类的初始化方法。
+
+要取名的话，配合 ``define`` ：
+
+```racket
+(define people%
+  (class object%
+    (init name)
+    (super-new)
+    (define my-name name)
+    (define/public (get-my-name) my-name)))
+
+(new people% [name 'Hello])
+```
+
+实例化使用 ``new`` ，后面是“类名”的初始化参数，实例同样没有名字，除非你自己 ``define`` ：
+
+```racket
+(define hello-people
+  (new people% [name 'Hello]))
+
+(send hello-people get-my-name)
+```
+
+``send`` 是调用对象方法，这个和其它语言使用的点 ``.`` 不同。参数直接跟在后面就可以了：
+
+```racket
+(define sharp%
+  (class object%
+    (init size)
+    (super-new)
+    (define inner-size size)
+    (define/public (set-size size)
+      (set! inner-size size))
+    (define/public (get-size) inner-size)
+))
+
+(define sharp
+  (new sharp% [size 10]))
+
+(send sharp get-size)
+(send sharp set-size 100)
+(send sharp get-size)
+```
+
+这里注意的点：
+
+- ``define bind`` 可以定义实例属性。
+- ``define/public method`` 可以定义实例方法。
+- ``define method`` 不能定义私有方法。
+
+
+调用自己的方法，也需要使用 ``send`` ，对象是 ``this`` ：
+
+```racket
+(define sharp%
+  (class object%
+    (init size)
+    (super-new)
+    (define inner-size size)
+    (define/public (set-size size)
+      (set! inner-size size))
+    (define/public (get-size) inner-size)
+    ;vvvvv
+    (define/public (get-hello) (send this get-size))
+
+))
+
+(define sharp
+  (new sharp% [size 10]))
+
+(send sharp get-hello)
+```
+
+
+## 继承 ##
+
+继承是默认行为，不过子类中上，有一些特殊的功能，使用 ``inherit`` 声明的方法，可以直接调用，而不使用 ``send`` ：
+
+```
+#lang racket  
+
+
+(define O%
+  (class object%
+    (init)
+    (super-new)
+    (define/public (get-type) 'O)))
+
+(define A%
+  (class O%
+    (init)
+    (super-new)
+    (define/public (get-parent-type) (get-type))
+    (inherit get-type)))
+
+(send (new A%) get-parent-type)
+```
+
+``inherit`` 还是 ``send`` ，按官方文档的说明，有一些性能方面的差距， ``inherit`` 更好。如果要纠结这点， *racket* 提供了额外的 ``generic`` 和 ``send-generic`` 可以提前“绑定”具体子类方法：
+
+```racket
+(define O%
+  (class object%
+    (init)
+    (super-new)
+    (define/public (get-type) 'O)))
+
+(define A%
+  (class O%
+    (init)
+    (super-new)))
+
+(define get-a-type (generic A% get-type))
+(send-generic (new A%) get-a-type)
+```
+
+方法覆盖，不能直接用 ``define/public``，需要使用 ``define/override`` ：
+
+```racket
+(define O%
+  (class object%
+    (init)
+    (super-new)
+    (define/public (get-type) 'O)))
+
+(define A%
+  (class O%
+    (init)
+    (super-new)
+    (define/override (get-type) 'A)))
+
+(send (new A%) get-type)
+```
+
+子类调用父类方法，使用 ``super`` ：
+
+```racket
+(define A%
+  (class O%
+    (init)
+    (super-new)
+    (define/override (get-type) (super get-type))))
+
+(send (new A%) get-type)
+```
+
+## 实例化 ##
+
+``super-new`` 就是实例化行为的实现，它可以带参数，参数会传给父类的 ``init`` 方法， ``new`` 时的参数给子类：
+
+```racket
+(define O%
+  (class object%
+    (init [name 'O])
+    (super-new)
+    (define my-name name)
+    (define/public (get-type) 'O)
+    (define/public (get-o-name) my-name)
+))
+
+(define A%
+  (class O%
+    (init [name 'A] [sub-name 'BB])
+
+    ; 父类得到 IN-A ，所以 get-o-name 的结果是 'IN-A
+    (super-new [name 'IN-A])
+
+    (define my-name name)
+    (define/override (get-type) (super get-type))
+    (define/public (get-name) my-name)
+))
+
+(send (new A% [name 'XX]) get-o-name)
+```
+
+感觉 *racket* 的 OO 还是很纯粹的，都是方法，消息。
+
+
+## 接口 ##
+
+定义接口使用 ``interface`` ，实现接口的类，要使用 ``class*`` ：
+
+```racket
+(define person-interface
+  (interface ()
+             jump))
+
+(define base-interface
+  (interface ()
+             walk))
+
+(define name-interface
+  (interface (base-interface)
+             get-name))
+
+(define Person%
+  (class* object%
+    (person-interface name-interface)
+    (init [name 'A])
+    (super-new)
+    (define/public (walk) #t)
+    (define/public (jump) #t)
+    (define/public (get-name) 'Person)
+))
+
+(send (new Person%) walk)
+```
+
+接口之间可以互相扩展， ``class*`` 也可以实现多个接口。
+
+
+## 子类方法的覆盖，扩展，不再变 ##
+
+覆盖 *override* ，扩展 *augment* ，不再变 *final* 。
+
+还有 *public* ， *private*,  *pubment* ， *inner*, *abstract* 。
+
+这些机制的组件，都有明确的规则需要遵守：
+
+- 如果一个方法使用了 ``public`` , ``pubment`` , ``public-final`` ，那么意味着这个方法在父类中是不存在的，否则会报错。
+- ``public`` 的方法，可以在子类中被覆盖，使用 ``override``, ``overment``, ``override-final``.
+- ``pubment`` 的方法，可以在子类中被扩展，使用 ``augment``, ``augride``, ``augment-final``.
+- ``public-final`` 的方法，在子类中就不能动了，即不可以覆盖，也不可以扩展。
+- ``override`` , ``overment`` , ``override-final`` 声明的方法，必须在父类存在，否则报错。
+- ``override-final`` 的方法，子类不可以再覆盖。
+- ``augment``, ``augride`` , ``augment-final`` 声明的方法，必须在父类存在。
+- ``augment-final`` 的方法，子类不可以再扩展。
+- ``private`` 的方法，在类表达式外就不能访问了。
+- ``override``, ``overment``, ``override-final`` 声明的方法，可以使用 ``super`` 调用到它们在父类的实现。
+- ``pubment``, ``augment``, ``overment`` 声明的方法，可以使用 ``inner`` 调用到子类实现。
+- ``abstract`` 声明的方法，在子类中可以覆盖。如果一个类中有任何抽象方法，则被认为是抽象类，不能实例化。
+
+
+### override ###
+
+覆盖很容易理解。
+
+```racket
+(define O% (class object% (init) (super-new)
+             (define (a-func) (display "a\n"))
+             (public a-func)
+             ))
+
+(define A% (class O% (init) (super-new)
+             (define (a-func) (display "sub-a\n"))
+             (override a-func)
+             ))
+
+(send (new O%) a-func)
+(send (new A%) a-func)
+```
+
+
+### pubment inner augment ###
+
+*pubment* 是另外一套 OO 的继承实现，它和传统的向下继承的方式有区别。
+
+*override* 或者 ``super`` ，都是在具体方法被调用时，执行的是子类方法。而 *pubment* 这套机制，执行的方法永远是父类方法，通过 ``inner`` 埋下了 *Hooks* ，子类通过对这些 *Hooks* 的实现，而调整行为，根据 *Hooks* 的形式，也可以完全实现 *override* 的效果：
+
+```racket
+#lang racket  
+
+(define O% (class object% (init) (super-new)
+             (define (a-func)
+               (inner (void) pre)
+               (inner (display "a\n") a-func)
+               (inner (void) post)
+               )
+
+             (define (pre) (void))
+             (define (post) (void))
+
+             (pubment a-func)
+             (pubment pre)
+             (pubment post)
+             ))
+
+(define A% (class O% (init) (super-new)
+             (define (pre) (display "pre-a\n"))
+             (define (post) (display "post-a\n"))
+             (define (a-func) (display "sub-a\n"))
+             (augment pre)
+             (augment post)
+             (augment a-func)
+             ))
+
+
+(send (new O%) a-func)
+(display "--------\n")
+(send (new A%) a-func)
+```
+
+父类中的声明为 ``pubment`` 的方法，都可以在里面通过 ``inner`` “预埋”钩子，而子类，就是实现这些钩子的。
+
+``inner`` 的形式是： ``inner (如果子类不存在对应方法) 子类方法 参数列表`` ：
+
+```racket
+(define O% (class object% (init) (super-new)
+             (define (a-func)
+               (inner (display "a\n") a-func "Hello" "World" "Again")
+               )
+
+             (pubment a-func)
+             ))
+
+(define A% (class O% (init) (super-new)
+             (define (a-func name . lst) (printf "sub-a ~a ~a\n" name lst))
+             (augment a-func)
+             ))
+
+
+(send (new O%) a-func)
+(display "--------\n")
+(send (new A%) a-func)
+```
+
+### overment ###
+
+``overment`` 的行为是把一个 *override* 风格的方法在覆盖的同时转成 *pubment* 风格。
+
+```racket
+#lang racket  
+
+(define O% (class object% (init) (super-new)
+             (define (a-func)
+               (display "Hello\n")
+               )
+             (public a-func)
+             ))
+
+(define A% (class O% (init) (super-new)
+             (define (a-func)
+               (display "sub-a\n")
+               (inner (void) post)
+               )
+             (define (post) (void))
+             (overment a-func)
+             (pubment post)
+             ))
+
+(define B% (class A% (init) (super-new)
+             (define (post) (display "post\n"))
+             (augment post)))
+
+
+(send (new O%) a-func)
+(display "--------\n")
+(send (new A%) a-func)
+(display "--------\n")
+(send (new B%) a-func)
+```
+
+
+
+
+
+
+
+
 # 组件 Unit #
 
 # 反射 #
