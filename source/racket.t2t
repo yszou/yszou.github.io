@@ -2854,8 +2854,363 @@ hello
 ```
 
 
+## Mixin, 动态子类 ##
+
+因为 ``class`` 或者 ``class*`` 就是普通的表达式，所以，要实现 *Mixin* ，或者其它动态性的创建，都是没什么特别之处的。
+
+```racket
+#lang racket  
+
+(define (make-it-run %)
+  (class %
+    (super-new)
+    (define/public (run) (display "RUNNING...\n"))))
 
 
+(define Person%
+  (class object%
+    (init name)
+    (super-new)
+    (define my-name name)
+    (define/public (get-name) my-name)))
+
+
+(define RunPerson% (make-it-run Person%))
+(define p (new RunPerson% [name "Hello"]))
+(send p run)
+```
+
+*Mixin* 中一般需要对输入输出使用 *接口* 做一些约束，这些操作，可以自行使用 ``implementation?`` 判断，也可以使用 *rackiet* 提供的 ``mixin`` 宏：
+
+```racket
+(define entity-interface (interface () get-name))
+(define run-interface (interface () run))
+
+(define Person%
+  (class* object%
+          (entity-interface)
+          (init name)
+          (super-new)
+          (define my-name name)
+          (define/public (get-name) my-name)))
+
+(define make-it-run
+  (mixin (entity-interface) (run-interface)
+         (super-new)
+         (define/public (run) (display "RUNNING...\n"))))
+
+
+(define RunPerson% (make-it-run Person%))
+(define p (new RunPerson% [name "Hello"]))
+
+(implementation? RunPerson% run-interface)
+
+(send p run)
+```
+
+``mixin`` 的第一组参数，是输入类需要实现的接口，第二组参数，是输出类需要实现的接口。
+
+
+## 关于名字的麻烦事 ##
+
+如果类可以被动态创建，还可以通过像 *Mixin* 这种机制动态修改，扩展，那么方法名的冲突就不可避免了。
+
+比如，第一个 *Mixin* 想添加一个 ``get-name`` 方法，第二个 *Mixin* 也想添加一个 ``get-name`` 方法，就尴尬了。
+
+*racket* 的解决办法，是使暴露的方法名，可以在运行时，通过参数，从外部，被人为地，动态地指定。
+
+比如， *Mixin* 的行为，变成了，它只描述能力是“添加一个方法，可以获取名字”，至于这个方法名叫啥，参数化了，调用时传的是什么，就叫什么。同时，像“方法名”这种 *idenity* 类型的值，是没有办法像“变量”一样处理的，需要使用对应的工具，这里是 ``member-name-key`` 和对应的 ``define-member-name`` ：
+
+```racket
+(define (create-o f-key)
+  (define-member-name f f-key)
+  (class object%
+    (init)
+    (super-new)
+    (define (f) (display "BBB\n"))
+    (define (f2) (send this f))
+    (public f)
+    (public f2)
+    ))
+
+
+(define O% (create-o (member-name-key b)))
+(define person (new O%))
+(send person b)
+(send person f2)
+```
+
+这里的 ``create-o`` 方法，是在创建一个“类”（注意，是类，不是实例）。类本身一个名叫 ``f`` 的方法，在暴露出去时，会被改成 ``f-key`` 对应的名字，这里是 ``b`` 。
+
+如果把指定的 ``f-key`` ，换成 ``generate-member-key`` ，或者直接 ``define-local-member-name`` ，那即使是 ``public`` 的声明，外部也访问不到了。（ ``private`` 的实现可能就是这样干的）
+
+这种名字的处理，除了用在调整输入与输出的匹配关系上，来指定要将要创建的方法叫什么，还可以用在 *Mixin* 时，对依赖的方法的选择上，有点像，传递了一个存在的“未绑定的类方法”（ *racket* 又不像 Python ，可以直接 ``Cls.get_name`` 这样引用）：
+
+```
+#lang racket  
+
+(define (add-tag work-key)
+  (define-member-name work work-key)
+  (mixin () ()
+         (super-new)
+         (define/public (tag-work) (send this work) (display "work post\n")))
+  )
+
+(define A%
+  (class object%
+    (init)
+    (super-new)
+    (define/public (work-a) (display "WORK-A\n"))
+    ))
+
+(define B%
+  (class object%
+    (init)
+    (super-new)
+    (define/public (work-b) (display "WORK-B\n"))))
+
+
+(define N1% ((add-tag (member-name-key work-a)) A%))
+(send (new N1%) tag-work)
+
+(define N2% ((add-tag (member-name-key work-b)) B%))
+(send (new N2%) tag-work)
+```
+
+这上面这个例子， ``A%`` 和 ``B%`` 中原本名字不同的方法，都可以在 *Mixin* 时统一到一个名字来使用。
+
+
+## Trait 特征 ##
+
+个人理解， *Trait* 是对 *Mixin* 机制的一种接口化抽象，目的是更细粒度的控制 *Mixin* 中的那些对象能力。
+
+根据前面介绍的，连名字冲突都可以轻易解决，那么对于 ``mixin`` 本身，也可以是动态，组合式的，不需要事先把方法写死到某个 ``mixin`` 结构当中，只需要把这些方法单独定义，需要使用的时，再把这些方法组成 ``mixin`` ，然后再应用到类，最后再生成新类。
+
+这个过程，大概是这样的：
+
+```racket
+(define O%
+  (class object%
+    (init)
+    (super-new)))
+
+(define (add-black-color %)
+  (class %
+    (super-new)
+    (define/public (get-color) 'black)))
+
+(define (add-red-color method-name-key %)
+  (define-member-name get-color method-name-key)
+  (class %
+    (super-new)
+    (define/public (get-color) 'red)))
+
+(define A% (add-black-color O%))
+(send (new A%) get-color)
+(send (new (add-red-color (member-name-key get-red-color) A%)) get-red-color)
+```
+
+在确认上面这个模式可行之后，就可以封装固定的形式并提供配套的工具。 比如，我们先自己做一个 ``trait->mixin`` 。
+
+``trait->mixin`` 这里的 *trait* ，是这样的结构：
+
+```racket
+(define get-name-trait
+  (list (cons (member-name-key get-name)
+              (lambda (get-name-key %)
+                (define-member-name get-name get-name-key)
+                (class %
+                  (super-new)
+                  (define/public (get-name) 'name))))))
+```
+
+就是一组 *pair* ， *first* 是名字， *rest* 是函数，第一个参数是名字 *key* ，第二个是父类。
+
+``trait->mixin`` 只需要依次应用 *rest* 的那个函数就行，把 *first* 作为它的第一个参数，第二父类就是每次迭代的类：
+
+```racket
+(define ((trait->mixin T) C)
+  (foldr [lambda (m %) ((cdr m) (car m) %)] C T))
+```
+
+把它们组合在一起就可以是：
+
+```
+#lang racket  
+
+(define get-name-trait
+  (list (cons (member-name-key get-name)
+              (lambda (get-name-key %)
+                (define-member-name get-name get-name-key)
+                (class %
+                  (super-new)
+                  (define/public (get-name) 'name))))))
+
+(define O%
+  (class object%
+    (init)
+    (super-new)))
+
+(define ((trait->mixin T) C)
+  (foldr [lambda (m %) ((cdr m) (car m) %)] C T))
+
+(define A% ((trait->mixin get-name-trait) O%))
+(send (new A%) get-name)
+```
+
+上面的形式，有一个依赖上的问题待解决，就是如果在 ``trait`` 形式中，有多个方法的话，这些方法之前又存在依赖，就遇到问题了。当然，不直接调用，而是使用 ``(send this method-name)`` 总是可以的。不过 ``send`` 的代价很大，同时它并不会作存在性的检查，在内部，尽量使用直接的调用。
+
+*racket* 的解决办法，是利用了 *override* 机制，做两遍的方法定义。第一遍，做函数的签名定义，返回 ``(void)`` 即可，不需要实现它，第二遍才实现。这样，在第二遍使用 ``inherit`` 就可以正常执行，同时进行了存在性检查，同时，因为 *override* 机制的作用，实际执行的函数也没有问题。
+
+当然，写两遍一样的函数签名这种事，自然可以通过封装宏来解决， *racket* 通过 ``racket/trait`` 包提供了 ``trait`` 宏及配套的组合工具，包括前面我们自己写的 ``trait->mixin`` ，最基本的形式：
+
+```racket
+#lang racket  
+
+(require racket/trait)
+
+(define people-trait
+  (trait
+    (define/public (get-name) 'I-am-Hello)))
+
+(define O%
+  (class object%
+    (init)
+    (super-new)))
+
+(define People% ((trait->mixin people-trait) O%))
+(send (new People%) get-name)
+```
+
+还可以取别名：
+
+```racket
+(define People% ((trait->mixin (trait-alias people-trait get-name get-a-name)) O%))
+(send (new People%) get-a-name)
+```
+
+组合多个 *trait* ：
+
+```racket
+(require racket/trait)
+
+(define people-trait
+  (trait
+    (define/public (get-name) 'I-am-Hello)))
+
+(define python-trait
+  (trait
+    (define/public (python) 'Python)))
+
+
+(define O%
+  (class object%
+    (init)
+    (super-new)))
+
+(define People% ((trait->mixin (trait-sum people-trait python-trait)) O%))
+(send (new People%) get-name)
+(send (new People%) python)
+```
+
+更多的操作，就是在 *trait* 上做各种逻辑运算：
+
+```racket
+#lang racket
+
+(require racket/trait)
+
+(define people-trait
+  (trait
+    (define/public (get-name) 'I-am-Hello)))
+
+
+(define python-trait
+  (trait-sum
+    (trait-exclude
+      (trait-alias people-trait get-name get-python-name)
+      get-name)
+    (trait
+      (inherit get-python-name)
+      (define/public (python) 'Python)
+      (define/public (life) (python))
+      (define/public (who) (get-python-name))
+      )))
+
+
+(define O%
+  (class object%
+    (init)
+    (super-new)))
+
+(define People% ((trait->mixin 
+                   (trait-sum
+                     (trait-alias people-trait get-name get-a-name)
+                     python-trait
+                     (trait
+                       (inherit get-a-name)
+                       (define/public (get-b-name) (get-a-name)))
+                     )
+                   ) O%))
+
+(send (new People%) get-a-name)
+(send (new People%) get-b-name)
+(send (new People%) python)
+(send (new People%) life)
+(send (new People%) who)
+```
+
+真的是非常漂亮的组合形式：
+
+- ``trait`` 之间可以互相依赖。
+- ``trait`` 可以各种组合构建新的 ``trait`` 。
+- 方法名可以被任意的操作。
+
+
+## 类的约束 ##
+
+### 对外约束 ###
+
+```racket
+(define/contract O%
+                 (class/c (get-name (->m string?)))
+                 (class object%
+                   (init)
+                   (super-new)
+                   (field [name "Hello"])
+                   (define/public (get-name) name)
+                   ))
+
+(send (new O%) get-name)
+```
+
+因为“类”，就是使用了 ``class`` 表达式的，可能再使用了 ``define`` 语句的，普通的定义，所以，约束的形式也和普通的 ``define`` 是一样的。
+
+这里，使用 ``class/c`` 作为类的约束，后面可以有对成员和方法的约束。
+
+对方法的约束，要使用 ``->m`` ，是因为对于类的方法，默认第一个参数会多一个 ``any/c`` 的条件，这里，有点像 Python 中的 *self* 。
+
+
+### 对内约束 ###
+
+对内的约束，主要是声明 *inherit* ， *super* ， *override* 之类的约束条件，声明“我”的子类应该是怎么样的行为：
+
+```racket
+(define/contract O%
+                 (class/c (override [get-name (->m string? string?)]))
+                 (class object%
+                   (init)
+                   (super-new)
+                   (define/public (get-name) "Hello")
+                   ))
+
+(define A%
+  (class O%
+    (super-new)
+    (define/override (get-name s) s)))
+
+(send (new A%) get-name "World")
+```
 
 
 
