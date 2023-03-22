@@ -1,0 +1,83 @@
+项目的初始化
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/starter.html
+%!format: !email
+%%toc
+
+
+# Python2.7 #
+
+Ubuntu 的源有现成的 Python2.7 ：
+
+```bash
+sudo apt-get install python-2.7
+```
+
+同时，要额外安装 ``pip2`` ：
+
+```bash
+wget https://bootstrap.pypa.io/pip/2.7/get-pip.py
+sudo python2.7 get-pip.py
+```
+
+
+
+# 前端 #
+
+安装 ``node`` 之后， ``npm`` 和 ``npx`` 也一样有了。
+
+``sudo`` 使用 ``npm`` ，需要完整的命令：
+
+```bash
+sudo /opt/node/bin/node /opt/node/bin/npm -g yarn
+```
+
+使用 ``create-react-app`` 初始化：
+
+```bash
+npx create-react-app demo
+```
+
+安装 *craco* ：
+
+```bash
+yarn add @craco/craco --dev
+```
+
+添加 *craco* 配置文件 ``craco.config.js`` ：
+
+```javascript
+module.exports = {}
+```
+
+修改 ``package.json`` 的 *scripts* ：
+
+```javascript
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test"
+  },
+```
+
+添加一个 ``.env`` 文件：
+
+```ini
+PORT=8080
+BROWSER=None
+```
+
+
+启动：
+
+```bash
+npm start
+```
+
+
+
+
+
