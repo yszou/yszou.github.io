@@ -27,6 +27,8 @@ sudo python2.7 get-pip.py
 
 # 前端 #
 
+## 基础环境 ##
+
 安装 ``node`` 之后， ``npm`` 和 ``npx`` 也一样有了。
 
 ``sudo`` 使用 ``npm`` ，需要完整的命令：
@@ -77,7 +79,297 @@ BROWSER=None
 npm start
 ```
 
+## craco 的配置 ##
+
+修改 ``craco.config.js`` 文件：
+
+```javascript
+const path = require('path');
+const fs = require('fs');
+const { join } = path;
+const CURRENT = path.resolve();
+
+module.exports = {
+  webpack: {
+    configure: (webpackConfig, { env, paths }) => {
+      const entry = [];
+      const srcDirList = [join(CURRENT, 'src', 'components')];
+      srcDirList.forEach((srcDir) => {
+        fs.readdirSync(srcDir).forEach((name) => {
+          const htmlFile = join(srcDir, name, 'demo.html');
+          const jsFile = join(srcDir, name, 'index.tsx');
+          const jsDemoFile = join(srcDir, name, 'demo.tsx');
+          if (fs.existsSync(htmlFile) && fs.existsSync(jsFile)) {
+            entry.push(jsFile);
+          }
+          if (fs.existsSync(htmlFile) && fs.existsSync(jsDemoFile)) {
+            entry.push(jsDemoFile);
+          }
+        });
+      });
+      entry.push(join(CURRENT, 'src', 'index.tsx'));
+      webpackConfig.entry = entry;
+
+      webpackConfig.output.filename = 'app.js';
+      webpackConfig.optimization = {
+        runtimeChunk: false,
+        splitChunks: {
+          chunks: (chunk) => {
+            return false;
+          },
+        },
+      };
+
+      const plugin = webpackConfig.plugins.find((obj) => obj.constructor.name === 'MiniCssExtractPlugin');
+      if (plugin) {
+        plugin.options.filename = 'app.css';
+      }
+
+      return webpackConfig;
+    },
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+  devServer: (devServerConfig) => {
+    return {
+      ...devServerConfig,
+      static: {
+        directory: path.join(__dirname),
+        serveIndex: true,
+      },
+      historyApiFallback: false,
+    };
+  },
+};
+```
 
 
 
+
+## prettierrc 配置 ##
+
+新建 ``.prettierrc.js`` 文件：
+
+```javascript
+module.exports = {
+  printWidth: 120,
+  tabWidth: 2,
+  useTabs: false,
+  semi: true,
+  singleQuote: true,
+  quoteProps: "as-needed",
+  jsxSingleQuote: false,
+  trailingComma: "all",
+  bracketSpacing: true,
+  arrowParens: "always",
+  requirePragma: false,
+}
+```
+
+## tsconfig ##
+
+新建 ``tsconfig.json`` ：
+
+```javascript
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}
+```
+
+
+## ESLint 配置 ##
+
+新建 ``.eslintrc.json`` ：
+
+```javascript
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
+  "root": true,
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": { "project": ["./tsconfig.json"] },
+  "plugins": ["@typescript-eslint", "react"],
+  "ignorePatterns": ["src/**/*.test.tsx"],
+  "rules": {
+    "@typescript-eslint/strict-boolean-expressions": [
+      2,
+      {
+        "allowString": false,
+        "allowNumber": false
+      }
+    ],
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-empty-function": "off"
+  }
+}
+```
+
+新建 ``.eslintignore`` ：
+
+```text
+*.js
+```
+
+## Public 文件 ##
+
+``public`` 目录只留一个 ``index.html`` 文件，内容是：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hello</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+
+
+## 全局变量定义 ##
+
+新建 ``global.d.ts`` ：
+
+```typescript
+declare global { }
+
+declare module '*.json' {
+  const content: Record<string, any>;
+  export default content;
+}
+```
+
+
+## 安装其它模块 ##
+
+```text
+sass
+typescript
+typescript-eslint
+uuid
+react-router-dom
+```
+
+
+## 目录调整 ##
+
+- 创建 ``src/components`` 。
+- 创建 ``bin``
+- 把 ``app.js`` 复制到 ``bin`` 目录。 https://s.zys.me/js/app.js
+
+
+## Base 模块 ##
+
+使用 ``app.js`` 创建一个 ``Base`` 模块，只留 ``index.tsx`` 和 ``index.sass`` ：
+
+``index.tsx`` ：
+
+```typescript
+const name = '';
+export const noop = (...args: any) => {};
+export const getClassName = (component: string) => `${name}-${component}`;
+```
+
+``index.sass`` ：
+
+```typescript
+$PRIMARY: #1890ff
+$PROJECT: ""
+$PREFIX: #{$PROJECT}-
+
+=ellipsis
+  overflow: hidden
+  white-space: nowrap
+  text-overflow: ellipsis
+```
+
+
+## 使用路由 ##
+
+创建一个 ``Index`` 组件：
+
+```bash
+node bin/app.js Index
+```
+
+``Index/index.tsx`` 的内容是：
+
+```typescript
+import React from 'react';
+import './index.sass';
+import { HashRouter, Routes, Route } from 'react-router-dom';
+import { getClassName, noop } from '../Base';
+
+interface IndexProps {}
+
+export const Index = (props: IndexProps): React.ReactElement => {
+  return (
+    <div className={getClassName('Index')}>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<h1>Hello</h1>} />
+        </Routes>
+      </HashRouter>
+    </div>
+  );
+};
+```
+
+
+## 清理 ##
+
+- 删除 ``App.*`` .
+- 删除 ``index.*`` .
+- 删除 ``reportWebVitals.js`` .
+- 删除 ``setupTests.js`` .
+- 删除 ``logo.svg`` .
+
+
+新建 ``index.tsx`` ，内容是：
+
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Index } from './components/Index';
+
+const dom = window.document.getElementById('root');
+if (dom) {
+  const root = ReactDOM.createRoot(dom);
+  root.render(
+    <React.StrictMode>
+      <Index />
+    </React.StrictMode>,
+  );
+}
+```
+
+
+## 最后 ##
+
+访问：http://localhost:8080/components/Index/demo.html
 
