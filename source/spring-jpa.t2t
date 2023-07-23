@@ -1,0 +1,159 @@
+Spring JPA 使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/spring-jpa.html
+%!format: !email
+%%toc
+
+
+# Repository #
+
+Spring Data 这套机制，主要是使用 *Repository* 抽象层配合 *Entity* 来自动完成对数据的操作，很多情况基本不需要写一行实现代码。
+
+
+```java
+public interface CrudRepository<T, ID> extends Repository<T, ID> {
+
+  <S extends T> S save(S entity);      
+
+  Optional<T> findById(ID primaryKey); 
+
+  Iterable<T> findAll();               
+
+  long count();                        
+
+  void delete(T entity);               
+
+  boolean existsById(ID primaryKey);   
+
+}
+```
+
+一个比较基本的 ``CrudRepository`` 已经提供了以上的方法，一般我们直接用 ``JpaRepostory`` 就行。
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+}
+```
+
+只需要定义接口，相应的实现会自动处理。
+
+``@Repository`` 的注解是为了启动时的“自动收集”使用的。
+
+
+如果我们使用不同的持久化存储后端，这里的 ``JpaRepostory`` 可以换成 ``MongoRepostory`` 之类的。
+
+常用的查询，可以直接定义接口的相应方法，通过“拼名字”的方法直接实现功能。
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    List<UserEntity> findTop3ByOrderByIdDesc();
+}
+```
+
+定义 ``findTop3ByOrderByIdDesc`` 这个方法（拼好名字，名字按规则分开，其实是 *find-Top3-By-OrderBy-Id-Desc*）。
+
+
+```java
+UserRepository userRepository = context.getBean(UserRepository.class);
+userRepository.findTop3ByOrderByIdDesc().stream().forEach(userEntity -> {
+    log.info(userEntity.toString());
+});
+```
+
+对应的查询 SQL 是：
+
+```sql
+select
+    u1_0.id,u1_0.status,u1_0.type,u1_0.username
+from public."user" u1_0
+order by u1_0.id desc
+fetch first ? rows only
+```
+
+这里没有使用 ``Limit`` ，而用了 SQL 标准里面的 ``FETCH FIRST ? ROWS ONLY`` 。
+
+
+拼名字的规则有：
+
+|| 模式 | 返回值 | 说明 ||
+| find…By, read…By, get…By, query…By, search…By, stream…By | ``Collection`` 或者 ``Streamable`` | 查询，注意是以 By 结尾 |
+| exists…By | ``Boolean`` | 检查是否存在 |
+| count…By | 数字 | 查询数量 | 
+| delete…By, remove…By | ``void`` 如果没有，否则是数字 | 删除记录 |
+| …First<number>…, …Top<number>… | ``Collection`` 或者 ``Streamable`` | 取前 N 条，注意，这个模式是在“中间” |
+| …Distinct… | - | 去重，也是在“中间” |
+
+
+*By* 后面，就是具体 *Entity* 的字段名，如果是多个条件，也可以使用 *AND* , *BETWEEN* 之类的连接，注意是大写。
+
+
+# 混合多种数据源 #
+
+*Spring Data* 通过对应的实体，来判断应该使用哪种类型的数据源，如：
+
+```java
+interface PersonRepository extends Repository<Person, Long> { … }
+
+@Entity
+class Person { … }
+
+interface UserRepository extends Repository<User, Long> { … }
+
+@Document
+class User { … }
+```
+
+``Entity`` 是 JPA 的注解，而 ``Document`` 就是 *Mongo* 的注解了，在后续的操作中就区分开后面的数据源了。
+
+如果手动配置的话，可以：
+
+```java
+@EnableJpaRepositories(basePackages = "com.acme.repositories.jpa")
+@EnableMongoRepositories(basePackages = "com.acme.repositories.mongo")
+class Configuration { … }
+```
+
+
+# 查询语句是如何确定的 #
+
+*Repository* 的具体方法对应的查询或者 SQL ，可以由方法名直接给定，也可以自己写 SQL ：
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+
+    @Query("select u from UserEntity u order by u.id desc limit 1")
+    List<UserEntity> findTop3ByOrderByIdDesc();
+}
+```
+
+可以通过 ``@Query`` 注解，手写 SQL 语句，或者类似 SQL 语句。
+
+上面的例子，不是标准 SQL ，它里面可以识别 *UserEntity* 这类定义的。如果要原生的标准 SQL ：
+
+
+```java
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    @Query(value = "select * from public.user u order by u.id desc limit 1", nativeQuery = true)
+    List<UserEntity> findTop3ByOrderByIdDesc();
+}
+```
+
+需要加上 ``nativeQuery = true`` 。
+
+优先级上，如果有指定的查询（如 ``@Query``），则先使用指定的。否则，再根据名字尝试生成查询。
+
+
+
+# 自定义 Entity 的字段类型 #
+
+*Entity* 是映射数据库表和 Java 对象的机制，里面的字段与 Java 对象的属性值对应。除了基本的 ``String`` , ``Integer`` 这些，也可以自定义复杂对象，来完成从 *SQL -> Java* 和 *Java -> SQL* 的映射转换。
+
+
+

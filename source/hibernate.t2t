@@ -1,0 +1,411 @@
+Java Hibernate 笔记
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/hibernate.html
+%!format: !email
+%%toc
+
+
+# 定位 #
+
+*hibernate* 是一个 ORM 框架，在 java 的体系当中，它也是：
+
+- 一种 Jakarta Persistence provider 。
+- 一种 Java Persistence API 的实现。
+
+
+它的下层依赖 JDBC ，上层应用使用 JPA 接口完成对 *hibernate* 的使用。除了 JPA ，上层应用还可以选择使用 *Native API* ，它也是 *hibernate* 的功能的一部分。
+
+
+Jakarta Persistence 方案与 *hibernate* 实现的对应关系是：
+
+|| Jakarta | hibernate | 说明 ||
+| *EntityManagerFactory* | *SessionFactory* | 初始化的成本很大，一般全局一个，线程安全 |
+| *EntityManager* | *Session* | 线程独立，生命周期不长的对象。对 JDBC 的 *Connection* 的包装。是 *Transaction* 的工厂角色。 |
+| *EntityTransaction* | *Transaction* | 事务管理的抽象层，不止支持 JDBC 。线程独立，生命周期不长。 |
+
+
+# 域模型 #
+
+域模型 Domain Model 我理解就是 ORM 中的 *Model* 。
+
+当然，我个人不喜欢在这一层做太多的事，只是单纯地把它和数据库的表映射好，以方便直接操作表，而没有任何的业务逻辑为原则。所以，其实这里的域模型的内涵是要丰富一些的，我猜，项目中应该会存在针对同一张数据库的表，但是会有多个域模型对象的情况。
+
+对于 Domain Model 的具体一些的数据结构的实现，可以是 Plain Old Java Object POJO 类，也可以更简单直接用一个 *Map* 实例。在一般使用中，为了兼容 Jakarta 持久化方案，会使用相应的注解的写法，比如使用 *Entity* ：
+
+```java
+@Data
+@Entity
+@Table(name = "user_profile", schema = "public")
+public class UserProfileEntity {
+
+    @Data
+    @Embeddable
+    static public class Address {
+        private String country;
+        private String province;
+        private String city;
+    }
+
+    @Id
+    @GeneratedValue
+    private Long id;
+    private Long userId;
+
+    private UserProfileEntity.Address address;
+}
+```
+
+这个例子，对应的 SQL 会是：
+
+```sql
+create table public.user_profile
+(
+    id bigint not null,
+    user_id bigint,
+    city varchar(255),
+    country varchar(255),
+    province varchar(255),
+    primary key (id)
+);
+create sequence user_profile_seq start with 1 increment by 50;
+```
+
+
+``Embeddable`` 的类，会自动按嵌套的字段处理。 ``@Data`` 在这里是自动补充 *getter / setter* 的作用。
+
+其它的像 ``Long`` ``String`` 都是字段的基本类型。
+
+有了这个 ``Entity`` ，可以马上使用 *EntityManager* 完成查询：
+
+```java
+@SpringBootApplication
+@Slf4j
+public class HelloApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(HelloApplication.class, args);
+        EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        UserProfileEntity up = new UserProfileEntity();
+        UserProfileEntity.Address address = new UserProfileEntity.Address();
+        address.setCountry("China");
+        address.setCity("Chengdu");
+        up.setUserId(9L);
+        up.setAddress(address);
+        entityManager.getTransaction().begin();
+        entityManager.persist(up);
+        entityManager.getTransaction().commit();
+        SpringApplication.exit(context);
+    }
+
+}
+```
+
+这里需要使用 ``EntityManagerFactory`` 来得到 ``EntityManager`` 。
+
+上面的代码，对应的 SQL 是：
+
+```sql
+insert into public.user_profile (city,country,province,user_id,id) values (?,?,?,?,?);
+```
+
+
+# 域模型字段 #
+
+域模型的字段，不算自定义的话，有三种类型：
+
+- Basic 基本类型
+- Embeddable 类型
+- Collections 类型
+
+
+## 基本类型 ##
+
+基本类型，就是使用 ``Long`` ``String`` 这些类型的字段。Jakarta 持久化的方案中，明确限制了哪些 Java 类可用于这种基本类型。
+
+除了 ``Long`` ``String`` ，还有 ``Date`` ， ``BigInteger``， ``enum``  这些也可以用， *JSON* 和 *XML* 也有对应的类型支持。
+
+
+### @Basic ###
+
+``@Basic`` 用于注解基本类型的字段，可以省略。但是，它有比较有用的属性， ``optional``：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Basic(optional = false)
+    private String name = "";
+}
+```
+
+通过 ``optional`` 可以标记 ``not null`` 的列，上面的代码，对应的 SQL 建表语句是：
+
+```sql
+create table public.demo (id bigint not null, name varchar(255) not null, primary key (id));
+```
+
+``name = ""`` 这种默认值的写法，不会在 SQL 建表语句中反映出来。
+
+
+
+### @Column ###
+
+``@Column`` 可以用来指定表的字段名，和具体的建表语句：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Basic(optional = false)
+    @Column(name = "name", nullable = false, columnDefinition = "varchar(16) default ''")
+    private String name = "123";
+}
+```
+
+它也有一个 ``nullable`` 的属性，用它的话， ``not null`` 这个功能上可以不用 ``@Basic`` 的 ``optional`` 。
+
+
+### @Formula ###
+
+``@Formula`` 可以定义一个额外的，由 SQL 表达式查询出来的，只读字段。比如：
+
+```java
+@Formula("name || '>>'")
+private String nameFormat;
+```
+
+这样，如果 ``getNameFormat()`` ，则对应的 SQL 会是：
+
+```sql
+select d1_0.id,d1_0.name,d1_0.name || '>>' from public.demo d1_0 where d1_0.id=?
+```
+
+
+## Enum ##
+
+枚举类型的使用，有两种情况，一种是按数字，另一种是按字符串。
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+
+    public enum StatusEnum {
+        NORMAL,
+        DELETE,
+    }
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private DemoEntity.StatusEnum status;
+}
+```
+
+直接这样定义，建表语句是：
+
+```sql
+create table public.demo (
+    status smallint check (status between 0 and 1),
+    id bigint not null,
+    primary key (id)
+);
+```
+
+``status`` 会按 ``smallint`` 处理。
+
+默认行为，相当于：
+
+```java
+@Enumerated(EnumType.ORDINAL)
+private DemoEntity.StatusEnum status;
+```
+
+如果要按字符串的话：
+
+```java
+@Enumerated(EnumType.STRING)
+private DemoEntity.StatusEnum status;
+```
+
+这样，建表语句会变成：
+
+```sql
+create table public.demo (
+    id bigint not null,
+    status varchar(255) check (status in ('NORMAL','DELETE')),
+    primary key (id)
+);
+```
+
+类型就变成字符串了。
+
+
+## BLOB ##
+
+字节字段，需要一点特殊的处理：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Lob
+    private Blob content;
+}
+```
+
+对应的建表语句是：
+
+```sql
+create table public.demo (
+    id bigint not null,
+    content oid,
+    primary key (id)
+);
+```
+
+给值的时候，需要用一个额外的 API ， ``BlobProxy.generateProxy`` 参数是字节串：
+
+```java
+@SpringBootApplication
+@Slf4j
+public class HelloApplication {
+
+    public static void main(String[] args) {
+        ConfigurableApplicationContext context = SpringApplication.run(HelloApplication.class, args);
+        EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        DemoEntity demoEntity = new DemoEntity();
+        demoEntity.setContent(BlobProxy.generateProxy(new byte[]{0xF, 0xA, 0xB, 0x0, 0x3}));
+        entityManager.getTransaction().begin();
+        entityManager.persist(demoEntity);
+        entityManager.getTransaction().commit();
+        SpringApplication.exit(context);
+    }
+}
+```
+
+字节的字段，取出来是 *Stream* ，并且必须在事务中读：
+
+```java
+@SpringBootApplication
+@Slf4j
+public class HelloApplication {
+
+    public static void main(String[] args) throws SQLException, IOException {
+        ConfigurableApplicationContext context = SpringApplication.run(HelloApplication.class, args);
+        EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        DemoEntity demoEntity = entityManager.find(DemoEntity.class, 1);
+        InputStream inputStream = demoEntity.getContent().getBinaryStream();
+        byte[] bytes = inputStream.readAllBytes();
+        log.info(bytes.toString());
+        entityManager.getTransaction().commit();
+    }
+}
+```
+
+## JSON ##
+
+JSON 的处理，可以配置相应的适配器，默认的也可以用 *Map* 处理：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, String> content;
+}
+```
+
+建表语句是：
+
+```sql
+create table public.demo (
+    id bigint not null,
+    content jsonb,
+    primary key (id)
+);
+```
+
+在 Postgresql 中，默认会使用 ``jsonb`` 类型。 JSON 的内容根据定义，可以使用一个 *Map* 处理：
+
+```java
+@SpringBootApplication
+@Slf4j
+public class HelloApplication {
+
+    public static void main(String[] args) throws SQLException, IOException {
+        ConfigurableApplicationContext context = SpringApplication.run(HelloApplication.class, args);
+        EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        DemoEntity demoEntity = new DemoEntity();
+        HashMap<String, String> map = new HashMap<>();
+        map.put("First", "Hello");
+        demoEntity.setContent(map);
+        entityManager.getTransaction().begin();
+        entityManager.persist(demoEntity);
+        entityManager.getTransaction().commit();
+    }
+}
+```
+
+查询的时候：
+
+```java
+DemoEntity demoEntity = entityManager.find(DemoEntity.class, 1);
+Map<String, String> map = demoEntity.getContent();
+log.info(map.get("First"));
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
