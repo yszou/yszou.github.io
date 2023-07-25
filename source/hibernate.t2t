@@ -388,23 +388,238 @@ log.info(map.get("First"));
 ```
 
 
+# JOIN #
+
+首先呢，对于 *EntityManager* ，除了 ``find`` 这个方法，剩下的就是拼 SQL 语句了，需要更上层的工具，我理解，是在 spring 的 *Repository* 那个层面。当然，拼 SQL 本身， Java 中也有一些 DSL 的方案，帮助打通 Java 上下文，加强安全等，不过这里不打算介绍它们。
+
+简单的带 *join* 的语句，在模型层面定义关系，是可以被直接支持的，典型的如 *ManyToOne* ：
+
+```java
+@Data
+@Entity
+@Table(name = "user", schema = "public")
+public class UserEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false)
+    @ColumnDefault("''")
+    private String name = "";
+}
+```
+
+先定义一个 ``UserEntity`` ，再定义一个 *User* 可以有多个 *Demo* ：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public")
+public class DemoEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false)
+    @ColumnDefault("''")
+    private String content = "";
+
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.JOIN)
+    @JoinColumn(foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private UserEntity user;
+}
+```
+
+- ``@ColumnDefault`` 定义列的默认值，只用于建表语句。
+- ``content = ""`` 处理对象的默认值问题。
+- ``@ManyToOne`` 中的 ``fetch`` ，默认就是 *EAGER* 。
+- ``@Fetch`` 的类型有 *JOIN* 和 *SELECT* ，后者会是独立的一条 ``select`` 语句。
+- ``@JoinColumn`` 是 ``@Column`` 的代替，如果不声明 ``NO_CONSTRAINT`` ，则会创建外建约束。
+
+
+查询这两个实体看看：
+
+```java
+public static void run(ConfigurableApplicationContext context) {
+    EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    UserEntity userEntity = new UserEntity();
+    userEntity.setName("NEW NAME");
+    DemoEntity demoEntity = new DemoEntity();
+    demoEntity.setContent("Demo");
+    demoEntity.setUser(userEntity);
+    entityManager.getTransaction().begin();
+    entityManager.persist(userEntity);
+    entityManager.persist(demoEntity);
+    entityManager.getTransaction().commit();
+
+    entityManager.clear();
+    DemoEntity demoEntity1 = entityManager.find(DemoEntity.class, demoEntity.getId());
+    log.info("USER {} | {}", demoEntity1.getUser().getId(), demoEntity1.getUser().getName());
+}
+```
+
+- ``setUser(userEntity)`` 时，会自动处理好 ``userEntity`` 的状态。
+- ``userEntity`` 的 *ID* ，可以在 ``entityManager.flush()`` 后获取。
+- ``entityManager.clear()`` 很重要，否则 ``entityManager`` 本身的对象缓存机制，会使某些查询不会发生。（实践中缓存当然有用，但是现在作为演示则不必）
+
+
+这里 ``entityManager.find()`` 对应的查询语句是：
+
+```sql
+select
+    d1_0.id,
+    d1_0.content,
+    d1_0."user_id",
+    u1_0.id,
+    u1_0.name
+from
+    public.demo d1_0
+left join
+    public."user" u1_0
+on
+    u1_0.id=d1_0."user_id"
+where
+    d1_0.id=?
+```
+
+这个就是 *EAGER* + *FETCH* 的行为。
+
+如果换成 ``FetchMode.SELECT`` ：
+
+```java
+@ManyToOne(fetch = FetchType.EAGER)
+@Fetch(FetchMode.SELECT)
+@JoinColumn(foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+private UserEntity user;
+```
+
+查询语句就是两条 ``select`` ：
+
+```sql
+select d1_0.id,d1_0.content,d1_0."user_id" from public.demo d1_0 where d1_0.id=?
+select u1_0.id,u1_0.name from public."user" u1_0 where u1_0.id=?
+```
+
+因为是 *EAGER* 原因，我们删除 ``log.info()`` ，上面的查询语句仍然不变，即使 ``demoEntity`` 中的 ``getUser()`` 根据没有用到。
+
+如果是 ``FetchType.LAZY`` 的话，情况就不同：
+
+```java
+@ManyToOne(fetch = FetchType.LAZY)
+@Fetch(FetchMode.SELECT)
+@JoinColumn(foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+private UserEntity user;
+```
+
+如果使用时：
+
+```java
+DemoEntity demoEntity1 = entityManager.find(DemoEntity.class, demoEntity.getId());
+log.info("USER {}", demoEntity1.getUser().getId());
+```
+
+我们仍然调用 ``getUser()`` ，但是只 ``getId()`` 。
+
+
+```sql
+select d1_0.id,d1_0.content,d1_0."user_id" from public.demo d1_0 where d1_0.id=?
+```
+
+结果就只有一条 ``select`` 语句，除非访问了 ``getName()`` ：
+
+```java
+DemoEntity demoEntity1 = entityManager.find(DemoEntity.class, demoEntity.getId());
+log.info("USER {} | {}", demoEntity1.getUser().getId(), demoEntity1.getUser().getName());
+```
+
+就会变成两条 ``select`` 语句了：
+
+```sql
+select d1_0.id,d1_0.content,d1_0."user_id" from public.demo d1_0 where d1_0.id=?
+select u1_0.id,u1_0.name from public."user" u1_0 where u1_0.id=?
+```
+
+这就是 ``FetchType.LAZY`` 的作用。
+
+
+# 索引 #
+
+``@Table`` 有一个 ``indexes`` 属性，用以配置索引以便生成对应的建表语句：
+
+```java
+@Data
+@Entity
+@Table(name = "demo", schema = "public", indexes = {
+        @Index(name = "idx_demo_name", columnList = "name", unique = false),
+})
+public class DemoEntity {
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false)
+    @ColumnDefault("''")
+    private String name = "";
+
+    @Column(nullable = false)
+    @ColumnDefault("''")
+    private String content = "";
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SELECT)
+    @JoinColumn(foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private UserEntity user;
+}
+```
+
+上面的定义，对应的 SQL 创建索引的语句是：
+
+```sql
+create index public.idx_demo_name on public.demo (name);
+```
+
+
+# 实体引用 #
+
+- ``EntityManager.find()`` 是直接获取实体，会有 ``select`` 查询。
+- ``EntityManager.getReference()`` 是构造一个空实体，只有主键，没有查询。
 
 
 
+```java
+public static void run(ConfigurableApplicationContext context) {
+    EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+    entityManager.getTransaction().begin();
+    UserEntity userEntity = new UserEntity();
+    userEntity.setName("NEW NAME");
+    entityManager.persist(userEntity);
+    entityManager.getTransaction().commit();
+    entityManager.clear();
+    long userId = userEntity.getId();
+    log.info("USER ID | {}", userId);
+
+    entityManager.getTransaction().begin();
+    DemoEntity demoEntity = new DemoEntity();
+    demoEntity.setContent("Demo");
+
+    demoEntity.setUser(entityManager.getReference(UserEntity.class, userId));
+    // demoEntity.setUser(entityManager.find(UserEntity.class, userId));
+
+    entityManager.persist(demoEntity);
+    entityManager.getTransaction().commit();
+}
+```
+
+上面的代码，如果使用 ``find()`` ，而不是 ``getReference()`` 的话，就会多一条 ``select`` 查询。
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+# 事务和锁 #
 
 
 
