@@ -622,5 +622,47 @@ public static void run(ConfigurableApplicationContext context) {
 # 事务和锁 #
 
 
+## Hibernate 会话 ##
+
+我们前面用的 ``entityManager`` 和 ``entityManagerFactory`` 都是 JPA 的 API（接口），在此基础之上， *Hibernate* 有对应的实现：
+
+```java
+public static void run(ConfigurableApplicationContext context) {
+    SessionFactory sessionFactory = context.getBean(SessionFactory.class);
+    Session session = sessionFactory.openSession();
+
+    Transaction transaction = session.getTransaction();
+    transaction.begin();
+    UserEntity user = new UserEntity();
+    try {
+        session.persist(user);
+        transaction.commit();
+    } catch (Exception e) {
+        TransactionStatus status = transaction.getStatus();
+        if (status == TransactionStatus.ACTIVE || status == TransactionStatus.MARKED_ROLLBACK) {
+            transaction.rollback();
+        }
+    } finally {
+        session.close();
+        sessionFactory.close();
+    }
+}
+```
+
+上面是一个比较完整的事务处理， ``getStatus()`` 这些也是 *Hibernate* 的 *Session* 才有的。
+
+除了直接使用 ``SessionFactory`` ，我们也可以直接从 ``EntityManagerFactory`` 中解出：
+
+```java
+EntityManagerFactory entityManagerFactory = context.getBean(EntityManagerFactory.class);
+SessionFactory sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+Session session = sessionFactory.openSession();
+...
+```
+
+
+
+
+
 
 
