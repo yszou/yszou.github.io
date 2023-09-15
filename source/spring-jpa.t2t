@@ -150,10 +150,27 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 优先级上，如果有指定的查询（如 ``@Query``），则先使用指定的。否则，再根据名字尝试生成查询。
 
 
+还可以使用 ``Specification`` 来“拼”查询条件：
 
-# 自定义 Entity 的字段类型 #
+```java
+Specification<UserEntity> specification = (root, query, criteriaBuilder) -> {
+    List<Predicate> predicates = new ArrayList<>();
+    predicates.add(criteriaBuilder.greaterThan(root.get("id"), 0));
+    return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+};
 
-*Entity* 是映射数据库表和 Java 对象的机制，里面的字段与 Java 对象的属性值对应。除了基本的 ``String`` , ``Integer`` 这些，也可以自定义复杂对象，来完成从 *SQL -> Java* 和 *Java -> SQL* 的映射转换。
+List<UserEntity> userEntities = userRepository.findAll(specification);
+```
+
+这个 ``findAll`` 要支持 ``Specification`` 的话，需要额外的 ``JpaSpecificationExecutor`` 接口：
+
+```
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, Long>,
+       JpaSpecificationExecutor<UserEntity> {
+}
+```
+
 
 
 
