@@ -1,0 +1,31 @@
+怎么安装 Python2 环境
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/python2-install.html
+%!format: !email
+%%toc
+
+
+从官方网站下载源码：
+
+https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz
+
+
+在有 ``gcc`` 和 ``make`` 的环境上编译：
+
+```bash
+./configure --prefix=/home/zys/opt/python2
+```
+
+不要加 ``--enable-optimizations`` ，加了的话，编译完之后会跑测试，测试中有涉及 SSL 的用例可能会过不了。
+
+2.7.18 这个版本是没有自带 *pip* ，还需要自己安装一下。
+
+```bash
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+python2 get-pip.py
+```
+
+
