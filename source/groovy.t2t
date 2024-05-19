@@ -10,16 +10,16 @@ Groovy 学习笔记
 
 # 安装 #
 
-``groovy`` 是一个基于 JVM 的语言，可以解释执行，也可以编译。
+*groovy* 是一个基于 JVM 的语言，可以解释执行，也可以编译。
 
-它的安装和普通的编程语言一样，下载一个目录包，使用里面 ``bin`` 目录中的可执行程序就可以执行，但是 ``groovy`` 依赖 JDK ，需要 ``java`` 这个可执行程序。
+它的安装和普通的编程语言一样，下载一个目录包，使用里面 ``bin`` 目录中的可执行程序就可以执行，但是 *groovy* 依赖 JDK ，需要 ``java`` 这个可执行程序。
 
 下载页面在：https://groovy.apache.org/download.html
 
 
 # 语法 #
 
-``groovy`` 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 ``groovy`` 语法受 Python 和 Ruby 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就相对多了不少。
+*groovy* 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 *groovy* 语法受 *Python* 和 *Ruby* 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就相对多了不少。
 
 ## 定义和赋值 ##
 
@@ -33,12 +33,12 @@ def c = [a, b]
 println c
 ```
 
-上面代码中上，直接写注释的那一行是不行的。可以写成 ``println([a, b])`` ，这里的括号不能省。嗯， Ruby 的那套吧。
+上面代码中上，直接写注释的那一行是不行的。可以写成 ``println([a, b])`` ，这里的括号不能省。嗯， *Ruby* 的那套吧。
 
 
 ## 关键词 ##
 
-``groovy`` 有一些关键词，比如 ``def`` 。但是，我们可以用关键词作为函数名， *map* 的 *key*，加上双引号就行：
+*groovy* 有一些关键词，比如 ``def`` 。但是，我们可以用关键词作为函数名， *map* 的 *key*，加上双引号就行：
 
 ```groovy
 def 'def' () {
@@ -59,6 +59,318 @@ def 'let me try space here' () {
 
 "let me try space here"()
 ```
+
+另外， *groovy* 中的变量，是可以用 *$* 开头的：
+
+```groovy
+def $a = 123
+println $a
+```
+
+## 字符串 ##
+
+字符串的处理有单引号，双引号，斜线，美元号斜线，表达式。表达式还可以是 *闭包* 。
+
+单引号中不处理表达式，其它的可以处理表达式。
+
+```groovy
+def n = '123'
+def s1 = 'hello $n'
+def s2 = "hello ${n}"
+println s1
+println s2
+```
+
+在可以的情况下，表达式 ``${n}`` 可以不写大括号。
+
+闭包是一种“函数”式的表达式，它在需要对字符串求值时才运算。
+
+```groovy
+def n = '123'
+def s = "hello ${-> n}"
+n = 'world'
+println s
+```
+
+上面的代码，最后输入的是 ``hello world`` 。
+
+多行字符串，可以使用 ``\`` 处理掉首行的换行：
+
+```groovy
+def s = '''\
+1
+2
+3'''
+
+println s
+```
+
+
+## 列表和字典 ##
+
+类似动态语言， *groovy* 中可以直接使用列表和字典：
+
+```groovy
+def l = [1,2,3]
+def m = [a:1, b:2]
+println l[0]
+println m.a
+```
+
+``l`` 的类型，默认是 *List* ，如果要使用数组，需要显式声明：
+
+```groovy
+int[] a = [1,2,3]
+println a[0]
+```
+
+字典的 *key* 可以使用表达式：
+
+```groovy
+def m = [ab: 1, 'a+b': 2]
+println m.('a' + 'b')
+println m.('a' + '+b')
+```
+
+*groovy* 对于 *key* 不存在，或者下标越界的情况不会报错，会返回 ``null`` ：
+
+```groovy
+def m = [ab: 1, 'a+b': 2]
+def l = [1]
+println m.a
+println l[2]
+```
+
+但是，如果 ``m`` 或者 ``l`` 本身是 ``null`` ，则会抛出空指标异常，如果要避免这种情况，可以像在 *nodejs* 中一样，使用带问号的操作符：
+
+```groovy
+def m = [ab: 1, 'a+b': 2]
+def l = [1]
+m = null
+l = null
+println m?.a
+println l?[2]
+```
+
+## 正则表达式 ##
+
+使用 ``~`` 加字符串，直接声明一个正则表式实例。
+
+```groovy
+def p = ~'a.*b'
+def m = 'a123b' =~ p
+println m.size()
+println m[0]
+```
+
+也可以用 ``~/a.*b/`` 。
+
+```groovy
+def p = ~/a(.)(..)b/
+def m = 'a123b a333b' =~ p
+println m.size()
+println m[0]
+println m[0][2]
+println m[1]
+println m[1][2]
+```
+
+``字符串 =~ 正则`` 是一个直接的匹配操作。
+
+
+## 遍历取值 ##
+
+这个操作符好用， ``*.`` ：
+
+```groovy
+class Hello {
+    String name;
+}
+
+def l = [
+    new Hello(name: '123'),
+    new Hello(name: 'abc'),
+    null
+]
+
+println l*.name
+println l*.getName()
+println null*.getName()
+```
+
+它可以很方便地直接提取列表中的每一个成员的指定属性或者指定方法调用，还不怕 ``null`` 。
+
+
+## 参数和赋值解构 ##
+
+```groovy
+void add(x, y, z) {
+    println x + y + z
+}
+
+add(1,2,3)
+add(*[1,2,3])
+add(1, *[2,3])
+```
+
+上面的例子，函数的参数传递，可以使用 ``*`` ，像 *Python* 中一样。
+
+```groovy
+def a = [1,2]
+def b = [1,2, *a]
+println b
+
+def m = [a:1, b:2]
+def n = [c:1, *:m]
+println n
+```
+
+上面的例子，列表和字典中也可以直接使用解构。
+
+还可以多重赋值：
+
+```groovy
+def (a, b, c) = [1,2]
+println([a, b, c])
+```
+
+## 范围 Range ##
+
+*groovy* 中可以使用 ``..`` ，还可以在 ``..`` 两侧加大于小于：
+
+```groovy
+def r = 1<..10
+println r.size()
+println r.collect()
+```
+
+不加 ``<`` 就是“等于”。
+
+
+
+
+# 操作符重载 #
+
+## call ##
+
+``()`` 调用是 ``call()`` 方法：
+
+```groovy
+class Hello {
+    Hello call() {
+        this
+    }
+}
+
+def n = new Hello()
+println n()()()
+```
+
+
+## Getter / Setter ##
+
+通过 ``setXxx`` 和 ``getXxx`` 就可以定义这两个行为，也不需要有属性的定义。印象中，这是 *Ruby* 的风格吧。
+
+```groovy
+class Hello {
+    def setName(String name) {
+        println 'set name'
+    }
+
+    def getName() {
+        println 'get name'
+        'return'
+    }
+}
+
+def hello = new Hello()
+hello.name = 123
+println hello.name
+```
+
+## 运算 ##
+
+*groovy* 用的好像是 *Ruby* 那套， ``+`` 对应 ``plus`` 方法：
+
+```groovy
+class Hello {
+    int n
+    int plus(int a) {
+        n + a;
+    }
+    int plus(String a) {
+        a.size() + n
+    }
+    int plus(Hello a) {
+        a.n + n
+    }
+}
+
+println new Hello(n: 1) + 10
+println new Hello(n: 1) + '10'
+println new Hello(n: 1) + new Hello(n: 100)
+```
+
+其它的一些方法有：
+
+|| Operator | Method ||
+| + | plus |
+| - | minus |
+| * | multiply |
+| / | div |
+| ... | ... |
+
+
+## GetItem / SetItem ##
+
+``[]`` 取值和赋值对应的方法是 ``getAt`` 和 ``putAt`` ：
+
+```groovy
+class Hello {
+    void getAt(int i) {
+        println i
+    }
+    void getAt(String s) {
+        println 'String ' + s
+    }
+    void putAt(String s, int a) {
+        println "@${s} = ${a}"
+    }
+}
+
+def n = new Hello()
+n[1]
+n['123']
+n['xxx'] = 123
+```
+
+## As ##
+
+``as`` 这种，就是可以随意自定义的一个操作符了。
+
+```groovy
+class Hello {
+    int n
+
+    String asType(Class cls) {
+        if(cls == String) {
+            if(n == 1){
+                return '一'
+            }
+        }
+        super.asType(type)
+    }
+
+}
+
+def n2 = [n:2] as Hello
+println n2.n
+
+def n = new Hello(n:1)
+println n as String
+```
+
+这里有一个注意点， ``as`` 后面不能是任意的标识，必须是一个类型。
 
 
 
