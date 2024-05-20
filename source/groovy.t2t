@@ -19,7 +19,7 @@ Groovy 学习笔记
 
 # 语法 #
 
-*groovy* 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 *groovy* 语法受 *Python* 和 *Ruby* 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就相对多了不少。
+*groovy* 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 *groovy* 语法受 *Python* 和 *Ruby* 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就多了很多，它的语法可以说，非常非常复杂。
 
 ## 定义和赋值 ##
 
@@ -372,5 +372,205 @@ println n as String
 
 这里有一个注意点， ``as`` 后面不能是任意的标识，必须是一个类型。
 
+
+# Trait #
+
+*trait* 像是一个增强版的接口机制，在 *groovy* 中它还支持“动态实现”。
+
+```groovy
+trait Flying {
+    void fly() {
+        println "${getName()}"
+    }
+
+    String getName() {
+        'Flying'
+    }
+}
+
+class Hello implements Flying {
+    String getName() {
+        'Hello'
+    }
+}
+
+def h = new Hello()
+h.fly()
+```
+
+也可以多重继承：
+
+```groovy
+trait Flying {
+    void fly() {
+        println "${getName()}"
+    }
+
+    String getName() {
+        'Flying'
+    }
+}
+
+trait Going extends Flying {
+    void fly() {
+        println 'GGGG'
+    }
+}
+
+class Hello implements Flying, Going { }
+
+def h = new Hello()
+h.fly()
+```
+
+右侧的优先级更高。
+
+也可以使用属性：
+
+```groovy
+trait Named {
+    String name
+}
+class Hello implements Named {}
+def h = new Hello(name: '123')
+println h.name
+```
+
+还可以动态实现：
+
+```groovy
+trait Flying {
+    void fly() {
+        println 'flying'
+    }
+}
+class Hello { }
+def h = new Hello() as Flying;
+h.fly()
+```
+
+动态实现多个 *trait* 的话，需要用到 ``withTraits`` ：
+
+```groovy
+trait Flying {
+    void fly() {
+        println 'flying'
+    }
+}
+trait Going {
+    void go() {
+        println 'going'
+    }
+}
+class Hello { }
+def h = new Hello()
+def g = h.withTraits Flying, Going
+g.fly()
+g.go()
+```
+
+动态实现的 *trait* ，还可以使用 *super* 做到运行时的“注入”：
+
+```groovy
+trait Flying {
+    void fly() {
+        println "flying"
+        super.fly()
+    }
+}
+
+class Hello {
+    void fly() {
+        println 'Hello'
+    }
+}
+
+def h = new Hello() as Flying
+h.fly()
+```
+
+## SAM 单一抽象方法的语法糖 ##
+
+如果一个 *trait* 只有一个抽象方法（待实现），那么这个抽象方法可以在 *trait* 具象化定义时“顺带”实现：
+
+```groovy
+trait Flying {
+    void fly() {
+        println "flying ${name}"
+    }
+
+    abstract String getName()
+}
+
+Flying f = { 'NAME' }
+f.fly()
+```
+
+
+# record 类 #
+
+*record* 类是一种带属性的类的简写形式：
+
+```groovy
+record Person(String name, int age) {
+    void say() {
+        println "say $name"
+    }
+}
+
+def p = new Person('nnnn', 12)
+p.say()
+```
+
+形式比较简洁紧凑。
+
+# 闭包 #
+
+*Closure* 在 *groovy* 中，是一个用大括号括起来的匿名函数：
+
+```groovy
+def i = 1
+def j = {i++}
+def k = {n,n2 -> i + n + n2}
+println j()
+println i
+println k(10, 100)
+```
+
+``j`` 和  ``k`` 都是在 call 时才会在当前上下文中求值。
+
+不显式声明参数时，总有一个名为 ``it`` 的参数可用：
+
+```groovy
+println({"hello $it"}('NAME'))
+```
+
+
+## Currying ##
+
+*Currying* ，柯里化，简单来说就是绑定函数参数，从而得到一个新函数：
+
+```groovy
+def sqr = {it ** 2}
+println sqr(9)
+def s = sqr.curry(100)
+println s()
+
+def addN = {a, b -> a + b}
+println addN(1, 10)
+def add1 = addN.curry(1)
+println add1(100)
+```
+
+默认的 ``curry()`` 是绑定最左侧的一个参数，也可以使用 ``rcurry()`` 来绑定右侧参数：
+
+```groovy
+def power = {a, b -> a ** b}
+println power(10, 2)
+def sqrt = power.rcurry(2)
+println sqrt(9)
+def three = power.curry(3)
+println three(9)
+```
 
 
