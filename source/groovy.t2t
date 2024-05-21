@@ -23,17 +23,24 @@ Groovy 学习笔记
 
 ## 定义和赋值 ##
 
-一方面，总是可以使用 ``def`` 来定义变量，函数。另一方面，可以像 java 一样，以类型开头：
+一方面，总是可以使用 ``def`` 或者 ``var`` 来定义变量，函数。另一方面，可以像 java 一样，以类型开头：
 
 ```groovy
 def a = 1
 int b = 1
-def c = [a, b]
+var c = [a, b]
 // println [a, b]
 println c
 ```
 
 上面代码中上，直接写注释的那一行是不行的。可以写成 ``println([a, b])`` ，这里的括号不能省。嗯， *Ruby* 的那套吧。
+
+也可以同时赋值多个变量：
+
+```groovy
+def (a, b, c) = [10, 'a', []]
+println a
+```
 
 
 ## 关键词 ##
@@ -571,6 +578,153 @@ def sqrt = power.rcurry(2)
 println sqrt(9)
 def three = power.curry(3)
 println three(9)
+```
+
+
+# 其它语句 #
+
+## Switch ##
+
+``switch`` 除了常规的用法，还可以直接用于赋值，比较方便：
+
+```groovy
+def n = 1
+def x = switch(n) {
+    case 1 -> 'A'
+    case 2 -> 'B'
+}
+println x
+```
+
+## for ##
+
+``for`` 中的赋值也可以使用多变量赋值：
+
+```groovy
+for(def (i, j) = [1, 10]; i < j; i++) {
+    println i
+}
+```
+
+虽然，可以把 ``def`` 用在 ``for`` 里面有点别扭，把它看成是一个 *type* 的 placeholder 就好点了（这里的 ``def`` 也可以省略）。
+
+也可以把 ``for`` 和 *range* 一起用：
+
+```groovy
+for(i in 0..<5) {
+    println i
+}
+```
+
+迭代 *map* ：
+
+```groovy
+for(item in [a: 1, b: 2]) {
+    println item.key
+    println item.value
+}
+```
+
+
+## try / catch / finally ##
+
+```groovy
+try {
+     1 / 0
+} catch (e) {
+    println e
+} finally {
+    println 'finally'
+}
+```
+
+
+*groovy* 中也支持 java 的 *try-with-resources* ，会自动调用 ``close()``方法：
+
+```groovy
+class Hello {
+    void close() {
+        println 'close'
+    }
+}
+
+try (
+    Hello h = new Hello()
+) {
+    println h
+    1 / 0
+}
+```
+
+# 从约束到实例 #
+
+## interface / trait / abstract class ##
+
+各种约束 *interface* , *trait* , *abstract class* ，它们中只需要一个方法实现时，都可以用一个“闭包”直接生成实例：
+
+```groovy
+interface Cb<T> {
+    void accept(T obj)
+}
+
+Cb c = {it -> println 'hello ' + it} as Cb
+c(11)
+```
+
+上面的代码中， *interface* 中只有一个方法时（其实这个方法的名字也无所谓了），可以直接生成实例。
+
+```groovy
+abstract class Hello {
+    abstract int getCount()
+    int getSum() {
+        0
+    }
+}
+
+Hello h = {-> 123}
+println h.getCount()
+println h.getSum()
+```
+
+抽象类中的抽象方法，也可以被闭包“填充”。如果有多个抽象方法，则它们都会被一个闭包同时填充。
+
+如果把类型写在前面，则 ``as Type`` 也可以省略。
+
+## map ##
+
+除了单方法， *groovy* 还支持用 *map* 定义多个方法之后，直接按指定约定生成实例：
+
+```groovy
+trait Hello {
+    abstract String getName()
+    abstract int getCount()
+    void show() {
+        println 'Hello'
+    }
+}
+
+def h = [
+    getName: { 'Name' },
+    getCount: {it -> it + 2}
+] as Hello
+
+h.show()
+```
+
+## 字符串到枚举 ##
+
+这个特性个人也觉得是很方便的。
+
+```groovy
+enum State {
+    GOOD,
+    BAD,
+    NORMAL
+}
+
+State s = 'GOOD'
+State s2 = State.GOOD
+println s == s2
 ```
 
 
