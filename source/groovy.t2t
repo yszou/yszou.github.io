@@ -19,7 +19,7 @@ Groovy 学习笔记
 
 # 语法 #
 
-*groovy* 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 *groovy* 语法受 *Python* 和 *Ruby* 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就多了很多，它的语法可以说，非常非常复杂。
+*groovy* 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 *groovy* 语法受 *Python* 和 *Ruby* 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就多了很多，也算复杂了。
 
 ## 定义和赋值 ##
 
@@ -45,7 +45,7 @@ println a
 
 ## 关键词 ##
 
-*groovy* 有一些关键词，比如 ``def`` 。但是，我们可以用关键词作为函数名， *map* 的 *key*，加上双引号就行：
+*groovy* 有一些关键词，比如 ``def`` 。但是，仍然可以用关键词作为函数名或 *map* 的 *key*，加上引号就行：
 
 ```groovy
 def 'def' () {
@@ -88,9 +88,9 @@ println s1
 println s2
 ```
 
-在可以的情况下，表达式 ``${n}`` 可以不写大括号。
+在可以的情况下，表达式 ``${n}`` 可以不写大括号，直接写成 ``$n``。
 
-闭包是一种“函数”式的表达式，它在需要对字符串求值时才运算。
+闭包是一种类似“匿名函数”的表达式，它在需要对字符串求值时才运算。
 
 ```groovy
 def n = '123'
@@ -99,7 +99,7 @@ n = 'world'
 println s
 ```
 
-上面的代码，最后输入的是 ``hello world`` 。
+上面的代码，最后输出是 ``hello world`` 。
 
 多行字符串，可以使用 ``\`` 处理掉首行的换行：
 
@@ -134,7 +134,7 @@ println a[0]
 字典的 *key* 可以使用表达式：
 
 ```groovy
-def m = [ab: 1, 'a+b': 2]
+def m = [ab: 1, 'a+b': 2, ('a'+'c'): 3]
 println m.('a' + 'b')
 println m.('a' + '+b')
 ```
@@ -161,7 +161,7 @@ println l?[2]
 
 ## 正则表达式 ##
 
-使用 ``~`` 加字符串，直接声明一个正则表式实例。
+使用 ``~`` 加字符串，直接声明一个正则表达式实例。
 
 ```groovy
 def p = ~'a.*b'
@@ -182,7 +182,7 @@ println m[1]
 println m[1][2]
 ```
 
-``字符串 =~ 正则`` 是一个直接的匹配操作。
+``字符串 =~ 正则`` 是匹配操作。
 
 
 ## 遍历取值 ##
@@ -220,7 +220,7 @@ add(*[1,2,3])
 add(1, *[2,3])
 ```
 
-上面的例子，函数的参数传递，可以使用 ``*`` ，像 *Python* 中一样。
+函数的参数传递，可以使用 ``*`` ，像 *Python* 中一样。
 
 ```groovy
 def a = [1,2]
@@ -232,9 +232,9 @@ def n = [c:1, *:m]
 println n
 ```
 
-上面的例子，列表和字典中也可以直接使用解构。
+列表和字典中也可以直接使用 ``*``。
 
-还可以多重赋值：
+多重赋值：
 
 ```groovy
 def (a, b, c) = [1,2]
@@ -252,6 +252,23 @@ println r.collect()
 ```
 
 不加 ``<`` 就是“等于”。
+
+## record 类 ##
+
+*record* 类是一种带属性的类的简写形式：
+
+```groovy
+record Person(String name, int age) {
+    void say() {
+        println "say $name"
+    }
+}
+
+def p = new Person('nnnn', 12)
+p.say()
+```
+
+形式比较简洁紧凑。
 
 
 
@@ -276,7 +293,7 @@ println n()()()
 
 ## Getter / Setter ##
 
-通过 ``setXxx`` 和 ``getXxx`` 就可以定义这两个行为，也不需要有属性的定义。印象中，这是 *Ruby* 的风格吧。
+通过 ``setXxx`` 和 ``getXxx`` 就可以定义这两个行为，也不需要有属性的定义。
 
 ```groovy
 class Hello {
@@ -382,7 +399,9 @@ println n as String
 
 # Trait #
 
-*trait* 像是一个增强版的接口机制，在 *groovy* 中它还支持“动态实现”。
+## 基本使用 ##
+
+*trait* 像是一个增强版的接口机制，在 *groovy* 中它还支持“动态声明使用”。
 
 ```groovy
 trait Flying {
@@ -443,7 +462,7 @@ def h = new Hello(name: '123')
 println h.name
 ```
 
-还可以动态实现：
+动态声明：
 
 ```groovy
 trait Flying {
@@ -456,7 +475,7 @@ def h = new Hello() as Flying;
 h.fly()
 ```
 
-动态实现多个 *trait* 的话，需要用到 ``withTraits`` ：
+动态声明多个 *trait* 的话，需要用到 ``withTraits`` ：
 
 ```groovy
 trait Flying {
@@ -476,7 +495,7 @@ g.fly()
 g.go()
 ```
 
-动态实现的 *trait* ，还可以使用 *super* 做到运行时的“注入”：
+*trait* 还可以使用 *super* 做到运行时的“注入”：
 
 ```groovy
 trait Flying {
@@ -514,24 +533,9 @@ f.fly()
 ```
 
 
-# record 类 #
-
-*record* 类是一种带属性的类的简写形式：
-
-```groovy
-record Person(String name, int age) {
-    void say() {
-        println "say $name"
-    }
-}
-
-def p = new Person('nnnn', 12)
-p.say()
-```
-
-形式比较简洁紧凑。
-
 # 闭包 #
+
+## Closure ##
 
 *Closure* 在 *groovy* 中，是一个用大括号括起来的匿名函数：
 
@@ -606,7 +610,7 @@ for(def (i, j) = [1, 10]; i < j; i++) {
 }
 ```
 
-虽然，可以把 ``def`` 用在 ``for`` 里面有点别扭，把它看成是一个 *type* 的 placeholder 就好点了（这里的 ``def`` 也可以省略）。
+虽然可以把 ``def`` 用在 ``for`` 里面有点别扭，把它看成是一个 *type* 的 placeholder 就好点了（这里的 ``def`` 也可以省略）。
 
 也可以把 ``for`` 和 *range* 一起用：
 
@@ -671,7 +675,7 @@ Cb c = {it -> println 'hello ' + it} as Cb
 c(11)
 ```
 
-上面的代码中， *interface* 中只有一个方法时（其实这个方法的名字也无所谓了），可以直接生成实例。
+上面的代码中当 *interface* 中只有一个方法时（其实这个方法的名字也无所谓了），就可以直接生成实例。
 
 ```groovy
 abstract class Hello {
@@ -688,11 +692,11 @@ println h.getSum()
 
 抽象类中的抽象方法，也可以被闭包“填充”。如果有多个抽象方法，则它们都会被一个闭包同时填充。
 
-如果把类型写在前面，则 ``as Type`` 也可以省略。
+如果把类型写在前面，则 ``as Type`` 可以省略。
 
 ## map ##
 
-除了单方法， *groovy* 还支持用 *map* 定义多个方法之后，直接按指定约定生成实例：
+除了单方法， *groovy* 还支持用 *map* 定义多个方法之后，直接按键名填充方法实现后生成实例：
 
 ```groovy
 trait Hello {
@@ -713,7 +717,7 @@ h.show()
 
 ## 字符串到枚举 ##
 
-这个特性个人也觉得是很方便的。
+这个特性也是很方便的。
 
 ```groovy
 enum State {
@@ -725,6 +729,89 @@ enum State {
 State s = 'GOOD'
 State s2 = State.GOOD
 println s == s2
+```
+
+
+# 在 Java 项目中使用 #
+
+以 *maven* 为例，使用两个 *plugin* 就可以了 *pom* 文件大概如下：
+
+```xml
+
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>4.0.15</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmavenplus</groupId>
+                <artifactId>gmavenplus-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>addSources</goal>
+                            <goal>addTestSources</goal>
+                            <goal>generateStubs</goal>
+                            <goal>compile</goal>
+                            <goal>generateTestStubs</goal>
+                            <goal>compileTests</goal>
+                            <goal>removeStubs</goal>
+                            <goal>removeTestStubs</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+```
+
+更多的配置，可以参考： https://github.com/groovy/GMavenPlus/wiki/Examples
+
+比如 ``Hello.groovy`` ：
+
+```groovy
+package zys.me.mix
+
+import org.springframework.stereotype.Component
+
+@Component
+class Demo {
+    private final JavaCls javaCls;
+
+    Demo(JavaCls javaCls) {
+        this.javaCls = javaCls;
+    }
+    void say() {
+        println javaCls.out();
+        println new JavaCls().out();
+    }
+}
+```
+
+它编译出来是一个 ``Demo`` 类，里面的 ``say()`` 方法是：
+
+```java
+public void say() {
+    this.invoke<invokedynamic>(this,
+        this.javaCls.invoke<invokedynamic>(this.javaCls));
+    this.invoke<invokedynamic>(this,
+        ((Class)JavaCls.class.init<invokedynamic>(JavaCls.class))
+            .invoke<invokedynamic>(JavaCls.class.init<invokedynamic>(JavaCls.class)));
+}
 ```
 
 

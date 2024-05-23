@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="fav.ico" />
+    <meta charset="UTF-8" />
+    <title>Groovy 学习笔记 - YS.Zou</title>
+    <meta name="generator" content="http://txt2tags.org" />
+    <meta name="author" content="Yesheng Zou,YS.Zou,邹业盛"/>
+</head>
+
+<body class="z" style="color: #333; font-size: 16px; letter-spacing: 0.2em; font-family: 'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif; -webkit-font-smoothing: antialiased; margin: 0;">
+    <div class="content" style="width: 900px; margin: auto; padding: 30px; box-sizing: border-box; position: relative">
+        <div class="header">
+            <h1 style="text-align: center; font-size: 26px; margin: 0;">Groovy 学习笔记</h1>
+            <div class="user" style="margin: 20px auto; text-align: center;">
+                <span>邹业盛</span>
+                <span>2024-05-24 01:20 更新</span>
+            </div>
+        </div>
+
+<div class="toc">
+
+  <ol style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+  <li style="margin: 10px auto;"><a href="#toc1" style="color: #0184b7; text-decoration: none" target="_self">安装</a>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc2" style="color: #0184b7; text-decoration: none" target="_self">语法</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc3" style="color: #0184b7; text-decoration: none" target="_self">2.1. 定义和赋值</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc4" style="color: #0184b7; text-decoration: none" target="_self">2.2. 关键词</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc5" style="color: #0184b7; text-decoration: none" target="_self">2.3. 字符串</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc6" style="color: #0184b7; text-decoration: none" target="_self">2.4. 列表和字典</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc7" style="color: #0184b7; text-decoration: none" target="_self">2.5. 正则表达式</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc8" style="color: #0184b7; text-decoration: none" target="_self">2.6. 遍历取值</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc9" style="color: #0184b7; text-decoration: none" target="_self">2.7. 参数和赋值解构</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc10" style="color: #0184b7; text-decoration: none" target="_self">2.8. 范围 Range</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc11" style="color: #0184b7; text-decoration: none" target="_self">2.9. record 类</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc12" style="color: #0184b7; text-decoration: none" target="_self">操作符重载</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc13" style="color: #0184b7; text-decoration: none" target="_self">3.1. call</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc14" style="color: #0184b7; text-decoration: none" target="_self">3.2. Getter / Setter</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc15" style="color: #0184b7; text-decoration: none" target="_self">3.3. 运算</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc16" style="color: #0184b7; text-decoration: none" target="_self">3.4. GetItem / SetItem</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc17" style="color: #0184b7; text-decoration: none" target="_self">3.5. As</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc18" style="color: #0184b7; text-decoration: none" target="_self">Trait</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc19" style="color: #0184b7; text-decoration: none" target="_self">4.1. 基本使用</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc20" style="color: #0184b7; text-decoration: none" target="_self">4.2. SAM 单一抽象方法的语法糖</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc21" style="color: #0184b7; text-decoration: none" target="_self">闭包</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc22" style="color: #0184b7; text-decoration: none" target="_self">5.1. Closure</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc23" style="color: #0184b7; text-decoration: none" target="_self">5.2. Currying</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc24" style="color: #0184b7; text-decoration: none" target="_self">其它语句</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc25" style="color: #0184b7; text-decoration: none" target="_self">6.1. Switch</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc26" style="color: #0184b7; text-decoration: none" target="_self">6.2. for</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc27" style="color: #0184b7; text-decoration: none" target="_self">6.3. try / catch / finally</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc28" style="color: #0184b7; text-decoration: none" target="_self">从约束到实例</a>
+    <ul style="line-height: 1.6em; list-style: inside square; padding: 0px; padding-left: 50px; margin: auto;">
+    <li style="margin: 10px auto;"><a href="#toc29" style="color: #0184b7; text-decoration: none" target="_self">7.1. interface / trait / abstract class</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc30" style="color: #0184b7; text-decoration: none" target="_self">7.2. map</a>
+    </li>
+    <li style="margin: 10px auto;"><a href="#toc31" style="color: #0184b7; text-decoration: none" target="_self">7.3. 字符串到枚举</a>
+    </li>
+    </ul>
+  </li>
+  <li style="margin: 10px auto;"><a href="#toc32" style="color: #0184b7; text-decoration: none" target="_self">在 Java 项目中使用</a>
+  </li>
+  </ol>
+
+</div>
+
+<a class="anchor" name="toc1"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">1. 安装</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 是一个基于 JVM 的语言，可以解释执行，也可以编译。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它的安装和普通的编程语言一样，下载一个目录包，使用里面 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">bin</code> 目录中的可执行程序就可以执行，但是 <em style="color: #d75100; font-style: normal;">groovy</em> 依赖 JDK ，需要 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">java</code> 这个可执行程序。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+下载页面在：<a href="https://groovy.apache.org/download.html" style="color: #0184b7; text-decoration: none" target="_blank">https://groovy.apache.org/download.html</a>
+</p>
+
+<a class="anchor" name="toc2"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">2. 语法</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 本身兼容 java 的语法（静态语言语法）。同时，它又有自己独立的另外一套语法（动态语言语法）。 <em style="color: #d75100; font-style: normal;">groovy</em> 语法受 <em style="color: #d75100; font-style: normal;">Python</em> 和 <em style="color: #d75100; font-style: normal;">Ruby</em> 影响，所以一些细节是比较友好的。当然，从另一方面来说，细节就多了很多，也算复杂了。
+</p>
+
+<a class="anchor" name="toc3"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.1. 定义和赋值</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+一方面，总是可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">def</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">var</code> 来定义变量，函数。另一方面，可以像 java 一样，以类型开头：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+<span style="color: #445588; font-weight: bold">int</span> b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+var c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span>a<span style="color: #000000; font-weight: bold">,</span> b<span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #999988">// println [a, b]</span>
+println c
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面代码中上，直接写注释的那一行是不行的。可以写成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">println([a, b])</code> ，这里的括号不能省。嗯， <em style="color: #d75100; font-style: normal;">Ruby</em> 的那套吧。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以同时赋值多个变量：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> <span style="color: #000000; font-weight: bold">(</span>a<span style="color: #000000; font-weight: bold">,</span> b<span style="color: #000000; font-weight: bold">,</span> c<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">10</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #dd1144">&#39;a&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000; font-weight: bold">[]]</span>
+println a
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc4"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.2. 关键词</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 有一些关键词，比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">def</code> 。但是，仍然可以用关键词作为函数名或 <em style="color: #d75100; font-style: normal;">map</em> 的 <em style="color: #d75100; font-style: normal;">key</em>，加上引号就行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> <span style="color: #dd1144">&#39;def&#39;</span> <span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;def&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">12345</span><span style="color: #000000; font-weight: bold">]</span>
+    println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #dd1144">&#39;def&#39;</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #dd1144">&quot;def&quot;</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个有点意思啊。既然关键词可以，那带空格或者特殊符号的句子也可以：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> <span style="color: #dd1144">&#39;let me try space here&#39;</span> <span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;def&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">12345</span><span style="color: #000000; font-weight: bold">]</span>
+    println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #dd1144">&#39;def&#39;</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #dd1144">&quot;let me try space here&quot;</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+另外， <em style="color: #d75100; font-style: normal;">groovy</em> 中的变量，是可以用 <em style="color: #d75100; font-style: normal;">$</em> 开头的：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> $a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>
+println $a
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc5"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.3. 字符串</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字符串的处理有单引号，双引号，斜线，美元号斜线，表达式。表达式还可以是 <em style="color: #d75100; font-style: normal;">闭包</em> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+单引号中不处理表达式，其它的可以处理表达式。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>
+<span style="color: #445588; font-weight: bold">def</span> s1 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;hello $n&#39;</span>
+<span style="color: #445588; font-weight: bold">def</span> s2 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;hello ${n}&quot;</span>
+println s1
+println s2
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+在可以的情况下，表达式 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">${n}</code> 可以不写大括号，直接写成 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">$n</code>。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+闭包是一种类似“匿名函数”的表达式，它在需要对字符串求值时才运算。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;123&#39;</span>
+<span style="color: #445588; font-weight: bold">def</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&quot;hello ${-&gt; n}&quot;</span>
+n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;world&#39;</span>
+println s
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码，最后输出是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">hello world</code> 。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多行字符串，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">\</code> 处理掉首行的换行：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;&#39;&#39;\</span>
+<span style="color: #dd1144">1</span>
+<span style="color: #dd1144">2</span>
+<span style="color: #dd1144">3&#39;&#39;&#39;</span>
+
+println s
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc6"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.4. 列表和字典</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+类似动态语言， <em style="color: #d75100; font-style: normal;">groovy</em> 中可以直接使用列表和字典：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">a:</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #990000; font-weight: bold">b:</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+println l<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">a</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">l</code> 的类型，默认是 <em style="color: #d75100; font-style: normal;">List</em> ，如果要使用数组，需要显式声明：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">int</span><span style="color: #000000; font-weight: bold">[]</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">]</span>
+println a<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">]</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+字典的 <em style="color: #d75100; font-style: normal;">key</em> 可以使用表达式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">ab:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #dd1144">&#39;a+b&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000; font-weight: bold">(</span><span style="color: #dd1144">&#39;a&#39;</span><span style="color: #000000; font-weight: bold">+</span><span style="color: #dd1144">&#39;c&#39;</span><span style="color: #000000; font-weight: bold">):</span> <span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">.(</span><span style="color: #dd1144">&#39;a&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;b&#39;</span><span style="color: #000000; font-weight: bold">)</span>
+println m<span style="color: #000000; font-weight: bold">.(</span><span style="color: #dd1144">&#39;a&#39;</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;+b&#39;</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 对于 <em style="color: #d75100; font-style: normal;">key</em> 不存在，或者下标越界的情况不会报错，会返回 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">null</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">ab:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #dd1144">&#39;a+b&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #445588; font-weight: bold">def</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">a</span>
+println l<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+但是，如果 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">m</code> 或者 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">l</code> 本身是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">null</code> ，则会抛出空指标异常，如果要避免这种情况，可以像在 <em style="color: #d75100; font-style: normal;">nodejs</em> 中一样，使用带问号的操作符：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">ab:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #dd1144">&#39;a+b&#39;</span><span style="color: #000000; font-weight: bold">:</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #445588; font-weight: bold">def</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">]</span>
+m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>
+l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">null</span>
+println m<span style="color: #000000; font-weight: bold">?.</span><span style="color: #008080">a</span>
+println l<span style="color: #000000; font-weight: bold">?[</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc7"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.5. 正则表达式</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">~</code> 加字符串，直接声明一个正则表达式实例。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> p <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">~</span><span style="color: #dd1144">&#39;a.*b&#39;</span>
+<span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;a123b&#39;</span> <span style="color: #000000; font-weight: bold">=~</span> p
+println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">size</span><span style="color: #000000; font-weight: bold">()</span>
+println m<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">]</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">~/a.*b/</code> 。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> p <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">~</span><span style="color: #dd1144">/a(.)(..)b/</span>
+<span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;a123b a333b&#39;</span> <span style="color: #000000; font-weight: bold">=~</span> p
+println m<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">size</span><span style="color: #000000; font-weight: bold">()</span>
+println m<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">][</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">]</span>
+println m<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">][</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">字符串 =~ 正则</code> 是匹配操作。
+</p>
+
+<a class="anchor" name="toc8"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.6. 遍历取值</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个操作符好用， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*.</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    String name<span style="color: #000000; font-weight: bold">;</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> l <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span>
+    <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">Hello</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">name:</span> <span style="color: #dd1144">&#39;123&#39;</span><span style="color: #000000; font-weight: bold">),</span>
+    <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">Hello</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">name:</span> <span style="color: #dd1144">&#39;abc&#39;</span><span style="color: #000000; font-weight: bold">),</span>
+    <span style="color: #000000; font-weight: bold">null</span>
+<span style="color: #000000; font-weight: bold">]</span>
+
+println l<span style="color: #000000; font-weight: bold">*.</span><span style="color: #008080">name</span>
+println l<span style="color: #000000; font-weight: bold">*.</span><span style="color: #008080">getName</span><span style="color: #000000; font-weight: bold">()</span>
+println <span style="color: #000000; font-weight: bold">null*.</span><span style="color: #008080">getName</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它可以很方便地直接提取列表中的每一个成员的指定属性或者指定方法调用，还不怕 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">null</code> 。
+</p>
+
+<a class="anchor" name="toc9"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.7. 参数和赋值解构</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">add</span><span style="color: #000000; font-weight: bold">(</span>x<span style="color: #000000; font-weight: bold">,</span> y<span style="color: #000000; font-weight: bold">,</span> z<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    println x <span style="color: #000000; font-weight: bold">+</span> y <span style="color: #000000; font-weight: bold">+</span> z
+<span style="color: #000000; font-weight: bold">}</span>
+
+add<span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">)</span>
+add<span style="color: #000000; font-weight: bold">(*[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">])</span>
+add<span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000; font-weight: bold">*[</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">])</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+函数的参数传递，可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code> ，像 <em style="color: #d75100; font-style: normal;">Python</em> 中一样。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> a <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #445588; font-weight: bold">def</span> b <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000; font-weight: bold">*</span>a<span style="color: #000000; font-weight: bold">]</span>
+println b
+
+<span style="color: #445588; font-weight: bold">def</span> m <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">a:</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #990000; font-weight: bold">b:</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+<span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">c:</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #000000; font-weight: bold">*:</span>m<span style="color: #000000; font-weight: bold">]</span>
+println n
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+列表和字典中也可以直接使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">*</code>。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+多重赋值：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> <span style="color: #000000; font-weight: bold">(</span>a<span style="color: #000000; font-weight: bold">,</span> b<span style="color: #000000; font-weight: bold">,</span> c<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span>
+println<span style="color: #000000; font-weight: bold">([</span>a<span style="color: #000000; font-weight: bold">,</span> b<span style="color: #000000; font-weight: bold">,</span> c<span style="color: #000000; font-weight: bold">])</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc10"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.8. 范围 Range</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 中可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">..</code> ，还可以在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">..</code> 两侧加大于小于：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> r <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">&lt;..</span><span style="color: #009999">10</span>
+println r<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">size</span><span style="color: #000000; font-weight: bold">()</span>
+println r<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">collect</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不加 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">&lt;</code> 就是“等于”。
+</p>
+
+<a class="anchor" name="toc11"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">2.9. record 类</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">record</em> 类是一种带属性的类的简写形式：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">record <span style="color: #990000; font-weight: bold">Person</span><span style="color: #000000; font-weight: bold">(</span>String name<span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">int</span> age<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">say</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;say $name&quot;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> p <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Person<span style="color: #000000; font-weight: bold">(</span><span style="color: #dd1144">&#39;nnnn&#39;</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">12</span><span style="color: #000000; font-weight: bold">)</span>
+p<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">say</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+形式比较简洁紧凑。
+</p>
+
+<a class="anchor" name="toc12"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">3. 操作符重载</h1>
+
+<a class="anchor" name="toc13"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.1. call</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">()</code> 调用是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">call()</code> 方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    Hello <span style="color: #990000; font-weight: bold">call</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #000000; font-weight: bold">this</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+println <span style="color: #990000; font-weight: bold">n</span><span style="color: #000000; font-weight: bold">()()()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc14"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.2. Getter / Setter</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+通过 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">setXxx</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getXxx</code> 就可以定义这两个行为，也不需要有属性的定义。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">setName</span><span style="color: #000000; font-weight: bold">(</span>String name<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;set name&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+
+    <span style="color: #445588; font-weight: bold">def</span> <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;get name&#39;</span>
+        <span style="color: #dd1144">&#39;return&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> hello <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+hello<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">name</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>
+println hello<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">name</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc15"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.3. 运算</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 用的好像是 <em style="color: #d75100; font-style: normal;">Ruby</em> 那套， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">+</code> 对应 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">plus</code> 方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">int</span> n
+    <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">plus</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #445588; font-weight: bold">int</span> a<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        n <span style="color: #000000; font-weight: bold">+</span> a<span style="color: #000000; font-weight: bold">;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+    <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">plus</span><span style="color: #000000; font-weight: bold">(</span>String a<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        a<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">size</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">+</span> n
+    <span style="color: #000000; font-weight: bold">}</span>
+    <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">plus</span><span style="color: #000000; font-weight: bold">(</span>Hello a<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        a<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">n</span> <span style="color: #000000; font-weight: bold">+</span> n
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+println <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">Hello</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">n:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">10</span>
+println <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">Hello</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">n:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #dd1144">&#39;10&#39;</span>
+println <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">Hello</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">n:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">+</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">n:</span> <span style="color: #009999">100</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+其它的一些方法有：
+</p>
+
+<table border="1" style="border: 1px solid gray; border-collapse: collapse; margin: 25px auto; line-height: 1.4em; font-size: 14px;">
+<tr>
+<th style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Operator</th>
+<th colspan="2" style="border: 1px solid gray; font-weight: bold; text-align: center; padding: 3px 10px;">Method</th>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">+</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">plus</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">-</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">minus</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">*</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">multiply</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">/</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">div</td>
+</tr>
+<tr>
+<td style="border: 1px solid gray; padding: 3px 10px;">...</td>
+<td style="border: 1px solid gray; padding: 3px 10px;">...</td>
+</tr>
+</table>
+
+<a class="anchor" name="toc16"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.4. GetItem / SetItem</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">[]</code> 取值和赋值对应的方法是 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">getAt</code> 和 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">putAt</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">getAt</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #445588; font-weight: bold">int</span> i<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        println i
+    <span style="color: #000000; font-weight: bold">}</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">getAt</span><span style="color: #000000; font-weight: bold">(</span>String s<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;String &#39;</span> <span style="color: #000000; font-weight: bold">+</span> s
+    <span style="color: #000000; font-weight: bold">}</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">putAt</span><span style="color: #000000; font-weight: bold">(</span>String s<span style="color: #000000; font-weight: bold">,</span> <span style="color: #445588; font-weight: bold">int</span> a<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;@${s} = ${a}&quot;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+n<span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">]</span>
+n<span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;123&#39;</span><span style="color: #000000; font-weight: bold">]</span>
+n<span style="color: #000000; font-weight: bold">[</span><span style="color: #dd1144">&#39;xxx&#39;</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">123</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc17"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">3.5. As</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">as</code> 这种，就是可以随意自定义的一个操作符了。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">int</span> n
+
+    String <span style="color: #990000; font-weight: bold">asType</span><span style="color: #000000; font-weight: bold">(</span>Class cls<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #000000; font-weight: bold">if(</span>cls <span style="color: #000000; font-weight: bold">==</span> String<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+            <span style="color: #000000; font-weight: bold">if(</span>n <span style="color: #000000; font-weight: bold">==</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">){</span>
+                <span style="color: #000000; font-weight: bold">return</span> <span style="color: #dd1144">&#39;一&#39;</span>
+            <span style="color: #000000; font-weight: bold">}</span>
+        <span style="color: #000000; font-weight: bold">}</span>
+        <span style="color: #000000; font-weight: bold">super.</span><span style="color: #008080">asType</span><span style="color: #000000; font-weight: bold">(</span>type<span style="color: #000000; font-weight: bold">)</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> n2 <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">n:</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">]</span> <span style="color: #000000; font-weight: bold">as</span> Hello
+println n2<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">n</span>
+
+<span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">n:</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">)</span>
+println n <span style="color: #000000; font-weight: bold">as</span> String
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这里有一个注意点， <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">as</code> 后面不能是任意的标识，必须是一个类型。
+</p>
+
+<a class="anchor" name="toc18"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">4. Trait</h1>
+
+<a class="anchor" name="toc19"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.1. 基本使用</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">trait</em> 像是一个增强版的接口机制，在 <em style="color: #d75100; font-style: normal;">groovy</em> 中它还支持“动态声明使用”。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;${getName()}&quot;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+
+    String <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #dd1144">&#39;Flying&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">implements</span> Flying <span style="color: #000000; font-weight: bold">{</span>
+    String <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #dd1144">&#39;Hello&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以多重继承：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;${getName()}&quot;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+
+    String <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #dd1144">&#39;Flying&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+trait Going <span style="color: #000000; font-weight: bold">extends</span> Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;GGGG&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">implements</span> Flying<span style="color: #000000; font-weight: bold">,</span> Going <span style="color: #000000; font-weight: bold">{</span> <span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+右侧的优先级更高。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以使用属性：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Named <span style="color: #000000; font-weight: bold">{</span>
+    String name
+<span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">implements</span> Named <span style="color: #000000; font-weight: bold">{}</span>
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">(</span><span style="color: #990000; font-weight: bold">name:</span> <span style="color: #dd1144">&#39;123&#39;</span><span style="color: #000000; font-weight: bold">)</span>
+println h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">name</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+动态声明：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;flying&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">as</span> Flying<span style="color: #000000; font-weight: bold">;</span>
+h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+动态声明多个 <em style="color: #d75100; font-style: normal;">trait</em> 的话，需要用到 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">withTraits</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;flying&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+trait Going <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">go</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;going&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+<span style="color: #445588; font-weight: bold">def</span> g <span style="color: #000000; font-weight: bold">=</span> h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">withTraits</span> Flying<span style="color: #000000; font-weight: bold">,</span> Going
+g<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+g<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">go</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">trait</em> 还可以使用 <em style="color: #d75100; font-style: normal;">super</em> 做到运行时的“注入”：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;flying&quot;</span>
+        <span style="color: #000000; font-weight: bold">super.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;Hello&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">as</span> Flying
+h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc20"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">4.2. SAM 单一抽象方法的语法糖</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果一个 <em style="color: #d75100; font-style: normal;">trait</em> 只有一个抽象方法（待实现），那么这个抽象方法可以在 <em style="color: #d75100; font-style: normal;">trait</em> 具象化定义时“顺带”实现：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Flying <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">fly</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&quot;flying ${name}&quot;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+
+    <span style="color: #000000; font-weight: bold">abstract</span> String <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+Flying f <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #dd1144">&#39;NAME&#39;</span> <span style="color: #000000; font-weight: bold">}</span>
+f<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">fly</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc21"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">5. 闭包</h1>
+
+<a class="anchor" name="toc22"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.1. Closure</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Closure</em> 在 <em style="color: #d75100; font-style: normal;">groovy</em> 中，是一个用大括号括起来的匿名函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> i <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+<span style="color: #445588; font-weight: bold">def</span> j <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>i<span style="color: #000000; font-weight: bold">++}</span>
+<span style="color: #445588; font-weight: bold">def</span> k <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>n<span style="color: #000000; font-weight: bold">,</span>n2 <span style="color: #000000; font-weight: bold">-&gt;</span> i <span style="color: #000000; font-weight: bold">+</span> n <span style="color: #000000; font-weight: bold">+</span> n2<span style="color: #000000; font-weight: bold">}</span>
+println <span style="color: #990000; font-weight: bold">j</span><span style="color: #000000; font-weight: bold">()</span>
+println i
+println <span style="color: #990000; font-weight: bold">k</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">10</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">100</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">j</code> 和  <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">k</code> 都是在 call 时才会在当前上下文中求值。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+不显式声明参数时，总有一个名为 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">it</code> 的参数可用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">println<span style="color: #000000; font-weight: bold">({</span><span style="color: #dd1144">&quot;hello $it&quot;</span><span style="color: #000000; font-weight: bold">}(</span><span style="color: #dd1144">&#39;NAME&#39;</span><span style="color: #000000; font-weight: bold">))</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc23"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">5.2. Currying</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">Currying</em> ，柯里化，简单来说就是绑定函数参数，从而得到一个新函数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> sqr <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>it <span style="color: #000000; font-weight: bold">**</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">}</span>
+println <span style="color: #990000; font-weight: bold">sqr</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">9</span><span style="color: #000000; font-weight: bold">)</span>
+<span style="color: #445588; font-weight: bold">def</span> s <span style="color: #000000; font-weight: bold">=</span> sqr<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">curry</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">100</span><span style="color: #000000; font-weight: bold">)</span>
+println <span style="color: #990000; font-weight: bold">s</span><span style="color: #000000; font-weight: bold">()</span>
+
+<span style="color: #445588; font-weight: bold">def</span> addN <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>a<span style="color: #000000; font-weight: bold">,</span> b <span style="color: #000000; font-weight: bold">-&gt;</span> a <span style="color: #000000; font-weight: bold">+</span> b<span style="color: #000000; font-weight: bold">}</span>
+println <span style="color: #990000; font-weight: bold">addN</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">10</span><span style="color: #000000; font-weight: bold">)</span>
+<span style="color: #445588; font-weight: bold">def</span> add1 <span style="color: #000000; font-weight: bold">=</span> addN<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">curry</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">)</span>
+println <span style="color: #990000; font-weight: bold">add1</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">100</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+默认的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">curry()</code> 是绑定最左侧的一个参数，也可以使用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">rcurry()</code> 来绑定右侧参数：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> power <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>a<span style="color: #000000; font-weight: bold">,</span> b <span style="color: #000000; font-weight: bold">-&gt;</span> a <span style="color: #000000; font-weight: bold">**</span> b<span style="color: #000000; font-weight: bold">}</span>
+println <span style="color: #990000; font-weight: bold">power</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">10</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">)</span>
+<span style="color: #445588; font-weight: bold">def</span> sqrt <span style="color: #000000; font-weight: bold">=</span> power<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">rcurry</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">)</span>
+println <span style="color: #990000; font-weight: bold">sqrt</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">9</span><span style="color: #000000; font-weight: bold">)</span>
+<span style="color: #445588; font-weight: bold">def</span> three <span style="color: #000000; font-weight: bold">=</span> power<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">curry</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">3</span><span style="color: #000000; font-weight: bold">)</span>
+println <span style="color: #990000; font-weight: bold">three</span><span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">9</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc24"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">6. 其它语句</h1>
+
+<a class="anchor" name="toc25"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.1. Switch</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">switch</code> 除了常规的用法，还可以直接用于赋值，比较方便：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #445588; font-weight: bold">def</span> n <span style="color: #000000; font-weight: bold">=</span> <span style="color: #009999">1</span>
+<span style="color: #445588; font-weight: bold">def</span> x <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">switch(</span>n<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #000000; font-weight: bold">case</span> <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">-&gt;</span> <span style="color: #dd1144">&#39;A&#39;</span>
+    <span style="color: #000000; font-weight: bold">case</span> <span style="color: #009999">2</span> <span style="color: #000000; font-weight: bold">-&gt;</span> <span style="color: #dd1144">&#39;B&#39;</span>
+<span style="color: #000000; font-weight: bold">}</span>
+println x
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc26"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.2. for</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">for</code> 中的赋值也可以使用多变量赋值：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">for(</span><span style="color: #445588; font-weight: bold">def</span> <span style="color: #000000; font-weight: bold">(</span>i<span style="color: #000000; font-weight: bold">,</span> j<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #009999">10</span><span style="color: #000000; font-weight: bold">];</span> i <span style="color: #000000; font-weight: bold">&lt;</span> j<span style="color: #000000; font-weight: bold">;</span> i<span style="color: #000000; font-weight: bold">++)</span> <span style="color: #000000; font-weight: bold">{</span>
+    println i
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+虽然可以把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">def</code> 用在 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">for</code> 里面有点别扭，把它看成是一个 <em style="color: #d75100; font-style: normal;">type</em> 的 placeholder 就好点了（这里的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">def</code> 也可以省略）。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+也可以把 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">for</code> 和 <em style="color: #d75100; font-style: normal;">range</em> 一起用：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">for(</span>i <span style="color: #000000; font-weight: bold">in</span> <span style="color: #009999">0</span><span style="color: #000000; font-weight: bold">..&lt;</span><span style="color: #009999">5</span><span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    println i
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+迭代 <em style="color: #d75100; font-style: normal;">map</em> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">for(</span>item <span style="color: #000000; font-weight: bold">in</span> <span style="color: #000000; font-weight: bold">[</span><span style="color: #990000; font-weight: bold">a:</span> <span style="color: #009999">1</span><span style="color: #000000; font-weight: bold">,</span> <span style="color: #990000; font-weight: bold">b:</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">])</span> <span style="color: #000000; font-weight: bold">{</span>
+    println item<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">key</span>
+    println item<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">value</span>
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc27"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">6.3. try / catch / finally</h2>
+
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">try</span> <span style="color: #000000; font-weight: bold">{</span>
+     <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">0</span>
+<span style="color: #000000; font-weight: bold">}</span> <span style="color: #000000; font-weight: bold">catch</span> <span style="color: #000000; font-weight: bold">(</span>e<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    println e
+<span style="color: #000000; font-weight: bold">}</span> <span style="color: #000000; font-weight: bold">finally</span> <span style="color: #000000; font-weight: bold">{</span>
+    println <span style="color: #dd1144">&#39;finally&#39;</span>
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+<em style="color: #d75100; font-style: normal;">groovy</em> 中也支持 java 的 <em style="color: #d75100; font-style: normal;">try-with-resources</em> ，会自动调用 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">close()</code>方法：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">close</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;close&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #000000; font-weight: bold">try</span> <span style="color: #000000; font-weight: bold">(</span>
+    Hello h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">new</span> Hello<span style="color: #000000; font-weight: bold">()</span>
+<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+    println h
+    <span style="color: #009999">1</span> <span style="color: #000000; font-weight: bold">/</span> <span style="color: #009999">0</span>
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc28"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">7. 从约束到实例</h1>
+
+<a class="anchor" name="toc29"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.1. interface / trait / abstract class</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+各种约束 <em style="color: #d75100; font-style: normal;">interface</em> , <em style="color: #d75100; font-style: normal;">trait</em> , <em style="color: #d75100; font-style: normal;">abstract class</em> ，它们中只需要一个方法实现时，都可以用一个“闭包”直接生成实例：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">interface</span> <span style="color: #445588; font-weight: bold">Cb</span><span style="color: #000000; font-weight: bold">&lt;</span>T<span style="color: #000000; font-weight: bold">&gt;</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">accept</span><span style="color: #000000; font-weight: bold">(</span>T obj<span style="color: #000000; font-weight: bold">)</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+Cb c <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{</span>it <span style="color: #000000; font-weight: bold">-&gt;</span> println <span style="color: #dd1144">&#39;hello &#39;</span> <span style="color: #000000; font-weight: bold">+</span> it<span style="color: #000000; font-weight: bold">}</span> <span style="color: #000000; font-weight: bold">as</span> Cb
+c<span style="color: #000000; font-weight: bold">(</span><span style="color: #009999">11</span><span style="color: #000000; font-weight: bold">)</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+上面的代码中当 <em style="color: #d75100; font-style: normal;">interface</em> 中只有一个方法时（其实这个方法的名字也无所谓了），就可以直接生成实例。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">abstract</span> <span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Hello</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #000000; font-weight: bold">abstract</span> <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">getCount</span><span style="color: #000000; font-weight: bold">()</span>
+    <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">getSum</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #009999">0</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+Hello h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">{-&gt;</span> <span style="color: #009999">123</span><span style="color: #000000; font-weight: bold">}</span>
+println h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">getCount</span><span style="color: #000000; font-weight: bold">()</span>
+println h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">getSum</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+抽象类中的抽象方法，也可以被闭包“填充”。如果有多个抽象方法，则它们都会被一个闭包同时填充。
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+如果把类型写在前面，则 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">as Type</code> 可以省略。
+</p>
+
+<a class="anchor" name="toc30"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.2. map</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+除了单方法， <em style="color: #d75100; font-style: normal;">groovy</em> 还支持用 <em style="color: #d75100; font-style: normal;">map</em> 定义多个方法之后，直接按键名填充方法实现后生成实例：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">trait Hello <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #000000; font-weight: bold">abstract</span> String <span style="color: #990000; font-weight: bold">getName</span><span style="color: #000000; font-weight: bold">()</span>
+    <span style="color: #000000; font-weight: bold">abstract</span> <span style="color: #445588; font-weight: bold">int</span> <span style="color: #990000; font-weight: bold">getCount</span><span style="color: #000000; font-weight: bold">()</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">show</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println <span style="color: #dd1144">&#39;Hello&#39;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+
+<span style="color: #445588; font-weight: bold">def</span> h <span style="color: #000000; font-weight: bold">=</span> <span style="color: #000000; font-weight: bold">[</span>
+    <span style="color: #990000; font-weight: bold">getName:</span> <span style="color: #000000; font-weight: bold">{</span> <span style="color: #dd1144">&#39;Name&#39;</span> <span style="color: #000000; font-weight: bold">},</span>
+    <span style="color: #990000; font-weight: bold">getCount:</span> <span style="color: #000000; font-weight: bold">{</span>it <span style="color: #000000; font-weight: bold">-&gt;</span> it <span style="color: #000000; font-weight: bold">+</span> <span style="color: #009999">2</span><span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">]</span> <span style="color: #000000; font-weight: bold">as</span> Hello
+
+h<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">show</span><span style="color: #000000; font-weight: bold">()</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc31"></a>
+<h2 style="font-size: 18px; margin: 30px auto;">7.3. 字符串到枚举</h2>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+这个特性也是很方便的。
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">enum</span> State <span style="color: #000000; font-weight: bold">{</span>
+    GOOD<span style="color: #000000; font-weight: bold">,</span>
+    BAD<span style="color: #000000; font-weight: bold">,</span>
+    NORMAL
+<span style="color: #000000; font-weight: bold">}</span>
+
+State s <span style="color: #000000; font-weight: bold">=</span> <span style="color: #dd1144">&#39;GOOD&#39;</span>
+State s2 <span style="color: #000000; font-weight: bold">=</span> State<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">GOOD</span>
+println s <span style="color: #000000; font-weight: bold">==</span> s2
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<a class="anchor" name="toc32"></a>
+<h1 style="font-size: 20px; margin: 35px auto; border-bottom: 1px solid gray; padding-top: 5px; padding-bottom: 5px;">8. 在 Java 项目中使用</h1>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+以 <em style="color: #d75100; font-style: normal;">maven</em> 为例，使用两个 <em style="color: #d75100; font-style: normal;">plugin</em> 就可以了 <em style="color: #d75100; font-style: normal;">pom</em> 文件大概如下：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;">    <span style="color: #000080">&lt;dependencies&gt;</span>
+        ...
+        <span style="color: #000080">&lt;dependency&gt;</span>
+            <span style="color: #000080">&lt;groupId&gt;</span>org.apache.groovy<span style="color: #000080">&lt;/groupId&gt;</span>
+            <span style="color: #000080">&lt;artifactId&gt;</span>groovy<span style="color: #000080">&lt;/artifactId&gt;</span>
+            <span style="color: #000080">&lt;version&gt;</span>4.0.15<span style="color: #000080">&lt;/version&gt;</span>
+        <span style="color: #000080">&lt;/dependency&gt;</span>
+    <span style="color: #000080">&lt;/dependencies&gt;</span>
+
+    <span style="color: #000080">&lt;build&gt;</span>
+        <span style="color: #000080">&lt;plugins&gt;</span>
+            ...
+            <span style="color: #000080">&lt;plugin&gt;</span>
+                <span style="color: #000080">&lt;groupId&gt;</span>org.apache.maven.plugins<span style="color: #000080">&lt;/groupId&gt;</span>
+                <span style="color: #000080">&lt;artifactId&gt;</span>maven-compiler-plugin<span style="color: #000080">&lt;/artifactId&gt;</span>
+                <span style="color: #000080">&lt;version&gt;</span>3.8.1<span style="color: #000080">&lt;/version&gt;</span>
+            <span style="color: #000080">&lt;/plugin&gt;</span>
+            <span style="color: #000080">&lt;plugin&gt;</span>
+                <span style="color: #000080">&lt;groupId&gt;</span>org.codehaus.gmavenplus<span style="color: #000080">&lt;/groupId&gt;</span>
+                <span style="color: #000080">&lt;artifactId&gt;</span>gmavenplus-plugin<span style="color: #000080">&lt;/artifactId&gt;</span>
+                <span style="color: #000080">&lt;version&gt;</span>3.0.2<span style="color: #000080">&lt;/version&gt;</span>
+                <span style="color: #000080">&lt;executions&gt;</span>
+                    <span style="color: #000080">&lt;execution&gt;</span>
+                        <span style="color: #000080">&lt;goals&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>addSources<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>addTestSources<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>generateStubs<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>compile<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>generateTestStubs<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>compileTests<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>removeStubs<span style="color: #000080">&lt;/goal&gt;</span>
+                            <span style="color: #000080">&lt;goal&gt;</span>removeTestStubs<span style="color: #000080">&lt;/goal&gt;</span>
+                        <span style="color: #000080">&lt;/goals&gt;</span>
+                    <span style="color: #000080">&lt;/execution&gt;</span>
+                <span style="color: #000080">&lt;/executions&gt;</span>
+            <span style="color: #000080">&lt;/plugin&gt;</span>
+        <span style="color: #000080">&lt;/plugins&gt;</span>
+    <span style="color: #000080">&lt;/build&gt;</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+更多的配置，可以参考： <a href="https://github.com/groovy/GMavenPlus/wiki/Examples" style="color: #0184b7; text-decoration: none" target="_blank">https://github.com/groovy/GMavenPlus/wiki/Examples</a>
+</p>
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+比如 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Hello.groovy</code> ：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">package</span> zys<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">me</span><span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">mix</span>
+
+<span style="color: #000000; font-weight: bold">import</span> <span style="color: #555555">org.springframework.stereotype.Component</span>
+
+<span style="color: #3c5d5d; font-weight: bold">@Component</span>
+<span style="color: #000000; font-weight: bold">class</span> <span style="color: #445588; font-weight: bold">Demo</span> <span style="color: #000000; font-weight: bold">{</span>
+    <span style="color: #000000; font-weight: bold">private</span> <span style="color: #000000; font-weight: bold">final</span> JavaCls javaCls<span style="color: #000000; font-weight: bold">;</span>
+
+    Demo<span style="color: #000000; font-weight: bold">(</span>JavaCls javaCls<span style="color: #000000; font-weight: bold">)</span> <span style="color: #000000; font-weight: bold">{</span>
+        <span style="color: #000000; font-weight: bold">this.</span><span style="color: #008080">javaCls</span> <span style="color: #000000; font-weight: bold">=</span> javaCls<span style="color: #000000; font-weight: bold">;</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+    <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">say</span><span style="color: #000000; font-weight: bold">()</span> <span style="color: #000000; font-weight: bold">{</span>
+        println javaCls<span style="color: #000000; font-weight: bold">.</span><span style="color: #008080">out</span><span style="color: #000000; font-weight: bold">();</span>
+        println <span style="color: #000000; font-weight: bold">new</span> <span style="color: #990000; font-weight: bold">JavaCls</span><span style="color: #000000; font-weight: bold">().</span><span style="color: #008080">out</span><span style="color: #000000; font-weight: bold">();</span>
+    <span style="color: #000000; font-weight: bold">}</span>
+<span style="color: #000000; font-weight: bold">}</span>
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+<p style="line-height: 1.8em; margin: 25px auto; word-break: break-word; word-wrap: break-word;">
+它编译出来是一个 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">Demo</code> 类，里面的 <code style="margin: auto 3px; color: #228b22; font-family: monospace; letter-spacing: 0;">say()</code> 方法是：
+</p>
+
+<div class="code" style="margin: 25px auto;">
+<div style="background: white"><div style="width: 30%; height: 20px; border-top: 1px dashed gray; border-left: 1px dashed gray;"></div><pre style="white-space: pre; font-size: 12px; line-height: 1.5em; margin-left: 15px; letter-spacing: 0;"><span style="color: #000000; font-weight: bold">public</span> <span style="color: #445588; font-weight: bold">void</span> <span style="color: #990000; font-weight: bold">say</span>() {
+    <span style="color: #000000; font-weight: bold">this</span>.<span style="color: #008080">invoke</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #000000; font-weight: bold">this</span>,
+        <span style="color: #000000; font-weight: bold">this</span>.<span style="color: #008080">javaCls</span>.<span style="color: #008080">invoke</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #000000; font-weight: bold">this</span>.<span style="color: #008080">javaCls</span>));
+    <span style="color: #000000; font-weight: bold">this</span>.<span style="color: #008080">invoke</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(<span style="color: #000000; font-weight: bold">this</span>,
+        ((Class)JavaCls.<span style="color: #008080">class</span>.<span style="color: #008080">init</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(JavaCls.<span style="color: #008080">class</span>))
+            .<span style="color: #008080">invoke</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(JavaCls.<span style="color: #008080">class</span>.<span style="color: #008080">init</span><span style="color: #000000; font-weight: bold">&lt;</span>invokedynamic<span style="color: #000000; font-weight: bold">&gt;</span>(JavaCls.<span style="color: #008080">class</span>)));
+}
+</pre><div style="width: 30%; height: 20px; border-bottom: 1px dashed gray; border-left: 1px dashed gray;"></div></div>
+
+</div>
+
+
+<style type="text/css">
+body.z { background-color: #eff3fa; }
+body.z > .content { background-color: white; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); }
+body.z > .content > h1 { background-color: #0184b7; color: white; border-bottom: none; padding-left: 10px; border-radius: 5px; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); }
+body.z > .content > .toc a:hover { background-color: #ddd; }
+body.z > .content > table th { background-color: rgba(223, 151, 27, 0.3);}
+body.z > .content > .quote:before { content: '引'; font-size: 30px; color: #ddd; font-family: "'Microsoft YaHei','WenQuanYi Micro Hei',SimHei,tahoma,sans-serif"; }
+body.z > .content ul > li, body.z > .content ol > li  { text-indent: -1em; }
+body.z > .content  > .toc ul > li, body.z > .content  > .toc ol > li  { text-indent: 0; }
+</style>
+    
+
+<script type="text/javascript" src="https://upcdn.b0.upaiyun.com/libs/jquery/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+    function bind_scroll(){
+        $('body.z > .content > .toc ol').css({listStyle: 'none'})
+        $('body.z > .content > .toc ul').css({listStyle: 'none'})
+        $('body.z > .content > .toc a').css({display: 'block', paddingLeft: '10px'})
+
+        var anchor_list = $.map($('.anchor'), function(n){
+            return $(n).offset().top;
+        });
+        var item = $('body.z > .content > .toc a');
+        var last = 0;
+        var flag = 0;
+
+        $(window).on('scroll', function(eventObj){
+            _set_item();
+        });
+
+        function set_item(){
+            var top = $(window).scrollTop();
+            if(top < anchor_list[0]){
+                item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+                last = 0;
+                return;
+            }
+
+            for(var i = 0, l = anchor_list.length; i < l; i++){
+                if(top < anchor_list[i]){break}
+                flag = i;
+            }
+            item.eq(last).css({backgroundColor: '', color: '#0184b7'});
+            item.eq(flag).css({backgroundColor: '#ddd', color: '#333'});
+            last = flag;
+        }
+
+        var timer = null;
+        function _set_item(){
+            if(timer){
+                clearTimeout(timer);
+            }
+            timer = setTimeout(set_item, 100);
+        }
+    }
+
+    function create_toc(){
+        if($('body.z > .content > .toc').length == 0){
+            $('body.z > .content > .header').css('min-height', '200px');
+            return;
+        }
+        if($('body.z > .content > .toc').height() < 50){return}
+
+        //至少200空间
+        var space = ($(window).width() - $('body.z > .content').outerWidth());
+        if( space < 200 ){return}
+
+        $('body.z > .content > .header').css('min-height', '200px');
+
+        var toc_width = (space > 400 ? 400 : space);
+        var content_left = (space - toc_width - 20) / 2;
+
+        $('body.z > .content > .toc ol').css({
+            paddingLeft: '20px'
+        });
+        $('body.z > .content > .toc ul').css({
+            paddingLeft: '20px'
+        });
+
+        $('body.z > .content').css({
+            marginLeft: content_left + 'px'
+        });
+
+        $('body.z > .content > .toc').css({
+            fontSize: '12px',
+            width: toc_width + 'px',
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.3)',
+            position: 'fixed',
+            zIndex: 9999,
+            padding: '10px',
+            boxSizing: 'border-box',
+            top: '50px',
+            right: content_left + 'px',
+            overflow: 'auto',
+            maxHeight: $(window).height() - 100 + 'px'
+        });
+
+        bind_scroll();
+    }
+
+    function is_mobile(){
+        if(navigator.userAgent.indexOf('iPhone') >= 0 || navigator.userAgent.indexOf('Android') >= 0){
+            return true;
+        }
+        return false;
+    }
+
+    function mobile_meta(){
+        var ua=navigator.userAgent;
+        var meta = '';
+        if(ua.indexOf('Android')!=-1){
+            var isUC= /UC /.test(ua) || /UCBrowser/.test(ua) || /baidubrowser/.test(ua)|| /qq/i.test(ua);
+            if(isUC){
+                meta='<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,target-densitydpi=device-dpi,user-scalable=no" />';
+            } else {
+                meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=320,user-scalable=no" />';
+            }
+        }else{
+            meta='<meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5,target-densitydpi=device-dpi,user-scalable=no,minimal-ui" />';
+        }
+        $('head').append(meta);
+    }
+
+    function mobile_adjust(){
+        $('body.z > .content').css({ width: '100%', padding: '15px' });
+        $('#qr').hide();
+        $('#disqus_thread').css({ width: '100%' });
+        $('body.z').css({ letterSpacing: 0 });
+        $('body.z p, body.z ul, body.z ol').css({ lineHeight: '1.5em' });
+        $('body.z ul > li, body.z ol > li').css({ textIndent: '-2em' });
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+        $('body.z pre').css({ whiteSpace: 'pre-wrap', wordWrap: 'break-word' });
+    }
+
+    function normal_adjust(){
+        $('body.z > .content > .toc ul > li, body.z > .content > .toc ol > li').css({ textIndent: 0, margin: 0 });
+    }
+
+    function code_view(){
+
+        $('pre').click(function(eventObj){
+            var $node = $($.clone(this));
+            $node.attr('style', '');
+            $node.css({
+                fontSize: '24px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                lineHeight: '1.5em',
+                width: $(window).height(),
+                height: $(window).width(),
+                boxSizing: 'border-box',
+                padding: '10px',
+                paddingBottom: '30px',
+                overflow: 'hidden'
+            });
+            var $wrapper = $('<div></div>').css({
+                position: 'fixed',
+                padding: 0,
+                margin: 0,
+                boxSizing: 'border-box',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                width: $(window).height(),
+                height: $(window).width(),
+                overflow: 'hidden',
+                top: ($(window).height() - $(window).width()) / 2,
+                left: ($(window).width() - $(window).height()) / 2,
+                transform: 'rotate(90deg)',
+                zIndex: 999999
+            });
+
+            var $close = $('<div>&times;</div>').css({
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '100px',
+                height: '100px',
+                lineHeight: '80px',
+                fontSize: '80px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)'
+            });
+
+            var $up = $('<div>△</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '300px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '50px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            var $down = $('<div>▽</div>').css({
+                position: 'absolute',
+                right: 0,
+                bottom: '100px',
+                width: '100px',
+                height: '100px',
+                lineHeight: '150px',
+                fontSize: '50px',
+                textAlign: 'center',
+                backgroundColor: 'rgba(204, 204, 204, 0.5)',
+                userSelect: 'none',
+                '-webkit-user-select': 'none'
+            });
+
+            $wrapper.append($node);
+            $wrapper.append($close);
+            $wrapper.append($up);
+            $wrapper.append($down);
+
+            $wrapper.on('touchstart', function(){
+                return false;
+            });
+
+            $close.on('touchstart', function(){
+                $close.css({ backgroundColor: '#0184b7' });
+                return false;
+            });
+            $close.on('touchend', function(){
+
+                $wrapper.off('touchend');
+                $close.off('touchstart');
+                $close.off('touchend');
+                $up.off('touchstart');
+                $up.off('touchend');
+                $down.off('touchstart');
+                $down.off('touchend');
+                $wrapper.remove();
+
+                return false;
+            });
+
+            var up_timer = null;
+            $up.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $up.css({ backgroundColor: '#0184b7' });
+                up_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start - dx);
+                }, 25);
+                return false;
+            });
+            $up.on('touchend', function(eventObj){
+                if(up_timer){clearInterval(up_timer)};
+                $up.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            var down_timer = null;
+            $down.on('touchstart', function(eventObj){
+                var start = $node.scrollTop();
+                var dx = 0;
+                $down.css({ backgroundColor: '#0184b7' });
+                down_timer = setInterval(function(){
+                    dx += 20;
+                    $node.scrollTop(start + dx);
+                }, 25);
+                return false;
+            });
+            $down.on('touchend', function(eventObj){
+                if(down_timer){clearInterval(down_timer)};
+                $down.css({ backgroundColor: 'rgba(204, 204, 204, 0.5)' });
+                return false;
+            });
+
+            $(this).before($wrapper);
+        });
+    
+    }
+
+    if(is_mobile()){
+        mobile_meta();
+        mobile_adjust();
+        code_view();
+    } else {
+        create_toc();
+        normal_adjust();
+    }
+});
+</script>
+    
+
+    <div style="padding: 4px; line-height: 1.4em; font-size: 22px; margin-top: 100px; margin-bottom: 20px; clear: both; text-align: center; font-weight: bold; ">评论</div>
+<div id="disqus_thread" style="width: 800px; margin: auto; "></div>
+<script type="text/javascript">
+  var disqus_shortname = 'zys';
+  var disqus_identifier = 'groovy';
+  var disqus_url = 'https://www.zouyesheng.com/groovy.html';
+  var disqus_title = 'Groovy 学习笔记';
+
+  (function() {
+   var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+   dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+   (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>评论功能需要javascript的支持</noscript>
+    
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-29492100-1', {siteSpeedSampleRate: 100});
+ga('require', 'linkid');
+ga('set', 'dimension1', (new Date()).getDay().toString());
+ga('send', 'pageview');
+</script>
+    
+
+<div id="qr" style="position: absolute; right: 30px; top: 80px;"><img style="border: 1px solid gray;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKUAAAClAQAAAAAVUAB3AAABsklEQVR4nN2XMYrcQBBFX40Erazl
+zFnrJNJu5DMZBq+WXdiD+CAraU/hrHUAg5RpQJrvYAeDsUNXYFfSUEF/qppX9dvE73E5/SEJ/152
+NLNqAuy09piZNY5qJgl4NL3Wj02QdteKV2tQfU6XLwCj9f79XXvC01Lkv33vr1G+Hy1gcG7c1aKo
+JoqMPoRcdTq+OnZSZoYtR1O9zZfmYlb61YbeYyny1kKSJG1+akPcCVrOaIh92lpInmoUeeukDDwI
+PNVOtHxuKlmfNoDNPOlGA+e0EfcEkDZT71pbDGPVLS8jLeeZliJ7zsl5Z5vWS7dNFLka68NzKk8c
+XaVUzpUtR4fNvlOZl3FrKbKOGsIQXem+xp0wxJ2tjT26xic/uk9Ma5nW+/kpVzYrV2+L67t16olH
+zY03mStv0v6TtwcFefKGBs6EgSJD3IG4e6pJ0vtAMfVJoxzVbp6rjeVcAVTy9SUmibflxttGdFQr
+Ya0Tqr+XmmA2uz5nN698c0HdQjZQ/vhpvTTfnB2eatLWLRBe62dP3kZJYYh7CldIYYiu+01mBmsY
+L3dxn9f7xXG/2X/8o/oBa6rtsysoUE4AAAAASUVORK5CYII=
+" title="本文二维码网址" /></div>
+    
+
+<div style="font-size: 10px; text-align: right; margin-top: 50px; letter-spacing: 0;">
+&copy;2010-2024 zouyesheng.com All rights reserved. Powered by <a href="https://github.com/" target="_blank">GitHub</a> , <a href="http://txt2tags.org/" target="_blank">txt2tags</a> , <a href="https://www.mathjax.org/" target="_blank">MathJax</a>
+</div>
+    
+<!-- xhtml code generated by txt2tags 2.6 (http://txt2tags.org) -->
+</div></body></html>
