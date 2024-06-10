@@ -1,0 +1,155 @@
+ePub 格式
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/epub.html
+%!format: !email
+%%toc
+
+
+# 概述 #
+
+EPUB 是一种开放标准的电子书格式。打包就是一个 zip 文件，里面的结构是索引加 XHTML 这类的。
+
+
+
+# 结构 #
+
+## 整体 ##
+
+- ``mimetype`` ，内容固定是 ``application/epub+zip`` 。
+- ``content.opf`` ，元数据和资源清单，是一个 XML 文件。
+- ``toc.ncx`` ，导航目录， XML 文件。
+- ``META-INF/container.xml`` 指明 *opf* 文件位置， XML 文件。
+- ``[text]`` , ``[styles]`` , ``[images]`` 这些都是具体的资源了。
+
+
+**注意**， EPUB 是严格要求 XML 格式的， XML 文件必须以：
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+```
+
+开头，任何的前置空白是不合法的。
+
+
+
+## container.xml ##
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
+    <rootfiles>
+        <rootfile full-path="content.opf" media-type="application/oebps-package+xml"/>
+   </rootfiles>
+</container>
+```
+
+## content.opf ##
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
+    <dc:title>Quick Start Guide</dc:title>
+    <dc:creator opf:role="aut" opf:file-as="Schember, John">John Schember</dc:creator>
+    <dc:description>calibre Quick Start Guide</dc:description>
+    <dc:language>en</dc:language>
+    <dc:identifier id="BookID" opf:scheme="UUID">urn:uuid:2c3272a4-731b-4348-909d-6f38b97b18eb</dc:identifier>
+    <meta name="cover" content="cover"/>
+  </metadata>
+  <manifest>
+    <item href="text/titlepage.xhtml" id="titlepage" media-type="application/xhtml+xml"/>
+    <item href="text/internal_titlepage.xhtml" id="internal_titlepage" media-type="application/xhtml+xml"/>
+    ...
+    <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+    <item href="styles/stylesheet.css" id="styleshee" media-type="text/css"/>
+    <item href="images/cover.jpg" id="cover" media-type="image/jpeg"/>
+  </manifest>
+
+  <spine toc="ncx">
+    <itemref idref="titlepage"/>
+    <itemref idref="internal_titlepage"/>
+    ...
+  </spine>
+
+  <guide>
+    <reference href="text/titlepage.xhtml" title="Cover" type="cover"/>
+  </guide>
+
+</package>
+```
+
+
+## toc.ncx ##
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en">
+  <head>
+    <meta content="2c3272a4-731b-4348-909d-6f38b97b18eb" name="dtb:uid"/>
+    <meta content="4" name="dtb:depth"/>
+    <meta content="calibre (1.24.0)" name="dtb:generator"/>
+    <meta content="0" name="dtb:totalPageCount"/>
+    <meta content="0" name="dtb:maxPageNumber"/>
+  </head>
+  <docTitle>
+    <text>Calibre Quick Start Guide</text>
+  </docTitle>
+  <navMap>
+    <navPoint id="u13bbb5ae-bb74-4050-8f8f-10ab7408a67c" playOrder="1">
+      <navLabel>
+        <text>Calibre Quick Start Guide</text>
+      </navLabel>
+      <content src="text/internal_titlepage.xhtml"/>
+    </navPoint>
+    <navPoint id="u133ea692-1d18-4a29-865c-7c4bb4569e8d" playOrder="2">
+      <navLabel>
+        <text>Table of Contents</text>
+      </navLabel>
+      <content src="text/toc.xhtml"/>
+    </navPoint>
+    ...
+    <navPoint id="u2c1fe6b2-b099-43df-9c41-0a29bd5b37f6" playOrder="6">
+      <navLabel>
+        <text>Common Tasks</text>
+      </navLabel>
+      <content src="text/common_tasks.xhtml"/>
+      <navPoint id="u605a20af-b1b8-432b-a451-27ebd3c061c1" playOrder="7">
+        <navLabel>
+          <text>Task 1: Organizing</text>
+        </navLabel>
+        <content src="text/task_1_organizing.xhtml"/>
+      </navPoint>
+      ...
+    </navPoint>
+    <navPoint id="ufe12a8a9-aafa-4ab8-8167-f6c615c389e0" playOrder="22">
+      <navLabel>
+        <text>Where to get help</text>
+      </navLabel>
+      <content src="text/where_to_get_help.xhtml"/>
+    </navPoint>
+  </navMap>
+</ncx>
+```
+
+
+# 内容 #
+
+```xhtml
+<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Calibre Quick Start Guide</title>
+  <link href="../styles/stylesheet.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+...
+</body>
+</html>
+```
+
+内容是标准的 XHTML 格式。
+
+
