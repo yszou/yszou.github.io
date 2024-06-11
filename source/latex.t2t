@@ -1,0 +1,52 @@
+LaTeX 使用
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/latex.html
+%!format: !email
+%%toc
+
+
+# TeX Live 安装 #
+
+先下载一个安装工具：
+
+```bash
+wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+```
+
+解压后的目录中有一个 ``install-tl`` ，是一个 perl 脚本，执行即可。
+
+安装目录中，可以调整安装目录，和选择要安装的宏包。全部安装大概需要 8.1 G 的空间。
+
+# Hello World #
+
+```latex
+\documentclass{article}
+\begin{document}
+Hello World
+\end{document}
+```
+
+保存成 ``demo.tex`` 然后使用 ``xelatex`` 命令可以直接编译得到 PDF 文件的结果。
+
+虽然 ``xelatex`` 已经可以直接支持中文，但是因为字体问题，所以如果要使用中文的话还需要 ``xeCJK`` 宏包的支持：
+
+```latex
+\documentclass{article}
+\usepackage{xeCJK}
+\begin{document}
+你好，中文！
+\end{document}
+```
+
+# 几个基本的概念 #
+
+最初就是 *TeX* ，它是高纳德为了自己写书做的一套排版系统，开源贡献出来了。它的工作方式类似一套基于宏的排版语言，原始的一些命令比较“低级”，上手难度比较大。后来 Leslie Lamport 就做了一个 *LaTeX* 宏包，于是后面大家用得比较多的实际上是 *LaTeX* 这套东西。包括前面的 Hello World 的例子，也是 *LaTeX* 。
+
+*TeX* 引擎因为面世的时间很早，所以它没有支持 Unicode ，如果要在它之上处理非英文是比较麻烦的。所以后面就有了 *XeTeX* ，它是 *TeX* 的 Unicode 版本。对应的 *XeLaTeX* 就是在 *XeTeX* 上的 *LaTeX* 宏包。
+
+*LaTeX* 本身的命令不多，会直接用到的更少。根据我以前的一些经验，其实并不需要直接去了解 *TeX* ， *LaTeX* ，可以根据典型的排版需求，比较字体，目录，边距，公式等，直接去找对应的宏包，然后通过阅读宏包的文档，就可以把问题解决得很好。
+
+
