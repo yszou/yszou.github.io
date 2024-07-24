@@ -1,0 +1,369 @@
+面试热身题目
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/leetcode.html
+%!format: !email
+%%toc
+
+
+# 数组 #
+
+## 两分查找 ##
+
+```python
+def bin_search(n, nums):
+    def iter(start, end):
+        if start > end: return None
+        mid = start + int((end - start) / 2)
+        v = nums[mid]
+        if v == n:
+            return mid
+        if v > n:
+            return iter(start, mid-1)
+        if v < n:
+            return iter(mid+1, end)
+    return iter(0, len(nums)-1)
+
+print(bin_search(2, [-1,0,3,5,9,12]))
+```
+
+- 使用“包含”的范围， ``start`` 和 ``end`` 。
+- 使用 ``int()`` 直接做“向下取整”。
+- 退出条件是 ``start > end`` 。
+
+
+
+## 原地移除元素 ##
+
+```python
+def remove_element(nums, n):
+    if len(nums) == 0: return 0
+    pos = 0
+    current = 0
+    while pos < len(nums):
+        if nums[pos] == n:
+            pos += 1
+            continue
+
+        nums[current], nums[pos] = nums[pos], nums[current]
+        pos += 1 
+        current += 1
+
+    return current
+
+demo = [3,1,2,3,4,5,6]
+print(demo[0:remove_element(demo, 3)])
+```
+
+- ``pos`` 和 ``current`` 两个指针的移动控制，产生的位置差异是这里的主要逻辑。
+
+
+
+# 链表 #
+
+```python
+class ListNode:
+    @staticmethod
+    def by(nums):
+        head = ListNode()
+        node = head
+        for i in nums:
+            node.next = ListNode(val=i)
+            node = node.next
+        r = head.next
+        head.next = None
+        return r
+
+    @staticmethod
+    def display(node):
+        if not node: return
+        r = [node]
+        n = node
+        while n.next:
+            r.append(n.next)
+            n = n.next
+
+        r = [str(n.val) for n in r]
+        print(' -> '.join(r))
+
+
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+```
+
+
+## 反转链表 ##
+
+```python
+def reverse_list(head):
+    if not head: return head
+    if not head.next: return head
+
+    def iter(a, b, c):
+        c_next = c.next
+        b.next = a
+        c.next = b
+        if c_next:
+            return iter(b, c, c_next)
+        return c
+    return iter(None, head, head.next)
+
+head = reverse_list(ListNode.by([1,2,3,4,5]))
+ListNode.display(head)
+```
+
+- 一次传入三个节点，首次传入时 ``a`` 用 ``None`` 。
+- ``c.next`` 要先保留一下。
+
+
+## 两两交换 ##
+
+```python
+def swap(head):
+    if not head: return head
+    if not head.next: return head
+
+    def iter(a, b, c):
+        b.next = a
+        a.next = c
+        if c and c.next:
+            a.next = c.next
+            return iter(c, c.next, c.next.next)
+
+    r = head.next
+    iter(head, head.next, head.next.next)
+    return r
+
+head = swap(ListNode.by([1,2,3,4,5,6,7,8]))
+ListNode.display(head)
+```
+
+- 一次传入三个节点，注意 ``a.next`` 的处理。
+
+
+
+# 栈 #
+
+## 逆波兰表达式 ##
+
+```python
+def execute(tokens):
+    op = {'+', '-', '*' , '/'}
+    stack = []
+    for c in tokens:
+        if c in op:
+            if c == '+':
+                stack.append(stack.pop() + stack.pop())
+                continue
+            if c == '-':
+                stack.append((-stack.pop()) + stack.pop())
+                continue
+            if c == '*':
+                stack.append(stack.pop() * stack.pop())
+                continue
+            if c == '/':
+                stack.append(int((1/stack.pop()) * stack.pop()))
+                continue
+        stack.append(int(c))
+    return stack.pop()
+
+print(execute(['2', '3', '-']))
+```
+
+- 因为 ``stack.pop()`` 的顺序问题，对于减法和除法，使用 ``-stack.pop()`` 和 ``1/stack.pop()`` 转换一下。
+
+
+# 二叉树 #
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+```
+
+
+## 前序遍历 ##
+
+```python
+    def iter(n, result, right_stack):
+        if not n:
+            if not right_stack: return result
+            return iter(right_stack.pop(), result, right_stack)
+
+        result.append(n.val)
+
+        if n.left:
+            if n.right: right_stack.append(n.right)
+            return iter(n.left, result, right_stack)
+
+        return iter(n.right, result, right_stack)
+
+    return iter(root, [], [])
+```
+
+- 前序遍历的顺序是“中左右”，“中”可以马上处理，“左”是立即迭代，所以只需要一个 ``right_stack`` 就够了。
+- “中”可以马上处理——这点非常重要，意味着这个节点不会被重复访问，所以前序遍历本身少了一个状态，简单很多。
+
+
+## 中序遍历 ##
+
+```python
+def travel_middle(root):
+    def iter(node, result, middle):
+        if not node:
+            if middle:
+                node = middle.pop()
+                result.append(node.val)
+                if node.right:
+                    return iter(node.right, result, middle)
+                else:
+                    return iter(None, result, middle)
+            return result
+
+        if node.left:
+            middle.append(node)
+            return iter(node.left, result, middle)
+
+        result.append(node.val)
+        if node.right:
+            return iter(node.right, result, middle)
+
+        return iter(None, result, middle)
+
+    return iter(root, [], [])
+
+print(travel_middle(TreeNode(1, TreeNode(2, TreeNode(4)), TreeNode(3))))
+```
+
+- 中序遍历的顺序是“左右右”，“中”会访问两遍，从上到下，和从下到上的回溯。
+- “中”的两次访问要做的事是不同的，从上到下是压栈，从下到上是取值。
+- 所以，判断当前状态到底是“从上到下”还是“从下到上”很重要。在此基础上，只需要额外的一个 ``middle`` 栈就可以了。
+
+
+## 后序遍历 ##
+
+```python
+def travel_post(root):
+    result = []
+    def iter(node):
+        if not node: return
+        if node.left: iter(node.left)
+        if node.right: iter(node.right)
+        result.append(node.val)
+    iter(root)
+    return result
+
+print(travel_post(TreeNode(1, TreeNode(2, TreeNode(4)), TreeNode(3))))
+```
+
+- 后序遍历的顺序是“左右中”。
+- 如果按前面尾递归的处理方式，则状态会比中序还要多一种，很麻烦。
+- 如果考虑尾递归，则要考虑“从上而下”，“从左而上”，“从右而上”三种状态。
+
+
+# 堆 #
+
+## Python 中的实现 ##
+
+```python
+import heapq
+
+a = [1,3,5,6,2,2,3,4,5]
+heapq.heapify(a)
+print(a)
+heapq.heappush(a, 0)
+print(a)
+print(a[0])
+while a:
+    print(heapq.heappop(a))
+```
+
+- 使用 ``heapq`` 模块操作普通的列表。
+- 是小顶堆， ``[0]`` 是最小值。
+- ``heapq.heappush()`` 和 ``heapq.heappop()`` 。
+
+
+## 出现次数前 K 大的成员 ##
+
+```python
+import heapq
+
+class Code:
+    def top_k(self, nums, k):
+        counter = {}
+        for n in nums:
+            c = counter.setdefault(n, [0, n])
+            c[0] += 1
+        r = heapq.nlargest(k, counter.values(), lambda o: o[0])
+        return [x[1] for x in r]
+
+if __name__ == '__main__':
+    r = Code().top_k([1,1,1,1,2,2,2,3,3,1,2,3,4,5,6,4,8,8,8], 3)
+    print(r)
+```
+
+- “堆”特别适合处理前 K 大这样的场景。它的修改成本比“数组”低。
+
+
+# 回溯算法 #
+
+## N 选 K 个数的组合 ##
+
+```python
+class Code:
+    def combin(self, n, k):
+        result = []
+        current = []
+        self.iter(0, n, k, current, result)
+        return result
+
+    def iter(self, pos, n, k, current, result):
+        if len(current) == k:
+            result.append(current[:])
+            return
+
+        for i in range(pos+1, n+1):
+            current.append(i)
+            self.iter(i, n, k, current, result)
+            current.pop()
+
+print(Code().combin(5, 2))
+```
+
+- 回溯的套路，是在 ``for`` 中的递归逻辑外面， ``current.append()`` 之后再 ``current.pop()`` 。
+
+
+
+# 动态规划 #
+
+## 走楼梯 ##
+
+每次 1 阶或者 2 阶，到达 N 阶有多少种方法。
+
+```python
+class Code:
+    def go(self, n):
+        if n == 0: return 0
+        if n == 1: return 1
+        if n == 2: return 2
+        dp = [0] * (n+1)
+        dp[0] = 0
+        dp[1] = 1
+        dp[2] = 2
+        for i in range(3, n+1):
+            dp[i] = dp[i-1] + dp[i-2]
+        return dp[n]
+
+print(Code().go(10))
+```
+
+- 动态规划的核心，是找到 ``dp[i]`` 与 ``dp[i-k]`` 之前的递推公式，依赖这个凝推关系，我们就可以从 ``dp[0]`` 开始，得到 ``dp[n]`` 的结果。
+- 这里 ``dp[n]`` 表达在第 N 阶的方法数。因为我们每次只能走 1 或者 2 阶，所以 ``dp[n]`` 它就等于 ``dp[n-1]`` 走 1 阶加上 ``dp[n-2]`` 走 2 阶这两种方法的总和。
+- 递推公式得到后，在纯数学上，有些有纯粹的优化方法，比如斐波拉契数列的矩阵变换思路。
+
+
