@@ -69,6 +69,7 @@ module.exports = {}
 
 ```ini
 PORT=8080
+PUBLIC_URL=.
 BROWSER=None
 ```
 
@@ -190,7 +191,7 @@ module.exports = {
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"]
+  "include": ["global.d.ts", "src"]
 }
 ```
 
@@ -259,6 +260,11 @@ module.exports = {
 declare global { }
 
 declare module '*.json' {
+  const content: Record<string, any>;
+  export default content;
+}
+
+declare module '*.module.sass' {
   const content: Record<string, any>;
   export default content;
 }
