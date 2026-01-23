@@ -1,0 +1,262 @@
+开始一个后端项目
+邹业盛
+%%mtime(%Y-%m-%d %H:%M)
+%!encoding: utf-8
+%!options(xhtml): --google-analytics --disqus
+%!qr: http://www.zouyesheng.com/start-be.html
+%!format: !email
+%%toc
+
+# Hello World #
+
+1. 新建目录，创建 venv。
+
+```bash
+~/opt/Python-3.14.0/bin/python3 -m venv venv
+
+source venv/bin/activate
+
+pip install --upgrade pip
+
+pip install fastapi
+
+pip freeze |grep fastapi >> requirements.txt
+```
+
+
+2. 创建 ``main.py`` ，写个 *Hello World* ：
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get('/')
+def hello():
+    return 'Hello World'
+```
+
+
+3. 用 *uvicorn* 加 *--reload* 运行这个 app ：
+
+先安装：
+
+```bash
+pip install uvicorn
+
+pip freeze |grep uvicorn >> requirements.txt
+```
+
+再运行：
+
+```bash
+./venv/bin/uvicorn main:app --reload --host 0.0.0.0 --port 8888
+```
+
+使用：
+
+```bash
+export PYTHONDONTWRITEBYTECODE=1
+```
+
+可以不生成 ``pyc`` 和 ``__pycache__`` 。
+
+# 基本目录结构 #
+
+先创建一个 ``.env`` ，里面写一个 ``DEBUG=true``，然后可以在 IDE 中导入项目了。
+
+- IDE 中先配置 Python SDK ，在 *venv* 里。
+- 然后一个 run 是使用 *python* 运行 *venv* 里面的 *uvicorn* ，带它的一些参数。
+
+
+在顶层目录，比如 PRJ 下，再建一个 app 目录，比如 APP ，那么目前的文件就是：
+
+```text
+PRJ
+├── main.py
+├── [APP]
+├── requirements.txt
+├── .env
+└── [venv]
+```
+
+后续所有的“模块”都是在 *APP* 这个目录中。
+
+每一个模块，组件部分不外乎：
+
+- *provider*，一些简单的方法，一般后续用于注入。
+- *service*，主要逻辑。
+- *interface*，逻辑的结构，一般用于只定结构的模块。
+- *dto*，数据结构。
+- *constant*，常量与枚举。
+- *exception*，异常。
+- *model*，模型。
+- *implement*，接口的实现。
+
+
+进一步规划目录结构：
+
+- 做一个 *APP/support* ，那些相对独立，与业务无直接关系的模块，放下面。
+- 再做一层 *APP/APP* ，里面把 *service* ， *dto* ， *constant* ， *controller* 这些放上。
+- 做一个 *APP/config* ，接下来我们考虑配置项。
+
+
+# 配置项 #
+
+``APP/config`` 。
+
+*constant* ， ``ENV_KEYS`` 表示有哪些项需要在环境变量中声明：
+
+```python
+from enum import StrEnum
+
+class ENV_KEYS(StrEnum):
+    DEBUG = "DEBUG"
+```
+
+不是所有配置项都是从环境变量中获取的，有些也可以写死。
+
+*dto* ，配置项的结构：
+
+```python
+from pydantic import BaseModel
+
+class ConfigDto(BaseModel):
+    DEBUG: bool
+```
+
+*provider* ：
+
+```python
+import os
+from .constant import ENV_KEYS
+from .dto import ConfigDto
+
+def get_config() -> ConfigDto:
+    return ConfigDto(
+        DEBUG=bool(os.environ[ENV_KEYS.DEBUG])
+    )
+```
+
+在 ``main.py`` 中临时加一个 ``get_config`` 的调用，检查 ``.env`` 有正常工作：
+
+```python
+from fastapi import FastAPI
+from pet.config.provider import get_config
+
+app = FastAPI()
+
+@app.get('/')
+def hello():
+    return 'Hello World'
+
+@app.get('/config')
+def config():
+    return get_config()
+```
+
+
+# 独立的 APP 与信赖项 #
+
+进一步规划目录结构。
+
+*PRJ/APP/APP*，
+
+- 把 ``main.py`` 移动到 *PRJ/APP* 里面。
+- 建 ``PRJ/APP/APP/app.py`` ，里面是一个 ``FastAPI()`` ，可以把 ``main.py`` 中的 *Hello World* 暂时移过来。 
+- 在 ``main.py`` 中， ``app.mount(/api/APP, xxx_app)`` 。
+
+
+建一个 *PRJ/APP/APP/depend* ，里面有 ``__inti__.py`` 和 ``config.py`` ：
+
+``config.py``:
+
+```python
+from fastapi import Depends
+from typing import Annotated
+
+from xxx.config.provider import ConfigDto, get_config
+
+
+ConfigDep = Annotated[ConfigDto, Depends(get_config)]
+```
+
+``__init__.py`` ：
+
+```python
+from .config import ConfigDep
+
+__ALL__ = [
+    ConfigDep
+]
+```
+
+
+# Controller #
+
+开始慢慢进入正题了，建 *PRJ/APP/APP/controller* 和 *PRJ/APP/APP/dto* 。
+
+``dto/http.py`` ：
+
+```python
+from typing import Generic, TypeVar
+
+from pydantic import BaseModel
+
+
+T = TypeVar('T')
+
+
+class HttpResDto(BaseModel, Generic[T]):
+    code: int
+    msg: str
+    data: T | None
+
+    @classmethod
+    def success(cls, data: T):
+        return cls(code=0, msg='', data=data)
+
+    @classmethod
+    def fail(cls, code: int, msg: str):
+        return cls(code=code, msg=msg, data=None)
+```
+
+定义结构的响应结构。
+
+``controller/config.py`` ：
+
+```python
+from fastapi import APIRouter
+from xxx.xxx.depend import ConfigDep
+from xxx.xxx.dto.http import HttpResDto
+
+router = APIRouter()
+
+@router.get('/config', response_model=HttpResDto[ConfigDep])
+def config(config: ConfigDep):
+    return HttpResDto.success(config)
+```
+
+第一个正式响应。
+
+在 ``app.py`` 中添加 *config* 的 *router* ：
+
+```python
+from fastapi import FastAPI
+from .controller.config import router as config_router
+
+app = FastAPI()
+app.include_router(config_router, prefix='/config/v1', tags=['config'])
+```
+
+现在我们可以访问 http://localhost:8888/api/pet/config/v1/config 了。
+
+
+# 数据库 #
+
+TODO
+
+
+
+
+
