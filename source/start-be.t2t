@@ -254,7 +254,87 @@ app.include_router(config_router, prefix='/config/v1', tags=['config'])
 
 # 数据库 #
 
-TODO
+创建好数据库，启动。然后在 *config* 中添加一个配置项 *DB_URI* ，如 ``postgresql+psycopg2://app@localhost/abc`` ，这里可以使用 *pydantic* 里的 ``PostgresDsn`` 。
+
+创建 *model* 模块，在 *PRJ/APP/APP/model*，先添加第一个 ``SqlModel`` ：
+
+```python
+from datetime import datetime
+
+from sqlmodel import Field, SQLModel
+
+
+class SqlModel(SQLModel, table=True):
+    __tablename__ = 'sql'
+
+    id: int = Field(primary_key=True)
+    sql: str = Field(max_length=64)
+    created_at: datetime = Field()
+```
+
+创建一个 sql 目录在 *PRJ/APP/sql* ，把第一个建表 DDL 放进去 ``000_sql.sql`` ：
+
+```sql
+CREATE TABLE public.sql
+(
+    id SERIAL NOT NULL,
+    sql VARCHAR(64) NOT NULL,
+    created_at Timestamp NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id)
+);
+INSERT INTO public.sql (sql) VALUES ('000_sql.sql');
+```
+
+接下来做 DB 的依赖处理。
+
+现在可以把 *support* 模块创建好了， *PRJ/APP/support* 。
+
+数据库的引擎依赖是通用的：
+
+```python
+from functools import lru_cache
+
+from sqlmodel import create_engine
+
+
+@lru_cache(maxsize=5)
+def db_engine_provider(uri: str, pool_recycle: int = 300, pool_size: int = 3, max_overflow: int = 10):
+    return create_engine(
+        uri,
+        echo=False,
+        pool_pre_ping=uri.startswith('mysql'),
+        pool_recycle=pool_recycle,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+    )
+```
+
+可以放到 ``support/db_engine/provider.py`` 。
+
+``depend/db.py`` 这个依赖就可以是：
+
+```python
+from typing import Annotated
+
+from fastapi import Depends
+from sqlmodel import Session
+
+from pet.config.provider import get_config
+from pet.support.db_engine.provider import db_engine_provider
+
+
+config = get_config()
+engine = db_engine_provider(str(config.DB_URI))
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+DbDep = Annotated[Session, Depends(get_session)]
+```
+
+
+
 
 
 # 用户和 Token #
